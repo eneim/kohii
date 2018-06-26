@@ -35,7 +35,6 @@ internal class ViewPlayback<V : View>(playable: Playable, uri: Uri, manager: Man
 
   private val listener: PlaybackEventListener = object : PlaybackEventListener {
     override fun onBuffering() {
-
     }
 
     override fun onPlaying() {
@@ -43,13 +42,12 @@ internal class ViewPlayback<V : View>(playable: Playable, uri: Uri, manager: Man
     }
 
     override fun onPaused() {
-      // do nothing
     }
 
     override fun onCompleted() {
       getTarget()?.keepScreenOn = false
     }
-  }//
+  }
 
   private val targetAttached = AtomicBoolean(false)
 

@@ -20,21 +20,23 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import kohii.v1.Kohii
-import kohii.v1.sample.ui.main.MainFragment
+import kotlinx.android.synthetic.main.main_activity.playerView
 
 class MainActivity : AppCompatActivity() {
+
+  companion object {
+    const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material/assets/1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz/m2-manifesto.mp4"
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main_activity)
-    if (savedInstanceState == null) {
-      supportFragmentManager.beginTransaction()
-          .replace(R.id.container, MainFragment.newInstance())
-          .commitNow()
-    }
+//    if (savedInstanceState == null) {
+//      supportFragmentManager.beginTransaction()
+//          .replace(R.id.container, MainFragment.newInstance())
+//          .commitNow()
+//    }
 
-    Kohii.with(this).setUp(Uri.parse(""))
-        .asPlayable()
+    Kohii.with(this).setUp(Uri.parse(videoUrl)).asPlayable().bind(playerView)
   }
-
 }

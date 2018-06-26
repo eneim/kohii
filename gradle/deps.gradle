@@ -25,15 +25,15 @@ ext {
             'major': 1,
             'minor': 0,
             'patch': 0, // ExoPlayer version number.
-            'build': 2810, //
+            'build': 2801, //
            ], //
       ]
 
   buildConfig.version['name'] = //
-      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}"
+      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}"
 
   buildConfig.version['code'] = //
-      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2810 --> 109,092,810 */
+      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2801 --> 109,092,801 */
       buildConfig.version.major * 100000000 + //
           buildConfig.version.minor * 1000000 + //
           buildConfig.version.patch * 10000 + //

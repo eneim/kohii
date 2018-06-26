@@ -18,12 +18,27 @@ package kohii.v1.exo
 
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.DefaultRenderersFactory.ExtensionRendererMode
+import com.google.android.exoplayer2.upstream.BandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.TransferListener
+import com.google.android.exoplayer2.upstream.cache.Cache
+import kohii.media.MediaDrm
 
 /**
+ * Configuration for [PlayerFactory].
+ *
  * @author eneim (2018/06/24).
  */
-data class Config(@ExtensionRendererMode val extensionMode: Int) {
+data class Config(
+    @ExtensionRendererMode val extensionMode: Int,
+    val mediaDrm: MediaDrm? = null,
+    val cache: Cache? = null,
+    val meter: DataMeter<BandwidthMeter, TransferListener<Any>> = DEFAULT_METER
+) {
+
   companion object {
-    val DEFAULT = Config(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
+    private val meter = DefaultBandwidthMeter()
+    val DEFAULT_METER = DataMeter<BandwidthMeter, TransferListener<Any>>(meter, meter)
+    val DEFAULT_CONFIG = Config(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
   }
 }

@@ -17,15 +17,27 @@
 package kohii.v1
 
 import android.net.Uri
+import android.support.annotation.IntDef
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
 import kohii.v1.exo.Config
+import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
  * @author eneim (2018/06/24).
  */
 interface Playable {
+
+  companion object {
+    const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
+    const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
+    const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
+  }
+
+  @Retention(SOURCE)
+  @IntDef(REPEAT_MODE_OFF, REPEAT_MODE_ONE, REPEAT_MODE_ALL)
+  annotation class RepeatMode
 
   fun bind(playerView: PlayerView): Playback<PlayerView>
 
@@ -37,9 +49,9 @@ interface Playable {
 
   fun release()
 
-  fun addVolumeChangeListener(listener: VolumeChangeListener)
+  fun addVolumeChangeListener(listener: OnVolumeChangedListener)
 
-  fun removeVolumeChangeListener(listener: VolumeChangeListener)
+  fun removeVolumeChangeListener(listener: OnVolumeChangedListener)
 
   fun setPlaybackInfo(playbackInfo: PlaybackInfo)
 
@@ -51,12 +63,12 @@ interface Playable {
   data class Options(
       val kohii: Kohii,
       val uri: Uri,
-      val config: Config = Config.DEFAULT,
+      val config: Config = Config.DEFAULT_CONFIG,
       val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
       val mediaType: String? = null,
       val tag: Any? = null,
       val prepareAlwaysLoad: Boolean = false,
-      @Player.RepeatMode val repeatMode: Int = Player.REPEAT_MODE_OFF
+      @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
   ) {
 
     fun asPlayable(): Playable {
