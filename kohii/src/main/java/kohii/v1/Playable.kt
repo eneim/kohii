@@ -70,7 +70,6 @@ interface Playable {
       val prepareAlwaysLoad: Boolean = false,
       @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
   ) {
-
     fun asPlayable(): Playable {
       return this.kohii.getPlayable(Bundle(this.uri, this))
     }

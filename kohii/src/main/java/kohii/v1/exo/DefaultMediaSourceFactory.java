@@ -27,7 +27,6 @@ import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.upstream.cache.Cache;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory;
@@ -39,11 +38,11 @@ import static com.google.android.exoplayer2.util.Util.inferContentType;
 /**
  * @author eneim (2018/06/25).
  */
-final class DefaultMediaSourceFactory implements MediaSourceFactory {
+public class DefaultMediaSourceFactory implements MediaSourceFactory {
 
   private final ExoStore store;
 
-  DefaultMediaSourceFactory(ExoStore store) {
+  public DefaultMediaSourceFactory(ExoStore store) {
     this.store = store;
   }
 
@@ -53,22 +52,21 @@ final class DefaultMediaSourceFactory implements MediaSourceFactory {
     TransferListener<? super DataSource> transferListener = options.getConfig().getMeter();
     Cache cache = options.getConfig().getCache();
 
-    DataSource.Factory baseFactory =
-        new DefaultHttpDataSourceFactory(store.appName, transferListener);
-    DataSource.Factory mediaDataSourceFactory = new DefaultDataSourceFactory(store.context,  //
-        transferListener, baseFactory);
+    DataSource.Factory mediaDataSourceFactory =
+        new DefaultDataSourceFactory(store.context, store.appName, transferListener);
     if (cache != null) {
       mediaDataSourceFactory = new CacheDataSourceFactory(cache, mediaDataSourceFactory);
     }
+
     DataSource.Factory manifestDataSourceFactory =
         new DefaultDataSourceFactory(store.context, store.appName);
 
     MediaSource mediaSource;
     switch (type) {
       case C.TYPE_SS:
-        mediaSource = new SsMediaSource.Factory( //
-            new DefaultSsChunkSource.Factory(mediaDataSourceFactory), manifestDataSourceFactory)//
-            .createMediaSource(options.getUri());
+        mediaSource =
+            new SsMediaSource.Factory(new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
+                manifestDataSourceFactory).createMediaSource(options.getUri());
         break;
       case C.TYPE_DASH:
         mediaSource =
@@ -76,12 +74,12 @@ final class DefaultMediaSourceFactory implements MediaSourceFactory {
                 manifestDataSourceFactory).createMediaSource(options.getUri());
         break;
       case C.TYPE_HLS:
-        mediaSource = new HlsMediaSource.Factory(mediaDataSourceFactory) //
-            .createMediaSource(options.getUri());
+        mediaSource =
+            new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(options.getUri());
         break;
       case C.TYPE_OTHER:
-        mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory) //
-            .createMediaSource(options.getUri());
+        mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory).createMediaSource(
+            options.getUri());
         break;
       default:
         throw new IllegalStateException("Unsupported type: " + type);

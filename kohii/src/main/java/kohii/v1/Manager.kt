@@ -37,15 +37,15 @@ class Manager internal constructor(val kohii: Kohii, val decorView: View) {
     var TOKEN_COMPARATOR: Comparator<Token> = Comparator { o1, o2 -> o1.compareTo(o2) }
   }
 
-  val attachFlag = AtomicBoolean(false)
   val playablesThisActiveTo = ArrayList<Playable>()
-  private val maxConcurrentPlayers = 1
+  private val attachFlag = AtomicBoolean(false)
   private val scrolling = AtomicBoolean(false)
+  private val maxConcurrentPlayers = 1
 
-  val mapTargetToPlayback = WeakHashMap<Any, Playback<*>>()
-  val mapPlayableToTarget = HashMap<Playable, Any>()
   @Suppress("MemberVisibilityCanBePrivate")
   val mapPlayableTagToInfo = HashMap<Any, PlaybackInfo>()
+  val mapPlayableToTarget = HashMap<Playable, Any>()
+  val mapTargetToPlayback = WeakHashMap<Any, Playback<*>>()
 
   private val mapAttachedPlaybackToTime = HashMap<Playback<*>, Long>()
   private val mapDetachedPlaybackToTime = HashMap<Playback<*>, Long>()
@@ -209,7 +209,7 @@ class Manager internal constructor(val kohii: Kohii, val decorView: View) {
    * Old [Playback] will be cleaned up and removed.
    */
   fun <T> addPlayback(playback: Playback<T>): Playback<T> {
-    val target = checkNotNull(playback).getTarget()
+    val target = playback.getTarget()
     var shouldQueue = target != null // playback must have a valid target.
     if (shouldQueue) {
       // Not-null target may be already a target of another Playback before.

@@ -47,7 +47,6 @@ class Kohii(context: Context) {
   internal val managers = WeakHashMap<Context, Manager>()
   internal val states = WeakHashMap<Context, Bundle>()  // TODO: rename to 'playableStates'
   internal val playableStore = HashMap<Playable.Bundle, Playable>()
-  internal val playablePacks = HashMap<Any, Playable>()
   internal val referenceQueue = ReferenceQueue<Any>()
 
   init {
@@ -84,30 +83,18 @@ class Kohii(context: Context) {
     })
   }
 
-  internal class ManagerAttachStateListener(context: Context, val view: View,
-      private val attachFlag: AtomicBoolean) : View.OnAttachStateChangeListener {
+  internal class ManagerAttachStateListener(context: Context,
+      val view: View) : View.OnAttachStateChangeListener {
 
     private val context = WeakReference(context)
 
     override fun onViewAttachedToWindow(v: View) {
-      if (!attachFlag.get()) {
-        val toAttach = kohii!!.managers[context.get()]
-        if (toAttach != null) {
-          toAttach.onAttached()
-          attachFlag.set(true)
-        }
-      }
+      kohii!!.managers[context.get()]?.onAttached()
     }
 
+    // May be called after Activity's onDestroy().
     override fun onViewDetachedFromWindow(v: View) {
-      if (attachFlag.get()) {
-        val toDetach = kohii!!.managers.remove(context.get())
-        if (toDetach != null) {
-          toDetach.onDetached()
-          attachFlag.set(false)
-        }
-      }
-
+      kohii!!.managers.remove(context.get())?.onDetached()
       if (this.view === v) this.view.removeOnAttachStateChangeListener(this)
     }
   }
@@ -175,7 +162,7 @@ class Kohii(context: Context) {
           managers[context] = it
           if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
           decorView.addOnAttachStateChangeListener(
-              ManagerAttachStateListener(context, decorView, it.attachFlag))
+              ManagerAttachStateListener(context, decorView))
         }
 
     manager.onInitialized(states[context])
@@ -195,8 +182,14 @@ class Kohii(context: Context) {
   }
 
   fun requirePlayable(key: Any): Playable? {
-    return this.playablePacks[checkNotNull(key)]
+    return this.playableStore.find { it.options.tag == key }
   }
 
   //// [END] Public API
+}
+
+/// Some extension functions.
+
+fun <K, V> HashMap<K, V>.find(predicate: (key: K) -> Boolean): V? {
+  return this[this.keys.firstOrNull(predicate)]
 }
