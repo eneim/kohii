@@ -20,7 +20,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * Note: implementation of this interface must comparable using all 4 values.
+ * Note: implementation of this interface must comparable using all 4 values, no more, no less.
  *
  * @author eneim (2018/06/25).
  */

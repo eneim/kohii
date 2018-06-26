@@ -92,9 +92,6 @@ class Playee internal constructor(
     }
     val playback = ViewPlayback(this, uri, manager, playerView, options)
     playback.addCallback(this)
-    if (playback.validTag()) {
-      kohii.playablePacks[playback.tag.toString()] = this
-    }
     return manager.addPlayback(playback)
   }
 
@@ -109,9 +106,6 @@ class Playee internal constructor(
   override fun release() {
     this.helper.release()
     kohii.playableStore.remove(this.bundle)
-    if (this.options.tag != null) {
-      kohii.playablePacks.remove(this.options.tag.toString())
-    }
   }
 
   override fun addVolumeChangeListener(listener: OnVolumeChangedListener) {
