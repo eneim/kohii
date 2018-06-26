@@ -31,21 +31,32 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-abstract class Playback<T> protected constructor(
+abstract class Playback<T> internal constructor(
     internal val playable: Playable,
     internal val uri: Uri,
     internal val manager: Manager,
     target: T?,
-    internal val options: Playable.Options) {
+    options: Playable.Options
+) {
 
-  open class Token : Comparable<Token> {
-    override fun compareTo(other: Token): Int {
-      return 0
-    }
+  companion object {
+    const val STATE_IDLE = 1
+    const val STATE_BUFFERING = 2
+    const val STATE_READY = 3
+    const val STATE_END = 4
+    private val SCRAP = Any()
   }
 
-  internal class RequestWeakReference<M>(val playback: Playback<M>, referent: M,
-      q: ReferenceQueue<in M>) : WeakReference<M>(referent, q)
+  open class Token : Comparable<Token> {
+    override fun compareTo(other: Token) = 0
+  }
+
+  @Suppress("unused")
+  internal class RequestWeakReference<M>(
+      val playback: Playback<M>,
+      referent: M,
+      q: ReferenceQueue<in M>
+  ) : WeakReference<M>(referent, q)
 
   private val handler = Handler(Handler.Callback { msg ->
     val playWhenReady = msg.obj as Boolean
@@ -58,11 +69,7 @@ abstract class Playback<T> protected constructor(
       }
 
       STATE_READY -> for (listener in listeners) {
-        if (playWhenReady) {
-          listener.onPlaying()
-        } else {
-          listener.onPaused()
-        }
+        if (playWhenReady) listener.onPlaying() else listener.onPaused()
       }
 
       STATE_END -> for (listener in listeners) {
@@ -75,20 +82,14 @@ abstract class Playback<T> protected constructor(
   private val listeners = HashSet<PlaybackEventListener>()
   private val callbacks = HashSet<Callback>()
 
-  val tag: Any
+  @Suppress("MemberVisibilityCanBePrivate")
   val target: WeakReference<T>?
+  val tag: Any
 
   // Return null Token will indicate that this Playback cannot start.
   // Token is comparable.
   internal open val token: Token?
     get() = null
-
-  companion object {
-    const val STATE_IDLE = 1
-    const val STATE_BUFFERING = 2
-    const val STATE_READY = 3
-    const val STATE_END = 4
-  }
 
   @Retention(SOURCE)  //
   @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)  //
@@ -101,8 +102,7 @@ abstract class Playback<T> protected constructor(
           null
         else
           RequestWeakReference(this, target, manager.kohii.referenceQueue as ReferenceQueue<in T>)
-    @Suppress("LeakingThis")
-    this.tag = options.tag ?: this
+    this.tag = options.tag ?: SCRAP
   }
 
   // Used by subclasses to dispatch internal event listeners
@@ -133,12 +133,10 @@ abstract class Playback<T> protected constructor(
   }
 
   // Only playback with 'valid tag' will be cached for restoring.
-  internal fun validTag(): Boolean {
-    return this.tag !== this
-  }
+  internal fun validTag() = this.tag !== SCRAP
 
-  internal fun onPause(managerRecreating: Boolean) {
-    if (!managerRecreating) {
+  internal fun onPause(configChange: Boolean) {
+    if (!configChange) {
       if (this.manager.playablesThisActiveTo.contains(playable)) {
         playable.pause()
       }
@@ -153,17 +151,13 @@ abstract class Playback<T> protected constructor(
   // the target may not be attached to View/Window.
   @CallSuper
   open fun onAdded() {
-    for (callback in this.callbacks) {
-      callback.onAdded(this)
-    }
+    this.callbacks.forEach { it.onAdded(this) }
   }
 
   // being removed from Manager
   @CallSuper
   open fun onRemoved(recreating: Boolean) {
-    for (callback in this.callbacks) {
-      callback.onRemoved(this, recreating)
-    }
+    this.callbacks.forEach { it.onRemoved(this, recreating) }
     this.listeners.clear()
     this.callbacks.clear()
   }
@@ -171,17 +165,13 @@ abstract class Playback<T> protected constructor(
   // ~ View is attached
   @CallSuper
   open fun onActive() {
-    for (callback in this.callbacks) {
-      callback.onActive(this)
-    }
+    this.callbacks.forEach { it.onActive(this) }
   }
 
   @CallSuper
   open fun onInActive() {
     handler.removeCallbacksAndMessages(null)
-    for (callback in this.callbacks) {
-      callback.onInActive(this)
-    }
+    this.callbacks.forEach { it.onInActive(this) }
   }
 
   interface Callback {

@@ -29,6 +29,7 @@ import android.os.Message
 import android.support.v4.view.ViewCompat
 import android.view.View
 import android.view.ViewTreeObserver.OnScrollChangedListener
+import kohii.v1.exo.ExoStore
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 import java.util.WeakHashMap
@@ -37,10 +38,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
+@Suppress("MemberVisibilityCanBePrivate")
 class Kohii(context: Context) {
 
-  private val app = context.applicationContext as Application
+  internal val app = context.applicationContext as Application
 
+  internal val store = ExoStore.get(app)
   internal val managers = WeakHashMap<Context, Manager>()
   internal val states = WeakHashMap<Context, Bundle>()  // TODO: rename to 'playableStates'
   internal val playableStore = HashMap<Playable.Bundle, Playable>()
@@ -180,7 +183,7 @@ class Kohii(context: Context) {
   }
 
   internal fun getPlayable(bundle: Playable.Bundle): Playable {
-    return playableStore[bundle] ?: Playee(this, bundle).also {
+    return playableStore[bundle] ?: Playee(this, store, bundle).also {
       playableStore[bundle] = it
     }
   }

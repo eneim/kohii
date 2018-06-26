@@ -32,6 +32,8 @@ android {
     versionName buildConfig.version.name
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    buildConfigField("String", "LIB_NAME", "\"" + "Kohii, v" + versionName + "\"")
   }
 
   buildTypes {
@@ -50,6 +52,9 @@ dependencies {
   implementation libraries.support.recyclerview
   implementation libraries.support.design
   implementation libraries.exoplayer.all
+
+  // implementation "androidx.media:media:1.0.0-alpha3"
+  // implementation "androidx.media:media-widget:1.0.0-alpha3"
 
   testImplementation libraries.junit
   androidTestImplementation libraries.supporttest.runner

@@ -14,30 +14,18 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.exo;
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import android.support.annotation.Nullable;
+import com.google.android.exoplayer2.drm.DrmSessionManager;
+import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
+import kohii.media.MediaDrm;
 
 /**
- * @author eneim (2018/06/24).
+ * @author eneim (2018/06/25).
  */
-@Suppress("MemberVisibilityCanBePrivate", "unused")
-@Parcelize
-data class PlaybackInfo(var resumeWindow: Int, var resumePosition: Long,
-    var volumeInfo: VolumeInfo) : Parcelable {
+public interface DrmSessionManagerFactory {
 
-  constructor() : this(INDEX_UNSET, TIME_UNSET, VolumeInfo.SCRAP)
-
-  companion object {
-    const val TIME_UNSET = Long.MIN_VALUE + 1
-    const val INDEX_UNSET = -1
-    val SCRAP = PlaybackInfo()
-  }
-
-  fun reset() {
-    resumeWindow = INDEX_UNSET
-    resumePosition = TIME_UNSET
-    volumeInfo = VolumeInfo.SCRAP
-  }
+  @Nullable DrmSessionManager<FrameworkMediaCrypto> createDrmSessionManager(
+      @Nullable MediaDrm mediaDrm);
 }

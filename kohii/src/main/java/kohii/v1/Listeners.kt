@@ -43,20 +43,33 @@ interface PlaybackEventListener {
   fun onCompleted()  // ExoPlayer state: 4
 }
 
-interface VolumeChangeListener {
+interface OnVolumeChangedListener {
 
   fun onVolumeChanged(volumeInfo: VolumeInfo)
 }
 
+interface OnErrorListener {
+
+  fun onError(error: Exception)
+}
+
 interface PlayerEventListener : Player.EventListener, VideoListener, TextOutput, MetadataOutput
 
-open class DefaultEventListener : PlayerEventListener {
-
-  override fun onTimelineChanged(timeline: Timeline, manifest: Any, reason: Int) {
+abstract class DefaultEventListener : PlayerEventListener {
+  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
 
   }
 
-  override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {
+  override fun onSeekProcessed() {
+
+  }
+
+  override fun onTracksChanged(trackGroups: TrackGroupArray?,
+      trackSelections: TrackSelectionArray?) {
+
+  }
+
+  override fun onPlayerError(error: ExoPlaybackException?) {
 
   }
 
@@ -64,7 +77,7 @@ open class DefaultEventListener : PlayerEventListener {
 
   }
 
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+  override fun onPositionDiscontinuity(reason: Int) {
 
   }
 
@@ -76,19 +89,11 @@ open class DefaultEventListener : PlayerEventListener {
 
   }
 
-  override fun onPlayerError(error: ExoPlaybackException) {
+  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
 
   }
 
-  override fun onPositionDiscontinuity(reason: Int) {
-
-  }
-
-  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
-
-  }
-
-  override fun onSeekProcessed() {
+  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
 
   }
 
@@ -101,11 +106,12 @@ open class DefaultEventListener : PlayerEventListener {
 
   }
 
-  override fun onCues(cues: List<Cue>) {
+  override fun onCues(cues: MutableList<Cue>?) {
 
   }
 
-  override fun onMetadata(metadata: Metadata) {
+  override fun onMetadata(metadata: Metadata?) {
 
   }
+
 }

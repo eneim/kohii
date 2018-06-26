@@ -14,30 +14,24 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.media;
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 /**
- * @author eneim (2018/06/24).
+ * Note: implementation of this interface must comparable using all 4 values.
+ *
+ * @author eneim (2018/06/25).
  */
-@Suppress("MemberVisibilityCanBePrivate", "unused")
-@Parcelize
-data class PlaybackInfo(var resumeWindow: Int, var resumePosition: Long,
-    var volumeInfo: VolumeInfo) : Parcelable {
+public interface MediaDrm extends Comparable<MediaDrm> {
 
-  constructor() : this(INDEX_UNSET, TIME_UNSET, VolumeInfo.SCRAP)
+  // DRM Scheme
+  @NonNull String getType();
 
-  companion object {
-    const val TIME_UNSET = Long.MIN_VALUE + 1
-    const val INDEX_UNSET = -1
-    val SCRAP = PlaybackInfo()
-  }
+  @Nullable String getLicenseUrl();
 
-  fun reset() {
-    resumeWindow = INDEX_UNSET
-    resumePosition = TIME_UNSET
-    volumeInfo = VolumeInfo.SCRAP
-  }
+  @Nullable String[] getKeyRequestPropertiesArray();
+
+  boolean multiSession();
 }
