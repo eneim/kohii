@@ -60,3 +60,10 @@ dependencies {
   androidTestImplementation libraries.supporttest.runner
   androidTestImplementation libraries.espresso.core
 }
+
+// Doesn't work well with Kotlin
+tasks.withType(Javadoc).all {
+  enabled = false
+}
+
+apply from: rootProject.file('gradle/publish.gradle')
