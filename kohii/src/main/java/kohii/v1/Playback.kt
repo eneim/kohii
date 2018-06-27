@@ -36,14 +36,17 @@ abstract class Playback<T> internal constructor(
     internal val uri: Uri,
     internal val manager: Manager,
     target: T?,
-    options: Playable.Options
-) {
+    builder: Playable.Builder
+    ) {
 
   companion object {
     const val STATE_IDLE = 1
     const val STATE_BUFFERING = 2
     const val STATE_READY = 3
     const val STATE_END = 4
+    val DEFAULT_DISPATCHER = object : Dispatcher {
+      override fun delayToStart() = 0 // no delay
+    }
     private val SCRAP = Any()
   }
 
@@ -52,7 +55,7 @@ abstract class Playback<T> internal constructor(
   }
 
   @Suppress("unused")
-  internal class RequestWeakReference<M>(
+  internal class PlaybackWeakReference<M>(
       val playback: Playback<M>,
       referent: M,
       q: ReferenceQueue<in M>
@@ -101,8 +104,8 @@ abstract class Playback<T> internal constructor(
         if (target == null)
           null
         else
-          RequestWeakReference(this, target, manager.kohii.referenceQueue as ReferenceQueue<in T>)
-    this.tag = options.tag ?: SCRAP
+          PlaybackWeakReference(this, target, manager.kohii.referenceQueue as ReferenceQueue<in T>)
+    this.tag = builder.tag ?: SCRAP
   }
 
   // Used by subclasses to dispatch internal event listeners
@@ -183,5 +186,10 @@ abstract class Playback<T> internal constructor(
     fun onInActive(playback: Playback<*>)
 
     fun onRemoved(playback: Playback<*>, recreating: Boolean)
+  }
+
+  interface Dispatcher {
+
+    fun delayToStart(): Int
   }
 }

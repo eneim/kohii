@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.main
+package kohii.v1.exo
 
-import android.arch.lifecycle.ViewModel
+import com.google.android.exoplayer2.Player
 
-class MainViewModel : ViewModel() {
-  // TODO: Implement the ViewModel
+/**
+ * @author eneim (2018/06/25).
+ */
+interface PlayerFactory {
+
+  fun createPlayer(): Player
 }

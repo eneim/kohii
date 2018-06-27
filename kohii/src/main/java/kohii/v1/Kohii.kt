@@ -42,8 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class Kohii(context: Context) {
 
   internal val app = context.applicationContext as Application
-
-  internal val store = ExoStore.get(app)
+  internal val store = ExoStore[app]
   internal val managers = WeakHashMap<Context, Manager>()
   internal val states = WeakHashMap<Context, Bundle>()  // TODO: rename to 'playableStates'
   internal val playableStore = HashMap<Playable.Bundle, Playable>()
@@ -57,7 +56,7 @@ class Kohii(context: Context) {
       }
 
       override fun onActivityStarted(activity: Activity) {
-        managers[activity]?.onStart()
+        managers[activity]?.onHostStarted()
       }
 
       override fun onActivityResumed(activity: Activity) {
@@ -67,7 +66,7 @@ class Kohii(context: Context) {
       }
 
       override fun onActivityStopped(activity: Activity) {
-        managers[activity]?.onStop(activity.isChangingConfigurations)
+        managers[activity]?.onHostStopped(activity.isChangingConfigurations)
       }
 
       override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
@@ -78,7 +77,7 @@ class Kohii(context: Context) {
 
       // [20180527] This method is called before DecorView is detached.
       override fun onActivityDestroyed(activity: Activity) {
-        managers.remove(activity)?.onDestroy(activity.isChangingConfigurations)
+        managers.remove(activity)?.onHostDestroyed(activity.isChangingConfigurations)
       }
     })
   }
@@ -143,7 +142,7 @@ class Kohii(context: Context) {
     @Volatile
     private var kohii: Kohii? = null
 
-    fun with(context: Context) = kohii ?: synchronized(this) {
+    operator fun get(context: Context) = kohii ?: synchronized(this) {
       kohii ?: Kohii(context).also { kohii = it }
     }
   }
@@ -169,20 +168,27 @@ class Kohii(context: Context) {
     return manager
   }
 
-  internal fun getPlayable(bundle: Playable.Bundle): Playable {
-    return playableStore[bundle] ?: Playee(this, store, bundle).also {
+  // Acquire from cache or build new one.
+  internal fun acquirePlayable(bundle: Playable.Bundle): Playable {
+    return playableStore[bundle] ?: Playee(this, bundle).also {
       playableStore[bundle] = it
+    }
+  }
+
+  internal fun releasePlayable(bundle: Playable.Bundle, playable: Playable) {
+    if (playableStore.remove(bundle) != playable) {
+      throw IllegalArgumentException("Illegal playable removal: $playable")
     }
   }
 
   //// [BEGIN] Public API
 
-  fun setUp(uri: Uri): Playable.Options {
-    return Playable.Options(this, uri)
+  fun setUp(uri: Uri): Playable.Builder {
+    return Playable.Builder(this, uri)
   }
 
   fun requirePlayable(key: Any): Playable? {
-    return this.playableStore.find { it.options.tag == key }
+    return this.playableStore.find { it.builder.tag == key }
   }
 
   //// [END] Public API

@@ -51,7 +51,11 @@ interface Playable {
 
   fun addVolumeChangeListener(listener: OnVolumeChangedListener)
 
-  fun removeVolumeChangeListener(listener: OnVolumeChangedListener)
+  fun removeVolumeChangeListener(listener: OnVolumeChangedListener?)
+
+  fun addPlayerEventListener(listener: PlayerEventListener)
+
+  fun removePlayerEventListener(listener: PlayerEventListener?)
 
   fun setPlaybackInfo(playbackInfo: PlaybackInfo)
 
@@ -60,7 +64,7 @@ interface Playable {
   // TODO [20180622] Should be hidden to User. Consider to make Playable abstract class
   fun mayUpdateStatus(manager: Manager, active: Boolean)
 
-  data class Options(
+  data class Builder(
       val kohii: Kohii,
       val uri: Uri,
       val config: Config = Config.DEFAULT_CONFIG,
@@ -71,9 +75,9 @@ interface Playable {
       @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
   ) {
     fun asPlayable(): Playable {
-      return this.kohii.getPlayable(Bundle(this.uri, this))
+      return this.kohii.acquirePlayable(Bundle(this.uri, this))
     }
   }
 
-  data class Bundle(val uri: Uri, val options: Options)
+  data class Bundle(val uri: Uri, val builder: Builder)
 }

@@ -15,10 +15,14 @@
   -->
 
 <resources>
+  <!-- Default screen margins, per the Android Design guidelines. -->
+  <dimen name="activity_horizontal_margin">16dp</dimen>
+  <dimen name="activity_vertical_margin">16dp</dimen>
 
-  <!-- Base application theme. -->
-  <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-    <!-- Customize your theme here. -->
-  </style>
-
+  <dimen name="text_margin">16dp</dimen>
+  <item name="fragmentContainer" type="id"/>
+  <item name="playerContainer" type="id"/>
+  <item name="playerView" type="id"/>
+  <item name="scrollView" type="id"/>
+  <item name="textContent" type="id"/>
 </resources>
