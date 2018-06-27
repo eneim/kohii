@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
@@ -14,11 +15,13 @@
   ~ limitations under the License.
   -->
 
-<resources>
-
-  <!-- Base application theme. -->
-  <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-    <!-- Customize your theme here. -->
-  </style>
-
-</resources>
+<com.google.android.exoplayer2.ui.PlayerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/playerView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:resize_mode="fixed_width"
+    app:show_buffering="true"
+    app:use_controller="true"
+    />

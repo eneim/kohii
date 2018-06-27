@@ -64,22 +64,20 @@ internal interface Helper {
   /**
    * Reset all resource, so that the playback can start all over again. This is to cleanup the
    * playback for reuse. The SimpleExoPlayer instance must be still usable without calling
-   * [.prepare].
+   * [prepare].
    */
   fun reset()
 
   /**
    * Release all resource. After this, the SimpleExoPlayer is released to the Player pool and the
-   * Playable must call [.prepare] again to use it again.
+   * Playable must call [prepare] again to use it again.
    */
   fun release()
 
   /**
-   * Add a new [PlayerEventListener] to this Playable. As calling [.prepare]
-   * also
-   * triggers some internal events, this method should be called before [.prepare]
-   * so
-   * that Client could received them all.
+   * Add a new [PlayerEventListener] to this Playable. As calling [prepare] also triggers some
+   * internal events, this method should be called before [prepare] so that Client could received
+   * them all.
    *
    * @param listener the EventListener to add, must be not `null`.
    */
@@ -90,7 +88,7 @@ internal interface Helper {
    *
    * @param listener the EventListener to be removed. If null, nothing happens.
    */
-  fun removeEventListener(listener: PlayerEventListener)
+  fun removeEventListener(listener: PlayerEventListener?)
 
   fun addOnVolumeChangeListener(listener: OnVolumeChangedListener)
 

@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author eneim (2018/06/24).
  */
 internal class ViewPlayback<V : View>(playable: Playable, uri: Uri, manager: Manager,
-    target: V?, options: Playable.Options) : Playback<V>(playable, uri, manager, target,
-    options), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
+    target: V?, builder: Playable.Builder) : Playback<V>(playable, uri, manager, target,
+    builder), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   private val listener: PlaybackEventListener = object : PlaybackEventListener {
     override fun onBuffering() {
@@ -78,12 +78,11 @@ internal class ViewPlayback<V : View>(playable: Playable, uri: Uri, manager: Man
   @CallSuper
   override fun onAdded() {
     super.onAdded()
-    val target = getTarget()
-    if (target != null) {
-      if (ViewCompat.isAttachedToWindow(target)) {
-        this.onViewAttachedToWindow(target)
+    super.getTarget()?.run {
+      if (ViewCompat.isAttachedToWindow(this)) {
+        this@ViewPlayback.onViewAttachedToWindow(this)
       }
-      target.addOnAttachStateChangeListener(this)
+      this.addOnAttachStateChangeListener(this@ViewPlayback)
     }
   }
 
@@ -99,8 +98,7 @@ internal class ViewPlayback<V : View>(playable: Playable, uri: Uri, manager: Man
 
   override fun onRemoved(recreating: Boolean) {
     super.onRemoved(recreating)
-    val target = super.getTarget()
-    target?.removeOnAttachStateChangeListener(this)
+    super.getTarget()?.removeOnAttachStateChangeListener(this)
   }
 
   override fun onViewAttachedToWindow(v: View) {
