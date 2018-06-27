@@ -24,7 +24,7 @@ android {
 
   defaultConfig {
     applicationId "kohii.v1.sample"
-    minSdkVersion buildConfig.minSdk
+    minSdkVersion 21 /* buildConfig.minSdk */
     targetSdkVersion buildConfig.targetSdk
     versionCode buildConfig.version.code
     versionName buildConfig.version.name
@@ -64,4 +64,7 @@ dependencies {
   testImplementation libraries.junit
   androidTestImplementation libraries.supporttest.runner
   androidTestImplementation libraries.espresso.core
+
+  debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+  releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
 }

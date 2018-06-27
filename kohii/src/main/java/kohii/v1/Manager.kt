@@ -31,7 +31,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-class Manager internal constructor(val kohii: Kohii, val decorView: View) {
+class Manager internal constructor(
+    val kohii: Kohii,
+    val decorView: View,
+    val playbackDispatcher: Playback.Dispatcher = Playback.DEFAULT_DISPATCHER
+) {
 
   companion object {
     var TOKEN_COMPARATOR: Comparator<Token> = Comparator { o1, o2 -> o1.compareTo(o2) }
@@ -74,7 +78,7 @@ class Manager internal constructor(val kohii: Kohii, val decorView: View) {
     A1@onPostResume --> A0@onStop --> A0@onSaveInstanceState.
     Therefore, handling Manager activeness of Playable requires some order handling.
    */
-  fun onStart() {
+  fun onHostStarted() {
     mapAttachedPlaybackToTime.keys.forEach {
       it.playable.mayUpdateStatus(this, true)
       it.onActive()
@@ -83,7 +87,7 @@ class Manager internal constructor(val kohii: Kohii, val decorView: View) {
   }
 
   // Called when the Activity bound to this Manager is stopped.
-  fun onStop(configChange: Boolean) {
+  fun onHostStopped(configChange: Boolean) {
     mapAttachedPlaybackToTime.keys.forEach {
       it.onPause(configChange)
       it.playable.mayUpdateStatus(this, configChange)
@@ -102,7 +106,7 @@ class Manager internal constructor(val kohii: Kohii, val decorView: View) {
     return bundle
   }
 
-  fun onDestroy(configChange: Boolean) {
+  fun onHostDestroyed(configChange: Boolean) {
     mapTargetToPlayback.values.forEach { preparePlaybackDestroy(it, configChange) }
     mapTargetToPlayback.clear()
     mapPlayableToTarget.clear()

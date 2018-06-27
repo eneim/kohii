@@ -27,7 +27,7 @@ import kohii.media.VolumeInfo
 import kohii.v1.Helper
 import kohii.v1.Kohii
 import kohii.v1.OnVolumeChangedListener
-import kohii.v1.Playable.Options
+import kohii.v1.Playable.Builder
 import kohii.v1.PlayerEventListener
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -37,11 +37,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class ExoHelper(
     private val kohii: Kohii,
-    private val store: ExoStore,
-    private val options: Options
+    private val builder: Builder
 ) : Helper {
 
   private val listeners = Helper.PlayerEventListeners()  // original listener.
+  private val volumeChangedListeners = HashSet<OnVolumeChangedListener>()
   private val listenerSet = AtomicBoolean(false)
 
   private var mediaSource: MediaSource? = null
@@ -49,8 +49,8 @@ class ExoHelper(
 
   override fun prepare(loadSource: Boolean) {
     if (player == null) {
-      player = ExoStore.get(kohii.app).acquirePlayer(this.options.config)
-      player!!.repeatMode = options.repeatMode
+      player = kohii.store.acquirePlayer(this.builder.config)
+      player!!.repeatMode = builder.repeatMode
     }
 
     if (listenerSet.compareAndSet(false, true)) {
@@ -60,6 +60,12 @@ class ExoHelper(
           this.addVideoListener(listeners)
           this.addTextOutput(listeners)
           this.addMetadataOutput(listeners)
+        }
+      }
+
+      if (player is KohiiPlayer) {
+        (player as KohiiPlayer).run {
+          volumeChangedListeners.forEach { this.addOnVolumeChangedListener(it) }
         }
       }
     }
@@ -107,12 +113,12 @@ class ExoHelper(
     this.playerView = null
     if (player != null) {
       player!!.stop(true)
-      if (player is KohiiPlayer) {
-        (player as KohiiPlayer).clearOnVolumeChangedListener()
-      }
-
       if (listenerSet.compareAndSet(true, false)) {
         player!!.removeListener(listeners)
+        if (player is KohiiPlayer) {
+          (player as KohiiPlayer).clearOnVolumeChangedListener()
+        }
+
         if (player is SimpleExoPlayer) {
           (player as SimpleExoPlayer).apply {
             this.removeTextOutput(listeners)
@@ -122,7 +128,7 @@ class ExoHelper(
         }
       }
 
-      store.releasePlayer(player!!, options.config)
+      kohii.store.releasePlayer(player!!, builder.config)
     }
 
     this.player = null
@@ -133,16 +139,18 @@ class ExoHelper(
     this.listeners.add(listener)
   }
 
-  override fun removeEventListener(listener: PlayerEventListener) {
+  override fun removeEventListener(listener: PlayerEventListener?) {
     this.listeners.remove(listener)
   }
 
   override fun addOnVolumeChangeListener(listener: OnVolumeChangedListener) {
-
+    volumeChangedListeners.add(listener)
+    (player as? KohiiPlayer)?.addOnVolumeChangedListener(listener)
   }
 
   override fun removeOnVolumeChangeListener(listener: OnVolumeChangedListener?) {
-
+    volumeChangedListeners.remove(listener)
+    (player as? KohiiPlayer)?.removeOnVolumeChangedListener(listener)
   }
 
   override val isPlaying: Boolean
@@ -166,21 +174,22 @@ class ExoHelper(
       player!!.playbackParameters = value
     }
 
-  override var playbackInfo = PlaybackInfo()
+  private val _playbackInfo = PlaybackInfo()
+  override var playbackInfo: PlaybackInfo
     get() {
       updatePlaybackInfo()
-      return field
+      return _playbackInfo
     }
     set(value) {
-      field.resumeWindow = value.resumeWindow
-      field.resumePosition = value.resumePosition
-      field.volumeInfo = value.volumeInfo
+      _playbackInfo.resumeWindow = value.resumeWindow
+      _playbackInfo.resumePosition = value.resumePosition
+      _playbackInfo.volumeInfo = value.volumeInfo
 
       if (player != null) {
-        ExoStore.setVolumeInfo(player!!, field.volumeInfo)
-        val haveResumePosition = field.resumeWindow != PlaybackInfo.INDEX_UNSET
+        ExoStore.setVolumeInfo(player!!, _playbackInfo.volumeInfo)
+        val haveResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET
         if (haveResumePosition) {
-          player!!.seekTo(field.resumeWindow, field.resumePosition)
+          player!!.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
         }
       }
     }
@@ -188,12 +197,12 @@ class ExoHelper(
   private fun updatePlaybackInfo() {
     if (player == null) return
     if (player!!.playbackState == Player.STATE_IDLE) return
-    playbackInfo.resumeWindow = player?.currentWindowIndex ?: PlaybackInfo.INDEX_UNSET
-    playbackInfo.resumePosition = if (player?.isCurrentWindowSeekable == true)
+    _playbackInfo.resumeWindow = player?.currentWindowIndex ?: PlaybackInfo.INDEX_UNSET
+    _playbackInfo.resumePosition = if (player?.isCurrentWindowSeekable == true)
       Math.max(0, player?.currentPosition ?: 0)
     else
       TIME_UNSET
-    playbackInfo.volumeInfo = VolumeInfo.SCRAP
+    _playbackInfo.volumeInfo = VolumeInfo.SCRAP
   }
 
   private fun ensurePlayerView() {
@@ -201,8 +210,8 @@ class ExoHelper(
   }
 
   private fun ensureMediaSource() {
-    if (mediaSource == null) {  // Only actually prepare the source when play() is called.
-      mediaSource = DefaultMediaSourceFactory(store).createMediaSource(this.options)
+    if (mediaSource == null) {  // Only actually prepare the source on demand.
+      mediaSource = kohii.store.createMediaSource(this.builder)
       if (player is KohiiPlayer) {
         (player as KohiiPlayer).prepare(mediaSource,
             playbackInfo.resumeWindow == PlaybackInfo.INDEX_UNSET, false)

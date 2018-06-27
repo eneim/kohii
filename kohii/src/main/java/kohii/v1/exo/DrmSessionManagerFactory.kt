@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo;
+package kohii.v1.exo
 
-import android.support.annotation.NonNull;
-import com.google.android.exoplayer2.source.MediaSource;
-import kohii.v1.Playable;
+import com.google.android.exoplayer2.drm.DrmSessionManager
+import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
+import kohii.media.MediaDrm
 
 /**
  * @author eneim (2018/06/25).
  */
-public interface MediaSourceFactory {
+interface DrmSessionManagerFactory {
 
-  @NonNull MediaSource createMediaSource(Playable.Options options);
+  fun createDrmSessionManager(mediaDrm: MediaDrm): DrmSessionManager<FrameworkMediaCrypto>
 }

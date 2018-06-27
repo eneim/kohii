@@ -20,7 +20,6 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
 import kohii.v1.Playable.Bundle
 import kohii.v1.exo.ExoHelper
-import kohii.v1.exo.ExoStore
 
 /**
  * @author eneim (2018/06/24).
@@ -28,13 +27,12 @@ import kohii.v1.exo.ExoStore
 @Suppress("CanBeParameter")
 class Playee internal constructor(
     val kohii: Kohii,
-    private val store: ExoStore,
     private val bundle: Bundle
 ) : Playable, Playback.Callback {
 
   private val uri = bundle.uri
-  private val options = bundle.options
-  private val helper = ExoHelper(kohii, store, options) as Helper
+  private val options = bundle.builder
+  private val helper = ExoHelper(kohii, options) as Helper
   private var listener: PlayerEventListener? = null
 
   init {
@@ -105,15 +103,23 @@ class Playee internal constructor(
 
   override fun release() {
     this.helper.release()
-    kohii.playableStore.remove(this.bundle)
+    kohii.releasePlayable(this.bundle, this)
   }
 
   override fun addVolumeChangeListener(listener: OnVolumeChangedListener) {
     this.helper.addOnVolumeChangeListener(listener)
   }
 
-  override fun removeVolumeChangeListener(listener: OnVolumeChangedListener) {
+  override fun removeVolumeChangeListener(listener: OnVolumeChangedListener?) {
     this.helper.removeOnVolumeChangeListener(listener)
+  }
+
+  override fun addPlayerEventListener(listener: PlayerEventListener) {
+    this.helper.addEventListener(listener)
+  }
+
+  override fun removePlayerEventListener(listener: PlayerEventListener?) {
+    this.helper.removeEventListener(listener)
   }
 
   override fun setPlaybackInfo(playbackInfo: PlaybackInfo) {
