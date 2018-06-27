@@ -25,7 +25,7 @@ import com.google.android.exoplayer2.upstream.cache.Cache
 import kohii.media.MediaDrm
 
 /**
- * Configuration for [PlayerFactory].
+ * Configuration for [PlayerFactory] and [MediaSourceFactory].
  *
  * @author eneim (2018/06/24).
  */

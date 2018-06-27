@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo;
+package kohii.v1.exo
 
-import android.support.annotation.NonNull;
-import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.source.MediaSource
+import kohii.v1.Playable
 
 /**
  * @author eneim (2018/06/25).
  */
-public interface PlayerFactory {
+interface MediaSourceFactory {
 
-  @NonNull Player createPlayer();
+  fun createMediaSource(builder: Playable.Builder): MediaSource
 }
