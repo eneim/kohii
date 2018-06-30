@@ -27,10 +27,11 @@ import kohii.media.VolumeInfo
 import kohii.v1.Helper
 import kohii.v1.Kohii
 import kohii.v1.OnVolumeChangedListener
+import kohii.v1.OnVolumeChangedListeners
 import kohii.v1.Playable.Builder
 import kohii.v1.PlayerEventListener
+import kohii.v1.PlayerEventListeners
 import java.util.concurrent.atomic.AtomicBoolean
-
 
 /**
  * @author eneim (2018/06/24).
@@ -40,36 +41,14 @@ class ExoHelper(
     private val builder: Builder
 ) : Helper {
 
-  private val listeners = Helper.PlayerEventListeners()  // original listener.
-  private val volumeChangedListeners = HashSet<OnVolumeChangedListener>()
+  private val listeners = PlayerEventListeners()  // original listener.
+  private val volumeChangedListeners = OnVolumeChangedListeners()
   private val listenerSet = AtomicBoolean(false)
 
   private var mediaSource: MediaSource? = null
   private var player: Player? = null
 
   override fun prepare(loadSource: Boolean) {
-    if (player == null) {
-      player = kohii.store.acquirePlayer(this.builder.config)
-      player!!.repeatMode = builder.repeatMode
-    }
-
-    if (listenerSet.compareAndSet(false, true)) {
-      player!!.addListener(listeners)
-      if (player is SimpleExoPlayer) {
-        (player as SimpleExoPlayer).apply {
-          this.addVideoListener(listeners)
-          this.addTextOutput(listeners)
-          this.addMetadataOutput(listeners)
-        }
-      }
-
-      if (player is KohiiPlayer) {
-        (player as KohiiPlayer).run {
-          volumeChangedListeners.forEach { this.addOnVolumeChangedListener(it) }
-        }
-      }
-    }
-
     if (loadSource) {
       ensurePlayerView()
       ensureMediaSource()
@@ -144,12 +123,12 @@ class ExoHelper(
   }
 
   override fun addOnVolumeChangeListener(listener: OnVolumeChangedListener) {
-    volumeChangedListeners.add(listener)
+    this.volumeChangedListeners.add(listener)
     (player as? KohiiPlayer)?.addOnVolumeChangedListener(listener)
   }
 
   override fun removeOnVolumeChangeListener(listener: OnVolumeChangedListener?) {
-    volumeChangedListeners.remove(listener)
+    this.volumeChangedListeners.remove(listener)
     (player as? KohiiPlayer)?.removeOnVolumeChangedListener(listener)
   }
 
@@ -206,15 +185,41 @@ class ExoHelper(
   }
 
   private fun ensurePlayerView() {
-    if (playerView != null && playerView!!.player !== player) playerView!!.player = player
+    if (playerView != null) {
+      ensurePlayer()
+      if (playerView!!.player !== player) playerView!!.player = player
+    }
   }
 
   private fun ensureMediaSource() {
+    ensurePlayer()
     if (mediaSource == null) {  // Only actually prepare the source on demand.
       mediaSource = kohii.store.createMediaSource(this.builder)
       if (player is KohiiPlayer) {
         (player as KohiiPlayer).prepare(mediaSource,
             playbackInfo.resumeWindow == PlaybackInfo.INDEX_UNSET, false)
+      }
+    }
+  }
+
+  private fun ensurePlayer() {
+    if (player == null) {
+      player = kohii.store.acquirePlayer(this.builder.config)
+      player!!.repeatMode = builder.repeatMode
+    }
+
+    if (listenerSet.compareAndSet(false, true)) {
+      player!!.addListener(listeners)
+      if (player is SimpleExoPlayer) {
+        (player as SimpleExoPlayer).apply {
+          this.addVideoListener(listeners)
+          this.addTextOutput(listeners)
+          this.addMetadataOutput(listeners)
+        }
+      }
+
+      if (player is KohiiPlayer) {
+        (player as KohiiPlayer).addOnVolumeChangedListener(volumeChangedListeners)
       }
     }
   }

@@ -45,8 +45,8 @@ class ExoStore internal constructor(context: Context) {
 
   val context: Context = context.applicationContext  // Application context
   val appName: String = getUserAgent(context, LIB_NAME)
-  private val playerFactories = HashMap<Config, PlayerFactory>()
-  private val sourceFactories = HashMap<Config, MediaSourceFactory>()
+  val playerFactories = HashMap<Config, PlayerFactory>()
+  val sourceFactories = HashMap<Config, MediaSourceFactory>()
   private val drmSessionManagerFactories = HashMap<Config, DrmSessionManagerFactory>()
   private val mapConfigToPool = HashMap<Config, Pools.Pool<Player>>()
 
@@ -69,7 +69,7 @@ class ExoStore internal constructor(context: Context) {
     return pool
   }
 
-  fun acquirePlayer(config: Config): Player {
+  internal fun acquirePlayer(config: Config): Player {
     var player = getPool(config).acquire()
     if (player == null) player = (playerFactories[config] ?: DefaultPlayerFactory(this,
         config).also {
@@ -78,27 +78,15 @@ class ExoStore internal constructor(context: Context) {
     return player
   }
 
-  fun releasePlayer(player: Player, config: Config) {
+  internal fun releasePlayer(player: Player, config: Config) {
     getPool(config).release(player)
   }
 
-  fun createMediaSource(builder: Playable.Builder): MediaSource {
+  internal fun createMediaSource(builder: Playable.Builder): MediaSource {
     return (sourceFactories[builder.config] ?: DefaultMediaSourceFactory(this,
         builder.config).also {
-      this.addMediaSourceFactory(builder.config, it)
+      sourceFactories[builder.config] = it
     }).createMediaSource(builder)
-  }
-
-  /// Public API
-
-  @Suppress("unused")
-  fun addPlayerFactory(config: Config, playerFactory: PlayerFactory) {
-    playerFactories[config] = playerFactory
-  }
-
-  @Suppress("MemberVisibilityCanBePrivate")
-  fun addMediaSourceFactory(config: Config, mediaSourceFactory: MediaSourceFactory) {
-    sourceFactories[config] = mediaSourceFactory
   }
 
   companion object {

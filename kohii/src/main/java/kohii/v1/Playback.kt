@@ -22,7 +22,7 @@ import android.support.annotation.CallSuper
 import android.support.annotation.IntDef
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
-import java.util.HashSet
+import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
@@ -37,7 +37,7 @@ abstract class Playback<T> internal constructor(
     internal val manager: Manager,
     target: T?,
     builder: Playable.Builder
-    ) {
+) {
 
   companion object {
     const val STATE_IDLE = 1
@@ -82,8 +82,8 @@ abstract class Playback<T> internal constructor(
     true
   })
 
-  private val listeners = HashSet<PlaybackEventListener>()
-  private val callbacks = HashSet<Callback>()
+  private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
+  private val callbacks = CopyOnWriteArraySet<Callback>()
 
   @Suppress("MemberVisibilityCanBePrivate")
   val target: WeakReference<T>?
@@ -138,7 +138,8 @@ abstract class Playback<T> internal constructor(
   // Only playback with 'valid tag' will be cached for restoring.
   internal fun validTag() = this.tag !== SCRAP
 
-  internal fun onPause(configChange: Boolean) {
+  // TODO [20180628] When to pause a playback:
+  internal fun pause(configChange: Boolean) {
     if (!configChange) {
       if (this.manager.playablesThisActiveTo.contains(playable)) {
         playable.pause()
@@ -146,7 +147,7 @@ abstract class Playback<T> internal constructor(
     }
   }
 
-  internal fun onPlay() {
+  internal fun play() {
     playable.play()
   }
 
@@ -161,8 +162,8 @@ abstract class Playback<T> internal constructor(
   @CallSuper
   open fun onRemoved(recreating: Boolean) {
     this.callbacks.forEach { it.onRemoved(this, recreating) }
-    this.listeners.clear()
     this.callbacks.clear()
+    this.listeners.clear()
   }
 
   // ~ View is attached

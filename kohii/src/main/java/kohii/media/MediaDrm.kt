@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package kohii.v1
-
-import java.util.ArrayList
+package kohii.media
 
 /**
- * @author eneim (2018/05/26).
- * @since 4.0.0.2800
+ * Note: implementation of this interface must comparable using all 4 values, no more, no less.
+ *
+ * @author eneim (2018/06/25).
  */
-internal class LimitedArrayList<E>(c: Collection<E>) : ArrayList<E>(c) {
+interface MediaDrm : Comparable<MediaDrm> {
 
-  // Just to make this method available for internal use.
-  public override fun removeRange(fromIndex: Int, toIndex: Int) {
-    super.removeRange(fromIndex, toIndex)
-  }
+  // DRM Scheme
+  val type: String
+
+  val licenseUrl: String?
+
+  val keyRequestPropertiesArray: Array<String>?
+
+  fun multiSession(): Boolean
 }
-

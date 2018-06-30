@@ -50,16 +50,17 @@ class DefaultMediaSourceFactory(
 
   override fun createMediaSource(builder: Playable.Builder): MediaSource {
     @C.ContentType val type =
-        if (isEmpty(builder.mediaType)) inferContentType(builder.uri)
+        if (isEmpty(builder.mediaType)) inferContentType(builder.contentUri)
         else inferContentType("." + builder.mediaType!!)
     return when (type) {
       C.TYPE_SS -> SsMediaSource.Factory(DefaultSsChunkSource.Factory(mediaDataSourceFactory),
-          manifestDataSourceFactory).createMediaSource(builder.uri)
+          manifestDataSourceFactory).createMediaSource(builder.contentUri)
       C.TYPE_DASH -> DashMediaSource.Factory(DefaultDashChunkSource.Factory(mediaDataSourceFactory),
-          manifestDataSourceFactory).createMediaSource(builder.uri)
-      C.TYPE_HLS -> HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(builder.uri)
+          manifestDataSourceFactory).createMediaSource(builder.contentUri)
+      C.TYPE_HLS -> HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(
+          builder.contentUri)
       C.TYPE_OTHER -> ExtractorMediaSource.Factory(mediaDataSourceFactory).createMediaSource(
-          builder.uri)
+          builder.contentUri)
       else -> throw IllegalStateException("Unsupported type: $type")
     }
   }

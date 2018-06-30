@@ -22,6 +22,7 @@ import android.net.Uri
 import android.support.annotation.CallSuper
 import android.support.design.widget.CoordinatorLayout
 import android.support.v4.view.ViewCompat
+import android.util.Log
 import android.view.View
 import java.util.Comparator
 import java.util.concurrent.atomic.AtomicBoolean
@@ -29,22 +30,27 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-internal class ViewPlayback<V : View>(playable: Playable, uri: Uri, manager: Manager,
-    target: V?, builder: Playable.Builder) : Playback<V>(playable, uri, manager, target,
-    builder), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
+internal class ViewPlayback<V : View>(
+    playable: Playable, uri: Uri, manager: Manager, target: V?, builder: Playable.Builder
+) : Playback<V>(playable, uri, manager, target, builder),
+    View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   private val listener: PlaybackEventListener = object : PlaybackEventListener {
     override fun onBuffering() {
+      Log.d("Kohii:Playback", "Buffering")
     }
 
     override fun onPlaying() {
+      Log.d("Kohii:Playback", "Playing")
       getTarget()?.keepScreenOn = true
     }
 
     override fun onPaused() {
+      Log.w("Kohii:Playback", "Paused")
     }
 
     override fun onCompleted() {
+      Log.d("Kohii:Playback", "Ended")
       getTarget()?.keepScreenOn = false
     }
   }

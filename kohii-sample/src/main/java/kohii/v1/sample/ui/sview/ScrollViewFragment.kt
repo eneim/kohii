@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.main
+package kohii.v1.sample.ui.sview
 
 import android.content.pm.ActivityInfo
 import android.net.Uri
@@ -37,11 +37,11 @@ import kohii.v1.sample.ui.player.PlayerFragment
 import kotlinx.android.synthetic.main.main_fragment.playerContainer
 import kotlinx.android.synthetic.main.main_fragment.playerView
 
-class MainFragment : Fragment() {
+class ScrollViewFragment : Fragment() {
 
   companion object {
     const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material/assets/1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz/m2-manifesto.mp4"
-    fun newInstance() = MainFragment()
+    fun newInstance() = ScrollViewFragment()
   }
 
   private val listener: PlayerEventListener by lazy {
@@ -49,12 +49,13 @@ class MainFragment : Fragment() {
       override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
           pixelWidthHeightRatio: Float) {
         startPostponedEnterTransition()
+        playable.removePlayerEventListener(this)
       }
     }
   }
 
   private val playable: Playable by lazy {
-    Kohii[requireContext()].setUp(Uri.parse(videoUrl))
+    Kohii[this].setUp(Uri.parse(videoUrl))
         .copy(tag = videoUrl).copy(config = DemoApp.app.config)
         .asPlayable()
   }
