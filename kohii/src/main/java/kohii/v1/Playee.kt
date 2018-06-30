@@ -31,13 +31,13 @@ class Playee internal constructor(
 ) : Playable, Playback.Callback {
 
   private val uri = bundle.uri
-  private val options = bundle.builder
-  private val helper = ExoHelper(kohii, options) as Helper
+  private val builder = bundle.builder
+  private val helper = ExoHelper(kohii, builder) as Helper
   private var listener: PlayerEventListener? = null
 
   init {
-    this.helper.playbackInfo = options.playbackInfo
-    this.helper.prepare(this.options.prepareAlwaysLoad)
+    this.helper.playbackInfo = builder.playbackInfo
+    this.helper.prepare(this.builder.prepareAlwaysLoad)
   }
 
   override fun onAdded(playback: Playback<*>) {
@@ -79,6 +79,10 @@ class Playee internal constructor(
 
   ////
 
+  // When binding to a PlayerView, any old playback should not be paused. We know it should keep
+  // playing.
+  // 
+  // Relationship: [Playable] --> [Playback [Target]]
   override fun bind(playerView: PlayerView): Playback<PlayerView> {
     val manager = kohii.getManager(playerView.context)
     val oldTarget = manager.mapPlayableToTarget.put(this, playerView)
@@ -86,9 +90,10 @@ class Playee internal constructor(
       val oldPlayback = manager.mapTargetToPlayback.remove(oldTarget)
       if (oldPlayback != null) {
         manager.removePlayback(oldPlayback)
+        oldPlayback.removeCallback(this)
       }
     }
-    val playback = ViewPlayback(this, uri, manager, playerView, options)
+    val playback = ViewPlayback(this, uri, manager, playerView, builder)
     playback.addCallback(this)
     return manager.addPlayback(playback)
   }
@@ -122,20 +127,9 @@ class Playee internal constructor(
     this.helper.removeEventListener(listener)
   }
 
-  override fun setPlaybackInfo(playbackInfo: PlaybackInfo) {
-    this.helper.playbackInfo = playbackInfo
-  }
-
-  override fun getPlaybackInfo(): PlaybackInfo {
-    return this.helper.playbackInfo
-  }
-
-  override fun mayUpdateStatus(manager: Manager, active: Boolean) {
-    if (active) {
-      kohii.managers.values.forEach { it.playablesThisActiveTo.remove(this) }
-      manager.playablesThisActiveTo.add(this)
-    } else {
-      manager.playablesThisActiveTo.remove(this)
+  override var playbackInfo: PlaybackInfo
+    get() = this.helper.playbackInfo
+    set(value) {
+      this.helper.playbackInfo = value
     }
-  }
 }

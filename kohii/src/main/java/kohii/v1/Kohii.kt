@@ -26,10 +26,15 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.support.v4.app.Fragment
 import android.support.v4.view.ViewCompat
 import android.view.View
 import android.view.ViewTreeObserver.OnScrollChangedListener
+import kohii.v1.Manager.Builder
+import kohii.v1.exo.Config
 import kohii.v1.exo.ExoStore
+import kohii.v1.exo.MediaSourceFactory
+import kohii.v1.exo.PlayerFactory
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 import java.util.WeakHashMap
@@ -44,7 +49,7 @@ class Kohii(context: Context) {
   internal val app = context.applicationContext as Application
   internal val store = ExoStore[app]
   internal val managers = WeakHashMap<Context, Manager>()
-  internal val states = WeakHashMap<Context, Bundle>()  // TODO: rename to 'playableStates'
+  internal val playableStates = WeakHashMap<Context, Bundle>()
   internal val playableStore = HashMap<Playable.Bundle, Playable>()
   internal val referenceQueue = ReferenceQueue<Any>()
 
@@ -52,7 +57,7 @@ class Kohii(context: Context) {
     app.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity?, state: Bundle?) {
         val cache = state?.getBundle(KEY_ACTIVITY_STATES)
-        states[activity] = cache  // accept null, just won't use it.
+        playableStates[activity] = cache  // accept null, just won't use it.
       }
 
       override fun onActivityStarted(activity: Activity) {
@@ -145,6 +150,8 @@ class Kohii(context: Context) {
     operator fun get(context: Context) = kohii ?: synchronized(this) {
       kohii ?: Kohii(context).also { kohii = it }
     }
+
+    operator fun get(fragment: Fragment) = get(fragment.requireActivity())
   }
 
   //// instance methods
@@ -156,16 +163,24 @@ class Kohii(context: Context) {
 
     val decorView = context.window.peekDecorView() ?: throw IllegalStateException(
         "DecorView is null")
-    val manager = managers[context] ?: Manager(this, decorView)
-        .also {
-          managers[context] = it
-          if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
-          decorView.addOnAttachStateChangeListener(
-              ManagerAttachStateListener(context, decorView))
-        }
+    return managers[context] ?: Builder(
+        this, decorView
+    ).build().also {
+      managers[context] = it
+      if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
+      decorView.addOnAttachStateChangeListener(
+          ManagerAttachStateListener(context, decorView))
+      it.onInitialized(playableStates[context])
+    }
+  }
 
-    manager.onInitialized(states[context])
-    return manager
+  internal fun onManagerStateMayChange(manager: Manager, playable: Playable, active: Boolean) {
+    if (active) {
+      managers.forEach { it.value.playablesThisActiveTo.remove(playable) }
+      manager.playablesThisActiveTo.add(playable)
+    } else {
+      manager.playablesThisActiveTo.remove(playable)
+    }
   }
 
   // Acquire from cache or build new one.
@@ -187,8 +202,22 @@ class Kohii(context: Context) {
     return Playable.Builder(this, uri)
   }
 
-  fun requirePlayable(key: Any): Playable? {
-    return this.playableStore.find { it.builder.tag == key }
+  fun setUp(url: String): Playable.Builder {
+    return this.setUp(Uri.parse(url))
+  }
+
+  fun findPlayable(tag: Any): Playable? {
+    return this.playableStore.find { it.builder.tag == tag }
+  }
+
+  @Suppress("unused")
+  fun addPlayerFactory(config: Config, playerFactory: PlayerFactory) {
+    store.playerFactories[config] = playerFactory
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  fun addMediaSourceFactory(config: Config, mediaSourceFactory: MediaSourceFactory) {
+    store.sourceFactories[config] = mediaSourceFactory
   }
 
   //// [END] Public API

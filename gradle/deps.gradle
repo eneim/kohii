@@ -25,7 +25,7 @@ ext {
             'major': 1,
             'minor': 0,
             'patch': 0, // ExoPlayer version number.
-            'build': 2801, //
+            'build': 2802, //
            ], //
       ]
 
@@ -33,7 +33,7 @@ ext {
       "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}"
 
   buildConfig.version['code'] = //
-      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2801 --> 109,092,801 */
+      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2802 --> 109,092,802 */
       buildConfig.version.major * 100000000 + //
           buildConfig.version.minor * 1000000 + //
           buildConfig.version.patch * 10000 + //
@@ -43,12 +43,12 @@ ext {
       [//
        kotlin          : "1.2.50",
        supportLibrary  : "27.1.1" /* "28.0.0-alpha3" */,
-       gradlePlugin    : "3.2.0-beta01",
+       gradlePlugin    : "3.2.0-beta02",
        jetpack         : "1.0.0-alpha3",
        constraintLayout: "1.1.2",
        xlifecycle      : "2.0.0-alpha1",
        lifecycle       : "1.1.1",
-       exoplayer       : "2.8.1",
+       exoplayer       : "2.8.2",
        espresso        : "3.0.2", //
       ]
 

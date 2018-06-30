@@ -34,17 +34,40 @@ import java.util.concurrent.atomic.AtomicBoolean
 class Manager internal constructor(
     val kohii: Kohii,
     val decorView: View,
-    val playbackDispatcher: Playback.Dispatcher = Playback.DEFAULT_DISPATCHER
+    val playbackDispatcher: Playback.Dispatcher = Playback.DEFAULT_DISPATCHER,
+    val playerSelector: PlayerSelector = Manager.DEFAULT_SELECTOR
 ) {
+
+  class Builder(
+      private val kohii: Kohii,
+      private val decorView: View,
+      private val playbackDispatcher: Playback.Dispatcher = Playback.DEFAULT_DISPATCHER,
+      private val playerSelector: PlayerSelector = Manager.DEFAULT_SELECTOR
+  ) {
+
+    fun build(): Manager {
+      return Manager(kohii, decorView, playbackDispatcher, playerSelector)
+    }
+  }
 
   companion object {
     var TOKEN_COMPARATOR: Comparator<Token> = Comparator { o1, o2 -> o1.compareTo(o2) }
+    val DEFAULT_SELECTOR = object : PlayerSelector {
+      override fun select(candidates: List<Playback<*>>): Collection<Playback<*>> {
+        val size = candidates.size
+        return if (size > 0) arrayListOf(candidates[0]) else emptyList()
+      }
+    }
+  }
+
+  interface PlayerSelector {
+
+    fun select(candidates: List<Playback<*>>): Collection<Playback<*>>
   }
 
   val playablesThisActiveTo = ArrayList<Playable>()
   private val attachFlag = AtomicBoolean(false)
   private val scrolling = AtomicBoolean(false)
-  private val maxConcurrentPlayers = 1
 
   @Suppress("MemberVisibilityCanBePrivate")
   val mapPlayableTagToInfo = HashMap<Any, PlaybackInfo>()
@@ -64,7 +87,6 @@ class Manager internal constructor(
   private fun isScrolling() = this.scrolling.get()
 
   private fun preparePlaybackDestroy(playback: Playback<*>, configChange: Boolean) {
-    playback.onPause(configChange)
     playback.onInActive()
     playback.onRemoved(configChange)
   }
@@ -80,7 +102,7 @@ class Manager internal constructor(
    */
   fun onHostStarted() {
     mapAttachedPlaybackToTime.keys.forEach {
-      it.playable.mayUpdateStatus(this, true)
+      kohii.onManagerStateMayChange(this, it.playable, true)
       it.onActive()
     }
     this.dispatchRefreshAll()
@@ -89,8 +111,8 @@ class Manager internal constructor(
   // Called when the Activity bound to this Manager is stopped.
   fun onHostStopped(configChange: Boolean) {
     mapAttachedPlaybackToTime.keys.forEach {
-      it.onPause(configChange)
-      it.playable.mayUpdateStatus(this, configChange)
+      it.pause(configChange)
+      kohii.onManagerStateMayChange(this, it.playable, configChange)
     }
     // Put it here for future warning.
     // [20180620] Don't call this, as it may change the reason we pause the playback.
@@ -100,14 +122,17 @@ class Manager internal constructor(
   fun onSavePlaybackInfo(): Bundle {
     val bundle = Bundle()
     mapTargetToPlayback.values.filter { it.validTag() }.forEach {
-      mapPlayableTagToInfo[it.tag] = it.playable.getPlaybackInfo()
+      mapPlayableTagToInfo[it.tag] = it.playable.playbackInfo
     }
     bundle.putSerializable(KEY_MANAGER_STATES, mapPlayableTagToInfo)
     return bundle
   }
 
   fun onHostDestroyed(configChange: Boolean) {
-    mapTargetToPlayback.values.forEach { preparePlaybackDestroy(it, configChange) }
+    mapTargetToPlayback.values.forEach {
+      it.pause(configChange)
+      preparePlaybackDestroy(it, configChange)
+    }
     mapTargetToPlayback.clear()
     mapPlayableToTarget.clear()
   }
@@ -164,8 +189,6 @@ class Manager internal constructor(
     val now = System.nanoTime()
     val playback = mapTargetToPlayback[target]
     if (playback != null) {
-      // TODO [20180620] double check if we should restore state of this Playback or not.
-      // restorePlayableState(playback);
       mapAttachedPlaybackToTime[playback] = now
       mapDetachedPlaybackToTime.remove(playback)
       playback.onActive()
@@ -179,11 +202,9 @@ class Manager internal constructor(
   fun <T> onTargetInActive(target: T) {
     val now = System.nanoTime()
     mapTargetToPlayback[target]?.run {
-      // TODO [20180620] double check if we should save state of this Playback or not.
-      // savePlayableState(playback);
       mapDetachedPlaybackToTime[this] = now
       mapAttachedPlaybackToTime.remove(this)
-      this.onPause(false)
+      this.pause(false)
       this@Manager.dispatchRefreshAll()
       this.onInActive()
     }
@@ -234,7 +255,7 @@ class Manager internal constructor(
           this.onRemoved(false)
         }
       }
-      playback.playable.mayUpdateStatus(this, true)
+      kohii.onManagerStateMayChange(this, playback.playable, true)
       playback.onAdded()
     }
 
@@ -259,20 +280,18 @@ class Manager internal constructor(
       if (token != null) candidates[token] = playback
     }
 
-    val toPlay = LimitedArrayList(candidates.values)
-    val count = toPlay.size
-    if (maxConcurrentPlayers < count) toPlay.removeRange(maxConcurrentPlayers, count)
+    val toPlay = playerSelector.select(ArrayList(candidates.values))
 
     playbacks.removeAll(toPlay)
     playbacks.addAll(mapDetachedPlaybackToTime.keys)
     // Keep only non-play-candidate ones, and pause them.
     for (playback in playbacks) {
-      playback.onPause(false)
+      playback.pause(false)
     }
     // Now kick play the play-candidate
     if (!isScrolling()) {
       for (playback in toPlay) {
-        playback.onPlay()
+        playback.play()
       }
     }
     // Clean up cache

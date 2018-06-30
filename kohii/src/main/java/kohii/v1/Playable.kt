@@ -25,6 +25,8 @@ import kohii.v1.exo.Config
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
+ * One Playable to at most one Playback.
+ *
  * @author eneim (2018/06/24).
  */
 interface Playable {
@@ -57,16 +59,11 @@ interface Playable {
 
   fun removePlayerEventListener(listener: PlayerEventListener?)
 
-  fun setPlaybackInfo(playbackInfo: PlaybackInfo)
-
-  fun getPlaybackInfo(): PlaybackInfo
-
-  // TODO [20180622] Should be hidden to User. Consider to make Playable abstract class
-  fun mayUpdateStatus(manager: Manager, active: Boolean)
+  var playbackInfo: PlaybackInfo
 
   data class Builder(
       val kohii: Kohii,
-      val uri: Uri,
+      val contentUri: Uri,
       val config: Config = Config.DEFAULT_CONFIG,
       val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
       val mediaType: String? = null,
@@ -75,7 +72,7 @@ interface Playable {
       @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
   ) {
     fun asPlayable(): Playable {
-      return this.kohii.acquirePlayable(Bundle(this.uri, this))
+      return this.kohii.acquirePlayable(Bundle(this.contentUri, this))
     }
   }
 

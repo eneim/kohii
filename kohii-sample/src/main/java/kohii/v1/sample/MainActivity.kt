@@ -18,7 +18,7 @@ package kohii.v1.sample
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import kohii.v1.sample.ui.main.MainFragment
+import kohii.v1.sample.ui.sview.ScrollViewFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
     setContentView(R.layout.main_activity)
     if (savedInstanceState == null) {
       supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer,
-          MainFragment.newInstance(), MainFragment::class.java.simpleName).commit()
+          ScrollViewFragment.newInstance(), ScrollViewFragment::class.java.simpleName).commit()
     }
   }
 }

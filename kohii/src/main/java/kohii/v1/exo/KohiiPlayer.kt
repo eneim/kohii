@@ -25,7 +25,7 @@ import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import com.google.android.exoplayer2.trackselection.TrackSelector
 import kohii.media.VolumeInfo
 import kohii.v1.OnVolumeChangedListener
-import java.util.HashSet
+import java.util.concurrent.CopyOnWriteArraySet
 
 /**
  * @author eneim (2018/06/25).
@@ -37,7 +37,7 @@ open class KohiiPlayer(
     drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?
 ) : SimpleExoPlayer(renderersFactory, trackSelector, loadControl, drmSessionManager) {
 
-  private var volumeChangedListeners: MutableSet<OnVolumeChangedListener>? = null
+  private var volumeChangedListeners: CopyOnWriteArraySet<OnVolumeChangedListener>? = null
 
   val volumeInfo = VolumeInfo(false, 1f)
 
@@ -57,7 +57,7 @@ open class KohiiPlayer(
   }
 
   fun addOnVolumeChangedListener(listener: OnVolumeChangedListener) {
-    if (volumeChangedListeners == null) volumeChangedListeners = HashSet()
+    if (volumeChangedListeners == null) volumeChangedListeners = CopyOnWriteArraySet()
     volumeChangedListeners!!.add(listener)
   }
 

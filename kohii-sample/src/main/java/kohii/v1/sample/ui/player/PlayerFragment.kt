@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.player
 
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.support.transition.TransitionInflater
 import android.support.v4.app.Fragment
@@ -33,6 +32,8 @@ import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.player_fragment.playerView
 
 /**
+ * To play a single Video.
+ *
  * @author eneim (2018/06/26).
  */
 class PlayerFragment : Fragment() {
@@ -53,6 +54,7 @@ class PlayerFragment : Fragment() {
       override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
           pixelWidthHeightRatio: Float) {
         startPostponedEnterTransition()
+        playable?.removePlayerEventListener(this)
       }
     }
   }
@@ -72,18 +74,13 @@ class PlayerFragment : Fragment() {
     }
 
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
-    playable = Kohii[requireContext()].requirePlayable(playableTag)!!
+    playable = Kohii[requireContext()].findPlayable(playableTag)!!
 
     ViewCompat.setTransitionName(playerView.findViewById(R.id.exo_content_frame), playableTag)
 
     playable!!.addPlayerEventListener(listener)
     prepareSharedElementTransition()
     playable!!.bind(playerView)
-  }
-
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
-    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
   }
 
   override fun onStop() {
