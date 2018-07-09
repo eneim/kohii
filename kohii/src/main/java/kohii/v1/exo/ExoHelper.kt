@@ -76,7 +76,7 @@ class ExoHelper(
   }
 
   override fun pause() {
-    player!!.playWhenReady = false
+    player?.playWhenReady = false
   }
 
   override fun reset() {
