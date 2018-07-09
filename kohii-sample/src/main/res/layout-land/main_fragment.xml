@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 
-<android.support.v7.widget.LinearLayoutCompat
+<androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -45,7 +45,7 @@
         />
   </FrameLayout>
 
-  <android.support.v4.widget.NestedScrollView
+  <androidx.core.widget.NestedScrollView
       android:id="@id/scrollView"
       android:layout_width="0dp"
       android:layout_weight="55"
@@ -59,6 +59,6 @@
         android:layout_margin="@dimen/text_margin"
         android:text="@string/large_text"
         />
-  </android.support.v4.widget.NestedScrollView>
-</android.support.v7.widget.LinearLayoutCompat>
+  </androidx.core.widget.NestedScrollView>
+</androidx.appcompat.widget.LinearLayoutCompat>
 

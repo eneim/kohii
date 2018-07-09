@@ -47,14 +47,12 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation libraries.kotlin.stdlib
-  implementation libraries.support.appcompat
-  implementation libraries.support.recyclerview
-  implementation libraries.support.design
   implementation libraries.exoplayer.all
 
-  // implementation "androidx.media:media:1.0.0-alpha3"
-  // implementation "androidx.media:media-widget:1.0.0-alpha3"
+  implementation libraries.kotlin.stdlib
+  implementation libraries.androidx.appcompat
+  implementation libraries.androidx.recyclerview
+  implementation libraries.androidx.material
 
   testImplementation libraries.junit
   androidTestImplementation libraries.supporttest.runner
