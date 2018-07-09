@@ -17,10 +17,10 @@
 package kohii.v1.sample.ui.player
 
 import android.os.Bundle
-import android.support.transition.TransitionInflater
-import android.support.v4.app.Fragment
-import android.support.v4.app.SharedElementCallback
-import android.support.v4.view.ViewCompat
+import androidx.transition.TransitionInflater
+import androidx.fragment.app.Fragment
+import androidx.core.app.SharedElementCallback
+import androidx.core.view.ViewCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -60,6 +60,9 @@ class PlayerFragment : Fragment() {
   }
 
   var playable: Playable? = null
+  val transView: View by lazy {
+    playerView.findViewById(R.id.exo_content_frame) as View
+  }
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View? {
@@ -72,15 +75,15 @@ class PlayerFragment : Fragment() {
     if (savedInstanceState == null) {
       postponeEnterTransition()
     }
+    prepareSharedElementTransition()
 
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
-    playable = Kohii[requireContext()].findPlayable(playableTag)!!
+    ViewCompat.setTransitionName(transView, playableTag)
 
-    ViewCompat.setTransitionName(playerView.findViewById(R.id.exo_content_frame), playableTag)
-
-    playable!!.addPlayerEventListener(listener)
-    prepareSharedElementTransition()
-    playable!!.bind(playerView)
+    playable = Kohii[requireContext()].findPlayable(playableTag)!!.apply {
+      this.addPlayerEventListener(listener)
+      this.bind(playerView)
+    }
   }
 
   override fun onStop() {
@@ -103,7 +106,7 @@ class PlayerFragment : Fragment() {
           sharedElements: MutableMap<String, View>?) {
         // Map the first shared element name to the child ImageView.
         if (view !== null) {
-          sharedElements?.put(names?.get(0)!!, playerView.findViewById(R.id.exo_content_frame))
+          sharedElements?.put(names?.get(0)!!, transView)
         }
       }
     })

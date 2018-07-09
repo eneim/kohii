@@ -19,14 +19,15 @@ package kohii.v1.sample.ui.sview
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
-import android.support.transition.TransitionInflater
-import android.support.transition.TransitionSet
-import android.support.v4.app.Fragment
-import android.support.v4.app.SharedElementCallback
-import android.support.v4.view.ViewCompat
+import androidx.transition.TransitionInflater
+import androidx.transition.TransitionSet
+import androidx.fragment.app.Fragment
+import androidx.core.app.SharedElementCallback
+import androidx.core.view.ViewCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.exoplayer2.Player
 import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
 import kohii.v1.Playable
@@ -56,7 +57,9 @@ class ScrollViewFragment : Fragment() {
 
   private val playable: Playable by lazy {
     Kohii[this].setUp(Uri.parse(videoUrl))
-        .copy(tag = videoUrl).copy(config = DemoApp.app.config)
+        .copy(repeatMode = Player.REPEAT_MODE_ONE)
+        .copy(tag = videoUrl)
+        .copy(config = DemoApp.app.config)
         .asPlayable()
   }
 
@@ -71,14 +74,14 @@ class ScrollViewFragment : Fragment() {
     postponeEnterTransition()
 
     playable.addPlayerEventListener(listener)
-    val transitionView: View = playerView.findViewById(R.id.exo_content_frame)
-    ViewCompat.setTransitionName(transitionView, videoUrl)
+    val transView: View = playerView.findViewById(R.id.exo_content_frame)
+    transView.transitionName = videoUrl
 
     playerContainer.setOnClickListener {
       (exitTransition as TransitionSet).excludeTarget(view, true)
       fragmentManager!!.beginTransaction()
           .setReorderingAllowed(true)
-          .addSharedElement(transitionView, ViewCompat.getTransitionName(transitionView))
+          .addSharedElement(transView, transView.transitionName)
           .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
           .addToBackStack(null)
           .commit()

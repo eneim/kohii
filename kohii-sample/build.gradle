@@ -55,16 +55,25 @@ dependencies {
   implementation libraries.exoplayer.all
 
   implementation libraries.kotlin.stdlib
-  implementation libraries.support.appcompat
-  implementation libraries.support.recyclerview
-  implementation libraries.support.design
-
-  implementation libraries.support.constraintLayout
-  implementation libraries.support.lifecycle
+  implementation libraries.androidx.appcompat
+  implementation libraries.androidx.recyclerview
+  implementation libraries.androidx.material
+  implementation libraries.androidx.constraintlayout
+  implementation libraries.androidx.lifecycle
+  implementation libraries.androidx.core
 
   testImplementation libraries.junit
-  androidTestImplementation libraries.supporttest.runner
-  androidTestImplementation libraries.espresso.core
+  androidTestImplementation libraries.xtest.runner
+  androidTestImplementation libraries.xtest.espresso.core
+
+  implementation 'com.squareup.moshi:moshi:1.6.0'
+  implementation 'com.squareup.moshi:moshi-kotlin:1.6.0'
+  implementation("com.github.bumptech.glide:glide:4.8.0-SNAPSHOT") {
+    exclude group: "com.android.support"
+    exclude group: "androidx"
+  }
+  kapt "com.github.bumptech.glide:compiler:4.8.0-SNAPSHOT"
+  implementation 'com.caverock:androidsvg:1.2.1'
 
   debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
   releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
