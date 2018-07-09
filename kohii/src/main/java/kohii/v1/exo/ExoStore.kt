@@ -18,8 +18,8 @@ package kohii.v1.exo
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.annotation.RestrictTo
-import android.support.v4.util.Pools
+import androidx.annotation.RestrictTo
+import androidx.core.util.Pools
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
