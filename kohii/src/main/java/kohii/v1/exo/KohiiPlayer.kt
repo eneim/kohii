@@ -16,7 +16,7 @@
 
 package kohii.v1.exo
 
-import android.support.annotation.CallSuper
+import androidx.annotation.CallSuper
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
