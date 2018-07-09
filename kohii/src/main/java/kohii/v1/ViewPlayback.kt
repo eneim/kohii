@@ -19,9 +19,9 @@ package kohii.v1
 import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
-import android.support.annotation.CallSuper
-import android.support.design.widget.CoordinatorLayout
-import android.support.v4.view.ViewCompat
+import androidx.annotation.CallSuper
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
 import android.util.Log
 import android.view.View
 import java.util.Comparator
