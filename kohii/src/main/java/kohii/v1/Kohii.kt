@@ -26,10 +26,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.support.v4.app.Fragment
-import android.support.v4.view.ViewCompat
 import android.view.View
 import android.view.ViewTreeObserver.OnScrollChangedListener
+import androidx.core.view.ViewCompat
+import androidx.fragment.app.Fragment
 import kohii.v1.Manager.Builder
 import kohii.v1.exo.Config
 import kohii.v1.exo.ExoStore
@@ -48,16 +48,22 @@ class Kohii(context: Context) {
 
   internal val app = context.applicationContext as Application
   internal val store = ExoStore[app]
+
+  // Map between Context with the Manager that is hosted on it.
   internal val managers = WeakHashMap<Context, Manager>()
+
+  // Which Playable is managed by which Manager
+  internal val mapPlayableToManager = WeakHashMap<Playable, Manager?>()
+
   internal val playableStates = WeakHashMap<Context, Bundle>()
-  internal val playableStore = HashMap<Playable.Bundle, Playable>()
+  internal val playableStore = HashMap<Any, Playable>() // Tag to Playable map.
   internal val referenceQueue = ReferenceQueue<Any>()
 
   init {
     app.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity?, state: Bundle?) {
         val cache = state?.getBundle(KEY_ACTIVITY_STATES)
-        playableStates[activity] = cache  // accept null, just won't use it.
+        playableStates[activity] = cache
       }
 
       override fun onActivityStarted(activity: Activity) {
@@ -75,14 +81,14 @@ class Kohii(context: Context) {
       }
 
       override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-        managers[activity]?.onSavePlaybackInfo()?.apply {
-          outState.putBundle(KEY_ACTIVITY_STATES, this)
+        managers[activity]?.onSavePlaybackInfo()?.also {
+          outState.putBundle(KEY_ACTIVITY_STATES, it)
         }
       }
 
-      // [20180527] This method is called before DecorView is detached.
+      // Note: [20180527] This method is called before DecorView is detached.
       override fun onActivityDestroyed(activity: Activity) {
-        managers.remove(activity)?.onHostDestroyed(activity.isChangingConfigurations)
+        managers.remove(activity)?.onHostDestroyed()
       }
     })
   }
@@ -96,31 +102,30 @@ class Kohii(context: Context) {
       kohii!!.managers[context.get()]?.onAttached()
     }
 
-    // May be called after Activity's onDestroy().
+    // Will get called after Activity's onDestroy().
     override fun onViewDetachedFromWindow(v: View) {
       kohii!!.managers.remove(context.get())?.onDetached()
       if (this.view === v) this.view.removeOnAttachStateChangeListener(this)
     }
   }
 
-  internal class GlobalScrollChangeListener(manager: Manager) : OnScrollChangedListener {
+  internal class GlobalScrollChangeListener(val manager: Manager) : OnScrollChangedListener {
 
     val scrollConsumed = AtomicBoolean(false)
     val managerRef = WeakReference(manager)
 
     private val handler: Handler = object : Handler(Looper.getMainLooper()) {
       override fun handleMessage(msg: Message) {
-        super.handleMessage(msg)
-        val container = managerRef.get() ?: return
+        val manager = managerRef.get() ?: return
         when (msg.what) {
           EVENT_SCROLL -> {
-            container.setScrolling(true)
+            manager.setScrolling(true)
             this.removeMessages(EVENT_IDLE)
             this.sendEmptyMessageDelayed(EVENT_IDLE, EVENT_DELAY.toLong())
           }
           EVENT_IDLE -> {
-            container.setScrolling(false)
-            if (scrollConsumed.compareAndSet(false, true)) container.dispatchRefreshAll()
+            manager.setScrolling(false)
+            if (scrollConsumed.compareAndSet(false, true)) manager.dispatchRefreshAll()
           }
         }
       }
@@ -161,38 +166,58 @@ class Kohii(context: Context) {
       throw RuntimeException("Expect Activity, found: " + context.javaClass.simpleName)
     }
 
-    val decorView = context.window.peekDecorView() ?: throw IllegalStateException(
-        "DecorView is null")
-    return managers[context] ?: Builder(
-        this, decorView
-    ).build().also {
-      managers[context] = it
-      if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
-      decorView.addOnAttachStateChangeListener(
-          ManagerAttachStateListener(context, decorView))
-      it.onInitialized(playableStates[context])
+    val decorView = context.window.peekDecorView()  //
+        ?: throw IllegalStateException("DecorView is null")
+    return managers[context] ?: Builder(this, decorView).build()  //
+        .also {
+          managers[context] = it
+          if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
+          decorView.addOnAttachStateChangeListener(
+              ManagerAttachStateListener(context, decorView))
+          it.onInitialized(playableStates[context])
+        }
+  }
+
+  // Acquire from cache or build new one.
+  internal fun acquirePlayable(uri: Uri, builder: Playable.Builder): Playable {
+    val tag = builder.tag
+    return if (tag != null)
+      (playableStore[tag] ?:  //
+      PlayableImpl(this, uri, builder).also {
+        playableStore[tag] = it
+      }).also { mapPlayableToManager[it] = null }
+    else
+      PlayableImpl(this, uri, builder)
+  }
+
+  // Release back to cache.
+  internal fun releasePlayable(tag: Any, playable: Playable) {
+    if (playableStore.remove(tag) != playable) {
+      throw IllegalArgumentException("Illegal playable removal: $playable")
     }
   }
 
   internal fun onManagerStateMayChange(manager: Manager, playable: Playable, active: Boolean) {
     if (active) {
-      managers.forEach { it.value.playablesThisActiveTo.remove(playable) }
-      manager.playablesThisActiveTo.add(playable)
+      mapPlayableToManager[playable] = manager
     } else {
-      manager.playablesThisActiveTo.remove(playable)
+      if (mapPlayableToManager[playable] == manager) mapPlayableToManager[playable] = null
     }
   }
 
-  // Acquire from cache or build new one.
-  internal fun acquirePlayable(bundle: Playable.Bundle): Playable {
-    return playableStore[bundle] ?: Playee(this, bundle).also {
-      playableStore[bundle] = it
-    }
+  internal fun onManagerActive(manager: Manager, playback: Playback<*>) {
+    playback.onTargetAvailable()
+    manager.restorePlaybackInfo(playback)
   }
 
-  internal fun releasePlayable(bundle: Playable.Bundle, playable: Playable) {
-    if (playableStore.remove(bundle) != playable) {
-      throw IllegalArgumentException("Illegal playable removal: $playable")
+  internal fun onManagerInActive(manager: Manager, playback: Playback<*>, configChange: Boolean) {
+    val playable = playback.playable
+    // Only pause this playback if the playable is managed by this manager, or by no-one else.
+    if (mapPlayableToManager[playable] == manager || mapPlayableToManager[playable] == null) {
+      if (!configChange) {
+        playback.pause()
+        manager.savePlaybackInfo(playback)
+      }
     }
   }
 
@@ -206,8 +231,9 @@ class Kohii(context: Context) {
     return this.setUp(Uri.parse(url))
   }
 
-  fun findPlayable(tag: Any): Playable? {
-    return this.playableStore.find { it.builder.tag == tag }
+  // Find a Playable for a tag. Single player may use this for full-screen playback.
+  fun findPlayable(tag: Any?): Playable? {
+    return this.playableStore[tag]
   }
 
   @Suppress("unused")
@@ -221,10 +247,4 @@ class Kohii(context: Context) {
   }
 
   //// [END] Public API
-}
-
-/// Some extension functions.
-
-fun <K, V> HashMap<K, V>.find(predicate: (key: K) -> Boolean): V? {
-  return this[this.keys.firstOrNull(predicate)]
 }
