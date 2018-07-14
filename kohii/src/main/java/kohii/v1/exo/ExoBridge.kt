@@ -24,7 +24,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
 import kohii.media.PlaybackInfo.Companion.TIME_UNSET
 import kohii.media.VolumeInfo
-import kohii.v1.Helper
+import kohii.v1.Bridge
 import kohii.v1.Kohii
 import kohii.v1.OnVolumeChangedListener
 import kohii.v1.OnVolumeChangedListeners
@@ -36,10 +36,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-class ExoHelper(
+class ExoBridge(
     private val kohii: Kohii,
     private val builder: Builder
-) : Helper {
+) : Bridge {
 
   private val listeners = PlayerEventListeners()  // original listener.
   private val volumeChangedListeners = OnVolumeChangedListeners()

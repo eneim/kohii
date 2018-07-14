@@ -31,6 +31,7 @@
       android:id="@id/playerView"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:layout_gravity="center"
       android:minHeight="1dp"
       app:keep_content_on_player_reset="true"
       app:resize_mode="fixed_width"

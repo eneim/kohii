@@ -16,28 +16,29 @@
 
 package kohii.v1
 
+import android.net.Uri
+import android.util.Log
+import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
-import kohii.v1.Playable.Bundle
-import kohii.v1.exo.ExoHelper
+import kohii.v1.Playable.Builder
+import kohii.v1.exo.ExoBridge
 
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("CanBeParameter")
-class Playee internal constructor(
+@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
+class PlayableImpl internal constructor(
     val kohii: Kohii,
-    private val bundle: Bundle
-) : Playable, Playback.Callback {
+    val uri: Uri,
+    val builder: Builder
+) : Playable, Playback.Callback, Playback.InternalCallback {
 
-  private val uri = bundle.uri
-  private val builder = bundle.builder
-  private val helper = ExoHelper(kohii, builder) as Helper
+  private val helper = ExoBridge(kohii, builder) as Bridge
   private var listener: PlayerEventListener? = null
 
   init {
     this.helper.playbackInfo = builder.playbackInfo
-    this.helper.prepare(this.builder.prepareAlwaysLoad)
   }
 
   override fun onAdded(playback: Playback<*>) {
@@ -46,56 +47,76 @@ class Playee internal constructor(
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
           playback.dispatchPlayerStateChanged(playWhenReady, playbackState)
         }
+
+        override fun onPlayerError(error: ExoPlaybackException?) {
+          super.onPlayerError(error)
+          Log.e("Kohii:Exo", "Error: ${error?.cause}")
+        }
       }
       this.helper.addEventListener(this.listener!!)
     }
   }
 
-  override fun onActive(playback: Playback<*>) {
+  override fun onTargetAvailable(playback: Playback<*>) {
+    this.helper.prepare(this.builder.prepareAlwaysLoad)
     if (playback.getTarget() is PlayerView) {
       this.helper.playerView = playback.getTarget() as PlayerView
     }
   }
 
-  override fun onInActive(playback: Playback<*>) {
-    // This will release current MediaCodec instances, which are expensive to retain.
-    if (playback.manager.playablesThisActiveTo.contains(this)) {
+  override fun onTargetUnAvailable(playback: Playback<*>) {
+    // This will release current Video MediaCodec instances, which are expensive to retain.
+    if (kohii.mapPlayableToManager[this] == playback.manager) {
       this.helper.playerView = null
     }
   }
 
-  override fun onRemoved(playback: Playback<*>, recreating: Boolean) {
-    playback.removeCallback(this)
+  override fun onRemoved(playback: Playback<*>) {
     if (this.listener != null) {
       this.helper.removeEventListener(this.listener!!)
       this.listener = null
     }
-    if (recreating) return
-    val active = kohii.managers.values.find {
-      it.playablesThisActiveTo.contains(this@Playee)
+    if (kohii.mapPlayableToManager[this] == null) {
+      playback.release()
+      if (this.builder.tag != null) kohii.releasePlayable(this.builder.tag, this)
     }
-    if (active == null) this.release()
+    playback.internalCallback = null
+    playback.removeCallback(this)
   }
 
   ////
 
-  // When binding to a PlayerView, any old playback should not be paused. We know it should keep
-  // playing.
+  // When binding to a PlayerView, any old playback should not be paused. We know it should keep playing.
   // 
   // Relationship: [Playable] --> [Playback [Target]]
   override fun bind(playerView: PlayerView): Playback<PlayerView> {
     val manager = kohii.getManager(playerView.context)
+    kohii.onManagerStateMayChange(manager, this, true)
+    var playback: Playback<PlayerView>? = null
     val oldTarget = manager.mapPlayableToTarget.put(this, playerView)
-    if (oldTarget != null) {
+    if (oldTarget === playerView) {
+      @Suppress("UNCHECKED_CAST")
+      playback = manager.mapTargetToPlayback[oldTarget] as? Playback<PlayerView> ?: null
+    } else {
       val oldPlayback = manager.mapTargetToPlayback.remove(oldTarget)
       if (oldPlayback != null) {
-        manager.removePlayback(oldPlayback)
-        oldPlayback.removeCallback(this)
+        manager.destroyPlayback(oldPlayback)
+        oldPlayback.onDestroyed()
       }
     }
-    val playback = ViewPlayback(this, uri, manager, playerView, builder)
-    playback.addCallback(this)
+
+    if (playback == null) {
+      playback = ViewPlayback(kohii, this, uri, manager, playerView, builder)
+      playback.onCreated()
+      playback.addCallback(this)
+      playback.internalCallback = this
+    }
+
     return manager.addPlayback(playback)
+  }
+
+  override fun prepare() {
+    // TODO [20180712] consider to use this. Should be called from a Playback.
   }
 
   override fun play() {
@@ -108,7 +129,6 @@ class Playee internal constructor(
 
   override fun release() {
     this.helper.release()
-    kohii.releasePlayable(this.bundle, this)
   }
 
   override fun addVolumeChangeListener(listener: OnVolumeChangedListener) {

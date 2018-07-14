@@ -23,9 +23,11 @@ import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 
 /**
+ * Bridge between a Playable and a Target.
+ *
  * @author eneim (2018/06/24).
  */
-internal interface Helper {
+internal interface Bridge {
 
   var playerView: PlayerView?
 

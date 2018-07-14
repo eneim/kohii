@@ -29,7 +29,7 @@ import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.sample.R
-import kotlinx.android.synthetic.main.player_fragment.playerView
+import kotlinx.android.synthetic.main.fragment_player.playerView
 
 /**
  * To play a single Video.
@@ -66,7 +66,7 @@ class PlayerFragment : Fragment() {
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View? {
-    return inflater.inflate(R.layout.player_fragment, container, false)
+    return inflater.inflate(R.layout.fragment_player, container, false)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -80,7 +80,7 @@ class PlayerFragment : Fragment() {
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
     ViewCompat.setTransitionName(transView, playableTag)
 
-    playable = Kohii[requireContext()].findPlayable(playableTag)!!.apply {
+    playable = Kohii[requireContext()].findPlayable(playableTag)?.apply {
       this.addPlayerEventListener(listener)
       this.bind(playerView)
     }

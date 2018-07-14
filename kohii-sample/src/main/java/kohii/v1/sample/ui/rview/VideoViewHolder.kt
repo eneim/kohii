@@ -52,22 +52,23 @@ class VideoViewHolder(
     if (item != null) {
       itemTag = item.content + "@" + adapterPosition
 
-      val transitionView: View = playerView.findViewById(R.id.exo_content_frame)
-      ViewCompat.setTransitionName(transitionView, itemTag)
+      ViewCompat.setTransitionName(transView, itemTag)
 
       playerContainer.setAspectRatio(item.width / item.height.toFloat())
+      // playerContainer.setAspectRatio(1280 / 720.toFloat())
       val playable = Kohii[itemView.context]
           .setUp(item.content)
+          // .setUp("https://storage.googleapis.com/spec-host/mio-material-staging%2Fassets%2F1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz%2Fm2-manifesto.mp4")
           .copy(repeatMode = Player.REPEAT_MODE_ONE).copy(tag = itemTag)
           .asPlayable()
       playable.bind(playerView).run {
         this.addCallback(object : Callback {
-          override fun onActive(playback: Playback<*>) {
+          override fun onTargetAvailable(playback: Playback<*>) {
             this@run.removeCallback(this)
             listener.onItemLoaded(itemView, adapterPosition)
           }
 
-          override fun onInActive(playback: Playback<*>) {
+          override fun onTargetUnAvailable(playback: Playback<*>) {
             this@run.removeCallback(this)
           }
         })
@@ -76,7 +77,7 @@ class VideoViewHolder(
   }
 
   override fun onClick(v: View?) {
-    if (v != null) {
+    if (v != null && itemTag != null) {
       listener.onItemClick(v, transView, adapterPosition, itemTag!!)
     }
   }

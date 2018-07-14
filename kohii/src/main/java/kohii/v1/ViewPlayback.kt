@@ -19,11 +19,11 @@ package kohii.v1
 import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
+import android.util.Log
+import android.view.View
 import androidx.annotation.CallSuper
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
-import android.util.Log
-import android.view.View
 import java.util.Comparator
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -31,9 +31,15 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author eneim (2018/06/24).
  */
 internal class ViewPlayback<V : View>(
-    playable: Playable, uri: Uri, manager: Manager, target: V?, builder: Playable.Builder
-) : Playback<V>(playable, uri, manager, target, builder),
-    View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
+    kohii: Kohii,
+    playable: Playable,
+    uri: Uri,
+    manager: Manager,
+    target: V?,
+    builder: Playable.Builder
+) : Playback<V>(
+    kohii, playable, uri, manager, target, builder
+), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   private val listener: PlaybackEventListener = object : PlaybackEventListener {
     override fun onBuffering() {
@@ -75,35 +81,32 @@ internal class ViewPlayback<V : View>(
         val visibleArea = playerRect.height() * playerRect.width()
         offset = visibleArea / drawArea.toFloat()
       }
-      return if (offset >= 0.75f)
-        ViewToken(playerRect.centerX().toFloat(), playerRect.centerY().toFloat(), offset)
-      else
-        null
+      return ViewToken(playerRect.centerX().toFloat(), playerRect.centerY().toFloat(), offset)
     }
 
   @CallSuper
   override fun onAdded() {
-    super.onAdded()
     super.getTarget()?.run {
       if (ViewCompat.isAttachedToWindow(this)) {
         this@ViewPlayback.onViewAttachedToWindow(this)
       }
       this.addOnAttachStateChangeListener(this@ViewPlayback)
     }
+    super.onAdded()
   }
 
-  override fun onActive() {
-    super.onActive()
+  override fun onTargetAvailable() {
     super.addListener(this.listener)
+    super.onTargetAvailable()
   }
 
-  override fun onInActive() {
-    super.onInActive()
+  override fun onTargetUnAvailable() {
+    super.onTargetUnAvailable()
     super.removeListener(this.listener)
   }
 
-  override fun onRemoved(recreating: Boolean) {
-    super.onRemoved(recreating)
+  override fun onRemoved() {
+    super.onRemoved()
     super.getTarget()?.removeOnAttachStateChangeListener(this)
   }
 
@@ -114,12 +117,11 @@ internal class ViewPlayback<V : View>(
       // Find a ancestor of target whose parent is a CoordinatorLayout, or null.
       val corChild = findSuitableParent(manager.decorView, target)
       val params = corChild?.layoutParams
-
       if (params is CoordinatorLayout.LayoutParams) {
         // TODO [20180620] deal with CoordinatorLayout.
       }
 
-      manager.onTargetActive(target)
+      manager.onTargetAvailable(target)
       target.addOnLayoutChangeListener(this)
     }
   }
@@ -129,7 +131,7 @@ internal class ViewPlayback<V : View>(
     val target = super.getTarget()
     if (target != null) {
       target.removeOnLayoutChangeListener(this)
-      manager.onTargetInActive(target)
+      manager.onTargetUnAvailable(target)
     }
   }
 
@@ -141,16 +143,28 @@ internal class ViewPlayback<V : View>(
   }
 
   // Location on screen, with visible offset within target's parent.
-  internal class ViewToken internal constructor(internal val centerX: Float,
-      internal val centerY: Float, internal val areaOffset: Float) : Token() {
+  @Suppress("MemberVisibilityCanBePrivate")
+  internal class ViewToken internal constructor(
+      internal val centerX: Float,
+      internal val centerY: Float,
+      internal val areaOffset: Float
+  ) : Token() {
     override fun compareTo(other: Token): Int {
       return if (other is ViewToken) CENTER_Y.compare(this, other) else super.compareTo(other)
+    }
+
+    override fun wantsToPlay(): Boolean {
+      return areaOffset >= 0.75f  // TODO [20180714] make this configurable
     }
   }
 
   companion object {
     val CENTER_Y: Comparator<ViewToken> = Comparator { o1, o2 ->
       compareValues(o1.centerY, o2.centerY)
+    }
+
+    val CENTER_X: Comparator<ViewToken> = Comparator { o1, o2 ->
+      compareValues(o1.centerX, o2.centerX)
     }
 
     // Find a CoordinatorLayout parent of View, which doesn't reach 'root' View.

@@ -15,49 +15,50 @@
   ~ limitations under the License.
   -->
 
-<androidx.core.widget.NestedScrollView
+<androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".ui.sview.ScrollViewFragment"
+    android:orientation="horizontal"
     >
 
-  <androidx.appcompat.widget.LinearLayoutCompat
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="vertical"
+  <FrameLayout
+      android:id="@id/playerContainer"
+      android:layout_width="0dp"
+      android:layout_weight="45"
+      android:layout_height="match_parent"
+      android:clickable="true"
+      android:focusable="true"
       >
-
-    <FrameLayout
-        android:id="@id/playerContainer"
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@id/playerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
-        >
-      <com.google.android.exoplayer2.ui.PlayerView
-          android:id="@+id/playerView"
-          android:layout_width="match_parent"
-          android:layout_height="231dp"
-          app:keep_content_on_player_reset="true"
-          app:resize_mode="fixed_height"
-          app:show_buffering="true"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          />
-    </FrameLayout>
+        app:keep_content_on_player_reset="true"
+        app:resize_mode="fixed_width"
+        android:layout_gravity="center"
+        app:show_buffering="true"
+        app:surface_type="surface_view"
+        app:use_controller="false"
+        />
+  </FrameLayout>
 
+  <androidx.core.widget.NestedScrollView
+      android:id="@id/scrollView"
+      android:layout_width="0dp"
+      android:layout_weight="55"
+      android:layout_height="match_parent"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior"
+      tools:context=".ui.sview.ScrollViewFragment"
+      >
     <TextView
-        android:id="@id/textContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
         android:text="@string/large_text"
         />
+  </androidx.core.widget.NestedScrollView>
+</androidx.appcompat.widget.LinearLayoutCompat>
 
-  </androidx.appcompat.widget.LinearLayoutCompat>
-</androidx.core.widget.NestedScrollView>

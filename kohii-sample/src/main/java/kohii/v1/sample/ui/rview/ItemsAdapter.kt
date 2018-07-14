@@ -16,11 +16,12 @@
 
 package kohii.v1.sample.ui.rview
 
-import androidx.transition.TransitionSet
-import androidx.recyclerview.widget.RecyclerView.Adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.recyclerview.widget.RecyclerView.Adapter
+import androidx.transition.TransitionSet
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.PlayerFragment
 import kohii.v1.sample.ui.rview.BaseViewHolder.OnClickListener
@@ -87,7 +88,7 @@ class ItemsAdapter(
       val tag = payload as String
       fragment.fragmentManager!!.beginTransaction()
           .setReorderingAllowed(true) // Optimize for shared element transition
-          .addSharedElement(transView, transView.transitionName)
+          .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
           .replace(R.id.fragmentContainer, PlayerFragment.newInstance(tag), tag)
           .addToBackStack(null)
           .commit()

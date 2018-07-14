@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.sview
+package kohii.v1.sample.ui.debug
 
 import android.content.pm.ActivityInfo
 import android.net.Uri
@@ -35,16 +35,21 @@ import kohii.v1.PlayerEventListener
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.PlayerFragment
-import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
-import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
+import kotlinx.android.synthetic.main.fragment_debug.bindSameView
+import kotlinx.android.synthetic.main.fragment_debug.playerContainer
+import kotlinx.android.synthetic.main.fragment_debug.playerView
+import kotlinx.android.synthetic.main.fragment_debug.playerView2
+import kotlinx.android.synthetic.main.fragment_debug.switchView
+import java.util.concurrent.atomic.AtomicInteger
 
-class ScrollViewFragment : Fragment() {
+/**
+ * @author eneim (2018/07/13).
+ */
+class DebugFragment : Fragment() {
 
   companion object {
-    // const val videoUrl = "http://docs.evostream.com/sample_content/assets/hls-sintel-abr3/sintel1080p/playlist.m3u8"
-    // const val videoUrl = "https://upload.wikimedia.org/wikipedia/commons/c/c0/Big_Buck_Bunny_4K.webm"
-    const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material-staging%2Fassets%2F1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz%2Fm2-manifesto.mp4"
-    fun newInstance() = ScrollViewFragment()
+    fun newInstance() = DebugFragment()
+    const val videoUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
   }
 
   private val listener: PlayerEventListener by lazy {
@@ -67,7 +72,7 @@ class ScrollViewFragment : Fragment() {
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View {
-    return inflater.inflate(R.layout.fragment_scroll_view, container, false)
+    return inflater.inflate(R.layout.fragment_debug, container, false)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -90,6 +95,13 @@ class ScrollViewFragment : Fragment() {
     }
 
     playable.bind(playerView)
+
+    val views = arrayOf(playerView, playerView2)
+    val current = AtomicInteger(0)
+
+    // Debug some certain functions.
+    switchView.setOnClickListener { playable.bind(views[current.incrementAndGet() % views.size]) }
+    bindSameView.setOnClickListener { playable.bind(views[current.get() % views.size]) }
   }
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
