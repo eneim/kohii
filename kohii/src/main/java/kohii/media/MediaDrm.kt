@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-package kohii.media;
-
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+package kohii.media
 
 /**
  * Note: implementation of this interface must comparable using all 4 values, no more, no less.
  *
  * @author eneim (2018/06/25).
  */
-public interface MediaDrm extends Comparable<MediaDrm> {
+interface MediaDrm : Comparable<MediaDrm> {
 
   // DRM Scheme
-  @NonNull String getType();
+  val type: String
 
-  @Nullable String getLicenseUrl();
+  val licenseUrl: String?
 
-  @Nullable String[] getKeyRequestPropertiesArray();
+  val keyRequestPropertiesArray: Array<String>?
 
-  boolean multiSession();
+  fun multiSession(): Boolean
 }

@@ -17,7 +17,7 @@
 ext {
   buildConfig = //
       [//
-       compileSdk: 27,
+       compileSdk: 28,
        minSdk    : 16,
        targetSdk : 27,
        'version' : //
@@ -25,7 +25,7 @@ ext {
             'major': 1,
             'minor': 0,
             'patch': 0, // ExoPlayer version number.
-            'build': 2801, //
+            'build': 2802, //
            ], //
       ]
 
@@ -33,7 +33,7 @@ ext {
       "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}"
 
   buildConfig.version['code'] = //
-      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2801 --> 109,092,801 */
+      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2802 --> 109,092,802 */
       buildConfig.version.major * 100000000 + //
           buildConfig.version.minor * 1000000 + //
           buildConfig.version.patch * 10000 + //
@@ -41,14 +41,14 @@ ext {
 
   versions = //
       [//
-       kotlin          : "1.2.50",
-       supportLibrary  : "27.1.1" /* "28.0.0-alpha3" */,
-       gradlePlugin    : "3.2.0-beta01",
-       jetpack         : "1.0.0-alpha3",
+       kotlin          : "1.2.51",
+       supportLibrary  : "28.0.0-alpha3",
+       gradlePlugin    : "3.2.0-beta02",
+       jetpack         : "1.0.0-beta01",
        constraintLayout: "1.1.2",
-       xlifecycle      : "2.0.0-alpha1",
+       xlifecycle      : "2.0.0-beta01",
        lifecycle       : "1.1.1",
-       exoplayer       : "2.8.1",
+       exoplayer       : "2.8.2",
        espresso        : "3.0.2", //
       ]
 
@@ -63,15 +63,17 @@ ext {
        support      : //
            [//
             appcompat       : "com.android.support:appcompat-v7:$versions.supportLibrary",
-            design          : "com.android.support:design:$versions.supportLibrary",
+            material        : "com.android.support:design:$versions.supportLibrary",
             recyclerview    : "com.android.support:recyclerview-v7:$versions.supportLibrary",
             cardview        : "com.android.support:cardview-v7:$versions.supportLibrary",
             lifecycle       : "android.arch.lifecycle:extensions:$versions.lifecycle",
-            constraintLayout: "com.android.support.constraint:constraint-layout:$versions.constraintLayout" //
+            constraintlayout: "com.android.support.constraint:constraint-layout:$versions.constraintLayout" //
            ],
 
        androidx     : //
            [//
+            core            : "androidx.core:core-ktx:$versions.jetpack",
+            material        : "com.google.android.material:material:$versions.jetpack",
             appcompat       : "androidx.appcompat:appcompat:$versions.jetpack",
             recyclerview    : "androidx.recyclerview:recyclerview:$versions.jetpack",
             constraintlayout: "androidx.constraintlayout:constraintlayout:$versions.constraintLayout",
@@ -82,7 +84,7 @@ ext {
        xtest        : //
            [//
             runner  : "androidx.test:runner:1.1.0-alpha3",
-            expresso: //
+            espresso: //
                 [//
                  core: "androidx.test.espresso:espresso-core:3.1.0-alpha3", //
                 ], //

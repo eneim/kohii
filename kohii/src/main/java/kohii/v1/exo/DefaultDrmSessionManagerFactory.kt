@@ -16,7 +16,7 @@
 
 package kohii.v1.exo
 
-import android.support.annotation.RequiresApi
+import androidx.annotation.RequiresApi
 import android.text.TextUtils
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
@@ -43,6 +43,8 @@ import java.util.UUID
 class DefaultDrmSessionManagerFactory internal constructor(
     private val store: ExoStore) : DrmSessionManagerFactory {
 
+  private val factory = DefaultHttpDataSourceFactory(store.appName) as HttpDataSource.Factory
+
   override fun createDrmSessionManager(
       mediaDrm: MediaDrm): DrmSessionManager<FrameworkMediaCrypto> {
     var drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>? = cache[mediaDrm]
@@ -57,14 +59,12 @@ class DefaultDrmSessionManagerFactory internal constructor(
       if (drmSchemeUuid == null) {
         errorStringId = R.string.error_drm_unsupported_scheme
       } else {
-        val factory = DefaultHttpDataSourceFactory(store.appName)
         try {
           drmSessionManager = buildDrmSessionManagerV18(drmSchemeUuid, mediaDrm.licenseUrl,
               mediaDrm.keyRequestPropertiesArray, mediaDrm.multiSession(), factory)
         } catch (e: UnsupportedDrmException) {
           e.printStackTrace()
           errorStringId = if (e.reason == REASON_UNSUPPORTED_SCHEME)
-          //
             R.string.error_drm_unsupported_scheme
           else
             R.string.error_drm_unknown
@@ -85,8 +85,7 @@ class DefaultDrmSessionManagerFactory internal constructor(
       Toast.makeText(store.context, error, LENGTH_SHORT).show()
     }
 
-    cache[mediaDrm] = drmSessionManager!!
-    return drmSessionManager
+    return drmSessionManager!!.also { cache[mediaDrm] = it }
   }
 
   companion object {
@@ -106,8 +105,10 @@ class DefaultDrmSessionManagerFactory internal constructor(
       if (keyRequestPropertiesArray != null) {
         var i = 0
         while (i < keyRequestPropertiesArray.size - 1) {
-          drmCallback.setKeyRequestProperty(keyRequestPropertiesArray[i],
-              keyRequestPropertiesArray[i + 1])
+          drmCallback.setKeyRequestProperty(
+              keyRequestPropertiesArray[i],
+              keyRequestPropertiesArray[i + 1]
+          )
           i += 2
         }
       }

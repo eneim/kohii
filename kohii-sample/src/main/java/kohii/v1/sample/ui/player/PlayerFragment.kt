@@ -16,12 +16,11 @@
 
 package kohii.v1.sample.ui.player
 
-import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.support.transition.TransitionInflater
-import android.support.v4.app.Fragment
-import android.support.v4.app.SharedElementCallback
-import android.support.v4.view.ViewCompat
+import androidx.transition.TransitionInflater
+import androidx.fragment.app.Fragment
+import androidx.core.app.SharedElementCallback
+import androidx.core.view.ViewCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,9 +29,11 @@ import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.sample.R
-import kotlinx.android.synthetic.main.player_fragment.playerView
+import kotlinx.android.synthetic.main.fragment_player.playerView
 
 /**
+ * To play a single Video.
+ *
  * @author eneim (2018/06/26).
  */
 class PlayerFragment : Fragment() {
@@ -53,15 +54,19 @@ class PlayerFragment : Fragment() {
       override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
           pixelWidthHeightRatio: Float) {
         startPostponedEnterTransition()
+        playable?.removePlayerEventListener(this)
       }
     }
   }
 
   var playable: Playable? = null
+  val transView: View by lazy {
+    playerView.findViewById(R.id.exo_content_frame) as View
+  }
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View? {
-    return inflater.inflate(R.layout.player_fragment, container, false)
+    return inflater.inflate(R.layout.fragment_player, container, false)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -70,20 +75,15 @@ class PlayerFragment : Fragment() {
     if (savedInstanceState == null) {
       postponeEnterTransition()
     }
+    prepareSharedElementTransition()
 
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
-    playable = Kohii[requireContext()].requirePlayable(playableTag)!!
+    ViewCompat.setTransitionName(transView, playableTag)
 
-    ViewCompat.setTransitionName(playerView.findViewById(R.id.exo_content_frame), playableTag)
-
-    playable!!.addPlayerEventListener(listener)
-    prepareSharedElementTransition()
-    playable!!.bind(playerView)
-  }
-
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
-    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    playable = Kohii[requireContext()].findPlayable(playableTag)?.apply {
+      this.addPlayerEventListener(listener)
+      this.bind(playerView)
+    }
   }
 
   override fun onStop() {
@@ -106,7 +106,7 @@ class PlayerFragment : Fragment() {
           sharedElements: MutableMap<String, View>?) {
         // Map the first shared element name to the child ImageView.
         if (view !== null) {
-          sharedElements?.put(names?.get(0)!!, playerView.findViewById(R.id.exo_content_frame))
+          sharedElements?.put(names?.get(0)!!, transView)
         }
       }
     })
