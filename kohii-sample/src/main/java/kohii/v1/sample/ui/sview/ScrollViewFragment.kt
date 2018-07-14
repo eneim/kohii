@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.main
+package kohii.v1.sample.ui.sview
 
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
-import android.support.transition.TransitionInflater
-import android.support.transition.TransitionSet
-import android.support.v4.app.Fragment
-import android.support.v4.app.SharedElementCallback
-import android.support.v4.view.ViewCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.SharedElementCallback
+import androidx.core.view.ViewCompat
+import androidx.fragment.app.Fragment
+import androidx.transition.TransitionInflater
+import androidx.transition.TransitionSet
+import com.google.android.exoplayer2.Player
 import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
 import kohii.v1.Playable
@@ -34,14 +35,16 @@ import kohii.v1.PlayerEventListener
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.PlayerFragment
-import kotlinx.android.synthetic.main.main_fragment.playerContainer
-import kotlinx.android.synthetic.main.main_fragment.playerView
+import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
+import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
-class MainFragment : Fragment() {
+class ScrollViewFragment : Fragment() {
 
   companion object {
-    const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material/assets/1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz/m2-manifesto.mp4"
-    fun newInstance() = MainFragment()
+    // const val videoUrl = "http://docs.evostream.com/sample_content/assets/hls-sintel-abr3/sintel1080p/playlist.m3u8"
+    // const val videoUrl = "https://upload.wikimedia.org/wikipedia/commons/c/c0/Big_Buck_Bunny_4K.webm"
+    const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material-staging%2Fassets%2F1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz%2Fm2-manifesto.mp4"
+    fun newInstance() = ScrollViewFragment()
   }
 
   private val listener: PlayerEventListener by lazy {
@@ -49,19 +52,22 @@ class MainFragment : Fragment() {
       override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
           pixelWidthHeightRatio: Float) {
         startPostponedEnterTransition()
+        playable.removePlayerEventListener(this)
       }
     }
   }
 
   private val playable: Playable by lazy {
-    Kohii[requireContext()].setUp(Uri.parse(videoUrl))
-        .copy(tag = videoUrl).copy(config = DemoApp.app.config)
+    Kohii[this].setUp(Uri.parse(videoUrl))
+        .copy(repeatMode = Player.REPEAT_MODE_ONE)
+        .copy(tag = videoUrl)
+        .copy(config = DemoApp.app.config)
         .asPlayable()
   }
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View {
-    return inflater.inflate(R.layout.main_fragment, container, false)
+    return inflater.inflate(R.layout.fragment_scroll_view, container, false)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -70,14 +76,14 @@ class MainFragment : Fragment() {
     postponeEnterTransition()
 
     playable.addPlayerEventListener(listener)
-    val transitionView: View = playerView.findViewById(R.id.exo_content_frame)
-    ViewCompat.setTransitionName(transitionView, videoUrl)
+    val transView: View = playerView.findViewById(R.id.exo_content_frame)
+    ViewCompat.setTransitionName(transView, videoUrl)
 
     playerContainer.setOnClickListener {
       (exitTransition as TransitionSet).excludeTarget(view, true)
       fragmentManager!!.beginTransaction()
           .setReorderingAllowed(true)
-          .addSharedElement(transitionView, ViewCompat.getTransitionName(transitionView))
+          .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
           .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
           .addToBackStack(null)
           .commit()

@@ -18,11 +18,11 @@ package kohii.v1
 
 import android.net.Uri
 import android.os.Handler
-import android.support.annotation.CallSuper
-import android.support.annotation.IntDef
+import androidx.annotation.CallSuper
+import androidx.annotation.IntDef
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
-import java.util.HashSet
+import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
@@ -32,26 +32,28 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  * @author eneim (2018/06/24).
  */
 abstract class Playback<T> internal constructor(
+    internal val kohii: Kohii,
     internal val playable: Playable,
     internal val uri: Uri,
     internal val manager: Manager,
     target: T?,
     builder: Playable.Builder
-    ) {
+) {
 
   companion object {
     const val STATE_IDLE = 1
     const val STATE_BUFFERING = 2
     const val STATE_READY = 3
     const val STATE_END = 4
-    val DEFAULT_DISPATCHER = object : Dispatcher {
-      override fun delayToStart() = 0 // no delay
-    }
     private val SCRAP = Any()
   }
 
   open class Token : Comparable<Token> {
     override fun compareTo(other: Token) = 0
+
+    open fun wantsToPlay(): Boolean {
+      return false
+    }
   }
 
   @Suppress("unused")
@@ -82,15 +84,17 @@ abstract class Playback<T> internal constructor(
     true
   })
 
-  private val listeners = HashSet<PlaybackEventListener>()
-  private val callbacks = HashSet<Callback>()
+  private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
+  private val callbacks = CopyOnWriteArraySet<Callback>()
 
+  internal var internalCallback: InternalCallback? = null
   @Suppress("MemberVisibilityCanBePrivate")
-  val target: WeakReference<T>?
+  internal val target: WeakReference<T>?
+  // For public access as well.
   val tag: Any
 
-  // Return null Token will indicate that this Playback cannot start.
   // Token is comparable.
+  // Returning null --> there is nothing to play. A bound Playable should be unbound and released.
   internal open val token: Token?
     get() = null
 
@@ -104,7 +108,7 @@ abstract class Playback<T> internal constructor(
         if (target == null)
           null
         else
-          PlaybackWeakReference(this, target, manager.kohii.referenceQueue as ReferenceQueue<in T>)
+          PlaybackWeakReference(this, target, kohii.referenceQueue as ReferenceQueue<in T>)
     this.tag = builder.tag ?: SCRAP
   }
 
@@ -138,58 +142,70 @@ abstract class Playback<T> internal constructor(
   // Only playback with 'valid tag' will be cached for restoring.
   internal fun validTag() = this.tag !== SCRAP
 
-  internal fun onPause(configChange: Boolean) {
-    if (!configChange) {
-      if (this.manager.playablesThisActiveTo.contains(playable)) {
-        playable.pause()
-      }
-    }
+  internal fun pause() {
+    playable.pause()
   }
 
-  internal fun onPlay() {
+  @CallSuper
+  internal fun play() {
     playable.play()
+  }
+
+  @CallSuper
+  internal fun release() {
+    playable.release()
   }
 
   // being added to Manager
   // the target may not be attached to View/Window.
   @CallSuper
   open fun onAdded() {
-    this.callbacks.forEach { it.onAdded(this) }
+    internalCallback?.onAdded(this)
   }
 
   // being removed from Manager
   @CallSuper
-  open fun onRemoved(recreating: Boolean) {
-    this.callbacks.forEach { it.onRemoved(this, recreating) }
-    this.listeners.clear()
+  open fun onRemoved() {
+    internalCallback?.onRemoved(this)
     this.callbacks.clear()
+    this.listeners.clear()
   }
 
   // ~ View is attached
   @CallSuper
-  open fun onActive() {
-    this.callbacks.forEach { it.onActive(this) }
+  open fun onTargetAvailable() {
+    this.callbacks.forEach { it.onTargetAvailable(this) }
+  }
+
+  // Playback's onTargetUnAvailable is equal to View's detach event.
+  // Once it is inactive, its resource is considered freed and can be cleanup anytime.
+  // Proper handling of in-active state must consider to: [1] Save any previous state (PlaybackInfo)
+  // into cache, ready to reuse once coming back, [2] consider to release allocated resource if
+  // there is no other Manager manages the internal Playable.
+  @CallSuper
+  open fun onTargetUnAvailable() {
+    handler.removeCallbacksAndMessages(null)
+    this.callbacks.forEach { it.onTargetUnAvailable(this) }
   }
 
   @CallSuper
-  open fun onInActive() {
-    handler.removeCallbacksAndMessages(null)
-    this.callbacks.forEach { it.onInActive(this) }
+  open fun onCreated() {
+
+  }
+
+  @CallSuper
+  open fun onDestroyed() {
+
+  }
+
+  // For internal flow only.
+  internal interface InternalCallback {
+    fun onAdded(playback: Playback<*>)
+    fun onRemoved(playback: Playback<*>)
   }
 
   interface Callback {
-
-    fun onAdded(playback: Playback<*>)
-
-    fun onActive(playback: Playback<*>)
-
-    fun onInActive(playback: Playback<*>)
-
-    fun onRemoved(playback: Playback<*>, recreating: Boolean)
-  }
-
-  interface Dispatcher {
-
-    fun delayToStart(): Int
+    fun onTargetAvailable(playback: Playback<*>)
+    fun onTargetUnAvailable(playback: Playback<*>)
   }
 }

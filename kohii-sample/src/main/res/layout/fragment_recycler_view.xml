@@ -15,13 +15,12 @@
   ~ limitations under the License.
   -->
 
-<com.google.android.exoplayer2.ui.PlayerView
+<androidx.recyclerview.widget.RecyclerView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/playerView"
+    android:id="@+id/recyclerView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:resize_mode="fixed_width"
-    app:show_buffering="true"
-    app:use_controller="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     />

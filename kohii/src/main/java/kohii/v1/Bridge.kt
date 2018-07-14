@@ -16,32 +16,28 @@
 
 package kohii.v1
 
-import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.metadata.Metadata
-import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.text.Cue
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 
 /**
+ * Bridge between a Playable and a Target.
+ *
  * @author eneim (2018/06/24).
  */
-internal interface Helper {
+internal interface Bridge {
 
   var playerView: PlayerView?
 
   var playbackInfo: PlaybackInfo
 
+  var parameters: PlaybackParameters?
+
   val isPlaying: Boolean
 
   val volumeInfo: VolumeInfo
-
-  var parameters: PlaybackParameters?
 
   /**
    * Prepare the resource for a [ExoPlayer]. This method should:
@@ -63,8 +59,7 @@ internal interface Helper {
 
   /**
    * Reset all resource, so that the playback can start all over again. This is to cleanup the
-   * playback for reuse. The SimpleExoPlayer instance must be still usable without calling
-   * [prepare].
+   * playback for reuse. The ExoPlayer instance must be still usable without calling [prepare].
    */
   fun reset()
 
@@ -102,65 +97,4 @@ internal interface Helper {
    */
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 
-  class PlayerEventListeners : HashSet<PlayerEventListener>(), PlayerEventListener {
-    override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
-      this.forEach { it.onPlaybackParametersChanged(playbackParameters) }
-    }
-
-    override fun onSeekProcessed() {
-      this.forEach { it.onSeekProcessed() }
-    }
-
-    override fun onTracksChanged(trackGroups: TrackGroupArray?,
-        trackSelections: TrackSelectionArray?) {
-      this.forEach { it.onTracksChanged(trackGroups, trackSelections) }
-    }
-
-    override fun onPlayerError(error: ExoPlaybackException?) {
-      this.forEach { it.onPlayerError(error) }
-    }
-
-    override fun onLoadingChanged(isLoading: Boolean) {
-      this.forEach { it.onLoadingChanged(isLoading) }
-    }
-
-    override fun onPositionDiscontinuity(reason: Int) {
-      this.forEach { it.onPositionDiscontinuity(reason) }
-    }
-
-    override fun onRepeatModeChanged(repeatMode: Int) {
-      this.forEach { it.onRepeatModeChanged(repeatMode) }
-    }
-
-    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-      this.forEach { it.onShuffleModeEnabledChanged(shuffleModeEnabled) }
-    }
-
-    override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
-      this.forEach { it.onTimelineChanged(timeline, manifest, reason) }
-    }
-
-    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-      this.forEach { it.onPlayerStateChanged(playWhenReady, playbackState) }
-    }
-
-    override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-        pixelWidthHeightRatio: Float) {
-      this.forEach {
-        it.onVideoSizeChanged(width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
-      }
-    }
-
-    override fun onRenderedFirstFrame() {
-      this.forEach { it.onRenderedFirstFrame() }
-    }
-
-    override fun onCues(cues: MutableList<Cue>?) {
-      this.forEach { it.onCues(cues) }
-    }
-
-    override fun onMetadata(metadata: Metadata?) {
-      this.forEach { it.onMetadata(metadata) }
-    }
-  }
 }

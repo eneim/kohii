@@ -17,7 +17,7 @@
 package kohii.v1
 
 import android.net.Uri
-import android.support.annotation.IntDef
+import androidx.annotation.IntDef
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
@@ -25,6 +25,14 @@ import kohii.v1.exo.Config
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
+ * One Playable to at most one Playback.
+ *
+ * Playable lifecycle:
+ *
+ * - Created by calling [Kohii.setUp], will be managed by at least one [Manager].
+ * - Destroyed if:
+ *  - All [Manager] manage the Playable is destroyed/detached from its lifecycle.
+ *
  * @author eneim (2018/06/24).
  */
 interface Playable {
@@ -43,6 +51,8 @@ interface Playable {
 
   /// Playback controller
 
+  fun prepare()
+
   fun play()
 
   fun pause()
@@ -57,16 +67,11 @@ interface Playable {
 
   fun removePlayerEventListener(listener: PlayerEventListener?)
 
-  fun setPlaybackInfo(playbackInfo: PlaybackInfo)
-
-  fun getPlaybackInfo(): PlaybackInfo
-
-  // TODO [20180622] Should be hidden to User. Consider to make Playable abstract class
-  fun mayUpdateStatus(manager: Manager, active: Boolean)
+  var playbackInfo: PlaybackInfo
 
   data class Builder(
       val kohii: Kohii,
-      val uri: Uri,
+      val contentUri: Uri,
       val config: Config = Config.DEFAULT_CONFIG,
       val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
       val mediaType: String? = null,
@@ -75,9 +80,7 @@ interface Playable {
       @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
   ) {
     fun asPlayable(): Playable {
-      return this.kohii.acquirePlayable(Bundle(this.uri, this))
+      return this.kohii.acquirePlayable(this.contentUri, this)
     }
   }
-
-  data class Bundle(val uri: Uri, val builder: Builder)
 }

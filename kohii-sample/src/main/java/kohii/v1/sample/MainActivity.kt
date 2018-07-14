@@ -17,17 +17,27 @@
 package kohii.v1.sample
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import kohii.v1.sample.ui.main.MainFragment
+import androidx.appcompat.app.AppCompatActivity
+import kohii.v1.sample.ui.rview.RecyclerViewFragment
+import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
+import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PlayerInfoHolder {
+
+  var playerInfo: PlayerInfo? = null
+
+  override fun recordPlayerInfo(info: PlayerInfo?) {
+    this.playerInfo = info
+  }
+
+  override fun fetchPlayerInfo() = playerInfo
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main_activity)
     if (savedInstanceState == null) {
       supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer,
-          MainFragment.newInstance(), MainFragment::class.java.simpleName).commit()
+          RecyclerViewFragment.newInstance(), RecyclerViewFragment::class.java.simpleName).commit()
     }
   }
 }

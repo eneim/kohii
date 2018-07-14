@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.v1
-
-import java.util.ArrayList
+package kohii.v1.sample.ui.rview
 
 /**
- * @author eneim (2018/05/26).
- * @since 4.0.0.2800
+ * @author eneim (2018/07/06).
  */
-internal class LimitedArrayList<E>(c: Collection<E>) : ArrayList<E>(c) {
+data class ItemIcon(val url: String, val width: Int, val height: Int)
 
-  // Just to make this method available for internal use.
-  public override fun removeRange(fromIndex: Int, toIndex: Int) {
-    super.removeRange(fromIndex, toIndex)
-  }
-}
-
+data class Item(val type: Int, val content: String, val format: String, val background: String,
+    val width: Int, val height: Int, val icon: ItemIcon?)
