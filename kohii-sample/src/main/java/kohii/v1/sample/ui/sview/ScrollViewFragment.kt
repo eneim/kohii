@@ -41,8 +41,6 @@ import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 class ScrollViewFragment : Fragment() {
 
   companion object {
-    // const val videoUrl = "http://docs.evostream.com/sample_content/assets/hls-sintel-abr3/sintel1080p/playlist.m3u8"
-    // const val videoUrl = "https://upload.wikimedia.org/wikipedia/commons/c/c0/Big_Buck_Bunny_4K.webm"
     const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material-staging%2Fassets%2F1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz%2Fm2-manifesto.mp4"
     fun newInstance() = ScrollViewFragment()
   }
