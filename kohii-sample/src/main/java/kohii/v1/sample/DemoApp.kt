@@ -44,6 +44,6 @@ class DemoApp : Application() {
 
   val config: Config by lazy {
     Config.DEFAULT_CONFIG.copy(
-        cache = SimpleCache(cacheDir, LeastRecentlyUsedCacheEvictor(8 * 1024 * 1024)))
+        cache = SimpleCache(cacheDir, LeastRecentlyUsedCacheEvictor(32 * 1024 * 1024)))
   }
 }
