@@ -175,11 +175,11 @@ class Manager internal constructor(
     }
   }
 
-  fun setScrolling(scrolling: Boolean) {
+  internal fun setScrolling(scrolling: Boolean) {
     this.scrolling.set(scrolling)
   }
 
-  fun dispatchRefreshAll() {
+  internal fun dispatchRefreshAll() {
     dispatcher?.dispatchRefreshAll()
   }
 
@@ -188,6 +188,7 @@ class Manager internal constructor(
     mapTargetToPlayback[target]?.run {
       mapAttachedPlaybackToTime[this] = System.nanoTime()
       mapDetachedPlaybackToTime.remove(this)
+      restorePlaybackInfo(this)
       this.onTargetAvailable()
       this@Manager.dispatchRefreshAll()
     } ?: throw IllegalStateException("No Playback found for target.")
@@ -202,6 +203,7 @@ class Manager internal constructor(
       this@Manager.dispatchRefreshAll()
       this.onTargetUnAvailable()
       if (this@Manager.mapPlayableToTarget[this.playable] == this.getTarget()) {
+        savePlaybackInfo(this)
         this.release()
       }
     }
@@ -221,7 +223,7 @@ class Manager internal constructor(
   fun destroyPlayback(playback: Playback<*>) {
     mapAttachedPlaybackToTime.remove(playback)
     mapDetachedPlaybackToTime.remove(playback)
-    mapTargetToPlayback.remove(playback.getTarget())
+    mapTargetToPlayback.remove(playback.getTarget()).also { it?.onTargetUnAvailable() }
     playback.onRemoved()
   }
 

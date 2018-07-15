@@ -206,6 +206,11 @@ class ExoBridge(
     if (player == null) {
       player = kohii.store.acquirePlayer(this.builder.config)
       player!!.repeatMode = builder.repeatMode
+      ExoStore.setVolumeInfo(player!!, _playbackInfo.volumeInfo)
+      val haveResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET
+      if (haveResumePosition) {
+        player!!.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
+      }
     }
 
     if (listenerSet.compareAndSet(false, true)) {
