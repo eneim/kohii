@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
+import kohii.v1.sample.ui.sview.ScrollViewFragment
 
 class MainActivity : AppCompatActivity(), PlayerInfoHolder {
 
@@ -37,7 +38,7 @@ class MainActivity : AppCompatActivity(), PlayerInfoHolder {
     setContentView(R.layout.main_activity)
     if (savedInstanceState == null) {
       supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer,
-          RecyclerViewFragment.newInstance(), RecyclerViewFragment::class.java.simpleName).commit()
+          ScrollViewFragment.newInstance(), RecyclerViewFragment::class.java.simpleName).commit()
     }
   }
 }

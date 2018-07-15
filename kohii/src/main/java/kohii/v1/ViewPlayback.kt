@@ -144,7 +144,7 @@ internal class ViewPlayback<V : View>(
 
   // Location on screen, with visible offset within target's parent.
   @Suppress("MemberVisibilityCanBePrivate")
-  internal class ViewToken internal constructor(
+  internal data class ViewToken internal constructor(
       internal val centerX: Float,
       internal val centerY: Float,
       internal val areaOffset: Float

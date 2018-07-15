@@ -16,10 +16,8 @@
 
 package kohii.v1
 
-import android.os.Bundle
 import android.view.View
 import kohii.media.PlaybackInfo
-import kohii.v1.Kohii.Companion.KEY_MANAGER_STATES
 import kohii.v1.Kohii.GlobalScrollChangeListener
 import kohii.v1.Playback.Token
 import java.util.Comparator
@@ -105,15 +103,6 @@ class Manager internal constructor(
     }
   }
 
-  internal fun onSavePlaybackInfo(): Bundle {
-    val bundle = Bundle()
-    mapTargetToPlayback.values.filter { it.validTag() }.forEach {
-      mapPlayableTagToInfo[it.tag] = it.playable.playbackInfo
-    }
-    bundle.putSerializable(KEY_MANAGER_STATES, mapPlayableTagToInfo)
-    return bundle
-  }
-
   internal fun onHostDestroyed() {
     ArrayList(mapTargetToPlayback.values).apply {
       this.forEach { destroyPlayback(it) }
@@ -148,16 +137,6 @@ class Manager internal constructor(
 
     dispatcher?.removeCallbacksAndMessages(null)
     dispatcher = null
-  }
-
-  // Once created, the Activity bound to this Manager may have some saved state and want to provide.
-  internal fun onInitialized(cache: Bundle?) {
-    if (cache == null) return
-    val state = cache.getSerializable(KEY_MANAGER_STATES)
-    if (state is HashMap<*, *>) {
-      @Suppress("UNCHECKED_CAST")
-      mapPlayableTagToInfo.putAll(state as Map<out Any, PlaybackInfo>)
-    }
   }
 
   internal fun savePlaybackInfo(playback: Playback<*>) {
@@ -266,6 +245,13 @@ class Manager internal constructor(
   // Important. Do the refresh stuff. Change the playback items, etc.
   fun performRefreshAll() {
     candidates.clear()
+
+    mapDetachedPlaybackToTime.keys.filter { it.token != null }.also {
+      dispatcher?.apply {
+        it.forEach { this.dispatchTargetAvailable(it) }
+      }
+    }
+
     // List of all possible candidates.
     val playbacks = ArrayList(mapAttachedPlaybackToTime.keys)
     for (playback in playbacks) {
@@ -273,7 +259,7 @@ class Manager internal constructor(
       val token = playback.token
       // Doing this will sort the playback using LocToken's center Y value.
       if (token == null) {
-        // TODO [20180712] null token, may need to schedule to unbind and release Playable?
+        dispatcher?.dispatchTargetUnAvailable(playback)
       } else if (token.wantsToPlay()) candidates[token] = playback
     }
 
