@@ -84,15 +84,14 @@ abstract class Playback<T> internal constructor(
     true
   })
 
-  private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
-  private val callbacks = CopyOnWriteArraySet<Callback>()
-
-  internal var internalCallback: InternalCallback? = null
-  @Suppress("MemberVisibilityCanBePrivate")
-  internal val target: WeakReference<T>?
   // For public access as well.
   val tag: Any
 
+  private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
+  private val callbacks = CopyOnWriteArraySet<Callback>()
+  private val target: WeakReference<T>?
+
+  internal var internalCallback: InternalCallback? = null
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound and released.
   internal open val token: Token?
