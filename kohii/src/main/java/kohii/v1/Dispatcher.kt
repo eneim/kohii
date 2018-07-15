@@ -29,6 +29,8 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
     val what = msg.what
     when (what) {
       MSG_REFRESH -> manager.performRefreshAll()
+      MSG_TARGET_UNAVAILABLE -> manager.onTargetUnAvailable(msg.obj)
+      MSG_TARGET_AVAILABLE -> manager.onTargetAvailable(msg.obj)
     }
   }
 
@@ -36,11 +38,26 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
 
   fun dispatchRefreshAll() {
     removeMessages(MSG_REFRESH)
-    sendEmptyMessageDelayed(MSG_REFRESH, MSG_DELAY.toLong())
+    sendEmptyMessageDelayed(MSG_REFRESH, MSG_DELAY)
+  }
+
+  fun dispatchTargetUnAvailable(playback: Playback<*>) {
+    val target = playback.getTarget()
+    removeMessages(MSG_TARGET_UNAVAILABLE, target)
+    obtainMessage(MSG_TARGET_UNAVAILABLE, -1, -1, target).sendToTarget()
+  }
+
+  fun dispatchTargetAvailable(playback: Playback<*>) {
+    val target = playback.getTarget()
+    removeMessages(MSG_TARGET_AVAILABLE, target)
+    obtainMessage(MSG_TARGET_AVAILABLE, -1, -1, target).sendToTarget()
   }
 
   companion object {
-    private const val MSG_DELAY = 5 * 1000 / 60
+    private const val MSG_DELAY = (5 * 1000 / 60).toLong()  // 5 frames
+
     private const val MSG_REFRESH = 1
+    private const val MSG_TARGET_UNAVAILABLE = 2
+    private const val MSG_TARGET_AVAILABLE = 3
   }
 }

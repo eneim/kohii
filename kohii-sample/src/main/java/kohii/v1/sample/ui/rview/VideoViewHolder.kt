@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
+import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 
 /**
@@ -55,11 +56,11 @@ class VideoViewHolder(
       ViewCompat.setTransitionName(transView, itemTag)
 
       playerContainer.setAspectRatio(item.width / item.height.toFloat())
-      // playerContainer.setAspectRatio(1280 / 720.toFloat())
       val playable = Kohii[itemView.context]
           .setUp(item.content)
-          // .setUp("https://storage.googleapis.com/spec-host/mio-material-staging%2Fassets%2F1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz%2Fm2-manifesto.mp4")
-          .copy(repeatMode = Player.REPEAT_MODE_ONE).copy(tag = itemTag)
+          .copy(repeatMode = Player.REPEAT_MODE_ONE)
+          .copy(config = DemoApp.app.config)
+          .copy(tag = itemTag)
           .asPlayable()
       playable.bind(playerView).run {
         this.addCallback(object : Callback {
