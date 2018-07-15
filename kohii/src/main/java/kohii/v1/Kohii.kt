@@ -62,8 +62,8 @@ class Kohii(context: Context) {
   init {
     app.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity?, state: Bundle?) {
-        val cache = state?.getBundle(KEY_ACTIVITY_STATES)
-        playableStates[activity] = cache
+        // val cache = state?.getBundle(KEY_ACTIVITY_STATES)
+        // playableStates[activity] = cache
       }
 
       override fun onActivityStarted(activity: Activity) {
@@ -81,9 +81,9 @@ class Kohii(context: Context) {
       }
 
       override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-        managers[activity]?.onSavePlaybackInfo()?.also {
-          outState.putBundle(KEY_ACTIVITY_STATES, it)
-        }
+        // managers[activity]?.onSavePlaybackInfo()?.also {
+          // outState.putBundle(KEY_ACTIVITY_STATES, it)
+        // }
       }
 
       // Note: [20180527] This method is called before DecorView is detached.
@@ -145,7 +145,7 @@ class Kohii(context: Context) {
   }
 
   companion object {
-    internal const val KEY_ACTIVITY_STATES = "kohii:activity:states"
+    // internal const val KEY_ACTIVITY_STATES = "kohii:activity:states"
     internal const val KEY_MANAGER_STATES = "kohii:manager:states"
 
     @SuppressLint("StaticFieldLeak")
@@ -174,7 +174,7 @@ class Kohii(context: Context) {
           if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
           decorView.addOnAttachStateChangeListener(
               ManagerAttachStateListener(context, decorView))
-          it.onInitialized(playableStates[context])
+          // it.onInitialized(playableStates[context])
         }
   }
 

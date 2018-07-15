@@ -158,6 +158,7 @@ internal class ViewPlayback<V : View>(
     }
   }
 
+  @Suppress("unused")
   companion object {
     val CENTER_Y: Comparator<ViewToken> = Comparator { o1, o2 ->
       compareValues(o1.centerY, o2.centerY)
