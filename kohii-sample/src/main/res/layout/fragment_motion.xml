@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+  <data>
+    <variable
+        name="motion"
+        type="kohii.v1.sample.ui.motion.Motion"
+        />
+  </data>
+
+  <androidx.core.widget.NestedScrollView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior"
+      >
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="120dp"
+          app:resize_mode="fixed_width"
+          app:show_buffering="true"
+          app:surface_type="texture_view"
+          app:use_controller="false"
+          app:video="@{motion.video0}"
+          />
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="4dp"
+          android:layout_marginEnd="8dp"
+          android:layout_marginStart="8dp"
+          android:layout_marginTop="8dp"
+          android:text="@{motion.title}"
+          android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+          />
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="8dp"
+          android:layout_marginEnd="8dp"
+          android:layout_marginStart="8dp"
+          android:text="@{motion.subTitle}"
+          android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+          />
+
+      <androidx.appcompat.widget.AppCompatImageView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="8dp"
+          android:src="@drawable/shape_line"
+          />
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_margin="8dp"
+          android:lineSpacingMultiplier="1.15"
+          android:text="@{motion.text1}"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="120dp"
+          app:resize_mode="fixed_width"
+          app:show_buffering="true"
+          app:surface_type="texture_view"
+          app:use_controller="false"
+          app:video="@{motion.video1}"
+          />
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_margin="8dp"
+          android:lineSpacingMultiplier="1.15"
+          android:text="@{motion.text2}"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="120dp"
+          app:resize_mode="fixed_width"
+          app:show_buffering="true"
+          app:surface_type="texture_view"
+          app:use_controller="false"
+          app:video="@{motion.video2}"
+          />
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_margin="8dp"
+          android:lineSpacingMultiplier="1.15"
+          android:text="@{motion.text3}"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="120dp"
+          app:resize_mode="fixed_width"
+          app:show_buffering="true"
+          app:surface_type="texture_view"
+          app:use_controller="false"
+          app:video="@{motion.video3}"
+          />
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_margin="8dp"
+          android:lineSpacingMultiplier="1.15"
+          android:text="@{motion.text4}"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="120dp"
+          app:resize_mode="fixed_width"
+          app:show_buffering="true"
+          app:surface_type="texture_view"
+          app:use_controller="false"
+          app:video="@{motion.video4}"
+          />
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_margin="8dp"
+          android:lineSpacingMultiplier="1.15"
+          android:text="@{motion.text5}"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+  </androidx.core.widget.NestedScrollView>
+</layout>
