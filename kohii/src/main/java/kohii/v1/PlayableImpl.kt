@@ -96,7 +96,7 @@ class PlayableImpl internal constructor(
     val oldTarget = manager.mapPlayableToTarget.put(this, playerView)
     if (oldTarget === playerView) {
       @Suppress("UNCHECKED_CAST")
-      playback = manager.mapTargetToPlayback[oldTarget] as? Playback<PlayerView> ?: null
+      playback = manager.mapTargetToPlayback[oldTarget] as Playback<PlayerView>?
       // Many Playbacks may share the same Target, but not share the same Playable.
       if (playback?.playable != this) playback = null
     } else {
