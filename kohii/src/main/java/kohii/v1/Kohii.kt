@@ -52,12 +52,11 @@ class Kohii(context: Context) {
   // Map between Context with the Manager that is hosted on it.
   internal val managers = WeakHashMap<Context, Manager>()
 
+  // Store playables whose tag is available. Non tagged playables are always ignored.
+  internal val playableStore = HashMap<Any, Playable>()
+
   // Which Playable is managed by which Manager
   internal val mapPlayableToManager = WeakHashMap<Playable, Manager?>()
-
-  internal val playableStates = WeakHashMap<Context, Bundle>()
-  internal val playableStore = HashMap<Any, Playable>() // Tag to Playable map.
-  internal val referenceQueue = ReferenceQueue<Any>()
 
   init {
     app.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {

@@ -50,8 +50,8 @@ dependencies {
   implementation libraries.exoplayer.all
 
   implementation libraries.kotlin.stdlib
-  implementation libraries.androidx.appcompat
-  implementation libraries.androidx.recyclerview
+  // implementation libraries.androidx.appcompat
+  // implementation libraries.androidx.recyclerview
   implementation libraries.androidx.material
 
   testImplementation libraries.junit
@@ -64,4 +64,5 @@ tasks.withType(Javadoc).all {
   enabled = false
 }
 
+project.archivesBaseName = "kohii"
 apply from: rootProject.file('gradle/publish.gradle')

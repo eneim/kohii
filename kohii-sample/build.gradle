@@ -52,7 +52,6 @@ android {
 dependencies {
   implementation fileTree(include: ['*.jar'], dir: 'libs')
   implementation project(':kohii')
-  // implementation "im.ene.kohii:kohii:1.0.0.2801-SNAPSHOT"
   implementation libraries.exoplayer.all
 
   implementation libraries.kotlin.stdlib

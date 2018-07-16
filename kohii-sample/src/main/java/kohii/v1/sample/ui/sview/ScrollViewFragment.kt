@@ -56,7 +56,7 @@ class ScrollViewFragment : Fragment() {
   }
 
   private val playable: Playable by lazy {
-    Kohii[this].setUp(Uri.parse(videoUrl))
+    Kohii[this].setUp(videoUrl)
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = videoUrl)
         .copy(config = DemoApp.app.config)

@@ -41,4 +41,18 @@ data class Config(
     val DEFAULT_METER = DataMeter<BandwidthMeter, TransferListener<Any>>(meter, meter)
     val DEFAULT_CONFIG = Config(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
   }
+
+  @Deprecated("Kohii works better with Kotlin than Java.",
+      ReplaceWith("this.copy(extensionMode = extensionMode)"))
+  fun setExtensionMode(extensionMode: Int) = this.copy(extensionMode = extensionMode)
+
+  @Deprecated("Kohii works better with Kotlin than Java.",
+      ReplaceWith("this.copy(mediaDrm = mediaDrm)"))
+  fun setMediaDrm(mediaDrm: MediaDrm?) = this.copy(mediaDrm = mediaDrm)
+
+  @Deprecated("Kohii works better with Kotlin than Java.", ReplaceWith("this.copy(cache = cache)"))
+  fun setCache(cache: Cache?) = this.copy(cache = cache)
+
+  @Deprecated("Kohii works better with Kotlin than Java.", ReplaceWith("this.copy(meter = meter)"))
+  fun setMeter(meter: DataMeter<BandwidthMeter, TransferListener<Any>>) = this.copy(meter = meter)
 }

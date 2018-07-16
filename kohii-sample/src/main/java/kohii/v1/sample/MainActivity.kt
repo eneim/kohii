@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(), PlayerInfoHolder {
     setContentView(R.layout.main_activity)
     if (savedInstanceState == null) {
       supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer,
-          DebugFragment.newInstance(), RecyclerViewFragment::class.java.simpleName).commit()
+          RecyclerViewFragment.newInstance(), RecyclerViewFragment::class.java.simpleName).commit()
     }
   }
 }

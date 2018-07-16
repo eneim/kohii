@@ -56,13 +56,6 @@ abstract class Playback<T> internal constructor(
     }
   }
 
-  @Suppress("unused")
-  internal class PlaybackWeakReference<M>(
-      val playback: Playback<M>,
-      referent: M,
-      q: ReferenceQueue<in M>
-  ) : WeakReference<M>(referent, q)
-
   private val handler = Handler(Handler.Callback { msg ->
     val playWhenReady = msg.obj as Boolean
     when (msg.what) {
@@ -103,11 +96,7 @@ abstract class Playback<T> internal constructor(
 
   init {
     @Suppress("UNCHECKED_CAST", "LeakingThis")
-    this.target =
-        if (target == null)
-          null
-        else
-          PlaybackWeakReference(this, target, kohii.referenceQueue as ReferenceQueue<in T>)
+    this.target = if (target == null) null else WeakReference(target)
     this.tag = builder.tag ?: SCRAP
   }
 

@@ -69,6 +69,7 @@ interface Playable {
 
   var playbackInfo: PlaybackInfo
 
+  // data class for copying convenience.
   data class Builder(
       val kohii: Kohii,
       val contentUri: Uri,
@@ -82,5 +83,33 @@ interface Playable {
     fun asPlayable(): Playable {
       return this.kohii.acquirePlayable(this.contentUri, this)
     }
+
+    // for Java's Builder usage.
+
+    @Deprecated("Kohii works better with Kotlin than Java.",
+        ReplaceWith("this.copy(tag = tag)", "kohii.v1.Playable.Builder"))
+    fun setTag(tag: Any?) = this.copy(tag = tag)
+
+    @Deprecated("Kohii works better with Kotlin than Java.",
+        ReplaceWith("this.copy(config = config)", "kohii.v1.Playable.Builder"))
+    fun setConfig(config: Config) = this.copy(config = config)
+
+    @Deprecated("Kohii works better with Kotlin than Java.",
+        ReplaceWith("this.copy(mediaType = mediaType)", "kohii.v1.Playable.Builder"))
+    fun setMediaType(mediaType: String?) = this.copy(mediaType = mediaType)
+
+    @Deprecated("Kohii works better with Kotlin than Java.",
+        ReplaceWith("this.copy(playbackInfo = playbackInfo)", "kohii.v1.Playable.Builder"))
+    fun setPlaybackInfo(playbackInfo: PlaybackInfo) = this.copy(playbackInfo = playbackInfo)
+
+    @Deprecated("Kohii works better with Kotlin than Java.",
+        ReplaceWith("this.copy(repeatMode = repeatMode)", "kohii.v1.Playable.Builder"))
+    fun setRepeatMode(repeatMode: Int) = this.copy(repeatMode = repeatMode)
+
+    @Deprecated("Kohii works better with Kotlin than Java.",
+        ReplaceWith("this.copy(prepareAlwaysLoad = prepareAlwaysLoad)",
+            "kohii.v1.Playable.Builder"))
+    fun setPrepareAlwaysLoad(prepareAlwaysLoad: Boolean) = this.copy(
+        prepareAlwaysLoad = prepareAlwaysLoad)
   }
 }
