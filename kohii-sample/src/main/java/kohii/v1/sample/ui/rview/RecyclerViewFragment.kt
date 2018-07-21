@@ -88,9 +88,13 @@ class RecyclerViewFragment : Fragment() {
     postponeEnterTransition()
 
     container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {
-      it.setHasFixedSize(false)
+      it.setHasFixedSize(true)
       it.layoutManager = LinearLayoutManager(requireContext())
-      it.adapter = ItemsAdapter(this, ArrayList(items!!).apply { this.addAll(items!!) }) { dp ->
+      it.layoutManager!!.isItemPrefetchEnabled = true
+      it.adapter = ItemsAdapter(
+          this,
+          ArrayList(items!!).apply { this.addAll(items!!) }
+      ) { dp ->
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(),
             resources.displayMetrics).toInt()
       }

@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.ui.rview
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -73,7 +74,10 @@ class ItemsAdapter(
   }
 
   override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-    holder.bind(items[position])
+    val start = System.nanoTime()
+    holder.bind(items[position % items.size])
+    Log.d("Kohii:B",
+        "bind: $position, rt: " + ((System.nanoTime() - start) / 1000000) + " ms, class: $holder")
   }
 
   class VideoClickImpl(private val fragment: RecyclerViewFragment) : OnClickListener {
