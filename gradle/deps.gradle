@@ -43,7 +43,7 @@ ext {
       [//
        kotlin          : "1.2.51",
        supportLibrary  : "28.0.0-alpha3",
-       gradlePlugin    : "3.2.0-beta02",
+       gradlePlugin    : "3.2.0-beta05",
        jetpack         : "1.0.0-beta01",
        constraintLayout: "1.1.2",
        xlifecycle      : "2.0.0-beta01",
@@ -110,7 +110,8 @@ ext {
 
        exoplayer    : //
            [//
-            all: "com.google.android.exoplayer:exoplayer:$versions.exoplayer" //
+            all         : "com.google.android.exoplayer:exoplayer:$versions.exoplayer",
+            mediasession: "com.google.android.exoplayer:extension-mediasession:$versions.exoplayer" //
            ], //
       ]
 }

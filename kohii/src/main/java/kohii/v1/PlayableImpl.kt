@@ -18,16 +18,17 @@ package kohii.v1
 
 import android.net.Uri
 import android.util.Log
+import android.widget.VideoView
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
 import kohii.v1.Playable.Builder
 import kohii.v1.exo.ExoBridge
 
+@Suppress("MemberVisibilityCanBePrivate")
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
 class PlayableImpl internal constructor(
     val kohii: Kohii,
     val uri: Uri,
@@ -55,13 +56,13 @@ class PlayableImpl internal constructor(
       }
       this.helper.addEventListener(this.listener!!)
     }
+    this.helper.addErrorListener(playback.errorListeners)
+    this.helper.addEventListener(playback.playerListeners)
+    this.helper.addVolumeChangeListener(playback.volumeListeners)
   }
 
   override fun onTargetAvailable(playback: Playback<*>) {
-    this.helper.prepare(this.builder.prepareAlwaysLoad)
-    if (playback.getTarget() is PlayerView) {
-      this.helper.playerView = playback.getTarget() as PlayerView
-    }
+    (playback.getTarget() as? PlayerView)?.run { helper.playerView = this }
   }
 
   override fun onTargetUnAvailable(playback: Playback<*>) {
@@ -72,13 +73,17 @@ class PlayableImpl internal constructor(
   }
 
   override fun onRemoved(playback: Playback<*>) {
+    this.helper.removeVolumeChangeListener(playback.volumeListeners)
+    this.helper.removeEventListener(playback.playerListeners)
+    this.helper.removeErrorListener(playback.errorListeners)
     if (this.listener != null) {
       this.helper.removeEventListener(this.listener!!)
       this.listener = null
     }
     if (kohii.mapPlayableToManager[this] == null) {
       playback.release()
-      if (this.builder.tag != null) kohii.releasePlayable(this.builder.tag, this)
+      // There is no more Manager to manage this Playable, and we are removing the last one, so ...
+      kohii.releasePlayable(this.builder.tag, this)
     }
     playback.internalCallback = null
     playback.removeCallback(this)
@@ -91,34 +96,34 @@ class PlayableImpl internal constructor(
   // Relationship: [Playable] --> [Playback [Target]]
   override fun bind(playerView: PlayerView): Playback<PlayerView> {
     val manager = kohii.getManager(playerView.context)
-    kohii.onManagerStateMayChange(manager, this, true)
+    kohii.mapPlayableToManager[this] = manager
     var playback: Playback<PlayerView>? = null
     val oldTarget = manager.mapPlayableToTarget.put(this, playerView)
     if (oldTarget === playerView) {
       @Suppress("UNCHECKED_CAST")
-      playback = manager.mapTargetToPlayback[oldTarget] as? Playback<PlayerView> ?: null
+      playback = manager.mapTargetToPlayback[oldTarget] as Playback<PlayerView>?
       // Many Playbacks may share the same Target, but not share the same Playable.
       if (playback?.playable != this) playback = null
     } else {
       val oldPlayback = manager.mapTargetToPlayback.remove(oldTarget)
       if (oldPlayback != null) {
-        manager.destroyPlayback(oldPlayback)
-        oldPlayback.onDestroyed()
+        manager.performDestroyPlayback(oldPlayback)
       }
     }
 
     if (playback == null) {
-      playback = ViewPlayback(kohii, this, uri, manager, playerView, builder)
+      playback = ViewPlayback(kohii, this, uri, manager, playerView, builder,
+          Playback.DEFAULT_DISPATCHER)
       playback.onCreated()
       playback.addCallback(this)
       playback.internalCallback = this
     }
 
-    return manager.addPlayback(playback)
+    return manager.performAddPlayback(playback)
   }
 
   override fun prepare() {
-    // TODO [20180712] consider to use this. Should be called from a Playback.
+    this.helper.prepare(this.builder.prepareAlwaysLoad)
   }
 
   override fun play() {
@@ -131,22 +136,6 @@ class PlayableImpl internal constructor(
 
   override fun release() {
     this.helper.release()
-  }
-
-  override fun addVolumeChangeListener(listener: OnVolumeChangedListener) {
-    this.helper.addOnVolumeChangeListener(listener)
-  }
-
-  override fun removeVolumeChangeListener(listener: OnVolumeChangedListener?) {
-    this.helper.removeOnVolumeChangeListener(listener)
-  }
-
-  override fun addPlayerEventListener(listener: PlayerEventListener) {
-    this.helper.addEventListener(listener)
-  }
-
-  override fun removePlayerEventListener(listener: PlayerEventListener?) {
-    this.helper.removeEventListener(listener)
   }
 
   override var playbackInfo: PlaybackInfo

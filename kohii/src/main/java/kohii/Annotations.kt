@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii
 
-import com.google.android.exoplayer2.Player
-import kohii.media.MediaDrm
+import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
- * @author eneim (2018/06/25).
+ * @author eneim (2018/07/30).
  */
-interface PlayerFactory {
 
-  fun createPlayer(mediaDrm: MediaDrm?): Player
-}
+@Retention(SOURCE)
+annotation class Draft
+
+@Retention(SOURCE)
+annotation class Experiment
+
+@Retention(SOURCE)
+annotation class Beta
+
+@Retention(SOURCE)
+annotation class Release

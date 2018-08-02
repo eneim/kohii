@@ -18,11 +18,12 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply from: "${rootDir.absolutePath}/gradle/deps.gradle"
 
-version = buildConfig.version.name + "-SNAPSHOT"
+version = buildConfig.version.name + "-ALPHA2"
 group = GROUP
 
+@SuppressWarnings("GrMethodMayBeStatic")
 def getVersionName() {
-  return buildConfig.version.name + "-SNAPSHOT"
+  return version
 }
 
 def isReleaseBuild() {
