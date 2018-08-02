@@ -18,7 +18,6 @@ package kohii.v1
 
 import android.net.Uri
 import android.util.Log
-import android.widget.VideoView
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
@@ -67,7 +66,7 @@ class PlayableImpl internal constructor(
 
   override fun onTargetUnAvailable(playback: Playback<*>) {
     // This will release current Video MediaCodec instances, which are expensive to retain.
-    if (kohii.mapPlayableToManager[this] == playback.manager) {
+    if (kohii.mapWeakPlayableToManager[this] == playback.manager) {
       this.helper.playerView = null
     }
   }
@@ -80,7 +79,7 @@ class PlayableImpl internal constructor(
       this.helper.removeEventListener(this.listener!!)
       this.listener = null
     }
-    if (kohii.mapPlayableToManager[this] == null) {
+    if (kohii.mapWeakPlayableToManager[this] == null) {
       playback.release()
       // There is no more Manager to manage this Playable, and we are removing the last one, so ...
       kohii.releasePlayable(this.builder.tag, this)
@@ -96,7 +95,7 @@ class PlayableImpl internal constructor(
   // Relationship: [Playable] --> [Playback [Target]]
   override fun bind(playerView: PlayerView): Playback<PlayerView> {
     val manager = kohii.getManager(playerView.context)
-    kohii.mapPlayableToManager[this] = manager
+    kohii.mapWeakPlayableToManager[this] = manager
     var playback: Playback<PlayerView>? = null
     val oldTarget = manager.mapPlayableToTarget.put(this, playerView)
     if (oldTarget === playerView) {
