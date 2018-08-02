@@ -102,6 +102,7 @@ class Manager internal constructor(
     }
   }
 
+  // Called when the Activity bound to this Manager is destroyed.
   internal fun onHostDestroyed() {
     ArrayList(mapTargetToPlayback.values).apply {
       this.forEach { performDestroyPlayback(it) }
@@ -251,7 +252,7 @@ class Manager internal constructor(
   fun performRefreshAll() {
     candidates.clear()
 
-    mapDetachedPlaybackToTime.keys.filter { it.token != null }.also {
+    mapDetachedPlaybackToTime.keys.filter { it.token != null }.also { it ->
       dispatcher?.apply {
         it.forEach { this.dispatchTargetAvailable(it) }
       }
