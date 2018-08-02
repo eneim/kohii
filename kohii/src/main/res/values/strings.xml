@@ -51,7 +51,7 @@
 
   <string name="download_start_error">Failed to start download</string>
 
-  <string name="download_playlist_unsupported">This demo app does not support downloading playlists</string>
+  <string name="download_playlist_unsupported">This demo app does not support downloading playlist</string>
 
   <string name="download_drm_unsupported">This demo app does not support downloading protected content</string>
 

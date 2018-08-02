@@ -22,12 +22,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import com.google.android.exoplayer2.Player
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.motion.MotionFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * @author eneim (2018/07/13).
  */
-class DebugFragment : Fragment() {
+class DebugFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = DebugFragment()

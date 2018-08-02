@@ -23,7 +23,7 @@ import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 
 /**
- * Bridge between a Playable and a Target.
+ * Bridge between a Playable and a Target. Currently this interface is designed based on ExoPlayer.
  *
  * @author eneim (2018/06/24).
  */
@@ -85,9 +85,13 @@ internal interface Bridge {
    */
   fun removeEventListener(listener: PlayerEventListener?)
 
-  fun addOnVolumeChangeListener(listener: OnVolumeChangedListener)
+  fun addVolumeChangeListener(listener: VolumeChangedListener)
 
-  fun removeOnVolumeChangeListener(listener: OnVolumeChangedListener?)
+  fun removeVolumeChangeListener(listener: VolumeChangedListener?)
+
+  fun addErrorListener(errorListener: ErrorListener)
+
+  fun removeErrorListener(errorListener: ErrorListener?)
 
   /**
    * Update playback's volume.

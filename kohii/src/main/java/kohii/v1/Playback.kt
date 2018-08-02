@@ -20,7 +20,6 @@ import android.net.Uri
 import android.os.Handler
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
-import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -31,13 +30,15 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
+@Suppress("MemberVisibilityCanBePrivate")
 abstract class Playback<T> internal constructor(
     internal val kohii: Kohii,
     internal val playable: Playable,
     internal val uri: Uri,
     internal val manager: Manager,
     target: T?,
-    builder: Playable.Builder
+    internal val builder: Playable.Builder,
+    internal val dispatcher: PlaybackDispatcher = DEFAULT_DISPATCHER
 ) {
 
   companion object {
@@ -45,8 +46,21 @@ abstract class Playback<T> internal constructor(
     const val STATE_BUFFERING = 2
     const val STATE_READY = 3
     const val STATE_END = 4
+    val DEFAULT_DISPATCHER = object : PlaybackDispatcher {
+      override fun getInitDelay() = 0L
+    }
+    private const val MSG_PLAY = 100
     private val SCRAP = Any()
   }
+
+  data class Builder(
+      internal val kohii: Kohii,
+      internal val playable: Playable,
+      internal val uri: Uri,
+      internal val manager: Manager,
+      internal val dispatcher: PlaybackDispatcher,
+      internal val builder: Playable.Builder
+  )
 
   open class Token : Comparable<Token> {
     override fun compareTo(other: Token) = 0
@@ -56,37 +70,18 @@ abstract class Playback<T> internal constructor(
     }
   }
 
-  @Suppress("unused")
-  internal class PlaybackWeakReference<M>(
-      val playback: Playback<M>,
-      referent: M,
-      q: ReferenceQueue<in M>
-  ) : WeakReference<M>(referent, q)
-
-  private val handler = Handler(Handler.Callback { msg ->
-    val playWhenReady = msg.obj as Boolean
-    when (msg.what) {
-      STATE_IDLE -> {
-      }
-
-      STATE_BUFFERING -> for (listener in listeners) {
-        listener.onBuffering()
-      }
-
-      STATE_READY -> for (listener in listeners) {
-        if (playWhenReady) listener.onPlaying() else listener.onPaused()
-      }
-
-      STATE_END -> for (listener in listeners) {
-        listener.onCompleted()
-      }
-    }
-    true
-  })
+  private var listenerHandler: Handler? = null
+  private var dispatcherHandler: Handler? = null
 
   // For public access as well.
   val tag: Any
 
+  // listener for Playable
+  internal val volumeListeners by lazy { VolumeChangedListeners() }
+  internal val playerListeners by lazy { PlayerEventListeners() }
+  internal val errorListeners by lazy { ErrorListeners() }
+
+  // internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
   private val callbacks = CopyOnWriteArraySet<Callback>()
   private val target: WeakReference<T>?
@@ -103,24 +98,20 @@ abstract class Playback<T> internal constructor(
 
   init {
     @Suppress("UNCHECKED_CAST", "LeakingThis")
-    this.target =
-        if (target == null)
-          null
-        else
-          PlaybackWeakReference(this, target, kohii.referenceQueue as ReferenceQueue<in T>)
+    this.target = if (target == null) null else WeakReference(target)
     this.tag = builder.tag ?: SCRAP
   }
 
   // Used by subclasses to dispatch internal event listeners
   internal fun dispatchPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
-    handler.obtainMessage(playbackState, playWhenReady).sendToTarget()
+    listenerHandler?.obtainMessage(playbackState, playWhenReady)?.sendToTarget()
   }
 
-  fun addListener(listener: PlaybackEventListener) {
+  fun addPlaybackEventListener(listener: PlaybackEventListener) {
     this.listeners.add(listener)
   }
 
-  fun removeListener(listener: PlaybackEventListener) {
+  fun removePlaybackEventListener(listener: PlaybackEventListener?) {
     this.listeners.remove(listener)
   }
 
@@ -132,6 +123,22 @@ abstract class Playback<T> internal constructor(
     this.callbacks.remove(callback)
   }
 
+  fun addVolumeChangeListener(listener: VolumeChangedListener) {
+    this.volumeListeners.add(listener)
+  }
+
+  fun removeVolumeChangeListener(listener: VolumeChangedListener?) {
+    this.volumeListeners.remove(listener)
+  }
+
+  fun addPlayerEventListener(listener: PlayerEventListener) {
+    this.playerListeners.add(listener)
+  }
+
+  fun removePlayerEventListener(listener: PlayerEventListener?) {
+    this.playerListeners.remove(listener)
+  }
+
   /// internal APIs
 
   fun getTarget(): T? {
@@ -141,17 +148,29 @@ abstract class Playback<T> internal constructor(
   // Only playback with 'valid tag' will be cached for restoring.
   internal fun validTag() = this.tag !== SCRAP
 
+  internal fun prepare() {
+    playable.prepare()
+  }
+
+  internal fun play() {
+    val delay = dispatcher.getInitDelay()
+    dispatcherHandler?.removeMessages(MSG_PLAY)
+    when {
+      delay > 0 -> dispatcherHandler?.sendEmptyMessageDelayed(MSG_PLAY, delay) ?: playable.play()
+      delay == 0L -> playable.play()
+      delay < 0 -> {
+        // Do nothing.
+      }
+    }
+  }
+
   internal fun pause() {
+    dispatcherHandler?.removeMessages(MSG_PLAY)
     playable.pause()
   }
 
-  @CallSuper
-  internal fun play() {
-    playable.play()
-  }
-
-  @CallSuper
   internal fun release() {
+    dispatcherHandler?.removeMessages(MSG_PLAY)
     playable.release()
   }
 
@@ -165,6 +184,8 @@ abstract class Playback<T> internal constructor(
   // being removed from Manager
   @CallSuper
   open fun onRemoved() {
+    dispatcherHandler?.removeCallbacksAndMessages(null)
+    listenerHandler?.removeCallbacksAndMessages(null)
     internalCallback?.onRemoved(this)
     this.callbacks.clear()
     this.listeners.clear()
@@ -183,18 +204,44 @@ abstract class Playback<T> internal constructor(
   // there is no other Manager manages the internal Playable.
   @CallSuper
   open fun onTargetUnAvailable() {
-    handler.removeCallbacksAndMessages(null)
     this.callbacks.forEach { it.onTargetUnAvailable(this) }
   }
 
   @CallSuper
   open fun onCreated() {
+    this.listenerHandler = Handler(android.os.Handler.Callback {
+      val playWhenReady = it.obj as kotlin.Boolean
+      when (it.what) {
+        STATE_IDLE -> {
+        }
 
+        STATE_BUFFERING -> for (listener in listeners) {
+          listener.onBuffering(playWhenReady)
+        }
+
+        STATE_READY -> for (listener in listeners) {
+          if (playWhenReady) listener.onPlaying() else listener.onPaused()
+        }
+
+        STATE_END -> for (listener in listeners) {
+          listener.onCompleted()
+        }
+      }
+      true
+    })
+
+    this.dispatcherHandler = Handler(Handler.Callback {
+      if (it.what == MSG_PLAY) {
+        playable.play()
+      }
+      true
+    })
   }
 
   @CallSuper
   open fun onDestroyed() {
-
+    this.listenerHandler = null
+    this.dispatcherHandler = null
   }
 
   // For internal flow only.
@@ -206,5 +253,13 @@ abstract class Playback<T> internal constructor(
   interface Callback {
     fun onTargetAvailable(playback: Playback<*>)
     fun onTargetUnAvailable(playback: Playback<*>)
+  }
+
+  interface PlaybackDispatcher {
+    // return the delay to start the Playback.
+    // default implementation will use Handler to dispatch the call to "play()", accept that:
+    // - if returns negative, it will postpone the playback.
+    // - if returns zero, it will start the playback immediately without using Handler.
+    fun getInitDelay(): Long
   }
 }

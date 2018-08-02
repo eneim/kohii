@@ -52,7 +52,6 @@ android {
 dependencies {
   implementation fileTree(include: ['*.jar'], dir: 'libs')
   implementation project(':kohii')
-  // implementation "im.ene.kohii:kohii:1.0.0.2801-SNAPSHOT"
   implementation libraries.exoplayer.all
 
   implementation libraries.kotlin.stdlib
@@ -76,6 +75,8 @@ dependencies {
   kapt "com.github.bumptech.glide:compiler:4.8.0-SNAPSHOT"
   implementation 'com.caverock:androidsvg:1.2.1'
 
-  debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6-SNAPSHOT'
-  releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6-SNAPSHOT'
+  debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
+  releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
+  // Optional, if you use support library fragments:
+  debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.1'
 }

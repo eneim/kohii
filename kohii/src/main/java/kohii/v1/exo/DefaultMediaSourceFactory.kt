@@ -53,14 +53,20 @@ class DefaultMediaSourceFactory(
         if (isEmpty(builder.mediaType)) inferContentType(builder.contentUri)
         else inferContentType("." + builder.mediaType!!)
     return when (type) {
-      C.TYPE_SS -> SsMediaSource.Factory(DefaultSsChunkSource.Factory(mediaDataSourceFactory),
-          manifestDataSourceFactory).createMediaSource(builder.contentUri)
-      C.TYPE_DASH -> DashMediaSource.Factory(DefaultDashChunkSource.Factory(mediaDataSourceFactory),
-          manifestDataSourceFactory).createMediaSource(builder.contentUri)
-      C.TYPE_HLS -> HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(
-          builder.contentUri)
-      C.TYPE_OTHER -> ExtractorMediaSource.Factory(mediaDataSourceFactory).createMediaSource(
-          builder.contentUri)
+      C.TYPE_SS ->
+        SsMediaSource.Factory(
+            DefaultSsChunkSource.Factory(mediaDataSourceFactory),
+            manifestDataSourceFactory
+        ).createMediaSource(builder.contentUri)
+      C.TYPE_DASH ->
+        DashMediaSource.Factory(
+            DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+            manifestDataSourceFactory
+        ).createMediaSource(builder.contentUri)
+      C.TYPE_HLS ->
+        HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(builder.contentUri)
+      C.TYPE_OTHER ->
+        ExtractorMediaSource.Factory(mediaDataSourceFactory).createMediaSource(builder.contentUri)
       else -> throw IllegalStateException("Unsupported type: $type")
     }
   }

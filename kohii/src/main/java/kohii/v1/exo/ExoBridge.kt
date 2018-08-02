@@ -16,21 +16,27 @@
 
 package kohii.v1.exo
 
+import android.util.Log
+import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
+import kohii.media.PlaybackInfo.Companion.INDEX_UNSET
 import kohii.media.PlaybackInfo.Companion.TIME_UNSET
 import kohii.media.VolumeInfo
 import kohii.v1.Bridge
+import kohii.v1.DefaultEventListener
+import kohii.v1.ErrorListener
+import kohii.v1.ErrorListeners
 import kohii.v1.Kohii
-import kohii.v1.OnVolumeChangedListener
-import kohii.v1.OnVolumeChangedListeners
 import kohii.v1.Playable.Builder
 import kohii.v1.PlayerEventListener
 import kohii.v1.PlayerEventListeners
+import kohii.v1.VolumeChangedListener
+import kohii.v1.VolumeChangedListeners
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -39,19 +45,22 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ExoBridge(
     private val kohii: Kohii,
     private val builder: Builder
-) : Bridge {
+) : DefaultEventListener(), Bridge {
 
-  private val listeners = PlayerEventListeners()  // original listener.
-  private val volumeChangedListeners = OnVolumeChangedListeners()
-  private val listenerSet = AtomicBoolean(false)
+  private val eventListeners by lazy { PlayerEventListeners() }  // original listener.
+  private val volumeListeners by lazy { VolumeChangedListeners() }
+  private val errorListeners by lazy { ErrorListeners() }
 
+  private val listenerIsSet = AtomicBoolean(false)
+
+  private val _playbackInfo = PlaybackInfo()
   private var mediaSource: MediaSource? = null
   private var player: Player? = null
 
   override fun prepare(loadSource: Boolean) {
     if (loadSource) {
-      ensurePlayerView()
       ensureMediaSource()
+      ensurePlayerView()
     }
   }
 
@@ -61,8 +70,8 @@ class ExoBridge(
       if (value == null)
         field!!.player = null
       else {
-        if (this.player != null) {
-          PlayerView.switchTargetView(this.player!!, field, value)
+        this.player?.run {
+          PlayerView.switchTargetView(this, field, value)
         }
       }
 
@@ -70,8 +79,8 @@ class ExoBridge(
     }
 
   override fun play() {
-    ensurePlayerView()
     ensureMediaSource()
+    ensurePlayerView()
     player!!.playWhenReady = true
   }
 
@@ -92,19 +101,20 @@ class ExoBridge(
     this.playerView = null
     if (player != null) {
       player!!.stop(true)
-      if (listenerSet.compareAndSet(true, false)) {
-        player!!.removeListener(listeners)
+      if (listenerIsSet.compareAndSet(true, false)) {
+        player!!.removeListener(eventListeners)
         if (player is KohiiPlayer) {
           (player as KohiiPlayer).clearOnVolumeChangedListener()
         }
 
         if (player is SimpleExoPlayer) {
           (player as SimpleExoPlayer).apply {
-            this.removeTextOutput(listeners)
-            this.removeVideoListener(listeners)
-            this.removeMetadataOutput(listeners)
+            this.removeTextOutput(eventListeners)
+            this.removeVideoListener(eventListeners)
+            this.removeMetadataOutput(eventListeners)
           }
         }
+        player!!.removeListener(this)
       }
 
       kohii.store.releasePlayer(player!!, builder.config)
@@ -115,21 +125,29 @@ class ExoBridge(
   }
 
   override fun addEventListener(listener: PlayerEventListener) {
-    this.listeners.add(listener)
+    this.eventListeners.add(listener)
   }
 
   override fun removeEventListener(listener: PlayerEventListener?) {
-    this.listeners.remove(listener)
+    this.eventListeners.remove(listener)
   }
 
-  override fun addOnVolumeChangeListener(listener: OnVolumeChangedListener) {
-    this.volumeChangedListeners.add(listener)
+  override fun addVolumeChangeListener(listener: VolumeChangedListener) {
+    this.volumeListeners.add(listener)
     (player as? KohiiPlayer)?.addOnVolumeChangedListener(listener)
   }
 
-  override fun removeOnVolumeChangeListener(listener: OnVolumeChangedListener?) {
-    this.volumeChangedListeners.remove(listener)
+  override fun removeVolumeChangeListener(listener: VolumeChangedListener?) {
+    this.volumeListeners.remove(listener)
     (player as? KohiiPlayer)?.removeOnVolumeChangedListener(listener)
+  }
+
+  override fun addErrorListener(errorListener: ErrorListener) {
+    this.errorListeners.add(errorListener)
+  }
+
+  override fun removeErrorListener(errorListener: ErrorListener?) {
+    this.errorListeners.remove(errorListener)
   }
 
   override val isPlaying: Boolean
@@ -153,7 +171,6 @@ class ExoBridge(
       player!!.playbackParameters = value
     }
 
-  private val _playbackInfo = PlaybackInfo()
   override var playbackInfo: PlaybackInfo
     get() {
       updatePlaybackInfo()
@@ -166,17 +183,22 @@ class ExoBridge(
 
       if (player != null) {
         ExoStore.setVolumeInfo(player!!, _playbackInfo.volumeInfo)
-        val haveResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET
+        val haveResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
         if (haveResumePosition) {
           player!!.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
         }
       }
     }
 
+  override fun onPlayerError(error: ExoPlaybackException?) {
+    super.onPlayerError(error)
+    if (error != null) this.errorListeners.onError(error)
+  }
+
   private fun updatePlaybackInfo() {
     if (player == null) return
     if (player!!.playbackState == Player.STATE_IDLE) return
-    _playbackInfo.resumeWindow = player?.currentWindowIndex ?: PlaybackInfo.INDEX_UNSET
+    _playbackInfo.resumeWindow = player?.currentWindowIndex ?: INDEX_UNSET
     _playbackInfo.resumePosition = if (player?.isCurrentWindowSeekable == true)
       Math.max(0, player?.currentPosition ?: 0)
     else
@@ -185,24 +207,23 @@ class ExoBridge(
   }
 
   private fun ensurePlayerView() {
-    if (playerView != null) {
-      ensurePlayer()
-      if (playerView!!.player !== player) playerView!!.player = player
+    playerView?.run {
+      if (this.player != this@ExoBridge.player) this.player = this@ExoBridge.player
     }
   }
 
   private fun ensureMediaSource() {
-    ensurePlayer()
     if (mediaSource == null) {  // Only actually prepare the source on demand.
+      ensurePlayer()
       mediaSource = kohii.store.createMediaSource(this.builder)
-      if (player is KohiiPlayer) {
-        (player as KohiiPlayer).prepare(mediaSource,
-            playbackInfo.resumeWindow == PlaybackInfo.INDEX_UNSET, false)
-      }
+      (player as? KohiiPlayer)?.prepare(mediaSource,
+          playbackInfo.resumeWindow == INDEX_UNSET, false)
     }
   }
 
   private fun ensurePlayer() {
+    Log.d("Bridge:" + hashCode(), "null() called")
+    // 1. If player is set to null somewhere
     if (player == null) {
       player = kohii.store.acquirePlayer(this.builder.config)
       player!!.repeatMode = builder.repeatMode
@@ -211,20 +232,21 @@ class ExoBridge(
       if (haveResumePosition) {
         player!!.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
       }
+      listenerIsSet.set(false)
     }
 
-    if (listenerSet.compareAndSet(false, true)) {
-      player!!.addListener(listeners)
-      if (player is SimpleExoPlayer) {
-        (player as SimpleExoPlayer).apply {
-          this.addVideoListener(listeners)
-          this.addTextOutput(listeners)
-          this.addMetadataOutput(listeners)
-        }
+    // 2. Player is just created, or Player is not null, but the listeners are reset.
+    if (listenerIsSet.compareAndSet(false, true)) {
+      player!!.addListener(this)
+      player!!.addListener(eventListeners)
+      (player as? SimpleExoPlayer)?.run {
+        this.addVideoListener(eventListeners)
+        this.addTextOutput(eventListeners)
+        this.addMetadataOutput(eventListeners)
       }
 
-      if (player is KohiiPlayer) {
-        (player as KohiiPlayer).addOnVolumeChangedListener(volumeChangedListeners)
+      (player as? KohiiPlayer)?.run {
+        this.addOnVolumeChangedListener(volumeListeners)
       }
     }
   }

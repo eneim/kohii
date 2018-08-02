@@ -44,36 +44,36 @@ data class Motion(
         "\n" +
         "At Google, we have incredible designers working to make smart and delightful motion for products you use everyday. We chatted with a few of these folks working on products like Google Photos, YouTube Kids, Android, and Google Duo to learn about their process.",
     val video1: Video = Video(
-        "https://r4---sn-p5qs7nes.googlevideo.com/videoplayback?expire=1531649489&mm=31%2C29&ms=au%2Crdu&ei=cclKW_H_BMup8gT6jpp4&source=youtube&mv=u&mt=1531626996&fvip=4&ipbits=0&mn=sn-p5qs7nes%2Csn-p5qlsndk&sparams=dur%2Cei%2Cid%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&requiressl=yes&mime=video%2Fmp4&dur=5.247&c=WEB&fexp=23709359%2C23745105&id=o-AISqw54MxBbMAgsC7MrOxZJr6dIFogJo8lk6z7eUOkWM&itag=22&ratebypass=yes&pl=23&signature=CCFC290D56A24D1ED6E32A8A071CCFD72FB371BF.D8A0D8EA065142A6D4599FC9655CAF45E162A3BF&lmt=1474466803804926&key=yt6&ip=174.129.126.213",
+        "https://storage.googleapis.com/mio-assets/video/hero-design.mp4",
         "https://storage.googleapis.com/gd-wagtail-prod-assets/original_images/making_motion_meaningful_videoposter_001.png",
-        464.0F,
-        386.0F),
+        660.0F,
+        585.0F),
     val text2: String = "The traditional approach to adding or deleting items is to animate every item from its old position to its new one. But this produces overlapping motion paths, which look very messy and too skeuomorphic.\n" +
         "\n" +
         "In Google Photos, we designed a little motion sleight-of-hand when you delete an image. Regardless of how many photos you remove, the whole grid slides to the left. And when more than one photo is removed, a quick cross-fade animates on transitioning images as a row moves. With this pattern we communicate the outcome symbolically rather than literally. This reduces visual complexity, enabling a fast, responsive interaction aligned with the principles of Material Design.",
     val video2: Video = Video(
-        "https://r6---sn-p5qs7n76.googlevideo.com/videoplayback?pl=23&mn=sn-p5qs7n76%2Csn-p5qlsndr&mm=31%2C29&source=youtube&fvip=5&dur=15.092&mime=video%2Fmp4&ip=174.129.126.213&requiressl=yes&signature=1FA1A01247A195F1D7049AD48C854DDC7477EE04.0F2D8BCE541C803B7186146FC085630D87C693C8&expire=1531649373&mv=u&mt=1531626996&ms=au%2Crdu&id=o-ADc5jQytFHZ8F2sdDom0ePOM4CH_IcyxZpsRioILb_kd&lmt=1474646709441977&sparams=dur%2Cei%2Cid%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&ratebypass=yes&ipbits=0&key=yt6&fexp=23709359%2C23745105&c=WEB&itag=22&ei=_chKW_TtDIui8gS7gKf4Cw",
+        "https://storage.googleapis.com/mio-assets/video/hero-develop.mp4",
         "https://storage.googleapis.com/gd-wagtail-prod-assets/original_images/making_motion_meaningful_videoposter_002.png",
-        515.0F,
-        386.0F),
+        660.0F,
+        585.0F),
     val text3: String = "Designing apps for kids can be very different from designing for adults because children often prefer chaos over control, and prefer messy to clean. In short, my job on YouTube Kids has been the opposite of the “Fun Police.” In motion and interaction, I try and push the team to be bolder, crazier, zanier, and to embrace their inner child through motion.\n" +
         "\n" +
         "Of course, there are many stumbling blocks on the way to achieving these kinds of results. Many of the animations we create are too complex to translate directly to code, so we have to rely on interesting approaches like internal motion tools, as well as the use of .gifs and MP4s. You might say our engineering team is the Robin to our Batman (or maybe we’re the Robin to their Batman?) and nothing would get done without our full commitment and collaboration. Although the motion process starts in After Effects or C4D, nothing ships without code.\n" +
         "\n" +
         "At the end of the day, animating fun and delightful stories and interactions is not easy, but the payoff is priceless. We get paid in smiles and giggles.",
     val video3: Video = Video(
-        "https://r5---sn-p5qs7nee.googlevideo.com/videoplayback?ip=174.129.126.213&key=yt6&signature=A439D309616F43050647F80C771CF77D978E6B7C.A6ACDF3DEF7DFC445EBF966E98D6E6CA8B3E2DAA&sparams=dur%2Cei%2Cid%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&fexp=23709359%2C23745105&ipbits=0&c=WEB&itag=22&id=o-AFyVaP1Yb0rHciV0cpmYlW33nnIj22hH3gAAjFAztt-V&ei=i9lKW8SMKsq68wSR05eYAQ&lmt=1474467063023518&fvip=5&mime=video%2Fmp4&requiressl=yes&mm=31%2C26&mn=sn-p5qs7nee%2Csn-vgqsknez&ratebypass=yes&mt=1531631652&mv=u&ms=au%2Conr&source=youtube&pl=23&dur=53.568&expire=1531653611",
+        "https://storage.googleapis.com/mio-assets/video/hero-tools.mp4",
         "https://storage.googleapis.com/gd-wagtail-prod-assets/original_images/making_motion_meaningful_videoposter_003.png",
-        671.0F,
-        386.0F),
+        660.0F,
+        585.0F),
     val text4: String = "Motion design varies from product to product. Products at Google have a unique set of use cases which motion helps bring to life.\n" +
         "\n" +
         "With Google Duo, we focused on video first and foremost, and used motion to connect the elements of the purposefully simple and spare UI. Motion is broad and elegant, thoughtfully tying things together in a logical way. Transitions are meant to be seamless (something that proved harder than expected given the lack of connective tissue within the interface itself), and durations are more exaggerated to keep things feeling smooth.",
     val video4: Video = Video(
-        "https://r2---sn-p5qlsndz.googlevideo.com/videoplayback?dur=0.000&fexp=23709359%2C23745105&ms=au%2Crdu&mm=31%2C29&mv=u&mt=1531631652&mn=sn-p5qlsndz%2Csn-p5qs7ned&source=youtube&clen=427834&c=WEB&ratebypass=yes&signature=313FAE7A6B2F3B1FEBB75D2AADD004A12D0B3F40.3FF47A5E5C174C8101F05B54E4FF15BA982A70D6&lmt=1474310534432316&itag=43&key=yt6&mime=video%2Fwebm&ipbits=0&requiressl=yes&pl=23&fvip=2&gir=yes&expire=1531653747&sparams=clen%2Cdur%2Cei%2Cgir%2Cid%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&id=o-AEkZqmlOXbVN4M1cEAkgUmUdD5LOzR6Tsoq_AGmFci6h&ip=174.129.126.213&ei=E9pKW5_PFJuO8wSem56QDw",
+        "https://storage.googleapis.com/spec-host/mio-tools/assets/1SFQawoXdwOMeRFrRapWNEIaU2Y3do8DO/gallery-sitecrop-f-final.mp4",
         "https://storage.googleapis.com/gd-wagtail-prod-assets/original_images/making_motion_meaningful_videoposter_004.png",
-        686.0F,
-        244.0F
+        672.0F,
+        596.0F
     ),
     val text5: String = "I have always had a child-like fascination with mechanical movement. The transfer of energy, repetition, and rhythm, and systematic movement is captivating. I never tire of watching Ralph Steiner’s “Mechanical Principles,” or Charles and Ray Eames’ “Solar Do-Nothing Machine”.\n" +
         "\n" +

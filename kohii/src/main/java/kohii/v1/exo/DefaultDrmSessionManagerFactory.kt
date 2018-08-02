@@ -16,10 +16,10 @@
 
 package kohii.v1.exo
 
-import androidx.annotation.RequiresApi
 import android.text.TextUtils
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
+import androidx.annotation.RequiresApi
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager
 import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
@@ -41,12 +41,14 @@ import java.util.UUID
  * @author eneim (2018/06/25).
  */
 class DefaultDrmSessionManagerFactory internal constructor(
-    private val store: ExoStore) : DrmSessionManagerFactory {
+    private val store: ExoStore
+) : DrmSessionManagerFactory {
 
   private val factory = DefaultHttpDataSourceFactory(store.appName) as HttpDataSource.Factory
 
   override fun createDrmSessionManager(
-      mediaDrm: MediaDrm): DrmSessionManager<FrameworkMediaCrypto> {
+      mediaDrm: MediaDrm
+  ): DrmSessionManager<FrameworkMediaCrypto> {
     var drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>? = cache[mediaDrm]
     if (drmSessionManager != null) return drmSessionManager
 
@@ -100,7 +102,8 @@ class DefaultDrmSessionManagerFactory internal constructor(
         licenseUrl: String?,
         keyRequestPropertiesArray: Array<String>?,
         multiSession: Boolean,
-        httpDataSourceFactory: HttpDataSource.Factory): DrmSessionManager<FrameworkMediaCrypto> {
+        httpDataSourceFactory: HttpDataSource.Factory
+    ): DrmSessionManager<FrameworkMediaCrypto> {
       val drmCallback = HttpMediaDrmCallback(licenseUrl, httpDataSourceFactory)
       if (keyRequestPropertiesArray != null) {
         var i = 0

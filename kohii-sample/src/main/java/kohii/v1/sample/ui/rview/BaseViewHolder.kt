@@ -41,5 +41,11 @@ abstract class BaseViewHolder(inflater: LayoutInflater, layoutRes: Int,
     )
 
     fun onItemLoaded(itemView: View, adapterPos: Int)
+
+    fun onItemLoadFailed(adapterPos: Int, error: Exception)
+  }
+
+  override fun toString(): String {
+    return javaClass.simpleName + adapterPosition
   }
 }

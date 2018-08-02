@@ -21,21 +21,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.databinding.FragmentMotionBinding
 
 /**
  * @author eneim (2018/07/15).
  */
-class MotionFragment : Fragment() {
+class MotionFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = MotionFragment()
   }
 
-  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-      savedInstanceState: Bundle?): View? {
+  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, st: Bundle?): View? {
     val binding = DataBindingUtil.inflate(inflater, R.layout.fragment_motion, container,
         false) as FragmentMotionBinding
     binding.motion = Motion()
