@@ -23,11 +23,12 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelector
+import kohii.media.MediaDrm
 
 /**
  * @author eneim (2018/06/25).
  */
-internal class DefaultPlayerFactory(store: ExoStore, private val config: Config) : PlayerFactory {
+internal class DefaultPlayerFactory(store: ExoStore, config: Config) : PlayerFactory {
 
   private val renderersFactory: RenderersFactory  // stateless
   private val trackSelector: TrackSelector  // 'maybe' stateless
@@ -41,13 +42,13 @@ internal class DefaultPlayerFactory(store: ExoStore, private val config: Config)
     drmSessionManagerFactory = DefaultDrmSessionManagerFactory(store)
   }
 
-  override fun createPlayer(): Player {
+  override fun createPlayer(mediaDrm: MediaDrm?): Player {
     return KohiiPlayer(
         renderersFactory,
         trackSelector,
         loadControl,
-        if (this.config.mediaDrm != null)
-          drmSessionManagerFactory.createDrmSessionManager(this.config.mediaDrm)
+        if (mediaDrm != null)
+          drmSessionManagerFactory.createDrmSessionManager(mediaDrm)
         else
           null
     )

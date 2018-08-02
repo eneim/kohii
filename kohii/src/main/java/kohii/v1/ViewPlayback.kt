@@ -36,27 +36,29 @@ internal class ViewPlayback<V : View>(
     uri: Uri,
     manager: Manager,
     target: V?,
-    builder: Playable.Builder
+    builder: Playable.Builder,
+    playbackDispatcher: PlaybackDispatcher
 ) : Playback<V>(
-    kohii, playable, uri, manager, target, builder
+    kohii, playable, uri, manager, target, builder, playbackDispatcher
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
-  private val listener: PlaybackEventListener = object : PlaybackEventListener {
-    override fun onBuffering() {
-      Log.d("Kohii:Playback", "Buffering")
+  // For debugging purpose only.
+  private val listener = object : PlaybackEventListener {
+    override fun onBuffering(playWhenReady: Boolean) {
+      Log.d("Kohii:P", "buffering: " + this@ViewPlayback)
     }
 
     override fun onPlaying() {
-      Log.d("Kohii:Playback", "Playing")
+      Log.d("Kohii:P", "playing: " + this@ViewPlayback)
       getTarget()?.keepScreenOn = true
     }
 
     override fun onPaused() {
-      Log.w("Kohii:Playback", "Paused")
+      Log.w("Kohii:P", "paused: " + this@ViewPlayback)
     }
 
     override fun onCompleted() {
-      Log.d("Kohii:Playback", "Ended")
+      Log.d("Kohii:P", "ended: " + this@ViewPlayback)
       getTarget()?.keepScreenOn = false
     }
   }
@@ -96,13 +98,13 @@ internal class ViewPlayback<V : View>(
   }
 
   override fun onTargetAvailable() {
-    super.addListener(this.listener)
+    super.addPlaybackEventListener(this.listener)
     super.onTargetAvailable()
   }
 
   override fun onTargetUnAvailable() {
     super.onTargetUnAvailable()
-    super.removeListener(this.listener)
+    super.removePlaybackEventListener(this.listener)
   }
 
   override fun onRemoved() {
@@ -111,33 +113,34 @@ internal class ViewPlayback<V : View>(
   }
 
   override fun onViewAttachedToWindow(v: View) {
-    this.targetAttached.set(true)
-    val target = super.getTarget()
-    if (target != null) {
-      // Find a ancestor of target whose parent is a CoordinatorLayout, or null.
-      val corChild = findSuitableParent(manager.decorView, target)
-      val params = corChild?.layoutParams
-      if (params is CoordinatorLayout.LayoutParams) {
-        // TODO [20180620] deal with CoordinatorLayout.
-      }
+    if (this.targetAttached.compareAndSet(false, true)) {
+      val target = super.getTarget()
+      if (target != null) {
+        // Find a ancestor of target whose parent is a CoordinatorLayout, or null.
+        val corChild = findSuitableParent(manager.decorView, target)
+        val params = corChild?.layoutParams
+        if (params is CoordinatorLayout.LayoutParams) {
+          // TODO [20180620] deal with CoordinatorLayout.
+        }
 
-      manager.onTargetAvailable(target)
-      target.addOnLayoutChangeListener(this)
+        manager.onTargetAvailable(target)
+        target.addOnLayoutChangeListener(this)
+      }
     }
   }
 
   override fun onViewDetachedFromWindow(v: View) {
-    this.targetAttached.set(false)
-    val target = super.getTarget()
-    if (target != null) {
-      target.removeOnLayoutChangeListener(this)
-      manager.onTargetUnAvailable(target)
+    if (this.targetAttached.compareAndSet(true, false)) {
+      super.getTarget()?.run {
+        this.removeOnLayoutChangeListener(this@ViewPlayback)
+        manager.onTargetUnAvailable(this)
+      }
     }
   }
 
   override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int,
       oldTop: Int, oldRight: Int, oldBottom: Int) {
-    if (layoutChanged(left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)) {
+    if (layoutDidChange(left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)) {
       manager.onPlaybackInternalChanged(this)
     }
   }
@@ -187,7 +190,7 @@ internal class ViewPlayback<V : View>(
       return null
     }
 
-    private fun layoutChanged(left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int,
+    private fun layoutDidChange(left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int,
         oldTop: Int, oldRight: Int, oldBottom: Int): Boolean {
       return top != oldTop || bottom != oldBottom || left != oldLeft || right != oldRight
     }

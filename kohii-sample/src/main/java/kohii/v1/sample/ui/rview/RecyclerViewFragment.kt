@@ -18,14 +18,11 @@ package kohii.v1.sample.ui.rview
 
 import android.content.Context
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.SharedElementCallback
-import androidx.core.view.doOnNextLayout
 import androidx.core.view.postDelayed
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionInflater
@@ -34,13 +31,16 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.doOnNextLayoutAs
+import kohii.v1.sample.common.toPixel
 import okio.Okio
 
 
 /**
  * @author eneim (2018/07/06).
  */
-class RecyclerViewFragment : Fragment() {
+class RecyclerViewFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = RecyclerViewFragment()
@@ -48,6 +48,7 @@ class RecyclerViewFragment : Fragment() {
 
   data class PlayerInfo(val adapterPos: Int, val viewTop: Int)
 
+  // implemented by host to manage shared elements transition information.
   interface PlayerInfoHolder {
 
     fun recordPlayerInfo(info: PlayerInfo?)
@@ -55,12 +56,15 @@ class RecyclerViewFragment : Fragment() {
     fun fetchPlayerInfo(): PlayerInfo?
   }
 
-  private val items: List<Item>? by lazy {
+  private var items: List<Item>? = null
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
     val asset = requireActivity().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
     val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
-    adapter.fromJson(Okio.buffer(Okio.source(asset.open("theme.json"))))
+    items = adapter.fromJson(Okio.buffer(Okio.source(asset.open("theme.json"))))
   }
 
   override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View? {
@@ -94,23 +98,19 @@ class RecyclerViewFragment : Fragment() {
       it.adapter = ItemsAdapter(
           this,
           ArrayList(items!!).apply { this.addAll(items!!) }
-      ) { dp ->
-        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(),
-            resources.displayMetrics).toInt()
-      }
+      ) { it.toPixel(resources) }
     }
 
-    val playerInfo = this.playerInfoHolder?.fetchPlayerInfo()
-    if (playerInfo != null) {
-      container!!.doOnNextLayout {
-        val layoutManager = container!!.layoutManager as LinearLayoutManager
-        val viewAtPosition = layoutManager.findViewByPosition(playerInfo.adapterPos)
+    this.playerInfoHolder?.fetchPlayerInfo()?.run {
+      container!!.doOnNextLayoutAs<RecyclerView> {
+        val layoutManager = it.layoutManager as LinearLayoutManager
+        val viewAtPosition = layoutManager.findViewByPosition(this.adapterPos)
         // Scroll to position if the view for the current position is null (not currently part of
         // layout manager children), or it's not completely visible.
         if (viewAtPosition == null || //
             layoutManager.isViewPartiallyVisible(viewAtPosition, false, true)) {
           it.postDelayed(200) {
-            layoutManager.scrollToPositionWithOffset(playerInfo.adapterPos, playerInfo.viewTop)
+            layoutManager.scrollToPositionWithOffset(this.adapterPos, this.viewTop)
           }
         }
       }

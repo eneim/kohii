@@ -106,5 +106,11 @@ class ItemsAdapter(
       fragment.recordPlayerInfo(null)
       fragment.startPostponedEnterTransition()
     }
+
+    override fun onItemLoadFailed(adapterPos: Int, error: Exception) {
+      if (enterTransitionStarted.getAndSet(true)) return
+      fragment.recordPlayerInfo(null)
+      fragment.startPostponedEnterTransition()
+    }
   }
 }
