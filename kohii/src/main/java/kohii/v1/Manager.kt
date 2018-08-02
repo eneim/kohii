@@ -22,6 +22,7 @@ import kohii.v1.Kohii.GlobalScrollChangeListener
 import kohii.v1.Playback.Token
 import java.util.Comparator
 import java.util.TreeMap
+import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -62,7 +63,7 @@ class Manager internal constructor(
   private val attachFlag = AtomicBoolean(false)
   private val scrolling = AtomicBoolean(false)  // must start as 'not scrolling'.
 
-  internal val mapPlayableToTarget = HashMap<Playable, Any>()
+  internal val mapPlayableToTarget = WeakHashMap<Playable, Any>()
   internal val mapPlayableTagToInfo = HashMap<Any, PlaybackInfo>()
   internal val mapTargetToPlayback = HashMap<Any?, Playback<*>>()
 
@@ -89,8 +90,7 @@ class Manager internal constructor(
    */
   internal fun onHostStarted() {
     mapAttachedPlaybackToTime.keys.forEach {
-      kohii.onManagerStateMayChange(this, it.playable, true)
-      kohii.onManagerActive(this, it)
+      kohii.onManagerActiveForPlayback(this, it)
     }
     this.dispatchRefreshAll()
   }
@@ -98,14 +98,13 @@ class Manager internal constructor(
   // Called when the Activity bound to this Manager is stopped.
   internal fun onHostStopped(configChange: Boolean) {
     mapAttachedPlaybackToTime.keys.forEach {
-      kohii.onManagerInActive(this, it, configChange)
-      kohii.onManagerStateMayChange(this, it.playable, configChange)
+      kohii.onManagerInActiveForPlayback(this, it, configChange)
     }
   }
 
   internal fun onHostDestroyed() {
     ArrayList(mapTargetToPlayback.values).apply {
-      this.forEach { destroyPlayback(it) }
+      this.forEach { performDestroyPlayback(it) }
     }.clear()
     mapPlayableToTarget.clear()
   }
@@ -159,7 +158,7 @@ class Manager internal constructor(
   }
 
   internal fun dispatchRefreshAll() {
-    dispatcher?.dispatchRefreshAll()
+    dispatcher?.dispatchRefreshAll() ?: performRefreshAll()
   }
 
   // Called when a Playback's target is attached. Eg: PlayerView is attached to window.
@@ -167,10 +166,13 @@ class Manager internal constructor(
     mapTargetToPlayback[target]?.run {
       mapAttachedPlaybackToTime[this] = System.nanoTime()
       mapDetachedPlaybackToTime.remove(this)
-      restorePlaybackInfo(this)
+      if (this@Manager.mapPlayableToTarget[this.playable] == this.getTarget()) {
+        restorePlaybackInfo(this)
+        this.prepare()
+      }
       this.onTargetAvailable()
       this@Manager.dispatchRefreshAll()
-    } ?: throw IllegalStateException("No Playback found for target.")
+    } ?: throw IllegalStateException("No Playback found for target: $target")
   }
 
   // Called when a Playback's target is detached. Eg: PlayerView is detached from window.
@@ -190,7 +192,9 @@ class Manager internal constructor(
 
   // Called when something has changed about the Playback. Eg: playback's target has layout change.
   fun <T> onPlaybackInternalChanged(playback: Playback<T>) {
-    if (playback.token?.wantsToPlay() == true) this.dispatchRefreshAll()
+    if (!isScrolling()) {
+      if (playback.token?.wantsToPlay() == true) this.dispatchRefreshAll()
+    }
   }
 
   // Permanently remove the Playback from any cache.
@@ -199,11 +203,12 @@ class Manager internal constructor(
   // - mapAttachedPlaybackToTime
   // - mapDetachedPlaybackToTime
   // - mapPlayableTagToInfo
-  fun destroyPlayback(playback: Playback<*>) {
+  fun performDestroyPlayback(playback: Playback<*>) {
     mapAttachedPlaybackToTime.remove(playback)
     mapDetachedPlaybackToTime.remove(playback)
     mapTargetToPlayback.remove(playback.getTarget()).also { it?.onTargetUnAvailable() }
     playback.onRemoved()
+    playback.onDestroyed()
   }
 
   /**
@@ -211,7 +216,7 @@ class Manager internal constructor(
    * to manage the Target. [Manager] will then add that [Playback] to cache for management.
    * Old [Playback] will be cleaned up and removed.
    */
-  fun <T> addPlayback(playback: Playback<T>): Playback<T> {
+  fun <T> performAddPlayback(playback: Playback<T>): Playback<T> {
     val target = playback.getTarget()
     var shouldQueue = target != null // playback must have a valid target.
     if (shouldQueue) {

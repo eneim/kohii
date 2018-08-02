@@ -51,7 +51,7 @@ class ExoStore internal constructor(context: Context) {
   private val mapConfigToPool = HashMap<Config, Pools.Pool<Player>>()
 
   init {
-    // Adapt from ExoPlayer demo app. Start this on demand.
+    // Adapt from ExoPlayer demo app.
     val cookieManager = CookieManager()
     cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER)
     if (CookieHandler.getDefault() !== cookieManager) {
@@ -60,33 +60,29 @@ class ExoStore internal constructor(context: Context) {
   }
 
   private fun getPool(config: Config): Pools.Pool<Player> {
-    var pool: Pools.Pool<Player>? = mapConfigToPool[config]
-    if (pool == null) {
-      pool = Pools.SimplePool(MAX_POOL_SIZE)
-      mapConfigToPool[config] = pool
-    }
-
-    return pool
+    return mapConfigToPool[config] ?: // find from cache or create new one.
+    Pools.SimplePool<Player>(MAX_POOL_SIZE).also { mapConfigToPool[config] = it }
   }
 
   internal fun acquirePlayer(config: Config): Player {
     var player = getPool(config).acquire()
-    if (player == null) player = (playerFactories[config] ?: DefaultPlayerFactory(this,
-        config).also {
-      playerFactories[config] = it
-    }).createPlayer()
+    if (player == null) { // cannot find one from pool, create new.
+      player =
+          (playerFactories[config] ?: // find a factory or create new default one.
+          DefaultPlayerFactory(this, config).also { playerFactories[config] = it })
+              .createPlayer(config.mediaDrm)
+    }
     return player
   }
 
   internal fun releasePlayer(player: Player, config: Config) {
-    getPool(config).release(player)
+    getPool(config).release(player) // release back to pool for reuse.
   }
 
   internal fun createMediaSource(builder: Playable.Builder): MediaSource {
-    return (sourceFactories[builder.config] ?: DefaultMediaSourceFactory(this,
-        builder.config).also {
-      sourceFactories[builder.config] = it
-    }).createMediaSource(builder)
+    return (sourceFactories[builder.config] ?:  // find a factory or create new default one.
+    DefaultMediaSourceFactory(this, builder.config).also { sourceFactories[builder.config] = it })
+        .createMediaSource(builder)
   }
 
   companion object {

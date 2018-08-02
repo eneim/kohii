@@ -59,14 +59,6 @@ interface Playable {
 
   fun release()
 
-  fun addVolumeChangeListener(listener: OnVolumeChangedListener)
-
-  fun removeVolumeChangeListener(listener: OnVolumeChangedListener?)
-
-  fun addPlayerEventListener(listener: PlayerEventListener)
-
-  fun removePlayerEventListener(listener: PlayerEventListener?)
-
   var playbackInfo: PlaybackInfo
 
   // data class for copying convenience.

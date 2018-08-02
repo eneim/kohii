@@ -35,7 +35,7 @@ import java.util.concurrent.CopyOnWriteArraySet
  */
 interface PlaybackEventListener {
 
-  fun onBuffering()  // ExoPlayer state: 2
+  fun onBuffering(playWhenReady: Boolean)  // ExoPlayer state: 2
 
   fun onPlaying()  // ExoPlayer state: 3, play flag: true
 
@@ -44,12 +44,12 @@ interface PlaybackEventListener {
   fun onCompleted()  // ExoPlayer state: 4
 }
 
-interface OnVolumeChangedListener {
+interface VolumeChangedListener {
 
   fun onVolumeChanged(volumeInfo: VolumeInfo)
 }
 
-interface OnErrorListener {
+interface ErrorListener {
 
   fun onError(error: Exception)
 }
@@ -118,10 +118,17 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerE
   }
 }
 
-class OnVolumeChangedListeners : CopyOnWriteArraySet<OnVolumeChangedListener>(), OnVolumeChangedListener {
+class VolumeChangedListeners : CopyOnWriteArraySet<VolumeChangedListener>(), VolumeChangedListener {
   override fun onVolumeChanged(volumeInfo: VolumeInfo) {
     this.forEach { it.onVolumeChanged(volumeInfo) }
   }
+}
+
+class ErrorListeners : CopyOnWriteArraySet<ErrorListener>(), ErrorListener {
+  override fun onError(error: Exception) {
+    this.forEach { it.onError(error) }
+  }
+
 }
 
 abstract class DefaultEventListener : PlayerEventListener {

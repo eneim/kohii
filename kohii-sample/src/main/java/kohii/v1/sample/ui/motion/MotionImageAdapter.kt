@@ -18,6 +18,7 @@ package kohii.v1.sample.ui.motion
 
 import android.net.Uri
 import android.widget.ImageView
+import androidx.core.view.ViewCompat
 import androidx.databinding.BindingAdapter
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
@@ -29,6 +30,8 @@ import kohii.v1.sample.common.Video
 import kohii.v1.sample.svg.GlideApp
 
 /**
+ * For DataBinding
+ *
  * @author eneim (2018/07/15).
  */
 @Suppress("unused")
@@ -39,14 +42,16 @@ fun setBackdrop(view: ImageView, url: String) {
 
 @BindingAdapter("video")
 fun setVideo(view: PlayerView, video: Video) {
-  (view.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout?)?.setAspectRatio(
+  (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)?.setAspectRatio(
       video.width / video.height)
 
   Kohii[view.context].setUp(video.url)
       .copy(
           tag = video.url,
           config = DemoApp.app.config,
-          repeatMode = Player.REPEAT_MODE_ONE, mediaType = "mp4"
+          repeatMode = Player.REPEAT_MODE_ONE,
+          mediaType = "mp4" // FIXME
       )
       .asPlayable().bind(view)
+  ViewCompat.setTransitionName(view, video.url)
 }

@@ -29,28 +29,35 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
     val what = msg.what
     when (what) {
       MSG_REFRESH -> manager.performRefreshAll()
-      MSG_TARGET_UNAVAILABLE -> manager.onTargetUnAvailable(msg.obj)
-      MSG_TARGET_AVAILABLE -> manager.onTargetAvailable(msg.obj)
+      MSG_TARGET_UNAVAILABLE -> {
+        (msg.obj as Playback<*>).getTarget()?.run { manager.onTargetUnAvailable(this) }
+      }
+      MSG_TARGET_AVAILABLE -> {
+        (msg.obj as Playback<*>).getTarget()?.run { manager.onTargetAvailable(this) }
+      }
     }
   }
 
   /// APIs
 
   fun dispatchRefreshAll() {
+    // As late as possible.
     removeMessages(MSG_REFRESH)
     sendEmptyMessageDelayed(MSG_REFRESH, MSG_DELAY)
   }
 
   fun dispatchTargetUnAvailable(playback: Playback<*>) {
-    val target = playback.getTarget()
-    removeMessages(MSG_TARGET_UNAVAILABLE, target)
-    obtainMessage(MSG_TARGET_UNAVAILABLE, -1, -1, target).sendToTarget()
+    // As early as possible
+    if (!hasMessages(MSG_TARGET_UNAVAILABLE, playback)) {
+      obtainMessage(MSG_TARGET_UNAVAILABLE, playback).sendToTarget()
+    }
   }
 
   fun dispatchTargetAvailable(playback: Playback<*>) {
-    val target = playback.getTarget()
-    removeMessages(MSG_TARGET_AVAILABLE, target)
-    obtainMessage(MSG_TARGET_AVAILABLE, -1, -1, target).sendToTarget()
+    // As early as possible
+    if (!hasMessages(MSG_TARGET_AVAILABLE, playback)) {
+      obtainMessage(MSG_TARGET_AVAILABLE, playback).sendToTarget()
+    }
   }
 
   companion object {

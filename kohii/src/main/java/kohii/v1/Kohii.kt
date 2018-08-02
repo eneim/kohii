@@ -35,7 +35,6 @@ import kohii.v1.exo.Config
 import kohii.v1.exo.ExoStore
 import kohii.v1.exo.MediaSourceFactory
 import kohii.v1.exo.PlayerFactory
-import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -87,18 +86,18 @@ class Kohii(context: Context) {
     })
   }
 
-  internal class ManagerAttachStateListener(context: Context,
-      val view: View) : View.OnAttachStateChangeListener {
+  internal class ManagerAttachStateListener(context: Context, val view: View) :
+      View.OnAttachStateChangeListener {
 
-    private val context = WeakReference(context)
+    private val weakContext = WeakReference(context)
 
     override fun onViewAttachedToWindow(v: View) {
-      kohii!!.managers[context.get()]?.onAttached()
+      kohii!!.managers[weakContext.get()]?.onAttached()
     }
 
     // Will get called after Activity's onDestroy().
     override fun onViewDetachedFromWindow(v: View) {
-      kohii!!.managers.remove(context.get())?.onDetached()
+      kohii!!.managers.remove(weakContext.get())?.onDetached()
       if (this.view === v) this.view.removeOnAttachStateChangeListener(this)
     }
   }
@@ -114,12 +113,12 @@ class Kohii(context: Context) {
         when (msg.what) {
           EVENT_SCROLL -> {
             manager.setScrolling(true)
-            this.removeMessages(EVENT_IDLE)
-            this.sendEmptyMessageDelayed(EVENT_IDLE, EVENT_DELAY.toLong())
+            manager.dispatchRefreshAll()
+            this.sendEmptyMessageDelayed(EVENT_IDLE, EVENT_DELAY)
           }
           EVENT_IDLE -> {
             manager.setScrolling(false)
-            if (scrollConsumed.compareAndSet(false, true)) manager.dispatchRefreshAll()
+            manager.dispatchRefreshAll()
           }
         }
       }
@@ -127,14 +126,15 @@ class Kohii(context: Context) {
 
     override fun onScrollChanged() {
       scrollConsumed.set(false)
+      handler.removeMessages(EVENT_IDLE)
       handler.removeMessages(EVENT_SCROLL)
-      handler.sendEmptyMessageDelayed(EVENT_SCROLL, EVENT_DELAY.toLong())
+      handler.sendEmptyMessageDelayed(EVENT_SCROLL, EVENT_DELAY)
     }
 
     companion object {
       private const val EVENT_SCROLL = 1
       private const val EVENT_IDLE = 2
-      private const val EVENT_DELAY = 3 * 1000 / 60  // 50 ms, 3 frames
+      private const val EVENT_DELAY = (3 * 1000 / 60).toLong()  // 50 ms, 3 frames
     }
   }
 
@@ -143,7 +143,7 @@ class Kohii(context: Context) {
     @Volatile
     private var kohii: Kohii? = null
 
-    operator fun get(context: Context) = kohii ?: synchronized(this) {
+    operator fun get(context: Context) = kohii ?: synchronized(Kohii::class.java) {
       kohii ?: Kohii(context).also { kohii = it }
     }
 
@@ -163,44 +163,43 @@ class Kohii(context: Context) {
         .also {
           managers[context] = it
           if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
-          decorView.addOnAttachStateChangeListener(
-              ManagerAttachStateListener(context, decorView))
+          decorView.addOnAttachStateChangeListener(ManagerAttachStateListener(context, decorView))
         }
   }
 
-  // Acquire from cache or build new one.
+  // Acquire from cache or build new one. The result must not be mapped to any Manager.
+  // If the builder has no valid tag (a.k.a tag is null), then return new one.
   internal fun acquirePlayable(uri: Uri, builder: Playable.Builder): Playable {
     val tag = builder.tag
-    return if (tag != null)
-      (playableStore[tag] ?:  //
-      PlayableImpl(this, uri, builder).also {
-        playableStore[tag] = it
-      }).also { mapPlayableToManager[it] = null }
-    else
-      PlayableImpl(this, uri, builder)
+    return (
+        if (tag != null) (playableStore[tag] ?: PlayableImpl(this, uri,
+            builder).also { playableStore[tag] = it })  // only save to store for when tag is valid
+        else
+          PlayableImpl(this, uri, builder)
+        ) // ↑ Playable instance obtained. Next: clear its history ↓
+        .also { mapPlayableToManager[it] = null }
   }
 
-  // Release back to cache.
-  internal fun releasePlayable(tag: Any, playable: Playable) {
-    if (playableStore.remove(tag) != playable) {
-      throw IllegalArgumentException("Illegal playable removal: $playable")
+  // Called when a Playable is no longer be managed by any Manager, its resource should be release.
+  internal fun releasePlayable(tag: Any?, playable: Playable) {
+    tag?.run {
+      if (playableStore.remove(tag) != playable) {
+        throw IllegalArgumentException("Illegal playable removal: $playable")
+      }
+    } // TODO release Playable when tag is null.
+  }
+
+  internal fun onManagerActiveForPlayback(manager: Manager, playback: Playback<*>) {
+    mapPlayableToManager[playback.playable] = manager
+    if (manager.mapPlayableToTarget[playback.playable] == playback.getTarget()) {
+      manager.restorePlaybackInfo(playback)
+      playback.prepare()
     }
-  }
-
-  internal fun onManagerStateMayChange(manager: Manager, playable: Playable, active: Boolean) {
-    if (active) {
-      mapPlayableToManager[playable] = manager
-    } else {
-      if (mapPlayableToManager[playable] == manager) mapPlayableToManager[playable] = null
-    }
-  }
-
-  internal fun onManagerActive(manager: Manager, playback: Playback<*>) {
     playback.onTargetAvailable()
-    manager.restorePlaybackInfo(playback)
   }
 
-  internal fun onManagerInActive(manager: Manager, playback: Playback<*>, configChange: Boolean) {
+  internal fun onManagerInActiveForPlayback(manager: Manager, playback: Playback<*>,
+      configChange: Boolean) {
     val playable = playback.playable
     // Only pause this playback if the playable is managed by this manager, or by no-one else.
     if (mapPlayableToManager[playable] == manager || mapPlayableToManager[playable] == null) {
@@ -208,6 +207,13 @@ class Kohii(context: Context) {
         playback.pause()
         manager.savePlaybackInfo(playback)
       }
+    }
+
+    if (!configChange) {
+      if (mapPlayableToManager[playable] == manager) mapPlayableToManager[playable] = null
+    } else {
+      // TODO [20180719] double check this case. We may not need this.
+      mapPlayableToManager[playable] = manager
     }
   }
 
@@ -222,8 +228,11 @@ class Kohii(context: Context) {
   }
 
   // Find a Playable for a tag. Single player may use this for full-screen playback.
+  // TODO [20180719] result Playable is still managed by a Manager. Need to double check.
   fun findPlayable(tag: Any?): Playable? {
-    return this.playableStore[tag]
+    return this.playableStore[tag].also {
+      mapPlayableToManager[it] = null
+    }
   }
 
   @Suppress("unused")
