@@ -19,7 +19,7 @@ ext {
       [//
        compileSdk: 28,
        minSdk    : 16,
-       targetSdk : 27,
+       targetSdk : 28,
        'version' : //
            [//
             'major': 1,
