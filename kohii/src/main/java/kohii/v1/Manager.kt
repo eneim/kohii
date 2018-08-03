@@ -63,7 +63,7 @@ class Manager internal constructor(
   private val attachFlag = AtomicBoolean(false)
   private val scrolling = AtomicBoolean(false)  // must start as 'not scrolling'.
 
-  internal val mapPlayableToTarget = WeakHashMap<Playable, Any>()
+  internal val mapWeakPlayableToTarget = WeakHashMap<Playable, Any>()
   internal val mapPlayableTagToInfo = HashMap<Any, PlaybackInfo>()
   internal val mapTargetToPlayback = HashMap<Any?, Playback<*>>()
 
@@ -107,7 +107,7 @@ class Manager internal constructor(
     ArrayList(mapTargetToPlayback.values).apply {
       this.forEach { performDestroyPlayback(it) }
     }.clear()
-    mapPlayableToTarget.clear()
+    mapWeakPlayableToTarget.clear()
   }
 
   // Get called when the DecorView is attached to Window
@@ -167,7 +167,7 @@ class Manager internal constructor(
     mapTargetToPlayback[target]?.run {
       mapAttachedPlaybackToTime[this] = System.nanoTime()
       mapDetachedPlaybackToTime.remove(this)
-      if (this@Manager.mapPlayableToTarget[this.playable] == this.getTarget()) {
+      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.getTarget()) {
         restorePlaybackInfo(this)
         this.prepare()
       }
@@ -184,7 +184,7 @@ class Manager internal constructor(
       this.pause()
       this@Manager.dispatchRefreshAll()
       this.onTargetUnAvailable()
-      if (this@Manager.mapPlayableToTarget[this.playable] == this.getTarget()) {
+      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.getTarget()) {
         savePlaybackInfo(this)
         this.release()
       }

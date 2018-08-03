@@ -97,7 +97,7 @@ class PlayableImpl internal constructor(
     val manager = kohii.getManager(playerView.context)
     kohii.mapWeakPlayableToManager[this] = manager
     var playback: Playback<PlayerView>? = null
-    val oldTarget = manager.mapPlayableToTarget.put(this, playerView)
+    val oldTarget = manager.mapWeakPlayableToTarget.put(this, playerView)
     if (oldTarget === playerView) {
       @Suppress("UNCHECKED_CAST")
       playback = manager.mapTargetToPlayback[oldTarget] as Playback<PlayerView>?
