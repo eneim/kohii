@@ -166,13 +166,13 @@ class Kohii(context: Context) {
         }
   }
 
-  // Acquire from cache or build new one. The result must not be mapped to any Manager.
-  // If the builder has no valid tag (a.k.a tag is null), then return new one.
+  // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.
+  // If the builder has no valid tag (a.k.a tag is null), then always return new one.
   internal fun acquirePlayable(uri: Uri, builder: Playable.Builder): Playable {
     val tag = builder.tag
     return (
-        if (tag != null) (mapTagToPlayable[tag] ?: PlayableImpl(this, uri,
-            builder).also { mapTagToPlayable[tag] = it })  // only save to store for when tag is valid
+        if (tag != null) (mapTagToPlayable[tag] ?: PlayableImpl(this, uri, builder)
+            .also { mapTagToPlayable[tag] = it })  // only save to store for when tag is valid
         else
           PlayableImpl(this, uri, builder)
         ) // ↑ Playable instance obtained. Next: clear its history ↓
@@ -190,7 +190,7 @@ class Kohii(context: Context) {
 
   internal fun onManagerActiveForPlayback(manager: Manager, playback: Playback<*>) {
     mapWeakPlayableToManager[playback.playable] = manager
-    if (manager.mapPlayableToTarget[playback.playable] == playback.getTarget()) {
+    if (manager.mapWeakPlayableToTarget[playback.playable] == playback.getTarget()) {
       manager.restorePlaybackInfo(playback)
       playback.prepare()
     }
@@ -236,12 +236,12 @@ class Kohii(context: Context) {
 
   @Suppress("unused")
   fun addPlayerFactory(config: Config, playerFactory: PlayerFactory) {
-    store.playerFactories[config] = playerFactory
+    store.mapConfigToPlayerFactory[config] = playerFactory
   }
 
   @Suppress("MemberVisibilityCanBePrivate", "unused")
   fun addMediaSourceFactory(config: Config, mediaSourceFactory: MediaSourceFactory) {
-    store.sourceFactories[config] = mediaSourceFactory
+    store.mapConfigToSourceFactory[config] = mediaSourceFactory
   }
 
   //// [END] Public API

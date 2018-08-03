@@ -45,8 +45,8 @@ class ExoStore internal constructor(context: Context) {
 
   val context: Context = context.applicationContext  // Application context
   val appName: String = getUserAgent(context, LIB_NAME)
-  val playerFactories = HashMap<Config, PlayerFactory>()
-  val sourceFactories = HashMap<Config, MediaSourceFactory>()
+  val mapConfigToPlayerFactory = HashMap<Config, PlayerFactory>()
+  val mapConfigToSourceFactory = HashMap<Config, MediaSourceFactory>()
   private val drmSessionManagerFactories = HashMap<Config, DrmSessionManagerFactory>()
   private val mapConfigToPool = HashMap<Config, Pools.Pool<Player>>()
 
@@ -59,6 +59,12 @@ class ExoStore internal constructor(context: Context) {
     }
   }
 
+  /**
+   * Get a Pool for Players following Flyweight pattern. For internal use only.
+   *
+   * @param config the [Config] using which we can construct a new [Player] ([KohiiPlayer])
+   * @return a [Pools.Pool] for [Player]
+   */
   private fun getPool(config: Config): Pools.Pool<Player> {
     return mapConfigToPool[config] ?: // find from cache or create new one.
     Pools.SimplePool<Player>(MAX_POOL_SIZE).also { mapConfigToPool[config] = it }
@@ -67,10 +73,9 @@ class ExoStore internal constructor(context: Context) {
   internal fun acquirePlayer(config: Config): Player {
     var player = getPool(config).acquire()
     if (player == null) { // cannot find one from pool, create new.
-      player =
-          (playerFactories[config] ?: // find a factory or create new default one.
-          DefaultPlayerFactory(this, config).also { playerFactories[config] = it })
-              .createPlayer(config.mediaDrm)
+      player = (mapConfigToPlayerFactory[config] ?: DefaultPlayerFactory(this, config)
+          .also { mapConfigToPlayerFactory[config] = it }
+          ).createPlayer(config.mediaDrm)
     }
     return player
   }
@@ -80,8 +85,10 @@ class ExoStore internal constructor(context: Context) {
   }
 
   internal fun createMediaSource(builder: Playable.Builder): MediaSource {
-    return (sourceFactories[builder.config] ?:  // find a factory or create new default one.
-    DefaultMediaSourceFactory(this, builder.config).also { sourceFactories[builder.config] = it })
+    return (mapConfigToSourceFactory[builder.config]
+        ?:  // find a factory or create new default one.
+        DefaultMediaSourceFactory(this, builder.config) //
+            .also { mapConfigToSourceFactory[builder.config] = it })
         .createMediaSource(builder)
   }
 
