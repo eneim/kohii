@@ -167,7 +167,7 @@ class Manager internal constructor(
     mapTargetToPlayback[target]?.run {
       mapAttachedPlaybackToTime[this] = System.nanoTime()
       mapDetachedPlaybackToTime.remove(this)
-      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.getTarget()) {
+      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.target) {
         restorePlaybackInfo(this)
         this.prepare()
       }
@@ -184,7 +184,7 @@ class Manager internal constructor(
       this.pause()
       this@Manager.dispatchRefreshAll()
       this.onTargetUnAvailable()
-      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.getTarget()) {
+      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.target) {
         savePlaybackInfo(this)
         this.release()
       }
@@ -207,7 +207,7 @@ class Manager internal constructor(
   fun performDestroyPlayback(playback: Playback<*>) {
     mapAttachedPlaybackToTime.remove(playback)
     mapDetachedPlaybackToTime.remove(playback)
-    mapTargetToPlayback.remove(playback.getTarget()).also { it?.onTargetUnAvailable() }
+    mapTargetToPlayback.remove(playback.target).also { it?.onTargetUnAvailable() }
     playback.onRemoved()
     playback.onDestroyed()
   }
@@ -218,7 +218,7 @@ class Manager internal constructor(
    * Old [Playback] will be cleaned up and removed.
    */
   fun <T> performAddPlayback(playback: Playback<T>): Playback<T> {
-    val target = playback.getTarget()
+    val target = playback.target
     var shouldQueue = target != null // playback must have a valid target.
     if (shouldQueue) {
       // Not-null target may be already a target of another Playback before.

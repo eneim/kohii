@@ -18,20 +18,19 @@ package kohii.v1.sample.common
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatActivity
 
 /**
- * @author eneim (2018/07/27).
+ * @author eneim (2018/08/05).
  */
-open class BaseFragment : Fragment() {
+abstract class BaseActivity : AppCompatActivity() {
 
-  @Suppress("PropertyName", "MemberVisibilityCanBePrivate")
-  protected var TAG = ""
+  internal var TAG: String = ""
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    TAG = "Kohii:" + javaClass.simpleName
-    Log.d(TAG, "onCreate() called")
+    TAG = "Kohii: ${javaClass.simpleName}"
+    Log.d(TAG, "onCreate() called, state: $savedInstanceState")
   }
 
   override fun onStart() {

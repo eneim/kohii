@@ -64,8 +64,8 @@ internal interface Bridge {
   fun reset()
 
   /**
-   * Release all resource. After this, the SimpleExoPlayer is released to the Player pool and the
-   * Playable must call [prepare] again to use it again.
+   * Release all resource. After this, the Player instance is released to the Player pool and the
+   * Bridge must call [prepare] to request for a Player it again.
    */
   fun release()
 

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
@@ -14,12 +15,8 @@
   ~ limitations under the License.
   -->
 
-<resources>
-
-  <!-- Base application theme. -->
-  <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-    <!-- Customize your theme here. -->
-    <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-  </style>
-
-</resources>
+<network-security-config>
+  <domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="true">qthttp.apple.com.edgesuite.net</domain>
+  </domain-config>
+</network-security-config>

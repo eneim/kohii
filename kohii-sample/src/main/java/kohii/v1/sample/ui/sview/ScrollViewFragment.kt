@@ -50,7 +50,7 @@ import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListener, PlaybackEventListener {
 
   companion object {
-    const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material-staging%2Fassets%2F1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz%2Fm2-manifesto.mp4"
+    const val videoUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
     fun newInstance() = ScrollViewFragment()
   }
 
@@ -78,15 +78,21 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
 
     val transView: View = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView, videoUrl)
+  }
 
-    playerContainer.setOnClickListener {
-      (exitTransition as TransitionSet).excludeTarget(view, true)
-      fragmentManager!!.beginTransaction()
-          .setReorderingAllowed(true)
-          .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
-          .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
-          .addToBackStack(null)
-          .commit()
+  override fun onStart() {
+    super.onStart()
+    view?.run {
+      val transView: View = playerView.findViewById(R.id.exo_content_frame)
+      playerContainer.setOnClickListener {
+        (exitTransition as TransitionSet).excludeTarget(this, true)
+        fragmentManager!!.beginTransaction()
+            .setReorderingAllowed(true)
+            .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
+            .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
+            .addToBackStack(null)
+            .commit()
+      }
     }
   }
 
@@ -100,6 +106,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
     playback?.removeCallback(this)
     playback?.removePlaybackEventListener(this)
     playback?.removePlayerEventListener(this)
+    playerContainer.setOnClickListener(null)
   }
 
   private fun prepareTransitions() {
