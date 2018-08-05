@@ -27,6 +27,8 @@ import kohii.Draft;
 import kohii.Experiment;
 
 /**
+ * Copy paste from StackOverFlow, in Java.
+ *
  * @author eneim (2018/07/27).
  */
 @SuppressWarnings("unused") @Draft @Experiment  //

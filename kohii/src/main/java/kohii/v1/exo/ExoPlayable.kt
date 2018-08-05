@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.exo
 
 import android.net.Uri
 import android.util.Log
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
+import kohii.v1.Bridge
+import kohii.v1.DefaultEventListener
+import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.Playable.Builder
-import kohii.v1.exo.ExoBridge
+import kohii.v1.Playback
+import kohii.v1.Playback.Callback
+import kohii.v1.Playback.InternalCallback
+import kohii.v1.PlayerEventListener
+import kohii.v1.ViewPlayback
 
 @Suppress("MemberVisibilityCanBePrivate")
 /**
  * @author eneim (2018/06/24).
  */
-class PlayableImpl internal constructor(
+class ExoPlayable internal constructor(
     val kohii: Kohii,
     val uri: Uri,
     val builder: Builder
-) : Playable, Playback.Callback, Playback.InternalCallback {
+) : Playable, Callback, InternalCallback {
 
   private val helper = ExoBridge(kohii, builder) as Bridge
   private var listener: PlayerEventListener? = null
@@ -61,12 +69,13 @@ class PlayableImpl internal constructor(
   }
 
   override fun onTargetAvailable(playback: Playback<*>) {
-    (playback.getTarget() as? PlayerView)?.run { helper.playerView = this }
+    (playback.target as? PlayerView)?.run { helper.playerView = this }
   }
 
   override fun onTargetUnAvailable(playback: Playback<*>) {
-    // This will release current Video MediaCodec instances, which are expensive to retain.
+    // Need to make sure that the current Manager of this Playable is the same with playback's one.
     if (kohii.mapWeakPlayableToManager[this] == playback.manager) {
+      // This will release current Video MediaCodec instances, which are expensive to retain.
       this.helper.playerView = null
     }
   }
@@ -81,7 +90,7 @@ class PlayableImpl internal constructor(
     }
     if (kohii.mapWeakPlayableToManager[this] == null) {
       playback.release()
-      // There is no more Manager to manage this Playable, and we are removing the last one, so ...
+      // There is no other Manager to manage this Playable, and we are removing the last one, so ...
       kohii.releasePlayable(this.builder.tag, this)
     }
     playback.internalCallback = null
@@ -90,9 +99,10 @@ class PlayableImpl internal constructor(
 
   ////
 
-  // When binding to a PlayerView, any old playback should not be paused. We know it should keep playing.
+  // When binding to a PlayerView, any old Playback should not be paused.
   // 
   // Relationship: [Playable] --> [Playback [Target]]
+  // TODO [20180803] what if this PlayerView is already bound to another Playable?
   override fun bind(playerView: PlayerView): Playback<PlayerView> {
     val manager = kohii.getManager(playerView.context)
     kohii.mapWeakPlayableToManager[this] = manager
@@ -111,8 +121,7 @@ class PlayableImpl internal constructor(
     }
 
     if (playback == null) {
-      playback = ViewPlayback(kohii, this, uri, manager, playerView, builder,
-          Playback.DEFAULT_DISPATCHER)
+      playback = ViewPlayback(kohii, this, uri, manager, playerView, builder)
       playback.onCreated()
       playback.addCallback(this)
       playback.internalCallback = this

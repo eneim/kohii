@@ -20,15 +20,19 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.annotation.RestrictTo
 import androidx.core.util.Pools
+import androidx.core.util.Pools.Pool
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
+import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.util.Util.getUserAgent
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig.LIB_NAME
 import kohii.v1.Playable
+import java.io.File
 import java.lang.Runtime.getRuntime
 import java.net.CookieHandler
 import java.net.CookieManager
@@ -43,12 +47,16 @@ import java.util.HashMap
 @RestrictTo(RestrictTo.Scope.LIBRARY) //
 class ExoStore internal constructor(context: Context) {
 
+  private val defaultCache = SimpleCache(File(context.cacheDir, "kohii").also { it.mkdir() },
+      LeastRecentlyUsedCacheEvictor(MAX_CACHE))
+  private val mapConfigToPool = HashMap<Config, Pools.Pool<Player>>()
+  private val drmSessionManagerFactories = HashMap<Config, DrmSessionManagerFactory>()
+
   val context: Context = context.applicationContext  // Application context
   val appName: String = getUserAgent(context, LIB_NAME)
+  val defaultConfig = Config.DEFAULT_CONFIG.copy(cache = defaultCache)
   val mapConfigToPlayerFactory = HashMap<Config, PlayerFactory>()
   val mapConfigToSourceFactory = HashMap<Config, MediaSourceFactory>()
-  private val drmSessionManagerFactories = HashMap<Config, DrmSessionManagerFactory>()
-  private val mapConfigToPool = HashMap<Config, Pools.Pool<Player>>()
 
   init {
     // Adapt from ExoPlayer demo app.
@@ -84,17 +92,27 @@ class ExoStore internal constructor(context: Context) {
     getPool(config).release(player) // release back to pool for reuse.
   }
 
+  internal fun cleanUp() {
+    val iterator = mapConfigToPool.entries.iterator()
+    while (iterator.hasNext()) {
+      val pool = iterator.next().value
+      pool.loop { it.release() }
+      iterator.remove()
+    }
+  }
+
   internal fun createMediaSource(builder: Playable.Builder): MediaSource {
-    return (mapConfigToSourceFactory[builder.config]
-        ?:  // find a factory or create new default one.
-        DefaultMediaSourceFactory(this, builder.config) //
-            .also { mapConfigToSourceFactory[builder.config] = it })
+    return (mapConfigToSourceFactory[builder.config] ?: // find a factory or create new default one.
+    DefaultMediaSourceFactory(this, builder.config) //
+        .also { mapConfigToSourceFactory[builder.config] = it }
+        )
         .createMediaSource(builder)
   }
 
   companion object {
     // Magic number: Build.VERSION.SDK_INT / 6 --> API 16 ~ 18 will set pool size to 2, etc.
     internal val MAX_POOL_SIZE = Math.max(Util.SDK_INT / 6, getRuntime().availableProcessors())
+    internal const val MAX_CACHE = 64 * 102 * 1024.toLong()
 
     @SuppressLint("StaticFieldLeak")
     private var exoStore: ExoStore? = null
@@ -118,6 +136,7 @@ class ExoStore internal constructor(context: Context) {
       }
     }
 
+    @Suppress("unused")
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP) //
     fun getVolumeInfo(player: Player): VolumeInfo {
       return when (player) {
@@ -130,4 +149,13 @@ class ExoStore internal constructor(context: Context) {
       }
     }
   }
+}
+
+fun <T> Pool<T>.loop(action: (T) -> Unit) {
+  var item: T?
+  do {
+    item = this.acquire()
+    if (item == null) break
+    else action(item)
+  } while (true)
 }
