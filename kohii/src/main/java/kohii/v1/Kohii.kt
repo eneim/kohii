@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class Kohii(context: Context) {
 
   internal val app = context.applicationContext as Application
@@ -56,7 +55,7 @@ class Kohii(context: Context) {
   internal val mapWeakPlayableToManager = WeakHashMap<Playable, Manager?>()
 
   // Store playables whose tag is available. Non tagged playables are always ignored.
-  internal val mapTagToPlayable = HashMap<Any /* ← playable tag */, Playable>()
+  private val mapTagToPlayable = HashMap<Any /* ← playable tag */, Playable>()
 
   init {
     app.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
@@ -85,12 +84,21 @@ class Kohii(context: Context) {
 
       // Note: [20180527] This method is called before DecorView is detached.
       override fun onActivityDestroyed(activity: Activity) {
+        Log.i(TAG, "onActivityDestroyed() called: ${activity.javaClass.simpleName}, "
+            + "${activity.isChangingConfigurations}")
+
         mapWeakContextToManager.remove(activity)?.onHostDestroyed()
+        mapWeakPlayableToManager.forEach {
+          if (it.value == null) {
+            Log.w(TAG, "onActivityDestroyed(): ${it.key} -- ${it.value}")
+          } else {
+            Log.d(TAG, "onActivityDestroyed(): ${it.key} -- ${it.value}")
+          }
+        }
+
         if (!activity.isChangingConfigurations && mapWeakContextToManager.isEmpty()) {
           this@Kohii.cleanUp()
         }
-        Log.i(TAG, "onActivityDestroyed() called: ${activity.javaClass.simpleName},"
-            + "${activity.isChangingConfigurations}")
       }
     })
   }
@@ -113,7 +121,7 @@ class Kohii(context: Context) {
 
   internal class GlobalScrollChangeListener(val manager: Manager) : OnScrollChangedListener {
 
-    val scrollConsumed = AtomicBoolean(false)
+    private val scrollConsumed = AtomicBoolean(false)
     val managerRef = WeakReference(manager)
 
     private val handler: Handler = object : Handler(Looper.getMainLooper()) {
@@ -210,9 +218,19 @@ class Kohii(context: Context) {
     playback.onTargetAvailable()
   }
 
-  internal fun onManagerInActiveForPlayback(manager: Manager, playback: Playback<*>,
-      configChange: Boolean) {
-    playback.onTargetUnAvailable()
+  /**
+   * Called when the Activity mapped to a Manager is stopped. When called, a [Playback]'s target is
+   * considered 'unavailable' even if it is not detached yet (in case the target is a [View])
+   *
+   * @param manager The [Manager] whose Activity is stopped.
+   * @param playback The [Playback] that is managed by the manager.
+   * @param configChange If true, the Activity is being recreated by a config change, false otherwise.
+   */
+  internal fun onManagerInActiveForPlayback(
+      manager: Manager,
+      playback: Playback<*>,
+      configChange: Boolean
+  ) {
     val playable = playback.playable
     // Only pause this playback if the playable is managed by this manager, or by no-one else.
     if (mapWeakPlayableToManager[playable] == manager || mapWeakPlayableToManager[playable] == null) {
@@ -221,12 +239,10 @@ class Kohii(context: Context) {
         manager.savePlaybackInfo(playback)
       }
     }
-
+    playback.onTargetUnAvailable()
+    // There is no recreation. If the manager is managing the playable, unload the Playable.
     if (!configChange) {
       if (mapWeakPlayableToManager[playable] == manager) mapWeakPlayableToManager[playable] = null
-    } else {
-      // TODO [20180719] double check this case. We may not need this.
-      mapWeakPlayableToManager[playable] = manager
     }
   }
 
@@ -248,7 +264,7 @@ class Kohii(context: Context) {
   }
 
   // Find a Playable for a tag. Single player may use this for full-screen playback.
-  // TODO [20180719] result Playable is still managed by a Manager. Need to double check.
+  // TODO [20180719] returned Playable may still be managed by a Manager. Need to double check.
   fun findPlayable(tag: Any?): Playable? {
     return this.mapTagToPlayable[tag].also {
       mapWeakPlayableToManager[it] = null // once found, it will be detached from the last Manager.
