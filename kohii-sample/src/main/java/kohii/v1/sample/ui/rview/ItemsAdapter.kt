@@ -74,10 +74,17 @@ class ItemsAdapter(
   }
 
   override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-    val start = System.nanoTime()
     holder.bind(items[position % items.size])
-    Log.d("Kohii:B",
-        "bind: $position, rt: " + ((System.nanoTime() - start) / 1000000) + " ms, class: $holder")
+  }
+
+  override fun onViewRecycled(holder: BaseViewHolder) {
+    super.onViewRecycled(holder)
+    holder.onRecycled(true)
+  }
+
+  override fun onFailedToRecycleView(holder: BaseViewHolder): Boolean {
+    holder.onRecycled(false)
+    return true
   }
 
   class VideoClickImpl(private val fragment: RecyclerViewFragment) : OnClickListener {

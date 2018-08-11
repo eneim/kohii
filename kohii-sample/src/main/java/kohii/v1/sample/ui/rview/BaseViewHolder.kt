@@ -31,6 +31,8 @@ abstract class BaseViewHolder(inflater: LayoutInflater, layoutRes: Int,
 
   abstract fun bind(item: Item?)
 
+  open fun onRecycled(success: Boolean) {}
+
   interface OnClickListener {
 
     fun onItemClick(
