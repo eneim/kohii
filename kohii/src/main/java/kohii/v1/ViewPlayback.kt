@@ -43,7 +43,7 @@ internal open class ViewPlayback<V : View>(
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   // For debugging purpose only.
-  private val listener = object : PlaybackEventListener {
+  private val debugListener = object : PlaybackEventListener {
     override fun onBuffering(playWhenReady: Boolean) {
       Log.d("Kohii:P", "buffering: " + this@ViewPlayback)
     }
@@ -94,19 +94,11 @@ internal open class ViewPlayback<V : View>(
       this.addOnAttachStateChangeListener(this@ViewPlayback)
     }
     super.onAdded()
-  }
-
-  override fun onTargetAvailable() {
-    super.addPlaybackEventListener(this.listener)
-    super.onTargetAvailable()
-  }
-
-  override fun onTargetUnAvailable() {
-    super.onTargetUnAvailable()
-    super.removePlaybackEventListener(this.listener)
+    super.addPlaybackEventListener(this.debugListener)
   }
 
   override fun onRemoved() {
+    super.removePlaybackEventListener(this.debugListener)
     super.onRemoved()
     target?.removeOnAttachStateChangeListener(this)
   }

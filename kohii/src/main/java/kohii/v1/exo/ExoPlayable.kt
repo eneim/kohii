@@ -18,6 +18,7 @@ package kohii.v1.exo
 
 import android.net.Uri
 import android.util.Log
+import androidx.core.view.ScrollingView
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
@@ -32,15 +33,19 @@ import kohii.v1.Playback.InternalCallback
 import kohii.v1.PlayerEventListener
 import kohii.v1.ViewPlayback
 
-@Suppress("MemberVisibilityCanBePrivate")
 /**
  * @author eneim (2018/06/24).
  */
+@Suppress("MemberVisibilityCanBePrivate")
 class ExoPlayable internal constructor(
     val kohii: Kohii,
     val uri: Uri,
     val builder: Builder
 ) : Playable, Callback, InternalCallback {
+
+  companion object {
+    private const val TAG = "Kohii:Playable"
+  }
 
   private val helper = ExoBridge(kohii, builder) as Bridge
   private var listener: PlayerEventListener? = null
@@ -99,8 +104,7 @@ class ExoPlayable internal constructor(
 
   ////
 
-  // When binding to a PlayerView, any old Playback should not be paused.
-  // 
+  // When binding to a PlayerView, any old Playback for the same PlayerView should be ignored.
   // Relationship: [Playable] --> [Playback [Target]]
   // TODO [20180803] what if this PlayerView is already bound to another Playable?
   override fun bind(playerView: PlayerView): Playback<PlayerView> {
@@ -108,10 +112,11 @@ class ExoPlayable internal constructor(
     kohii.mapWeakPlayableToManager[this] = manager
     var playback: Playback<PlayerView>? = null
     val oldTarget = manager.mapWeakPlayableToTarget.put(this, playerView)
-    if (oldTarget === playerView) {
+    if (oldTarget === playerView) { // Scenario: rebinding data in RecyclerView
       @Suppress("UNCHECKED_CAST")
       playback = manager.mapTargetToPlayback[oldTarget] as Playback<PlayerView>?
       // Many Playbacks may share the same Target, but not share the same Playable.
+      // TODO [20180806] may need a proper way to destroy the playback ↓.
       if (playback?.playable != this) playback = null
     } else {
       val oldPlayback = manager.mapTargetToPlayback.remove(oldTarget)
