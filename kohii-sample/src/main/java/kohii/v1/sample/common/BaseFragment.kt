@@ -25,27 +25,26 @@ import androidx.fragment.app.Fragment
  */
 open class BaseFragment : Fragment() {
 
-  @Suppress("PropertyName", "MemberVisibilityCanBePrivate")
-  protected var TAG = ""
+  private var logTag = ""
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    TAG = "Kohii:" + javaClass.simpleName
-    Log.d(TAG, "onCreate() called")
+    logTag = "KohiiApp:" + javaClass.simpleName
+    Log.d(logTag, "onCreate() called")
   }
 
   override fun onStart() {
     super.onStart()
-    Log.d(TAG, "onStart() called")
+    Log.d(logTag, "onStart() called")
   }
 
   override fun onStop() {
     super.onStop()
-    Log.d(TAG, "onStop() called")
+    Log.d(logTag, "onStop() called")
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    Log.d(TAG, "onDestroy() called")
+    Log.d(logTag, "onDestroy() called")
   }
 }

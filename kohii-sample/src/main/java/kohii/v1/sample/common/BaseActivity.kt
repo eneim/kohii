@@ -25,26 +25,26 @@ import androidx.appcompat.app.AppCompatActivity
  */
 abstract class BaseActivity : AppCompatActivity() {
 
-  internal var TAG: String = ""
+  private var logTag: String = ""
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    TAG = "Kohii: ${javaClass.simpleName}"
-    Log.d(TAG, "onCreate() called, state: $savedInstanceState")
+    logTag = "KohiiApp: ${javaClass.simpleName}"
+    Log.d(logTag, "onCreate() called, state: $savedInstanceState")
   }
 
   override fun onStart() {
     super.onStart()
-    Log.d(TAG, "onStart() called")
+    Log.d(logTag, "onStart() called")
   }
 
   override fun onStop() {
     super.onStop()
-    Log.d(TAG, "onStop() called")
+    Log.d(logTag, "onStop() called")
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    Log.d(TAG, "onDestroy() called")
+    Log.d(logTag, "onDestroy() called")
   }
 }
