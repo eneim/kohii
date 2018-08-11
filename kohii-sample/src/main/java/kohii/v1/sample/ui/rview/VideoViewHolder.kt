@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.ui.rview
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,7 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playback
-import kohii.v1.Playback.Callback
+import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 
@@ -37,19 +38,41 @@ class VideoViewHolder(
     inflater: LayoutInflater,
     parent: ViewGroup,
     val listener: OnClickListener
-) : BaseViewHolder(inflater, R.layout.holder_player_view, parent), View.OnClickListener {
+) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
+    View.OnClickListener, PlaybackEventListener, Playback.Callback {
+
+  override fun onTargetAvailable(playback: Playback<*>) {
+    listener.onItemLoaded(itemView, adapterPosition)
+  }
+
+  override fun onTargetUnAvailable(playback: Playback<*>) {
+  }
+
+  override fun onBuffering(playWhenReady: Boolean) {
+    Log.i("KohiiApp:VH:$adapterPosition", "onBuffering(): $playWhenReady")
+  }
+
+  override fun onPlaying() {
+    Log.i("KohiiApp:VH:$adapterPosition", "onPlaying()")
+  }
+
+  override fun onPaused() {
+    Log.i("KohiiApp:VH:$adapterPosition", "onPaused()")
+  }
+
+  override fun onCompleted() {
+    Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
+  }
 
   val playerView = itemView.findViewById(R.id.playerView) as PlayerView
   val playerContainer = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
   var itemTag: String? = null
-
-  init {
-    itemView.setOnClickListener(this)
-  }
+  var playback: Playback<PlayerView>? = null
 
   override fun bind(item: Item?) {
+    itemView.setOnClickListener(this)
     if (item != null) {
       itemTag = item.content + "@" + adapterPosition
 
@@ -62,19 +85,18 @@ class VideoViewHolder(
           .copy(config = DemoApp.app.config)
           .copy(tag = itemTag)
           .asPlayable()
-      playable.bind(playerView).run {
-        this.addCallback(object : Callback {
-          override fun onTargetAvailable(playback: Playback<*>) {
-            this@run.removeCallback(this)
-            listener.onItemLoaded(itemView, adapterPosition)
-          }
-
-          override fun onTargetUnAvailable(playback: Playback<*>) {
-            this@run.removeCallback(this)
-          }
-        })
+      playback = playable.bind(playerView).also {
+        it.addPlaybackEventListener(this@VideoViewHolder)
+        it.addCallback(this@VideoViewHolder)
       }
     }
+  }
+
+  override fun onRecycled(success: Boolean) {
+    super.onRecycled(success)
+    playback?.removePlaybackEventListener(this)
+    playback?.removeCallback(this)
+    itemView.setOnClickListener(null)
   }
 
   override fun onClick(v: View?) {
