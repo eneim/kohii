@@ -26,20 +26,13 @@ import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.metadata.Metadata
-import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.text.Cue
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.snackbar.Snackbar
+import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
-import kohii.v1.PlayerEventListener
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -55,6 +48,12 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
   }
 
   private var playback: Playback<PlayerView>? = null
+  private val listener = object : DefaultEventListener() {
+    override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
+        pixelWidthHeightRatio: Float) {
+      startPostponedEnterTransition()
+    }
+  }
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View {
@@ -73,6 +72,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
         .asPlayable().bind(playerView).also {
           it.addPlaybackEventListener(this@ScrollViewFragment)
           it.addCallback(this@ScrollViewFragment)
+          it.addPlayerEventListener(listener)
         }
 
     val transView: View = playerView.findViewById(R.id.exo_content_frame)
@@ -104,6 +104,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
     super.onStop()
     playback?.removeCallback(this)
     playback?.removePlaybackEventListener(this)
+    playback?.removePlayerEventListener(listener)
     playerContainer.setOnClickListener(null)
   }
 
@@ -153,6 +154,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
 
   override fun onTargetAvailable(playback: Playback<*>) {
     Toast.makeText(requireContext(), "Target available", Toast.LENGTH_SHORT).show()
+    startPostponedEnterTransition()
   }
 
   override fun onTargetUnAvailable(playback: Playback<*>) {
