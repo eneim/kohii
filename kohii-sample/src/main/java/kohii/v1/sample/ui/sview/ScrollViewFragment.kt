@@ -47,7 +47,7 @@ import kohii.v1.sample.ui.player.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
-class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListener, PlaybackEventListener {
+class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListener {
 
   companion object {
     const val videoUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
@@ -71,7 +71,6 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
         .copy(tag = videoUrl)
         .copy(config = DemoApp.app.config)
         .asPlayable().bind(playerView).also {
-          it.addPlayerEventListener(this@ScrollViewFragment)
           it.addPlaybackEventListener(this@ScrollViewFragment)
           it.addCallback(this@ScrollViewFragment)
         }
@@ -105,7 +104,6 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
     super.onStop()
     playback?.removeCallback(this)
     playback?.removePlaybackEventListener(this)
-    playback?.removePlayerEventListener(this)
     playerContainer.setOnClickListener(null)
   }
 
@@ -117,7 +115,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
     exitTransition = transition
 
     // A similar mapping is set at the ImagePagerFragment with a setEnterSharedElementCallback.
-    setExitSharedElementCallback(object : SharedElementCallback() {
+    setEnterSharedElementCallback(object : SharedElementCallback() {
       override fun onMapSharedElements(names: MutableList<String>?,
           sharedElements: MutableMap<String, View>?) {
         // Map the first shared element name to the child ImageView.
@@ -162,54 +160,4 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
   }
 
   // END: Playback.Callback
-
-  // BEGIN: PlayerEventListener
-
-  override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-      pixelWidthHeightRatio: Float) {
-    startPostponedEnterTransition()
-    playback?.removePlayerEventListener(this)
-  }
-
-  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
-  }
-
-  override fun onSeekProcessed() {
-  }
-
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
-  }
-
-  override fun onPlayerError(error: ExoPlaybackException?) {
-  }
-
-  override fun onLoadingChanged(isLoading: Boolean) {
-  }
-
-  override fun onPositionDiscontinuity(reason: Int) {
-  }
-
-  override fun onRepeatModeChanged(repeatMode: Int) {
-  }
-
-  override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-  }
-
-  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
-  }
-
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-  }
-
-  override fun onRenderedFirstFrame() {
-  }
-
-  override fun onCues(cues: MutableList<Cue>?) {
-  }
-
-  override fun onMetadata(metadata: Metadata?) {
-  }
-
-  // END: PlayerEventListener
 }

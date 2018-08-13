@@ -96,7 +96,7 @@ class ExoStore internal constructor(context: Context) {
     val iterator = mapConfigToPool.entries.iterator()
     while (iterator.hasNext()) {
       val pool = iterator.next().value
-      pool.loop { it.release() }
+      pool.onEachAcquired { it.release() }
       iterator.remove()
     }
   }
@@ -151,7 +151,7 @@ class ExoStore internal constructor(context: Context) {
   }
 }
 
-fun <T> Pool<T>.loop(action: (T) -> Unit) {
+fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   var item: T?
   do {
     item = this.acquire()

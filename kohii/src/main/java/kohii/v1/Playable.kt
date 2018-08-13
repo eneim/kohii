@@ -21,6 +21,7 @@ import androidx.annotation.IntDef
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
+import kohii.media.VolumeInfo
 import kohii.v1.exo.Config
 import kotlin.annotation.AnnotationRetention.SOURCE
 
@@ -58,6 +59,10 @@ interface Playable {
   fun pause()
 
   fun release()
+
+  fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
+
+  val volumeInfo: VolumeInfo
 
   var playbackInfo: PlaybackInfo
 

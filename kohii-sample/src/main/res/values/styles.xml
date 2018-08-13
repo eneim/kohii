@@ -18,8 +18,13 @@
 
   <!-- Base application theme. -->
   <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-    <!-- Customize your theme here. -->
+  </style>
+
+  <style name="AppTheme.Light">
     <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+  </style>
+
+  <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">
   </style>
 
 </resources>

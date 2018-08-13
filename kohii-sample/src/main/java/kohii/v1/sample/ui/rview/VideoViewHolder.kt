@@ -43,9 +43,11 @@ class VideoViewHolder(
 
   override fun onTargetAvailable(playback: Playback<*>) {
     listener.onItemLoaded(itemView, adapterPosition)
+    ViewCompat.setTransitionName(transView, itemTag)
   }
 
   override fun onTargetUnAvailable(playback: Playback<*>) {
+    ViewCompat.setTransitionName(transView, null)
   }
 
   override fun onBuffering(playWhenReady: Boolean) {
@@ -76,14 +78,12 @@ class VideoViewHolder(
     if (item != null) {
       itemTag = item.content + "@" + adapterPosition
 
-      ViewCompat.setTransitionName(transView, itemTag)
-
       playerContainer.setAspectRatio(item.width / item.height.toFloat())
       val playable = Kohii[itemView.context]
           .setUp(item.content)
+          .copy(tag = itemTag)
           .copy(repeatMode = Player.REPEAT_MODE_ONE)
           .copy(config = DemoApp.app.config)
-          .copy(tag = itemTag)
           .asPlayable()
       playback = playable.bind(playerView).also {
         it.addPlaybackEventListener(this@VideoViewHolder)

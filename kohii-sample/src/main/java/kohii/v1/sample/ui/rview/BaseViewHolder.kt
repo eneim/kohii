@@ -48,6 +48,6 @@ abstract class BaseViewHolder(inflater: LayoutInflater, layoutRes: Int,
   }
 
   override fun toString(): String {
-    return javaClass.simpleName + adapterPosition
+    return javaClass.simpleName + " -- " + adapterPosition
   }
 }

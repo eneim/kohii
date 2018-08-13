@@ -63,11 +63,11 @@ class Manager internal constructor(
 
   internal val mapWeakPlayableToTarget = WeakHashMap<Playable, Any /* Target */>()
   // TODO [20180806] use WeakHashMap with ReferenceQueue and catch the QC-ed Target in cleanup thread?
-  internal val mapTargetToPlayback = HashMap<Any? /* Target */, Playback<*>>()
+  internal val mapTargetToPlayback = LinkedHashMap<Any? /* Target */, Playback<*>>()
 
   private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
-  private val mapAttachedPlaybackToTime = HashMap<Playback<*>, Long>()
-  private val mapDetachedPlaybackToTime = HashMap<Playback<*>, Long>()
+  private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
+  private val mapDetachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
 
   // Candidates to hold playbacks for a refresh call.
   private val candidates = TreeMap<Token, Playback<*>>(TOKEN_COMPARATOR)
@@ -105,6 +105,7 @@ class Manager internal constructor(
 
   // Called when the Activity bound to this Manager is destroyed.
   internal fun onHostDestroyed() {
+    // Wrap by an ArrayList because we also remove entry while iterating by performDestroyPlayback
     ArrayList(mapTargetToPlayback.values).apply {
       this.forEach { performDestroyPlayback(it) }
     }.clear()

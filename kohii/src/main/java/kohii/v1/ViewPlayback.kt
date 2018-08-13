@@ -143,6 +143,7 @@ internal open class ViewPlayback<V : View>(
       internal val areaOffset: Float
   ) : Token() {
     override fun compareTo(other: Token): Int {
+      // TODO [20180813] may need better comparison
       return if (other is ViewToken) CENTER_Y.compare(this, other) else super.compareTo(other)
     }
 

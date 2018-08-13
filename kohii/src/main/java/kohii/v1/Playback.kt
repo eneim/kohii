@@ -20,6 +20,7 @@ import android.net.Uri
 import android.os.Handler
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
+import kohii.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
 
@@ -37,7 +38,7 @@ abstract class Playback<T> internal constructor(
     internal val manager: Manager,
     internal val target: T?,
     internal val builder: Playable.Builder,
-    internal val dispatcher: Delayer = NO_DELAY
+    internal val delayer: Delayer = NO_DELAY
 ) {
 
   companion object {
@@ -75,12 +76,12 @@ abstract class Playback<T> internal constructor(
   // For public access as well.
   val tag: Any
 
-  // listener for Playable
+  // Listeners for Playable. Playable will access these filed on demand.
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
 
-  // internal callbacks
+  // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
   private val callbacks = CopyOnWriteArraySet<Callback>()
 
@@ -98,11 +99,7 @@ abstract class Playback<T> internal constructor(
     this.tag = builder.tag ?: SCRAP
   }
 
-  // Used by subclasses to dispatch internal event listeners
-  internal fun dispatchPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
-    listenerHandler?.obtainMessage(playbackState, playWhenReady)?.sendToTarget()
-  }
-
+  // [BEGIN] Public API
   fun addPlaybackEventListener(listener: PlaybackEventListener) {
     this.listeners.add(listener)
   }
@@ -135,7 +132,22 @@ abstract class Playback<T> internal constructor(
     this.playerListeners.remove(listener)
   }
 
-  /// internal APIs
+  var volumeInfo: VolumeInfo
+    get() {
+      return playable.volumeInfo
+    }
+    set(value) {
+      playable.setVolumeInfo(value)
+    }
+
+  // [END] Public API
+
+  /// Internal APIs
+
+  // Used by subclasses to dispatch internal event listeners
+  internal fun dispatchPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
+    listenerHandler?.obtainMessage(playbackState, playWhenReady)?.sendToTarget()
+  }
 
   // Only playback with 'valid tag' will be cached for restoring.
   internal fun validTag() = this.tag !== SCRAP
@@ -145,7 +157,7 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun play() {
-    val delay = dispatcher.getInitDelay()
+    val delay = delayer.getInitDelay()
     dispatcherHandler?.removeMessages(MSG_PLAY)
     when {
       delay > 0 -> dispatcherHandler?.sendEmptyMessageDelayed(MSG_PLAY, delay) ?: playable.play()
@@ -169,23 +181,23 @@ abstract class Playback<T> internal constructor(
   // being added to Manager
   // the target may not be attached to View/Window.
   @CallSuper
-  open fun onAdded() {
+  internal open fun onAdded() {
     internalCallback?.onAdded(this)
   }
 
   // being removed from Manager
   @CallSuper
-  open fun onRemoved() {
+  internal open fun onRemoved() {
+    internalCallback?.onRemoved(this)
     dispatcherHandler?.removeCallbacksAndMessages(null)
     listenerHandler?.removeCallbacksAndMessages(null)
-    internalCallback?.onRemoved(this)
     this.callbacks.clear()
     this.listeners.clear()
   }
 
   // ~ View is attached
   @CallSuper
-  open fun onTargetAvailable() {
+  internal open fun onTargetAvailable() {
     this.callbacks.forEach { it.onTargetAvailable(this) }
   }
 
@@ -195,12 +207,12 @@ abstract class Playback<T> internal constructor(
   // into cache, ready to reuse once coming back, [2] consider to release allocated resource if
   // there is no other Manager manages the internal Playable.
   @CallSuper
-  open fun onTargetUnAvailable() {
+  internal open fun onTargetUnAvailable() {
     this.callbacks.forEach { it.onTargetUnAvailable(this) }
   }
 
   @CallSuper
-  open fun onCreated() {
+  internal open fun onCreated() {
     this.listenerHandler = Handler(android.os.Handler.Callback {
       val playWhenReady = it.obj as Boolean
       when (it.what) {
@@ -231,9 +243,13 @@ abstract class Playback<T> internal constructor(
   }
 
   @CallSuper
-  open fun onDestroyed() {
+  internal open fun onDestroyed() {
     this.listenerHandler = null
     this.dispatcherHandler = null
+  }
+
+  override fun toString(): String {
+    return javaClass.simpleName + "@" + hashCode()
   }
 
   // For internal flow only.
