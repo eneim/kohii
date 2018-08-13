@@ -23,21 +23,47 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.Video
 import kohii.v1.sample.databinding.FragmentMotionBinding
+import kohii.v1.sample.ui.player.InitData
+import kohii.v1.sample.ui.player.PlayerActivity
 
 /**
  * @author eneim (2018/07/15).
  */
-class MotionFragment : BaseFragment() {
+class MotionFragment : BaseFragment(), Presenter {
 
   companion object {
     fun newInstance() = MotionFragment()
   }
 
+  var binding: FragmentMotionBinding? = null
+
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, st: Bundle?): View? {
-    val binding = DataBindingUtil.inflate(inflater, R.layout.fragment_motion, container,
-        false) as FragmentMotionBinding
-    binding.motion = Motion()
-    return binding.root
+    binding = DataBindingUtil.inflate(
+        inflater,
+        R.layout.fragment_motion,
+        container,
+        false
+    ) as FragmentMotionBinding
+    binding!!.motion = Motion()
+    return binding!!.root
+  }
+
+  override fun onStart() {
+    super.onStart()
+    binding?.presenter = this
+  }
+
+  override fun onStop() {
+    super.onStop()
+    binding?.presenter = null
+  }
+
+  override fun onVideoClick(container: View, video: Video) {
+    startActivity(PlayerActivity.createIntent(requireContext(), InitData(
+        tag = video.url,
+        aspectRatio = video.width / video.height
+    )))
   }
 }

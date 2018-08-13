@@ -18,10 +18,10 @@ package kohii.v1.exo
 
 import android.net.Uri
 import android.util.Log
-import androidx.core.view.ScrollingView
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
+import kohii.media.VolumeInfo
 import kohii.v1.Bridge
 import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
@@ -156,4 +156,15 @@ class ExoPlayable internal constructor(
     set(value) {
       this.helper.playbackInfo = value
     }
+
+  override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
+    return this.helper.setVolumeInfo(volumeInfo)
+  }
+
+  override val volumeInfo: VolumeInfo
+    get() = this.helper.volumeInfo
+
+  override fun toString(): String {
+    return javaClass.simpleName + "@" + hashCode()
+  }
 }

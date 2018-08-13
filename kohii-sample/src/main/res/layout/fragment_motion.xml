@@ -24,6 +24,11 @@
         name="motion"
         type="kohii.v1.sample.ui.motion.Motion"
         />
+
+    <variable
+        name="presenter"
+        type="kohii.v1.sample.ui.motion.Presenter"
+        />
   </data>
 
   <androidx.core.widget.NestedScrollView
@@ -37,16 +42,24 @@
         android:orientation="vertical"
         >
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
+          android:id="@+id/container1"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          app:resize_mode="fixed_width"
-          app:show_buffering="true"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video0}"
-          />
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video0)}"
+          >
+
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:resize_mode="fixed_width"
+            app:show_buffering="true"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video0}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
@@ -85,16 +98,23 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
+          android:id="@+id/container2"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          app:resize_mode="fixed_width"
-          app:show_buffering="true"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video1}"
-          />
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video1)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:resize_mode="fixed_width"
+            app:show_buffering="true"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video1}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
@@ -105,16 +125,23 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
+          android:id="@+id/container3"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          app:resize_mode="fixed_width"
-          app:show_buffering="true"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video2}"
-          />
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video2)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:resize_mode="fixed_width"
+            app:show_buffering="true"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video2}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
@@ -125,16 +152,23 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
+          android:id="@+id/container4"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          app:resize_mode="fixed_width"
-          app:show_buffering="true"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video3}"
-          />
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video3)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:resize_mode="fixed_width"
+            app:show_buffering="true"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video3}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
@@ -145,16 +179,23 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
+          android:id="@+id/container5"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          app:resize_mode="fixed_width"
-          app:show_buffering="true"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video4}"
-          />
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video4)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:resize_mode="fixed_width"
+            app:show_buffering="true"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video4}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
