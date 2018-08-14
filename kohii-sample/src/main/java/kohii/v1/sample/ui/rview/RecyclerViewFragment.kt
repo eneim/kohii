@@ -48,7 +48,7 @@ class RecyclerViewFragment : BaseFragment() {
 
   data class PlayerInfo(val adapterPos: Int, val viewTop: Int)
 
-  // implemented by host to manage shared elements transition information.
+  // implemented by host (Activity) to manage shared elements transition information.
   interface PlayerInfoHolder {
 
     fun recordPlayerInfo(info: PlayerInfo?)
@@ -72,6 +72,8 @@ class RecyclerViewFragment : BaseFragment() {
   }
 
   private var container: RecyclerView? = null
+
+  // Should be implemented by Activity, to keep information of latest clicked item position.
   private var playerInfoHolder: PlayerInfoHolder? = null
 
   override fun onAttach(context: Context?) {
@@ -91,26 +93,23 @@ class RecyclerViewFragment : BaseFragment() {
     prepareTransitions()
     postponeEnterTransition()
 
+    val data = ArrayList(items!!).apply { this.addAll(items!!) }
     container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)
-      it.layoutManager = LinearLayoutManager(requireContext())
-      it.layoutManager!!.isItemPrefetchEnabled = true
-      it.adapter = ItemsAdapter(
-          this,
-          ArrayList(items!!).apply { this.addAll(items!!) }
-      ) { it.toPixel(resources) }
+      it.layoutManager = LinearLayoutManager(
+          requireContext()).apply { this.isItemPrefetchEnabled = true }
+      it.adapter = ItemsAdapter(this, data) { dp -> dp.toPixel(resources) }
     }
 
     this.playerInfoHolder?.fetchPlayerInfo()?.run {
       container!!.doOnNextLayoutAs<RecyclerView> {
-        val layoutManager = it.layoutManager as LinearLayoutManager
-        val viewAtPosition = layoutManager.findViewByPosition(this.adapterPos)
+        val layout = it.layoutManager as LinearLayoutManager
+        val viewAtPosition = layout.findViewByPosition(this.adapterPos)
         // Scroll to position if the view for the current position is null (not currently part of
         // layout manager children), or it's not completely visible.
-        if (viewAtPosition == null || //
-            layoutManager.isViewPartiallyVisible(viewAtPosition, false, true)) {
+        if (viewAtPosition == null || layout.isViewPartiallyVisible(viewAtPosition, false, true)) {
           it.postDelayed(200) {
-            layoutManager.scrollToPositionWithOffset(this.adapterPos, this.viewTop)
+            layout.scrollToPositionWithOffset(this.adapterPos, this.viewTop)
           }
         }
       }
@@ -125,10 +124,10 @@ class RecyclerViewFragment : BaseFragment() {
     exitTransition = transition
 
     val playerInfo = this.fetchPlayerInfo() ?: return
-    setExitSharedElementCallback(object : SharedElementCallback() {
+    setEnterSharedElementCallback(object : SharedElementCallback() {
       override fun onMapSharedElements(names: List<String>?, elements: MutableMap<String, View>?) {
         // Locate the ViewHolder for the clicked position.
-        val holder = container!!.findViewHolderForAdapterPosition(playerInfo.adapterPos)
+        val holder = container?.findViewHolderForAdapterPosition(playerInfo.adapterPos)
         if (holder is VideoViewHolder) {
           // Map the first shared element name to the child ImageView.
           elements?.put(names?.get(0)!!, holder.transView)

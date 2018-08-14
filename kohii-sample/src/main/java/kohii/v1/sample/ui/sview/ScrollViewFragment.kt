@@ -26,20 +26,13 @@ import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.metadata.Metadata
-import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.text.Cue
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.snackbar.Snackbar
+import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
-import kohii.v1.PlayerEventListener
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -47,14 +40,20 @@ import kohii.v1.sample.ui.player.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
-class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListener, PlaybackEventListener {
+class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListener {
 
   companion object {
-    const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material-staging%2Fassets%2F1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz%2Fm2-manifesto.mp4"
+    const val videoUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
     fun newInstance() = ScrollViewFragment()
   }
 
   private var playback: Playback<PlayerView>? = null
+  private val listener = object : DefaultEventListener() {
+    override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
+        pixelWidthHeightRatio: Float) {
+      startPostponedEnterTransition()
+    }
+  }
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View {
@@ -71,22 +70,28 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
         .copy(tag = videoUrl)
         .copy(config = DemoApp.app.config)
         .asPlayable().bind(playerView).also {
-          it.addPlayerEventListener(this@ScrollViewFragment)
           it.addPlaybackEventListener(this@ScrollViewFragment)
           it.addCallback(this@ScrollViewFragment)
+          it.addPlayerEventListener(listener)
         }
 
     val transView: View = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView, videoUrl)
+  }
 
-    playerContainer.setOnClickListener {
-      (exitTransition as TransitionSet).excludeTarget(view, true)
-      fragmentManager!!.beginTransaction()
-          .setReorderingAllowed(true)
-          .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
-          .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
-          .addToBackStack(null)
-          .commit()
+  override fun onStart() {
+    super.onStart()
+    view?.run {
+      val transView: View = playerView.findViewById(R.id.exo_content_frame)
+      playerContainer.setOnClickListener {
+        (exitTransition as TransitionSet).excludeTarget(this, true)
+        fragmentManager!!.beginTransaction()
+            .setReorderingAllowed(true)
+            .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
+            .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
+            .addToBackStack(null)
+            .commit()
+      }
     }
   }
 
@@ -99,7 +104,8 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
     super.onStop()
     playback?.removeCallback(this)
     playback?.removePlaybackEventListener(this)
-    playback?.removePlayerEventListener(this)
+    playback?.removePlayerEventListener(listener)
+    playerContainer.setOnClickListener(null)
   }
 
   private fun prepareTransitions() {
@@ -110,7 +116,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
     exitTransition = transition
 
     // A similar mapping is set at the ImagePagerFragment with a setEnterSharedElementCallback.
-    setExitSharedElementCallback(object : SharedElementCallback() {
+    setEnterSharedElementCallback(object : SharedElementCallback() {
       override fun onMapSharedElements(names: MutableList<String>?,
           sharedElements: MutableMap<String, View>?) {
         // Map the first shared element name to the child ImageView.
@@ -148,6 +154,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
 
   override fun onTargetAvailable(playback: Playback<*>) {
     Toast.makeText(requireContext(), "Target available", Toast.LENGTH_SHORT).show()
+    startPostponedEnterTransition()
   }
 
   override fun onTargetUnAvailable(playback: Playback<*>) {
@@ -155,54 +162,4 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlayerEventListene
   }
 
   // END: Playback.Callback
-
-  // BEGIN: PlayerEventListener
-
-  override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-      pixelWidthHeightRatio: Float) {
-    startPostponedEnterTransition()
-    playback?.removePlayerEventListener(this)
-  }
-
-  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
-  }
-
-  override fun onSeekProcessed() {
-  }
-
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
-  }
-
-  override fun onPlayerError(error: ExoPlaybackException?) {
-  }
-
-  override fun onLoadingChanged(isLoading: Boolean) {
-  }
-
-  override fun onPositionDiscontinuity(reason: Int) {
-  }
-
-  override fun onRepeatModeChanged(repeatMode: Int) {
-  }
-
-  override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-  }
-
-  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
-  }
-
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-  }
-
-  override fun onRenderedFirstFrame() {
-  }
-
-  override fun onCues(cues: MutableList<Cue>?) {
-  }
-
-  override fun onMetadata(metadata: Metadata?) {
-  }
-
-  // END: PlayerEventListener
 }

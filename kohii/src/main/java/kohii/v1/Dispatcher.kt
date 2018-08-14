@@ -20,6 +20,9 @@ import android.os.Handler
 import android.os.Message
 
 /**
+ *
+ * Used by [Manager] to dispatch various events.
+ *
  * @author eneim (2018/06/23).
  */
 internal class Dispatcher(private val manager: Manager) : Handler() {
@@ -30,10 +33,10 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
     when (what) {
       MSG_REFRESH -> manager.performRefreshAll()
       MSG_TARGET_UNAVAILABLE -> {
-        (msg.obj as Playback<*>).getTarget()?.run { manager.onTargetUnAvailable(this) }
+        (msg.obj as Playback<*>).target?.run { manager.onTargetUnAvailable(this) }
       }
       MSG_TARGET_AVAILABLE -> {
-        (msg.obj as Playback<*>).getTarget()?.run { manager.onTargetAvailable(this) }
+        (msg.obj as Playback<*>).target?.run { manager.onTargetAvailable(this) }
       }
     }
   }

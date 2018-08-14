@@ -16,7 +16,6 @@
 
 package kohii.v1.exo
 
-import android.util.Log
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
@@ -99,25 +98,22 @@ class ExoBridge(
 
   override fun release() {
     this.playerView = null
-    if (player != null) {
-      player!!.stop(true)
+    player?.also {
+      it.stop(true)
       if (listenerIsSet.compareAndSet(true, false)) {
-        player!!.removeListener(eventListeners)
-        if (player is KohiiPlayer) {
-          (player as KohiiPlayer).clearOnVolumeChangedListener()
-        }
+        it.removeListener(eventListeners)
+        (it as? KohiiPlayer)?.clearOnVolumeChangedListener()
 
-        if (player is SimpleExoPlayer) {
-          (player as SimpleExoPlayer).apply {
+        if (it is SimpleExoPlayer) {
+          it.apply {
             this.removeTextOutput(eventListeners)
             this.removeVideoListener(eventListeners)
             this.removeMetadataOutput(eventListeners)
           }
         }
-        player!!.removeListener(this)
+        it.removeListener(this)
       }
-
-      kohii.store.releasePlayer(player!!, builder.config)
+      kohii.exoStore.releasePlayer(it, builder.config)
     }
 
     this.player = null
@@ -215,17 +211,16 @@ class ExoBridge(
   private fun ensureMediaSource() {
     if (mediaSource == null) {  // Only actually prepare the source on demand.
       ensurePlayer()
-      mediaSource = kohii.store.createMediaSource(this.builder)
+      mediaSource = kohii.exoStore.createMediaSource(this.builder)
       (player as? KohiiPlayer)?.prepare(mediaSource,
           playbackInfo.resumeWindow == INDEX_UNSET, false)
     }
   }
 
   private fun ensurePlayer() {
-    Log.d("Bridge:" + hashCode(), "null() called")
     // 1. If player is set to null somewhere
     if (player == null) {
-      player = kohii.store.acquirePlayer(this.builder.config)
+      player = kohii.exoStore.acquirePlayer(this.builder.config)
       player!!.repeatMode = builder.repeatMode
       ExoStore.setVolumeInfo(player!!, _playbackInfo.volumeInfo)
       val haveResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET

@@ -26,11 +26,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver.OnScrollChangedListener
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import kohii.v1.exo.Config
+import kohii.v1.exo.ExoPlayable
 import kohii.v1.exo.ExoStore
 import kohii.v1.exo.MediaSourceFactory
 import kohii.v1.exo.PlayerFactory
@@ -41,11 +43,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class Kohii(context: Context) {
 
   internal val app = context.applicationContext as Application
-  internal val store = ExoStore[app]
+  internal val exoStore = ExoStore[app]
 
   // Map between Context with the Manager that is hosted on it.
   internal val mapWeakContextToManager = WeakHashMap<Context, Manager>()
@@ -54,15 +55,17 @@ class Kohii(context: Context) {
   internal val mapWeakPlayableToManager = WeakHashMap<Playable, Manager?>()
 
   // Store playables whose tag is available. Non tagged playables are always ignored.
-  internal val mapTagToPlayable = HashMap<Any /* ← playable tag */, Playable>()
+  private val mapTagToPlayable = HashMap<Any /* ← playable tag */, Playable>()
 
   init {
     app.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
-      override fun onActivityCreated(activity: Activity?, state: Bundle?) {
+      override fun onActivityCreated(activity: Activity, state: Bundle?) {
+        Log.i(TAG, "onActivityCreated() called: ${activity.javaClass.simpleName}, $state")
       }
 
       override fun onActivityStarted(activity: Activity) {
         mapWeakContextToManager[activity]?.onHostStarted()
+        Log.i(TAG, "onActivityStarted() called: ${activity.javaClass.simpleName}")
       }
 
       override fun onActivityResumed(activity: Activity) {
@@ -73,6 +76,7 @@ class Kohii(context: Context) {
 
       override fun onActivityStopped(activity: Activity) {
         mapWeakContextToManager[activity]?.onHostStopped(activity.isChangingConfigurations)
+        Log.i(TAG, "onActivityStopped() called: ${activity.javaClass.simpleName}")
       }
 
       override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
@@ -80,7 +84,21 @@ class Kohii(context: Context) {
 
       // Note: [20180527] This method is called before DecorView is detached.
       override fun onActivityDestroyed(activity: Activity) {
+        Log.i(TAG, "onActivityDestroyed() called: ${activity.javaClass.simpleName}, "
+            + "${activity.isChangingConfigurations}")
+
         mapWeakContextToManager.remove(activity)?.onHostDestroyed()
+        mapWeakPlayableToManager.forEach {
+          if (it.value == null) {
+            Log.w(TAG, "onActivityDestroyed(): ${it.key} -- ${it.value}")
+          } else {
+            Log.d(TAG, "onActivityDestroyed(): ${it.key} -- ${it.value}")
+          }
+        }
+
+        if (!activity.isChangingConfigurations && mapWeakContextToManager.isEmpty()) {
+          this@Kohii.cleanUp()
+        }
       }
     })
   }
@@ -103,7 +121,7 @@ class Kohii(context: Context) {
 
   internal class GlobalScrollChangeListener(val manager: Manager) : OnScrollChangedListener {
 
-    val scrollConsumed = AtomicBoolean(false)
+    private val scrollConsumed = AtomicBoolean(false)
     val managerRef = WeakReference(manager)
 
     private val handler: Handler = object : Handler(Looper.getMainLooper()) {
@@ -138,6 +156,8 @@ class Kohii(context: Context) {
   }
 
   companion object {
+    private const val TAG = "Kohii:X"
+
     @SuppressLint("StaticFieldLeak")
     @Volatile
     private var kohii: Kohii? = null
@@ -171,15 +191,16 @@ class Kohii(context: Context) {
   internal fun acquirePlayable(uri: Uri, builder: Playable.Builder): Playable {
     val tag = builder.tag
     return (
-        if (tag != null) (mapTagToPlayable[tag] ?: PlayableImpl(this, uri, builder)
+        if (tag != null) (mapTagToPlayable[tag] ?: ExoPlayable(this, uri, builder)
             .also { mapTagToPlayable[tag] = it })  // only save to store for when tag is valid
         else
-          PlayableImpl(this, uri, builder)
+          ExoPlayable(this, uri, builder)
         ) // ↑ Playable instance obtained. Next: clear its history ↓
         .also { mapWeakPlayableToManager[it] = null }
   }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
+  // Always get called after playable.release()
   internal fun releasePlayable(tag: Any?, playable: Playable) {
     tag?.run {
       if (mapTagToPlayable.remove(tag) != playable) {
@@ -190,15 +211,26 @@ class Kohii(context: Context) {
 
   internal fun onManagerActiveForPlayback(manager: Manager, playback: Playback<*>) {
     mapWeakPlayableToManager[playback.playable] = manager
-    if (manager.mapWeakPlayableToTarget[playback.playable] == playback.getTarget()) {
+    if (manager.mapWeakPlayableToTarget[playback.playable] == playback.target) {
       manager.restorePlaybackInfo(playback)
       playback.prepare()
     }
     playback.onTargetAvailable()
   }
 
-  internal fun onManagerInActiveForPlayback(manager: Manager, playback: Playback<*>,
-      configChange: Boolean) {
+  /**
+   * Called when the Activity mapped to a Manager is stopped. When called, a [Playback]'s target is
+   * considered 'unavailable' even if it is not detached yet (in case the target is a [View])
+   *
+   * @param manager The [Manager] whose Activity is stopped.
+   * @param playback The [Playback] that is managed by the manager.
+   * @param configChange If true, the Activity is being recreated by a config change, false otherwise.
+   */
+  internal fun onManagerInActiveForPlayback(
+      manager: Manager,
+      playback: Playback<*>,
+      configChange: Boolean
+  ) {
     val playable = playback.playable
     // Only pause this playback if the playable is managed by this manager, or by no-one else.
     if (mapWeakPlayableToManager[playable] == manager || mapWeakPlayableToManager[playable] == null) {
@@ -207,13 +239,18 @@ class Kohii(context: Context) {
         manager.savePlaybackInfo(playback)
       }
     }
-
+    playback.onTargetUnAvailable()
+    // There is no recreation. If the manager is managing the playable, unload the Playable.
     if (!configChange) {
       if (mapWeakPlayableToManager[playable] == manager) mapWeakPlayableToManager[playable] = null
-    } else {
-      // TODO [20180719] double check this case. We may not need this.
-      mapWeakPlayableToManager[playable] = manager
     }
+  }
+
+  // Gat called when Kohii should free all resources.
+  // FIXME [20180805] Now, this is called when activity destroy is detected, and there is no further
+  // Manager to be alive. In the future, we may consider to have non-Activity Manager.
+  internal fun cleanUp() {
+    exoStore.cleanUp()
   }
 
   //// [BEGIN] Public API
@@ -227,21 +264,21 @@ class Kohii(context: Context) {
   }
 
   // Find a Playable for a tag. Single player may use this for full-screen playback.
-  // TODO [20180719] result Playable is still managed by a Manager. Need to double check.
+  // TODO [20180719] returned Playable may still be managed by a Manager. Need to double check.
   fun findPlayable(tag: Any?): Playable? {
     return this.mapTagToPlayable[tag].also {
-      mapWeakPlayableToManager[it] = null
+      mapWeakPlayableToManager[it] = null // once found, it will be detached from the last Manager.
     }
   }
 
   @Suppress("unused")
   fun addPlayerFactory(config: Config, playerFactory: PlayerFactory) {
-    store.mapConfigToPlayerFactory[config] = playerFactory
+    exoStore.mapConfigToPlayerFactory[config] = playerFactory
   }
 
   @Suppress("MemberVisibilityCanBePrivate", "unused")
   fun addMediaSourceFactory(config: Config, mediaSourceFactory: MediaSourceFactory) {
-    store.mapConfigToSourceFactory[config] = mediaSourceFactory
+    exoStore.mapConfigToSourceFactory[config] = mediaSourceFactory
   }
 
   //// [END] Public API

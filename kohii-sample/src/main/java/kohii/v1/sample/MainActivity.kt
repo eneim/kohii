@@ -17,13 +17,13 @@
 package kohii.v1.sample
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import kohii.v1.sample.common.BaseActivity
 import kohii.v1.sample.ui.debug.DebugFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
 
-class MainActivity : AppCompatActivity(), PlayerInfoHolder {
+class MainActivity : BaseActivity(), PlayerInfoHolder {
 
   private var playerInfo: PlayerInfo? = null
 
