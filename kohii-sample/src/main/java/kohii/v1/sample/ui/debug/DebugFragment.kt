@@ -29,12 +29,15 @@ import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.motion.MotionFragment
+import kohii.v1.sample.ui.player.InitData
+import kohii.v1.sample.ui.player.PlayerActivity
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
 import kotlinx.android.synthetic.main.fragment_debug.bindSameView
 import kotlinx.android.synthetic.main.fragment_debug.openRecyclerView
 import kotlinx.android.synthetic.main.fragment_debug.openScrollView1
 import kotlinx.android.synthetic.main.fragment_debug.openScrollView2
+import kotlinx.android.synthetic.main.fragment_debug.playerContainer
 import kotlinx.android.synthetic.main.fragment_debug.playerView
 import kotlinx.android.synthetic.main.fragment_debug.playerView2
 import kotlinx.android.synthetic.main.fragment_debug.switchView
@@ -70,6 +73,14 @@ class DebugFragment : BaseFragment() {
 
     val views = arrayOf(playerView, playerView2)
     val current = AtomicInteger(0)
+
+    // Click to open activity
+    playerContainer.setOnClickListener {
+      startActivity(PlayerActivity.createIntent(requireContext(), InitData(
+          tag = videoUrl,
+          aspectRatio = 1920 / 1080.toFloat()
+      )))
+    }
 
     // Debug some certain functions.
     switchView.setOnClickListener { playable.bind(views[current.incrementAndGet() % views.size]) }

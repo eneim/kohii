@@ -31,6 +31,8 @@ abstract class BaseViewHolder(inflater: LayoutInflater, layoutRes: Int,
 
   abstract fun bind(item: Item?)
 
+  open fun onRecycled(success: Boolean) {}
+
   interface OnClickListener {
 
     fun onItemClick(
@@ -46,6 +48,6 @@ abstract class BaseViewHolder(inflater: LayoutInflater, layoutRes: Int,
   }
 
   override fun toString(): String {
-    return javaClass.simpleName + adapterPosition
+    return javaClass.simpleName + " -- " + adapterPosition
   }
 }

@@ -18,19 +18,19 @@ package kohii.v1.sample.common
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatActivity
 
 /**
- * @author eneim (2018/07/27).
+ * @author eneim (2018/08/05).
  */
-open class BaseFragment : Fragment() {
+abstract class BaseActivity : AppCompatActivity() {
 
-  private var logTag = ""
+  private var logTag: String = ""
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    logTag = "KohiiApp:" + javaClass.simpleName
-    Log.d(logTag, "onCreate() called")
+    logTag = "KohiiApp: ${javaClass.simpleName}"
+    Log.d(logTag, "onCreate() called, state: $savedInstanceState")
   }
 
   override fun onStart() {

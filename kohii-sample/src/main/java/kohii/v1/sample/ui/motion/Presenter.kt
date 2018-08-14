@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.sample.ui.motion
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import android.view.View
+import kohii.v1.sample.common.Video
 
 /**
- * @author eneim (2018/06/24).
+ *
+ * To bridge between [MotionFragment] and Data Binding event handling.
+ *
+ * @author eneim (2018/08/13).
  */
-@Parcelize
-data class VolumeInfo(
-    var mute: Boolean,
-    var volume: Float
-) : Parcelable {
+interface Presenter {
 
-  constructor(volumeInfo: VolumeInfo) : this(volumeInfo.mute, volumeInfo.volume)
-
-  fun setTo(mute: Boolean, volume: Float) {
-    this.mute = mute
-    this.volume = volume
-  }
-
-  companion object {
-    val SCRAP = VolumeInfo(false, 1F)
-  }
+  fun onVideoClick(container: View, video: Video)
 }

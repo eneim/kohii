@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.rview
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -58,7 +57,6 @@ class ItemsAdapter(
 
   override fun getItemCount() = items.size
 
-
   override fun getItemId(position: Int): Long {
     val item = items[position]
     return item.hashCode().toLong()
@@ -74,10 +72,17 @@ class ItemsAdapter(
   }
 
   override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-    val start = System.nanoTime()
     holder.bind(items[position % items.size])
-    Log.d("Kohii:B",
-        "bind: $position, rt: " + ((System.nanoTime() - start) / 1000000) + " ms, class: $holder")
+  }
+
+  override fun onViewRecycled(holder: BaseViewHolder) {
+    super.onViewRecycled(holder)
+    holder.onRecycled(true)
+  }
+
+  override fun onFailedToRecycleView(holder: BaseViewHolder): Boolean {
+    holder.onRecycled(false)
+    return true
   }
 
   class VideoClickImpl(private val fragment: RecyclerViewFragment) : OnClickListener {
@@ -85,14 +90,16 @@ class ItemsAdapter(
 
     override fun onItemClick(itemView: View, transView: View?, adapterPos: Int, payload: Any) {
       if (transView == null) return
+      val transName = ViewCompat.getTransitionName(transView) ?: return
+      val tag = payload as? String ?: return
+
       fragment.recordPlayerInfo(PlayerInfo(adapterPos, itemView.top))
       // Exclude the clicked card from the exit transition (e.g. the card will disappear immediately
       // instead of fading out with the rest to prevent an overlapping animation of fade and move).
       (fragment.exitTransition as TransitionSet).excludeTarget(itemView, true)
-      val tag = payload as String
       fragment.fragmentManager!!.beginTransaction()
           .setReorderingAllowed(true) // Optimize for shared element transition
-          .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
+          .addSharedElement(transView, transName)
           .replace(R.id.fragmentContainer, PlayerFragment.newInstance(tag), tag)
           .addToBackStack(null)
           .commit()
@@ -102,7 +109,6 @@ class ItemsAdapter(
       val playerInfo = fragment.fetchPlayerInfo()
       if (playerInfo == null || adapterPos != playerInfo.adapterPos) return
       if (enterTransitionStarted.getAndSet(true)) return
-
       fragment.recordPlayerInfo(null)
       fragment.startPostponedEnterTransition()
     }

@@ -20,7 +20,7 @@ import android.net.Uri
 import android.os.Handler
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
-import java.lang.ref.WeakReference
+import kohii.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
 
@@ -36,9 +36,9 @@ abstract class Playback<T> internal constructor(
     internal val playable: Playable,
     internal val uri: Uri,
     internal val manager: Manager,
-    target: T?,
+    internal val target: T?,
     internal val builder: Playable.Builder,
-    internal val dispatcher: PlaybackDispatcher = DEFAULT_DISPATCHER
+    internal val delayer: Delayer = NO_DELAY
 ) {
 
   companion object {
@@ -46,7 +46,7 @@ abstract class Playback<T> internal constructor(
     const val STATE_BUFFERING = 2
     const val STATE_READY = 3
     const val STATE_END = 4
-    val DEFAULT_DISPATCHER = object : PlaybackDispatcher {
+    val NO_DELAY = object : Delayer {
       override fun getInitDelay() = 0L
     }
     private const val MSG_PLAY = 100
@@ -58,7 +58,7 @@ abstract class Playback<T> internal constructor(
       internal val playable: Playable,
       internal val uri: Uri,
       internal val manager: Manager,
-      internal val dispatcher: PlaybackDispatcher,
+      internal val dispatcher: Delayer,
       internal val builder: Playable.Builder
   )
 
@@ -76,15 +76,14 @@ abstract class Playback<T> internal constructor(
   // For public access as well.
   val tag: Any
 
-  // listener for Playable
+  // Listeners for Playable. Playable will access these filed on demand.
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
 
-  // internal callbacks
+  // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
   private val callbacks = CopyOnWriteArraySet<Callback>()
-  private val target: WeakReference<T>?
 
   internal var internalCallback: InternalCallback? = null
   // Token is comparable.
@@ -97,16 +96,10 @@ abstract class Playback<T> internal constructor(
   annotation class State
 
   init {
-    @Suppress("UNCHECKED_CAST", "LeakingThis")
-    this.target = if (target == null) null else WeakReference(target)
     this.tag = builder.tag ?: SCRAP
   }
 
-  // Used by subclasses to dispatch internal event listeners
-  internal fun dispatchPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
-    listenerHandler?.obtainMessage(playbackState, playWhenReady)?.sendToTarget()
-  }
-
+  // [BEGIN] Public API
   fun addPlaybackEventListener(listener: PlaybackEventListener) {
     this.listeners.add(listener)
   }
@@ -139,10 +132,21 @@ abstract class Playback<T> internal constructor(
     this.playerListeners.remove(listener)
   }
 
-  /// internal APIs
+  var volumeInfo: VolumeInfo
+    get() {
+      return playable.volumeInfo
+    }
+    set(value) {
+      playable.setVolumeInfo(value)
+    }
 
-  fun getTarget(): T? {
-    return target?.get()
+  // [END] Public API
+
+  /// Internal APIs
+
+  // Used by subclasses to dispatch internal event listeners
+  internal fun dispatchPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
+    listenerHandler?.obtainMessage(playbackState, playWhenReady)?.sendToTarget()
   }
 
   // Only playback with 'valid tag' will be cached for restoring.
@@ -153,7 +157,7 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun play() {
-    val delay = dispatcher.getInitDelay()
+    val delay = delayer.getInitDelay()
     dispatcherHandler?.removeMessages(MSG_PLAY)
     when {
       delay > 0 -> dispatcherHandler?.sendEmptyMessageDelayed(MSG_PLAY, delay) ?: playable.play()
@@ -177,40 +181,40 @@ abstract class Playback<T> internal constructor(
   // being added to Manager
   // the target may not be attached to View/Window.
   @CallSuper
-  open fun onAdded() {
+  internal open fun onAdded() {
     internalCallback?.onAdded(this)
   }
 
   // being removed from Manager
   @CallSuper
-  open fun onRemoved() {
+  internal open fun onRemoved() {
+    internalCallback?.onRemoved(this)
     dispatcherHandler?.removeCallbacksAndMessages(null)
     listenerHandler?.removeCallbacksAndMessages(null)
-    internalCallback?.onRemoved(this)
     this.callbacks.clear()
     this.listeners.clear()
   }
 
   // ~ View is attached
   @CallSuper
-  open fun onTargetAvailable() {
+  internal open fun onTargetAvailable() {
     this.callbacks.forEach { it.onTargetAvailable(this) }
   }
 
-  // Playback's onTargetUnAvailable is equal to View's detach event.
+  // Playback's onTargetUnAvailable is equal to View's detach event or Activity stops.
   // Once it is inactive, its resource is considered freed and can be cleanup anytime.
   // Proper handling of in-active state must consider to: [1] Save any previous state (PlaybackInfo)
   // into cache, ready to reuse once coming back, [2] consider to release allocated resource if
   // there is no other Manager manages the internal Playable.
   @CallSuper
-  open fun onTargetUnAvailable() {
+  internal open fun onTargetUnAvailable() {
     this.callbacks.forEach { it.onTargetUnAvailable(this) }
   }
 
   @CallSuper
-  open fun onCreated() {
+  internal open fun onCreated() {
     this.listenerHandler = Handler(android.os.Handler.Callback {
-      val playWhenReady = it.obj as kotlin.Boolean
+      val playWhenReady = it.obj as Boolean
       when (it.what) {
         STATE_IDLE -> {
         }
@@ -239,9 +243,13 @@ abstract class Playback<T> internal constructor(
   }
 
   @CallSuper
-  open fun onDestroyed() {
+  internal open fun onDestroyed() {
     this.listenerHandler = null
     this.dispatcherHandler = null
+  }
+
+  override fun toString(): String {
+    return javaClass.simpleName + "@" + hashCode()
   }
 
   // For internal flow only.
@@ -255,7 +263,7 @@ abstract class Playback<T> internal constructor(
     fun onTargetUnAvailable(playback: Playback<*>)
   }
 
-  interface PlaybackDispatcher {
+  interface Delayer {
     // return the delay to start the Playback.
     // default implementation will use Handler to dispatch the call to "play()", accept that:
     // - if returns negative, it will postpone the playback.

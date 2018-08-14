@@ -30,27 +30,27 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-internal class ViewPlayback<V : View>(
+internal open class ViewPlayback<V : View>(
     kohii: Kohii,
     playable: Playable,
     uri: Uri,
     manager: Manager,
     target: V?,
     builder: Playable.Builder,
-    playbackDispatcher: PlaybackDispatcher
+    delayer: Delayer = Playback.NO_DELAY
 ) : Playback<V>(
-    kohii, playable, uri, manager, target, builder, playbackDispatcher
+    kohii, playable, uri, manager, target, builder, delayer
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   // For debugging purpose only.
-  private val listener = object : PlaybackEventListener {
+  private val debugListener = object : PlaybackEventListener {
     override fun onBuffering(playWhenReady: Boolean) {
       Log.d("Kohii:P", "buffering: " + this@ViewPlayback)
     }
 
     override fun onPlaying() {
       Log.d("Kohii:P", "playing: " + this@ViewPlayback)
-      getTarget()?.keepScreenOn = true
+      target?.keepScreenOn = true
     }
 
     override fun onPaused() {
@@ -59,7 +59,7 @@ internal class ViewPlayback<V : View>(
 
     override fun onCompleted() {
       Log.d("Kohii:P", "ended: " + this@ViewPlayback)
-      getTarget()?.keepScreenOn = false
+      target?.keepScreenOn = false
     }
   }
 
@@ -67,7 +67,6 @@ internal class ViewPlayback<V : View>(
 
   override val token: ViewToken?
     get() {
-      val target = super.getTarget()
       if (target == null || !this.targetAttached.get()) return null
 
       val playerRect = Rect()
@@ -88,50 +87,41 @@ internal class ViewPlayback<V : View>(
 
   @CallSuper
   override fun onAdded() {
-    super.getTarget()?.run {
+    target?.run {
       if (ViewCompat.isAttachedToWindow(this)) {
         this@ViewPlayback.onViewAttachedToWindow(this)
       }
       this.addOnAttachStateChangeListener(this@ViewPlayback)
     }
     super.onAdded()
-  }
-
-  override fun onTargetAvailable() {
-    super.addPlaybackEventListener(this.listener)
-    super.onTargetAvailable()
-  }
-
-  override fun onTargetUnAvailable() {
-    super.onTargetUnAvailable()
-    super.removePlaybackEventListener(this.listener)
+    super.addPlaybackEventListener(this.debugListener)
   }
 
   override fun onRemoved() {
+    super.removePlaybackEventListener(this.debugListener)
     super.onRemoved()
-    super.getTarget()?.removeOnAttachStateChangeListener(this)
+    target?.removeOnAttachStateChangeListener(this)
   }
 
   override fun onViewAttachedToWindow(v: View) {
     if (this.targetAttached.compareAndSet(false, true)) {
-      val target = super.getTarget()
-      if (target != null) {
+      super.target?.also {
         // Find a ancestor of target whose parent is a CoordinatorLayout, or null.
-        val corChild = findSuitableParent(manager.decorView, target)
+        val corChild = findSuitableParent(manager.decorView, it)
         val params = corChild?.layoutParams
         if (params is CoordinatorLayout.LayoutParams) {
           // TODO [20180620] deal with CoordinatorLayout.
         }
 
-        manager.onTargetAvailable(target)
-        target.addOnLayoutChangeListener(this)
+        manager.onTargetAvailable(it)
+        it.addOnLayoutChangeListener(this)
       }
     }
   }
 
   override fun onViewDetachedFromWindow(v: View) {
     if (this.targetAttached.compareAndSet(true, false)) {
-      super.getTarget()?.run {
+      super.target?.run {
         this.removeOnLayoutChangeListener(this@ViewPlayback)
         manager.onTargetUnAvailable(this)
       }
@@ -153,6 +143,7 @@ internal class ViewPlayback<V : View>(
       internal val areaOffset: Float
   ) : Token() {
     override fun compareTo(other: Token): Int {
+      // TODO [20180813] may need better comparison
       return if (other is ViewToken) CENTER_Y.compare(this, other) else super.compareTo(other)
     }
 
