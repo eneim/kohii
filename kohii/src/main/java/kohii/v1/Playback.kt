@@ -18,8 +18,15 @@ package kohii.v1
 
 import android.net.Uri
 import android.os.Handler
+import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
+import androidx.lifecycle.Lifecycle.Event.ON_START
+import androidx.lifecycle.Lifecycle.Event.ON_STOP
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -39,7 +46,7 @@ abstract class Playback<T> internal constructor(
     internal val target: T?,
     internal val builder: Playable.Builder,
     internal val delayer: Delayer = NO_DELAY
-) {
+) : LifecycleObserver {
 
   companion object {
     const val STATE_IDLE = 1
@@ -198,7 +205,9 @@ abstract class Playback<T> internal constructor(
   // ~ View is attached
   @CallSuper
   internal open fun onTargetAvailable() {
-    this.callbacks.forEach { it.onTargetAvailable(this) }
+    this.callbacks.forEach {
+      it.onTargetAvailable(this)
+    }
   }
 
   // Playback's onTargetUnAvailable is equal to View's detach event or Activity stops.
@@ -208,7 +217,9 @@ abstract class Playback<T> internal constructor(
   // there is no other Manager manages the internal Playable.
   @CallSuper
   internal open fun onTargetUnAvailable() {
-    this.callbacks.forEach { it.onTargetUnAvailable(this) }
+    this.callbacks.forEach {
+      it.onTargetUnAvailable(this)
+    }
   }
 
   @CallSuper
