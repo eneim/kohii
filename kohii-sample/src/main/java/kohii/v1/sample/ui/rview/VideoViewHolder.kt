@@ -82,6 +82,7 @@ class VideoViewHolder(
       val playable = Kohii[itemView.context]
           .setUp(item.content)
           .copy(tag = itemTag)
+          .copy(prefetch = true)
           .copy(repeatMode = Player.REPEAT_MODE_ONE)
           .copy(config = DemoApp.app.config)
           .asPlayable()

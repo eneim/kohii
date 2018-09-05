@@ -42,6 +42,10 @@ interface Playable {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
     const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
     const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
+
+    const val AUDIO_MODE_FOCUS_AUTO = 0
+    const val AUDIO_MODE_FOCUS_GAIN = 2
+    const val AUDIO_MODE_FOCUS_LOSE = 4
   }
 
   @Retention(SOURCE)
@@ -74,7 +78,7 @@ interface Playable {
       val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
       val mediaType: String? = null,
       val tag: Any? = null,
-      val prepareAlwaysLoad: Boolean = false,
+      val prefetch: Boolean = false,
       @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
   ) {
     fun asPlayable(): Playable {
@@ -104,9 +108,8 @@ interface Playable {
     fun setRepeatMode(repeatMode: Int) = this.copy(repeatMode = repeatMode)
 
     @Deprecated("Kohii works better with Kotlin than Java.",
-        ReplaceWith("this.copy(prepareAlwaysLoad = prepareAlwaysLoad)",
+        ReplaceWith("this.copy(prefetch = prefetch)",
             "kohii.v1.Playable.Builder"))
-    fun setPrepareAlwaysLoad(prepareAlwaysLoad: Boolean) = this.copy(
-        prepareAlwaysLoad = prepareAlwaysLoad)
+    fun setPrefetch(prefetch: Boolean) = this.copy(prefetch = prefetch)
   }
 }

@@ -48,6 +48,7 @@ fun setVideo(view: PlayerView, video: Video) {
   Kohii[view.context].setUp(video.url)
       .copy(
           tag = video.url,
+          prefetch = true,
           config = DemoApp.app.config,
           repeatMode = Player.REPEAT_MODE_ONE,
           mediaType = "mp4" // FIXME
