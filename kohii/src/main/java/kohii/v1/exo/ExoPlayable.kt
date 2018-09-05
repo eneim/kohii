@@ -44,6 +44,7 @@ class ExoPlayable internal constructor(
 ) : Playable, Callback, InternalCallback {
 
   companion object {
+    @Suppress("unused")
     private const val TAG = "Kohii:Playable"
   }
 
@@ -136,7 +137,7 @@ class ExoPlayable internal constructor(
   }
 
   override fun prepare() {
-    this.helper.prepare(this.builder.prepareAlwaysLoad)
+    this.helper.prepare(this.builder.prefetch)
   }
 
   override fun play() {
