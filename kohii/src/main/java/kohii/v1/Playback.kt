@@ -18,15 +18,8 @@ package kohii.v1
 
 import android.net.Uri
 import android.os.Handler
-import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
-import androidx.lifecycle.Lifecycle.Event.ON_START
-import androidx.lifecycle.Lifecycle.Event.ON_STOP
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -46,7 +39,7 @@ abstract class Playback<T> internal constructor(
     internal val target: T?,
     internal val builder: Playable.Builder,
     internal val delayer: Delayer = NO_DELAY
-) : LifecycleObserver {
+) {
 
   companion object {
     const val STATE_IDLE = 1
@@ -65,19 +58,25 @@ abstract class Playback<T> internal constructor(
       internal val playable: Playable,
       internal val uri: Uri,
       internal val manager: Manager,
-      internal val dispatcher: Delayer,
+      internal val delayer: Delayer,
       internal val builder: Playable.Builder
   )
 
   open class Token : Comparable<Token> {
     override fun compareTo(other: Token) = 0
 
-    open fun wantsToPlay(): Boolean {
-      return false
-    }
+    open fun shouldPlay() = false
+
+    // Called by Manager, to know if a Playback should start preparing or not. True by default.
+    open fun shouldPrepare() = true
+
+    // Called by Manager, to know if a Playback should release or not. True by default.
+    open fun shouldRelease() = true
   }
 
   private var listenerHandler: Handler? = null
+  // TODO [20180905] consider to move this to one layer up.
+  // TODO [20181022] this Handler must be used by a Manager, to dispatch the playback of many.
   private var dispatcherHandler: Handler? = null
 
   // For public access as well.
@@ -185,14 +184,14 @@ abstract class Playback<T> internal constructor(
     playable.release()
   }
 
-  // being added to Manager
-  // the target may not be attached to View/Window.
+  // Being added to Manager
+  // The target may not be attached to View/Window.
   @CallSuper
   internal open fun onAdded() {
     internalCallback?.onAdded(this)
   }
 
-  // being removed from Manager
+  // Being removed from Manager
   @CallSuper
   internal open fun onRemoved() {
     internalCallback?.onRemoved(this)
@@ -213,8 +212,8 @@ abstract class Playback<T> internal constructor(
   // Playback's onTargetUnAvailable is equal to View's detach event or Activity stops.
   // Once it is inactive, its resource is considered freed and can be cleanup anytime.
   // Proper handling of in-active state must consider to: [1] Save any previous state (PlaybackInfo)
-  // into cache, ready to reuse once coming back, [2] consider to release allocated resource if
-  // there is no other Manager manages the internal Playable.
+  // to cache, ready to reuse once coming back, [2] Consider to release allocated resource if there
+  // is no other Manager manages the internal Playable.
   @CallSuper
   internal open fun onTargetUnAvailable() {
     this.callbacks.forEach {

@@ -42,10 +42,6 @@ interface Playable {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
     const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
     const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
-
-    const val AUDIO_MODE_FOCUS_AUTO = 0
-    const val AUDIO_MODE_FOCUS_GAIN = 2
-    const val AUDIO_MODE_FOCUS_LOSE = 4
   }
 
   @Retention(SOURCE)
@@ -66,8 +62,10 @@ interface Playable {
 
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 
+  // Getter
   val volumeInfo: VolumeInfo
 
+  // Setter/Getter
   var playbackInfo: PlaybackInfo
 
   // data class for copying convenience.

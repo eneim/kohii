@@ -16,7 +16,10 @@
 
 package kohii.v1.exo
 
+import android.os.Handler
 import com.google.android.exoplayer2.upstream.BandwidthMeter
+import com.google.android.exoplayer2.upstream.BandwidthMeter.EventListener
+import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.TransferListener
 
@@ -25,24 +28,43 @@ import com.google.android.exoplayer2.upstream.TransferListener
  *
  * @author eneim (2018/06/25).
  */
-open class DataMeter<T : BandwidthMeter, S : TransferListener<Any>>(
+@Suppress("UNCHECKED_CAST")
+open class DataMeter<T : BandwidthMeter, S : TransferListener>(
     private val bandwidthMeter: T,
-    private val transferListener: S
-) : BandwidthMeter, TransferListener<Any> {
+    private val transferListener: S = (bandwidthMeter.transferListener as S?)!!
+) : BandwidthMeter, TransferListener {
 
   override fun getBitrateEstimate(): Long {
     return bandwidthMeter.bitrateEstimate
   }
 
-  override fun onTransferStart(source: Any, dataSpec: DataSpec) {
-    transferListener.onTransferStart(source, dataSpec)
+  override fun getTransferListener(): TransferListener? {
+    return bandwidthMeter.transferListener
   }
 
-  override fun onBytesTransferred(source: Any, bytesTransferred: Int) {
-    transferListener.onBytesTransferred(source, bytesTransferred)
+  override fun addEventListener(eventHandler: Handler?, eventListener: EventListener?) {
+    bandwidthMeter.addEventListener(eventHandler, eventListener)
   }
 
-  override fun onTransferEnd(source: Any) {
-    transferListener.onTransferEnd(source)
+  override fun removeEventListener(eventListener: EventListener?) {
+    bandwidthMeter.removeEventListener(eventListener)
+  }
+
+  override fun onTransferInitializing(source: DataSource?, dataSpec: DataSpec?,
+      isNetwork: Boolean) {
+    transferListener.onTransferInitializing(source, dataSpec, isNetwork)
+  }
+
+  override fun onTransferStart(source: DataSource?, dataSpec: DataSpec?, isNetwork: Boolean) {
+    transferListener.onTransferStart(source, dataSpec, isNetwork)
+  }
+
+  override fun onTransferEnd(source: DataSource?, dataSpec: DataSpec?, isNetwork: Boolean) {
+    transferListener.onTransferEnd(source, dataSpec, isNetwork)
+  }
+
+  override fun onBytesTransferred(source: DataSource?, dataSpec: DataSpec?, isNetwork: Boolean,
+      bytesTransferred: Int) {
+    transferListener.onBytesTransferred(source, dataSpec, isNetwork, bytesTransferred)
   }
 }

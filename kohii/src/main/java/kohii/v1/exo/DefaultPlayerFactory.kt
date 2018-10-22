@@ -28,7 +28,10 @@ import kohii.media.MediaDrm
 /**
  * @author eneim (2018/06/25).
  */
-internal class DefaultPlayerFactory(store: ExoStore, config: Config) : PlayerFactory {
+internal class DefaultPlayerFactory(
+    private val store: ExoStore,
+    private val config: Config
+) : PlayerFactory {
 
   private val renderersFactory: RenderersFactory  // stateless
   private val trackSelector: TrackSelector  // 'maybe' stateless
@@ -36,7 +39,7 @@ internal class DefaultPlayerFactory(store: ExoStore, config: Config) : PlayerFac
   private val drmSessionManagerFactory: DrmSessionManagerFactory
 
   init {
-    trackSelector = DefaultTrackSelector(config.meter)
+    trackSelector = DefaultTrackSelector()
     loadControl = DefaultLoadControl()
     renderersFactory = DefaultRenderersFactory(store.context, config.extensionMode)
     drmSessionManagerFactory = DefaultDrmSessionManagerFactory(store)
@@ -44,9 +47,11 @@ internal class DefaultPlayerFactory(store: ExoStore, config: Config) : PlayerFac
 
   override fun createPlayer(mediaDrm: MediaDrm?): Player {
     return KohiiPlayer(
+        store.context,
         renderersFactory,
         trackSelector,
         loadControl,
+        config.meter,
         if (mediaDrm != null)
           drmSessionManagerFactory.createDrmSessionManager(mediaDrm)
         else
