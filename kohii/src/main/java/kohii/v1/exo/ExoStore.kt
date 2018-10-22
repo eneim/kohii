@@ -21,9 +21,11 @@ import android.content.Context
 import androidx.annotation.RestrictTo
 import androidx.core.util.Pools
 import androidx.core.util.Pools.Pool
+import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
@@ -85,6 +87,10 @@ class ExoStore internal constructor(context: Context) {
           .also { mapConfigToPlayerFactory[config] = it }
           ).createPlayer(config.mediaDrm)
     }
+
+    (player as? SimpleExoPlayer)?.audioAttributes = AudioAttributes.Builder().setContentType(
+        C.CONTENT_TYPE_MOVIE).build()
+
     return player
   }
 

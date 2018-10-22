@@ -49,6 +49,7 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
     sendEmptyMessageDelayed(MSG_REFRESH, MSG_DELAY)
   }
 
+  // TODO [20180911] Why we need this???. For non-RecyclerView's children?
   fun dispatchTargetUnAvailable(playback: Playback<*>) {
     // As early as possible
     if (!hasMessages(MSG_TARGET_UNAVAILABLE, playback)) {
@@ -56,6 +57,7 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
     }
   }
 
+  // TODO [20180911] Why we need this???. For non-RecyclerView's children?
   fun dispatchTargetAvailable(playback: Playback<*>) {
     // As early as possible
     if (!hasMessages(MSG_TARGET_AVAILABLE, playback)) {

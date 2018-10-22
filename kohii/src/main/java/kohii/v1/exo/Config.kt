@@ -33,12 +33,12 @@ data class Config(
     @ExtensionRendererMode val extensionMode: Int,
     val mediaDrm: MediaDrm? = null,
     val cache: Cache? = null,
-    val meter: DataMeter<BandwidthMeter, TransferListener<Any>> = DEFAULT_METER
+    val meter: DataMeter<BandwidthMeter, TransferListener> = DEFAULT_METER
 ) {
 
   companion object {
     private val meter = DefaultBandwidthMeter()
-    val DEFAULT_METER = DataMeter<BandwidthMeter, TransferListener<Any>>(meter, meter)
+    val DEFAULT_METER = DataMeter<BandwidthMeter, TransferListener>(meter, meter)
     val DEFAULT_CONFIG = Config(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
   }
 
@@ -54,5 +54,5 @@ data class Config(
   fun setCache(cache: Cache?) = this.copy(cache = cache)
 
   @Deprecated("Kohii works better with Kotlin than Java.", ReplaceWith("this.copy(meter = meter)"))
-  fun setMeter(meter: DataMeter<BandwidthMeter, TransferListener<Any>>) = this.copy(meter = meter)
+  fun setMeter(meter: DataMeter<BandwidthMeter, TransferListener>) = this.copy(meter = meter)
 }

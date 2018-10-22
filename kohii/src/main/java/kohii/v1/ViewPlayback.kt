@@ -43,23 +43,25 @@ internal open class ViewPlayback<V : View>(
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   // For debugging purpose only.
-  private val debugListener = object : PlaybackEventListener {
-    override fun onBuffering(playWhenReady: Boolean) {
-      Log.d("Kohii:P", "buffering: " + this@ViewPlayback)
-    }
+  private val debugListener: PlaybackEventListener by lazy {
+    object : PlaybackEventListener {
+      override fun onBuffering(playWhenReady: Boolean) {
+        Log.d("Kohii:P", "buffering: " + this@ViewPlayback)
+      }
 
-    override fun onPlaying() {
-      Log.d("Kohii:P", "playing: " + this@ViewPlayback)
-      target?.keepScreenOn = true
-    }
+      override fun onPlaying() {
+        Log.d("Kohii:P", "playing: " + this@ViewPlayback)
+        target?.keepScreenOn = true
+      }
 
-    override fun onPaused() {
-      Log.w("Kohii:P", "paused: " + this@ViewPlayback)
-    }
+      override fun onPaused() {
+        Log.w("Kohii:P", "paused: " + this@ViewPlayback)
+      }
 
-    override fun onCompleted() {
-      Log.d("Kohii:P", "ended: " + this@ViewPlayback)
-      target?.keepScreenOn = false
+      override fun onCompleted() {
+        Log.d("Kohii:P", "ended: " + this@ViewPlayback)
+        target?.keepScreenOn = false
+      }
     }
   }
 
@@ -71,7 +73,6 @@ internal open class ViewPlayback<V : View>(
 
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
-      if (!visible) return null
 
       val drawRect = Rect()
       target.getDrawingRect(drawRect)
@@ -82,7 +83,8 @@ internal open class ViewPlayback<V : View>(
         val visibleArea = playerRect.height() * playerRect.width()
         offset = visibleArea / drawArea.toFloat()
       }
-      return ViewToken(playerRect.centerX().toFloat(), playerRect.centerY().toFloat(), offset)
+      if (!visible) offset *= -1 // mark as negative.
+      return ViewToken(manager.viewRect, playerRect, offset)
     }
 
   @CallSuper
@@ -94,11 +96,11 @@ internal open class ViewPlayback<V : View>(
       this.addOnAttachStateChangeListener(this@ViewPlayback)
     }
     super.onAdded()
-    super.addPlaybackEventListener(this.debugListener)
+    if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
   override fun onRemoved() {
-    super.removePlaybackEventListener(this.debugListener)
+    if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
     super.onRemoved()
     target?.removeOnAttachStateChangeListener(this)
   }
@@ -138,8 +140,8 @@ internal open class ViewPlayback<V : View>(
   // Location on screen, with visible offset within target's parent.
   @Suppress("MemberVisibilityCanBePrivate")
   internal data class ViewToken internal constructor(
-      internal val centerX: Float,
-      internal val centerY: Float,
+      internal val managerRect: Rect,
+      internal val viewRect: Rect,
       internal val areaOffset: Float
   ) : Token() {
     override fun compareTo(other: Token): Int {
@@ -147,7 +149,7 @@ internal open class ViewPlayback<V : View>(
       return if (other is ViewToken) CENTER_Y.compare(this, other) else super.compareTo(other)
     }
 
-    override fun wantsToPlay(): Boolean {
+    override fun shouldPlay(): Boolean {
       return areaOffset >= 0.75f  // TODO [20180714] make this configurable
     }
   }
@@ -155,11 +157,11 @@ internal open class ViewPlayback<V : View>(
   @Suppress("unused")
   companion object {
     val CENTER_Y: Comparator<ViewToken> = Comparator { o1, o2 ->
-      compareValues(o1.centerY, o2.centerY)
+      compareValues(o1.viewRect.centerY(), o2.viewRect.centerY())
     }
 
     val CENTER_X: Comparator<ViewToken> = Comparator { o1, o2 ->
-      compareValues(o1.centerX, o2.centerX)
+      compareValues(o1.viewRect.centerX(), o2.viewRect.centerX())
     }
 
     // Find a CoordinatorLayout parent of View, which doesn't reach 'root' View.

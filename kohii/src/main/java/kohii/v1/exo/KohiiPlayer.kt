@@ -16,6 +16,8 @@
 
 package kohii.v1.exo
 
+import android.content.Context
+import android.os.Looper
 import androidx.annotation.CallSuper
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
@@ -23,6 +25,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import com.google.android.exoplayer2.trackselection.TrackSelector
+import com.google.android.exoplayer2.upstream.BandwidthMeter
 import kohii.media.VolumeInfo
 import kohii.v1.VolumeChangedListener
 import java.util.concurrent.CopyOnWriteArraySet
@@ -31,11 +34,14 @@ import java.util.concurrent.CopyOnWriteArraySet
  * @author eneim (2018/06/25).
  */
 open class KohiiPlayer(
+    context: Context,
     renderersFactory: RenderersFactory,
     trackSelector: TrackSelector,
     loadControl: LoadControl,
+    bandwidthMeter: BandwidthMeter,
     drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?
-) : SimpleExoPlayer(renderersFactory, trackSelector, loadControl, drmSessionManager) {
+) : SimpleExoPlayer(context, renderersFactory, trackSelector, loadControl, bandwidthMeter,
+    drmSessionManager, Looper.myLooper()) {
 
   private var volumeChangedListeners: CopyOnWriteArraySet<VolumeChangedListener>? = null
 

@@ -28,7 +28,7 @@
       android:layout_height="match_parent"
       android:fitsSystemWindows="true"
       app:keep_content_on_player_reset="true"
-      app:show_buffering="true"
+      app:show_buffering="when_playing"
       app:use_controller="true"
       />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
