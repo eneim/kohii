@@ -16,13 +16,9 @@
 
 package kohii.v1.exo
 
-import com.google.android.exoplayer2.source.MediaSource
-import kohii.v1.Playable
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 
-/**
- * @author eneim (2018/06/25).
- */
-interface MediaSourceFactory {
+class DefaultBandwidthMeterFactory : BandwidthMeterFactory {
 
-  fun createMediaSource(builder: Playable.Builder): MediaSource
+  override fun createBandwidthMeter() = DefaultBandwidthMeter()
 }

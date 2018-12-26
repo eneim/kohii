@@ -18,7 +18,6 @@ package kohii.v1
 
 import android.graphics.Point
 import android.graphics.Rect
-import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
@@ -30,21 +29,27 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-internal open class ViewPlayback<V : View>(
+open class ViewPlayback<V : View>(
     kohii: Kohii,
     playable: Playable,
-    uri: Uri,
     manager: Manager,
     target: V?,
-    builder: Playable.Builder,
     delayer: Delayer = Playback.NO_DELAY
 ) : Playback<V>(
-    kohii, playable, uri, manager, target, builder, delayer
+    kohii,
+    playable,
+    manager,
+    target,
+    delayer
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   // For debugging purpose only.
   private val debugListener: PlaybackEventListener by lazy {
     object : PlaybackEventListener {
+      override fun onFirstFrameRendered() {
+        Log.d("Kohii:P", "first frame: " + this@ViewPlayback)
+      }
+
       override fun onBuffering(playWhenReady: Boolean) {
         Log.d("Kohii:P", "buffering: " + this@ViewPlayback)
       }
@@ -89,20 +94,20 @@ internal open class ViewPlayback<V : View>(
 
   @CallSuper
   override fun onAdded() {
+    super.onAdded()
     target?.run {
       if (ViewCompat.isAttachedToWindow(this)) {
         this@ViewPlayback.onViewAttachedToWindow(this)
       }
       this.addOnAttachStateChangeListener(this@ViewPlayback)
     }
-    super.onAdded()
     if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
   override fun onRemoved() {
     if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
-    super.onRemoved()
     target?.removeOnAttachStateChangeListener(this)
+    super.onRemoved()
   }
 
   override fun onViewAttachedToWindow(v: View) {
@@ -139,13 +144,13 @@ internal open class ViewPlayback<V : View>(
 
   // Location on screen, with visible offset within target's parent.
   @Suppress("MemberVisibilityCanBePrivate")
-  internal data class ViewToken internal constructor(
+  data class ViewToken internal constructor(
       internal val managerRect: Rect,
       internal val viewRect: Rect,
-      internal val areaOffset: Float
+      val areaOffset: Float
   ) : Token() {
     override fun compareTo(other: Token): Int {
-      // TODO [20180813] may need better comparison
+      // TODO [20180813] may need better comparison regarding the orientations.
       return if (other is ViewToken) CENTER_Y.compare(this, other) else super.compareTo(other)
     }
 

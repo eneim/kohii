@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.mix
 
+import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
+import android.widget.TextView
+import androidx.core.view.get
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.MediaItem
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
@@ -35,18 +38,17 @@ import kohii.v1.sample.R
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
     inflater: LayoutInflater,
-    parent: ViewGroup,
-    val listener: OnClickListener
-) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
-    View.OnClickListener, PlaybackEventListener, Playback.Callback<PlayerView> {
+    parent: ViewGroup
+) : BaseViewHolder(
+    inflater,
+    R.layout.holder_mix_view,
+    parent
+), PlaybackEventListener, Playback.Callback<PlayerView> {
 
   override fun onActive(playback: Playback<PlayerView>, target: PlayerView?) {
-    listener.onItemLoaded(itemView, adapterPosition)
-    ViewCompat.setTransitionName(transView, itemTag)
   }
 
   override fun onInActive(playback: Playback<PlayerView>, target: PlayerView?) {
-    ViewCompat.setTransitionName(transView, null)
   }
 
   override fun onFirstFrameRendered() {
@@ -69,22 +71,41 @@ class VideoViewHolder(
     Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
   }
 
-  val playerView = itemView.findViewById(R.id.playerView) as PlayerView
+  val mediaName = itemView.findViewById(R.id.mediaName) as TextView
   val playerContainer = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
-  val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
   var itemTag: String? = null
   var playback: Playback<PlayerView>? = null
 
+  @SuppressLint("SetTextI18n")
   override fun bind(item: Item?) {
-    itemView.setOnClickListener(this)
-    if (item != null) {
-      itemTag = item.content + "@" + adapterPosition
+    if (playerContainer[0] is PlayerView) playerContainer.removeViewAt(0)
 
-      playerContainer.setAspectRatio(item.width / item.height.toFloat())
+    if (item != null) {
+      val drmItem = item.drmScheme?.let { DrmItem(item) }
+      // Dynamically create the PlayerView instance.
+      val playerView = (drmItem?.let {
+        // Encrypted video must be played on SurfaceView.
+        inflater.inflate(R.layout.playerview_surface, playerContainer, false)
+      } ?: inflater.inflate(R.layout.playerview_texture, playerContainer, false)) as PlayerView
+      playerContainer.addView(playerView, 0)
+
+      playerView.setAspectRatioListener { targetAspectRatio, _, _ ->
+        playerContainer.setAspectRatio(targetAspectRatio)
+        playerView.setAspectRatioListener(null)
+      }
+
+      val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
+      itemTag = item.uri + "@" + adapterPosition
+      mediaName.text = "${item.name}・${playerView.videoSurfaceView}"
+
       val playable = Kohii[itemView.context]
-          .setUp(item.content)
-          .copy(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
+          .setUp(mediaItem)
+          .copy(
+              tag = itemTag,
+              prefetch = false,
+              repeatMode = Player.REPEAT_MODE_ONE
+          )
           .asPlayable()
 
       playback = playable.bind(playerView).also {
@@ -98,12 +119,5 @@ class VideoViewHolder(
     super.onRecycled(success)
     playback?.removePlaybackEventListener(this)
     playback?.removeCallback(this)
-    itemView.setOnClickListener(null)
-  }
-
-  override fun onClick(v: View?) {
-    if (v != null && itemTag != null) {
-      listener.onItemClick(v, transView, adapterPosition, itemTag!!)
-    }
   }
 }

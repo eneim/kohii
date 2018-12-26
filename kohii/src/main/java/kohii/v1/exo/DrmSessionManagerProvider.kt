@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.exo
 
-import android.net.Uri
-import android.os.Parcelable
+import com.google.android.exoplayer2.drm.DrmSessionManager
+import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
+import kohii.media.Media
 
-interface Media : Parcelable {
+/**
+ * @author eneim (2018/10/27).
+ */
+interface DrmSessionManagerProvider {
 
-  val uri: Uri
-
-  val type: String?
-
-  val mediaDrm: MediaDrm?
+  fun provideDrmSessionManager(media: Media): DrmSessionManager<FrameworkMediaCrypto>?
 }

@@ -23,8 +23,8 @@ import androidx.databinding.BindingAdapter
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.MediaItem
 import kohii.v1.Kohii
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.Video
 import kohii.v1.sample.svg.GlideApp
@@ -45,13 +45,11 @@ fun setVideo(view: PlayerView, video: Video) {
   (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)?.setAspectRatio(
       video.width / video.height)
 
-  Kohii[view.context].setUp(video.url)
+  Kohii[view.context].setUp(MediaItem(video.url, "mp4"))
       .copy(
           tag = video.url,
           prefetch = true,
-          config = DemoApp.app.config,
-          repeatMode = Player.REPEAT_MODE_ONE,
-          mediaType = "mp4" // FIXME
+          repeatMode = Player.REPEAT_MODE_ONE
       )
       .asPlayable().bind(view)
   ViewCompat.setTransitionName(view, video.url)

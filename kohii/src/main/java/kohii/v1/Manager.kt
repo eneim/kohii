@@ -17,10 +17,7 @@
 package kohii.v1
 
 import android.graphics.Rect
-import android.media.AudioManager
-import android.util.Log
 import android.view.View
-import androidx.lifecycle.Observer
 import kohii.media.PlaybackInfo
 import kohii.v1.Kohii.GlobalScrollChangeListener
 import kohii.v1.Playback.Token
@@ -51,14 +48,14 @@ class Manager internal constructor(
   companion object {
     val TOKEN_COMPARATOR: Comparator<Token> = Comparator { o1, o2 -> o1.compareTo(o2) }
     val DEFAULT_SELECTOR = object : PlayerSelector {
-      override fun select(candidates: List<Playback<*>>): Collection<Playback<*>> {
-        return if (candidates.isNotEmpty()) arrayListOf(candidates[0]) else emptyList()
+      override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+        return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
       }
     }
   }
 
   interface PlayerSelector {
-    fun select(candidates: List<Playback<*>>): Collection<Playback<*>>
+    fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>>
   }
 
   private val attachFlag = AtomicBoolean(false)
@@ -70,9 +67,12 @@ class Manager internal constructor(
   // TODO [20180806] use WeakHashMap with ReferenceQueue and catch the QC-ed Target in cleanup thread?
   internal val mapTargetToPlayback = LinkedHashMap<Any? /* Target */, Playback<*>>()
 
+  @Suppress("MemberVisibilityCanBePrivate")
+  internal val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
+  @Suppress("MemberVisibilityCanBePrivate")
+  internal val mapDetachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
+
   private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
-  private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
-  private val mapDetachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
 
   // Candidates to hold playbacks for a refresh call.
   private val candidates = TreeMap<Token, Playback<*>>(TOKEN_COMPARATOR)
@@ -95,16 +95,16 @@ class Manager internal constructor(
     Therefore, handling Manager activeness of Playable requires some order handling.
    */
   internal fun onHostStarted() {
-    mapAttachedPlaybackToTime.keys.forEach {
-      kohii.onManagerActiveForPlayback(this, it)
+    mapAttachedPlaybackToTime.forEach {
+      kohii.onManagerActiveForPlayback(this, it.key)
     }
     this.dispatchRefreshAll()
   }
 
   // Called when the Activity bound to this Manager is stopped.
   internal fun onHostStopped(configChange: Boolean) {
-    mapAttachedPlaybackToTime.keys.forEach {
-      kohii.onManagerInActiveForPlayback(this, it, configChange)
+    mapAttachedPlaybackToTime.forEach {
+      kohii.onManagerInActiveForPlayback(this, it.key, configChange)
     }
   }
 
@@ -153,14 +153,14 @@ class Manager internal constructor(
   }
 
   internal fun savePlaybackInfo(playback: Playback<*>) {
-    if (playback.validTag()) {
-      mapPlayableTagToInfo[playback.tag] = playback.playable.playbackInfo
+    if (playback.playable.tag != Playable.NO_TAG) {
+      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
     }
   }
 
   internal fun restorePlaybackInfo(playback: Playback<*>) {
-    if (playback.validTag()) {
-      val info = mapPlayableTagToInfo.remove(playback.tag)
+    if (playback.playable.tag != Playable.NO_TAG) {
+      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
       if (info != null) playback.playable.playbackInfo = info
     }
   }
@@ -183,7 +183,7 @@ class Manager internal constructor(
         // this.prepare() ⬇
         if (it.token?.shouldPrepare() == true) it.prepare()
       }
-      it.onTargetAvailable()
+      it.onActive()
       this@Manager.dispatchRefreshAll()
     } ?: throw IllegalStateException("Target is available but Playback is not found: $target")
   }
@@ -192,10 +192,10 @@ class Manager internal constructor(
   fun onTargetUnAvailable(target: Any) {
     mapTargetToPlayback[target]?.let {
       mapDetachedPlaybackToTime[it] = System.nanoTime()
-      mapAttachedPlaybackToTime.remove(it)
+      val toInActive = mapAttachedPlaybackToTime.remove(it) != null
       it.pause()
       this@Manager.dispatchRefreshAll()
-      it.onTargetUnAvailable()
+      if (toInActive) it.onInActive()
       if (this@Manager.mapWeakPlayableToTarget[it.playable] == it.target) {
         savePlaybackInfo(it)
         it.release()
@@ -217,9 +217,11 @@ class Manager internal constructor(
   // - mapDetachedPlaybackToTime
   // - mapPlayableTagToInfo
   fun performDestroyPlayback(playback: Playback<*>) {
-    mapAttachedPlaybackToTime.remove(playback)
+    val toInActive = mapAttachedPlaybackToTime.remove(playback) != null
     mapDetachedPlaybackToTime.remove(playback)
-    mapTargetToPlayback.remove(playback.target).also { it?.onTargetUnAvailable() }
+    mapTargetToPlayback.remove(playback.target)?.also {
+      if (toInActive) it.onInActive()
+    } ?: if (toInActive) playback.onInActive()
     playback.onRemoved()
     playback.onDestroyed()
   }
@@ -231,23 +233,17 @@ class Manager internal constructor(
    */
   fun <T> performAddPlayback(playback: Playback<T>): Playback<T> {
     val target = playback.target
+    val cache = this.mapTargetToPlayback[target]
     var shouldAdd = target != null // playback must have a valid target.
     if (shouldAdd) {
       // Not-null target may be already a target of another Playback before.
       // Here we also make sure if we need to torn that old Playback down first or not.
-      val cache = this.mapTargetToPlayback[target]
       shouldAdd = cache == null || cache !== playback
     }
 
     if (shouldAdd) {
-      this.mapTargetToPlayback.put(target!!, playback)?.run {
-        if (mapAttachedPlaybackToTime.remove(this) != null) {
-          throw RuntimeException("Old playback is still attached. This should not happen ...")
-        } else {
-          mapDetachedPlaybackToTime.remove(this)
-        }
-        this.onRemoved()
-      }
+      if (cache != null) performDestroyPlayback(cache)
+      this.mapTargetToPlayback[target] = playback
       playback.onAdded()
     }
 
@@ -277,12 +273,11 @@ class Manager internal constructor(
   fun performRefreshAll() {
     candidates.clear()
 
-    // Make sure any detached view is back to the Window. Not happen all the time.
+    // Confirm if any detached view is re-attached to the Window. Not happen all the time.
     mapDetachedPlaybackToTime.keys.filter { it.token != null }.also { items ->
       dispatcher?.apply {
-        // If case the Container is non-RecyclerView (so all View are attached to Parent),
-        // On refreshing the list, we need to detect those should be updated, either being
-        // available or not available.
+        // In case the container is non-RecyclerView (so all View are attached to Parent),
+        // By refreshing the list, we detect Views those are out of sight, and those are not.
         items.forEach { playback -> this.dispatchTargetAvailable(playback) }
       }
     }
@@ -293,13 +288,12 @@ class Manager internal constructor(
     for (playback in playbacks) {
       // Get token here and use later, rather than getting it many times.
       val token = playback.token
-      if (token == null) { // Should not null here, but still checking to make sure.
-        // If case the Container is non-RecyclerView (so all View are attached to Parent),
-        // On refreshing the list, we need to detect those should be updated, either being
-        // available or not available.
+      if (token == null) { // Should not null here, but still checking for safety.
+        // In case the container is non-RecyclerView (so all View are attached to Parent),
+        // By refreshing the list, we detect Views those are out of sight, and those are not.
         dispatcher?.dispatchTargetUnAvailable(playback)
       } else if (token.shouldPlay()) {
-        // Doing this will sort the playback using Token's comparator.
+        // This will also sort the playback using Token's comparator.
         candidates[token] = playback
       }
     }
@@ -320,4 +314,5 @@ class Manager internal constructor(
     // Clean up cache
     candidates.clear()
   }
+
 }

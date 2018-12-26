@@ -16,14 +16,24 @@
 
 package kohii.v1.exo
 
-import com.google.android.exoplayer2.drm.DrmSessionManager
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
-import kohii.media.MediaDrm
+import kohii.v1.Bridge
+import kohii.v1.BridgeProvider
+import kohii.v1.Playable
 
 /**
- * @author eneim (2018/06/25).
+ * @author eneim (2018/10/28).
  */
-interface DrmSessionManagerFactory {
+class DefaultBridgeProvider(
+    private val playerProvider: PlayerProvider,
+    private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
+) : BridgeProvider {
 
-  fun createDrmSessionManager(mediaDrm: MediaDrm): DrmSessionManager<FrameworkMediaCrypto>
+  override fun provideBridge(builder: Playable.Builder): Bridge {
+    return ExoBridge(
+        builder.kohii.app,
+        builder.media,
+        playerProvider,
+        mediaSourceFactoryProvider
+    )
+  }
 }

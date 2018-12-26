@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1
 
-import android.net.Uri
-import android.os.Parcelable
+/**
+ * @author eneim (2018/10/28).
+ */
+interface BridgeProvider {
 
-interface Media : Parcelable {
-
-  val uri: Uri
-
-  val type: String?
-
-  val mediaDrm: MediaDrm?
+  fun provideBridge(builder: Playable.Builder): Bridge
 }

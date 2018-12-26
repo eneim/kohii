@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.exo
 
-import android.net.Uri
-import android.os.Parcelable
+import com.google.android.exoplayer2.source.ads.AdsMediaSource
+import kohii.media.Media
 
-interface Media : Parcelable {
+/**
+ * @author eneim (2018/10/27).
+ */
+interface MediaSourceFactoryProvider {
 
-  val uri: Uri
-
-  val type: String?
-
-  val mediaDrm: MediaDrm?
+  fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory
 }

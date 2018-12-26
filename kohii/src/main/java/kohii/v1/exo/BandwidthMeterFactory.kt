@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.exo
 
-import android.net.Uri
-import android.os.Parcelable
+import com.google.android.exoplayer2.upstream.BandwidthMeter
 
-interface Media : Parcelable {
+interface BandwidthMeterFactory {
 
-  val uri: Uri
-
-  val type: String?
-
-  val mediaDrm: MediaDrm?
+  fun createBandwidthMeter(): BandwidthMeter
 }

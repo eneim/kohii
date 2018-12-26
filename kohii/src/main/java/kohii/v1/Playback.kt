@@ -16,10 +16,10 @@
 
 package kohii.v1
 
-import android.net.Uri
 import android.os.Handler
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
+import com.google.android.exoplayer2.Player
 import kohii.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -34,33 +34,21 @@ import kotlin.annotation.AnnotationRetention.SOURCE
 abstract class Playback<T> internal constructor(
     internal val kohii: Kohii,
     internal val playable: Playable,
-    internal val uri: Uri,
     internal val manager: Manager,
     internal val target: T?,
-    internal val builder: Playable.Builder,
     internal val delayer: Delayer = NO_DELAY
 ) {
 
   companion object {
-    const val STATE_IDLE = 1
-    const val STATE_BUFFERING = 2
-    const val STATE_READY = 3
-    const val STATE_END = 4
+    const val STATE_IDLE = Player.STATE_IDLE
+    const val STATE_BUFFERING = Player.STATE_BUFFERING
+    const val STATE_READY = Player.STATE_READY
+    const val STATE_END = Player.STATE_ENDED
     val NO_DELAY = object : Delayer {
       override fun getInitDelay() = 0L
     }
     private const val MSG_PLAY = 100
-    private val SCRAP = Any()
   }
-
-  data class Builder(
-      internal val kohii: Kohii,
-      internal val playable: Playable,
-      internal val uri: Uri,
-      internal val manager: Manager,
-      internal val delayer: Delayer,
-      internal val builder: Playable.Builder
-  )
 
   open class Token : Comparable<Token> {
     override fun compareTo(other: Token) = 0
@@ -79,9 +67,6 @@ abstract class Playback<T> internal constructor(
   // TODO [20181022] this Handler must be used by a Manager, to dispatch the playback of many.
   private var dispatcherHandler: Handler? = null
 
-  // For public access as well.
-  val tag: Any
-
   // Listeners for Playable. Playable will access these filed on demand.
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
@@ -89,9 +74,9 @@ abstract class Playback<T> internal constructor(
 
   // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
-  private val callbacks = CopyOnWriteArraySet<Callback>()
+  private val callbacks = CopyOnWriteArraySet<Callback<T>>()
 
-  internal var internalCallback: InternalCallback? = null
+  internal var internalCallback: InternalCallback<T>? = null
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound and released.
   internal open val token: Token?
@@ -100,10 +85,6 @@ abstract class Playback<T> internal constructor(
   @Retention(SOURCE)  //
   @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)  //
   annotation class State
-
-  init {
-    this.tag = builder.tag ?: SCRAP
-  }
 
   // [BEGIN] Public API
   fun addPlaybackEventListener(listener: PlaybackEventListener) {
@@ -114,11 +95,11 @@ abstract class Playback<T> internal constructor(
     this.listeners.remove(listener)
   }
 
-  fun addCallback(callback: Callback) {
+  fun addCallback(callback: Callback<T>) {
     this.callbacks.add(callback)
   }
 
-  fun removeCallback(callback: Callback?) {
+  fun removeCallback(callback: Callback<T>?) {
     this.callbacks.remove(callback)
   }
 
@@ -155,8 +136,9 @@ abstract class Playback<T> internal constructor(
     listenerHandler?.obtainMessage(playbackState, playWhenReady)?.sendToTarget()
   }
 
-  // Only playback with 'valid tag' will be cached for restoring.
-  internal fun validTag() = this.tag !== SCRAP
+  internal fun dispatchFirstFrameRendered() {
+    listeners.forEach { it.onFirstFrameRendered() }
+  }
 
   internal fun prepare() {
     playable.prepare()
@@ -203,43 +185,34 @@ abstract class Playback<T> internal constructor(
 
   // ~ View is attached
   @CallSuper
-  internal open fun onTargetAvailable() {
+  internal open fun onActive() {
     this.callbacks.forEach {
-      it.onTargetAvailable(this)
+      it.onActive(this, this.target)
     }
   }
 
-  // Playback's onTargetUnAvailable is equal to View's detach event or Activity stops.
+  // Playback's onInActive is equal to View's detach event or Activity stops.
   // Once it is inactive, its resource is considered freed and can be cleanup anytime.
   // Proper handling of in-active state must consider to: [1] Save any previous state (PlaybackInfo)
   // to cache, ready to reuse once coming back, [2] Consider to release allocated resource if there
   // is no other Manager manages the internal Playable.
   @CallSuper
-  internal open fun onTargetUnAvailable() {
+  internal open fun onInActive() {
     this.callbacks.forEach {
-      it.onTargetUnAvailable(this)
+      it.onInActive(this, this.target)
     }
   }
 
   @CallSuper
   internal open fun onCreated() {
-    this.listenerHandler = Handler(android.os.Handler.Callback {
-      val playWhenReady = it.obj as Boolean
-      when (it.what) {
+    this.listenerHandler = Handler(Handler.Callback { message ->
+      val playWhenReady = message.obj as Boolean
+      when (message.what) {
         STATE_IDLE -> {
         }
-
-        STATE_BUFFERING -> for (listener in listeners) {
-          listener.onBuffering(playWhenReady)
-        }
-
-        STATE_READY -> for (listener in listeners) {
-          if (playWhenReady) listener.onPlaying() else listener.onPaused()
-        }
-
-        STATE_END -> for (listener in listeners) {
-          listener.onCompleted()
-        }
+        STATE_BUFFERING -> listeners.forEach { it.onBuffering(playWhenReady) }
+        STATE_READY -> listeners.forEach { if (playWhenReady) it.onPlaying() else it.onPaused() }
+        STATE_END -> listeners.forEach { it.onCompleted() }
       }
       true
     })
@@ -254,23 +227,29 @@ abstract class Playback<T> internal constructor(
 
   @CallSuper
   internal open fun onDestroyed() {
+    if (this.manager.mapWeakPlayableToTarget[this.playable] === this.target) {
+      this.manager.mapWeakPlayableToTarget.remove(this.playable)
+    }
     this.listenerHandler = null
     this.dispatcherHandler = null
   }
 
   override fun toString(): String {
-    return javaClass.simpleName + "@" + hashCode()
+    return javaClass.simpleName + "@" + hashCode() + "@" + playable
   }
 
   // For internal flow only.
-  internal interface InternalCallback {
-    fun onAdded(playback: Playback<*>)
-    fun onRemoved(playback: Playback<*>)
+  internal interface InternalCallback<T> {
+    // Called when the playback is added to Manager
+    fun onAdded(playback: Playback<T>)
+
+    // Called when the playback is removed from Manager
+    fun onRemoved(playback: Playback<T>)
   }
 
-  interface Callback {
-    fun onTargetAvailable(playback: Playback<*>)
-    fun onTargetUnAvailable(playback: Playback<*>)
+  interface Callback<T> {
+    fun onActive(playback: Playback<T>, target: T?)
+    fun onInActive(playback: Playback<T>, target: T?)
   }
 
   interface Delayer {

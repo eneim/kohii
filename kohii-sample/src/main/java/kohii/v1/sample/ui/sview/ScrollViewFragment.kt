@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.sview
 
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,18 +28,17 @@ import androidx.transition.TransitionSet
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.snackbar.Snackbar
-import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
-import kohii.v1.sample.DemoApp
+import kohii.v1.PlayerEventListener
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.player.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
-class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListener {
+class ScrollViewFragment : BaseFragment(), Playback.Callback<PlayerView>, PlaybackEventListener {
 
   companion object {
     const val videoUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
@@ -48,7 +46,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
   }
 
   private var playback: Playback<PlayerView>? = null
-  private val listener = object : DefaultEventListener() {
+  private val listener = object : PlayerEventListener {
     override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
         pixelWidthHeightRatio: Float) {
       startPostponedEnterTransition()
@@ -68,12 +66,7 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
     playback = Kohii[this].setUp(videoUrl)
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = videoUrl)
-        .copy(config = DemoApp.app.config)
-        .asPlayable().bind(playerView).also {
-          it.addPlaybackEventListener(this@ScrollViewFragment)
-          it.addCallback(this@ScrollViewFragment)
-          it.addPlayerEventListener(listener)
-        }
+        .asPlayable().bind(playerView)
 
     val transView: View = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView, videoUrl)
@@ -81,6 +74,12 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
 
   override fun onStart() {
     super.onStart()
+    playback?.also {
+      it.addPlaybackEventListener(this@ScrollViewFragment)
+      it.addCallback(this@ScrollViewFragment)
+      it.addPlayerEventListener(listener)
+    }
+
     view?.run {
       val transView: View = playerView.findViewById(R.id.exo_content_frame)
       playerContainer.setOnClickListener {
@@ -95,9 +94,11 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
     }
   }
 
+  @Suppress("RedundantOverride")
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
-    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    // ⬇︎ For demo of manual fullscreen.
+    // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
   }
 
   override fun onStop() {
@@ -127,6 +128,9 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
 
   // BEGIN: PlaybackEventListener
 
+  override fun onFirstFrameRendered() {
+  }
+
   override fun onBuffering(playWhenReady: Boolean) {
   }
 
@@ -152,12 +156,12 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
 
   // BEGIN: Playback.Callback
 
-  override fun onTargetAvailable(playback: Playback<*>) {
+  override fun onActive(playback: Playback<PlayerView>, target: PlayerView?) {
     Toast.makeText(requireContext(), "Target available", Toast.LENGTH_SHORT).show()
     startPostponedEnterTransition()
   }
 
-  override fun onTargetUnAvailable(playback: Playback<*>) {
+  override fun onInActive(playback: Playback<PlayerView>, target: PlayerView?) {
     Toast.makeText(requireContext(), "Target unavailable", Toast.LENGTH_SHORT).show()
   }
 

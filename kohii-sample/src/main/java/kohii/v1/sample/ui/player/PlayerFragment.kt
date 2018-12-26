@@ -23,7 +23,6 @@ import android.view.ViewGroup
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
-import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlayerEventListener
@@ -56,7 +55,7 @@ class PlayerFragment : BaseFragment() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    listener = object : DefaultEventListener() {
+    listener = object : PlayerEventListener {
       override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
           pixelWidthHeightRatio: Float) {
         startPostponedEnterTransition()
@@ -98,7 +97,7 @@ class PlayerFragment : BaseFragment() {
   private fun prepareSharedElementTransition() {
     val transition = TransitionInflater.from(requireContext())
         .inflateTransition(R.transition.player_shared_element_transition)
-    transition.duration = 375
+    transition.duration = 275
     sharedElementEnterTransition = transition
 
     // A similar mapping is set at the GridFragment with a setExitSharedElementCallback.
