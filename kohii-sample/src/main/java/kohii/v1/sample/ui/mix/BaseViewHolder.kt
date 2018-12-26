@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.sample.ui.mix
 
-import com.google.android.exoplayer2.Player
-import kohii.media.MediaDrm
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 /**
- * @author eneim (2018/06/25).
+ * @author eneim (2018/07/06).
  */
-interface PlayerFactory {
+abstract class BaseViewHolder(
+    val inflater: LayoutInflater,
+    layoutRes: Int,
+    val parent: ViewGroup
+) : ViewHolder(inflater.inflate(layoutRes, parent, false)) {
 
-  fun createPlayer(mediaDrm: MediaDrm?): Player
+  abstract fun bind(item: Item?)
+
+  open fun onRecycled(success: Boolean) {}
+
+  override fun toString(): String {
+    return "${javaClass.simpleName} -- $adapterPosition"
+  }
 }

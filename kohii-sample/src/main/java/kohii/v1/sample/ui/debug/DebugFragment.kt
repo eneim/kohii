@@ -25,7 +25,6 @@ import android.view.ViewGroup
 import com.google.android.exoplayer2.Player
 import kohii.v1.Kohii
 import kohii.v1.Playable
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.motion.MotionFragment
@@ -58,7 +57,6 @@ class DebugFragment : BaseFragment() {
     Kohii[this].setUp(Uri.parse(videoUrl))
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = videoUrl)
-        .copy(config = DemoApp.app.config)
         .asPlayable()
   }
 

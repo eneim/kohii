@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1
 
-import android.net.Uri
-import android.os.Parcelable
+import kohii.media.VolumeInfo
 
-interface Media : Parcelable {
+interface VolumeInfoController {
 
-  val uri: Uri
+  val volumeInfo: VolumeInfo
 
-  val type: String?
+  fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 
-  val mediaDrm: MediaDrm?
+  fun addVolumeChangedListener(listener: VolumeChangedListener)
+
+  fun removeVolumeChangedListener(listener: VolumeChangedListener?)
 }

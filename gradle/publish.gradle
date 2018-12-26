@@ -18,7 +18,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply from: "${rootDir.absolutePath}/gradle/deps.gradle"
 
-version = buildConfig.version.name + "-ALPHA2"
+version = buildConfig.version.name + "-ALPHA3"
 group = GROUP
 
 @SuppressWarnings("GrMethodMayBeStatic")

@@ -71,19 +71,17 @@ dependencies {
   androidTestImplementation libraries.xtest.runner
   androidTestImplementation libraries.xtest.espresso.core
 
-  implementation 'com.squareup.moshi:moshi:1.6.0'
-  implementation 'com.squareup.moshi:moshi-kotlin:1.6.0'
-  implementation("com.github.bumptech.glide:glide:4.8.0") {
-    exclude group: "com.android.support"
-    exclude group: "androidx"
-  }
-  kapt "com.github.bumptech.glide:compiler:4.8.0"
+  implementation 'com.squareup.moshi:moshi:1.8.0'
+  implementation 'com.squareup.moshi:moshi-kotlin:1.8.0'
+
+  implementation "com.github.bumptech.glide:glide:4.9.0-SNAPSHOT"
+  kapt "com.github.bumptech.glide:compiler:4.9.0-SNAPSHOT"
   implementation 'com.caverock:androidsvg:1.2.1'
 
-  debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
-  releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
+  debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.2'
+  releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.2'
   // Optional, if you use support library fragments:
-  debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.1'
+  debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.2'
 
   // implementation 'com.squareup.picasso3:picasso:3.0.0-SNAPSHOT'
 }

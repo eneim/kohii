@@ -35,7 +35,10 @@ import java.util.concurrent.CopyOnWriteArraySet
 /**
  * @author eneim (2018/06/24).
  */
+// TODO [20181226] rename to PlayableEventListener
 interface PlaybackEventListener {
+
+  fun onFirstFrameRendered()
 
   fun onBuffering(playWhenReady: Boolean)  // ExoPlayer state: 2
 
@@ -46,7 +49,13 @@ interface PlaybackEventListener {
   fun onCompleted()  // ExoPlayer state: 4
 }
 
-interface PlayerEventListener : Player.EventListener, VideoListener, AudioListener, TextOutput, MetadataOutput
+interface PlayerEventListener : Player.EventListener, VideoListener, AudioListener, TextOutput, MetadataOutput {
+  override fun onCues(cues: MutableList<Cue>?) {
+  }
+
+  override fun onMetadata(metadata: Metadata?) {
+  }
+}
 
 interface VolumeChangedListener {
 
@@ -141,81 +150,5 @@ class VolumeChangedListeners : CopyOnWriteArraySet<VolumeChangedListener>(), Vol
 class ErrorListeners : CopyOnWriteArraySet<ErrorListener>(), ErrorListener {
   override fun onError(error: Exception) {
     this.forEach { it.onError(error) }
-  }
-}
-
-abstract class DefaultEventListener : PlayerEventListener {
-  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
-
-  }
-
-  override fun onSeekProcessed() {
-
-  }
-
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
-
-  }
-
-  override fun onPlayerError(error: ExoPlaybackException?) {
-
-  }
-
-  override fun onLoadingChanged(isLoading: Boolean) {
-
-  }
-
-  override fun onPositionDiscontinuity(reason: Int) {
-
-  }
-
-  override fun onRepeatModeChanged(repeatMode: Int) {
-
-  }
-
-  override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-
-  }
-
-  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
-
-  }
-
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-
-  }
-
-  override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-      pixelWidthHeightRatio: Float) {
-
-  }
-
-  override fun onSurfaceSizeChanged(width: Int, height: Int) {
-
-  }
-
-  override fun onRenderedFirstFrame() {
-
-  }
-
-  override fun onCues(cues: MutableList<Cue>?) {
-
-  }
-
-  override fun onMetadata(metadata: Metadata?) {
-
-  }
-
-  override fun onAudioAttributesChanged(audioAttributes: AudioAttributes?) {
-
-  }
-
-  override fun onVolumeChanged(volume: Float) {
-
-  }
-
-  override fun onAudioSessionId(audioSessionId: Int) {
-
   }
 }

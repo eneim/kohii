@@ -20,13 +20,13 @@ buildscript {
   apply from: "${rootDir.absolutePath}/gradle/deps.gradle"
 
   repositories {
-    mavenCentral()
     google()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+    mavenCentral()
     jcenter()
   }
 
   dependencies {
+    //noinspection GradleDependency
     classpath "com.android.tools.build:gradle:$versions.gradlePlugin"
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
   }
@@ -34,23 +34,16 @@ buildscript {
 
 allprojects {
   repositories {
-    mavenCentral()
     google()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
     jcenter()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots'}
-    maven { url 'https://jitpack.io' }
   }
 }
 
 task clean(type: Delete) {
   delete rootProject.buildDir
-}
-
-task wrapper(type: Wrapper) {
-  gradleVersion = '4.10'
-  //noinspection GroovyAccessibility
-  distributionType = 'ALL'
 }
 
 // copy from https://github.com/chrisbanes/tivi
