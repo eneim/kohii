@@ -49,7 +49,11 @@ interface PlaybackEventListener {
   fun onCompleted()  // ExoPlayer state: 4
 }
 
-interface PlayerEventListener : Player.EventListener, VideoListener, AudioListener, TextOutput, MetadataOutput {
+interface PlayerEventListener : Player.EventListener,
+    VideoListener,
+    AudioListener,
+    TextOutput,
+    MetadataOutput {
   override fun onCues(cues: MutableList<Cue>?) {
   }
 
@@ -76,8 +80,10 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerE
     this.forEach { it.onSeekProcessed() }
   }
 
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
+  override fun onTracksChanged(
+    trackGroups: TrackGroupArray?,
+    trackSelections: TrackSelectionArray?
+  ) {
     this.forEach { it.onTracksChanged(trackGroups, trackSelections) }
   }
 
@@ -101,16 +107,27 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerE
     this.forEach { it.onShuffleModeEnabledChanged(shuffleModeEnabled) }
   }
 
-  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
+  override fun onTimelineChanged(
+    timeline: Timeline?,
+    manifest: Any?,
+    reason: Int
+  ) {
     this.forEach { it.onTimelineChanged(timeline, manifest, reason) }
   }
 
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+  override fun onPlayerStateChanged(
+    playWhenReady: Boolean,
+    playbackState: Int
+  ) {
     this.forEach { it.onPlayerStateChanged(playWhenReady, playbackState) }
   }
 
-  override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-      pixelWidthHeightRatio: Float) {
+  override fun onVideoSizeChanged(
+    width: Int,
+    height: Int,
+    unappliedRotationDegrees: Int,
+    pixelWidthHeightRatio: Float
+  ) {
     this.forEach {
       it.onVideoSizeChanged(width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
     }

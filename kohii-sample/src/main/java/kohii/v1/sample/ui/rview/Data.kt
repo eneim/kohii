@@ -19,7 +19,18 @@ package kohii.v1.sample.ui.rview
 /**
  * @author eneim (2018/07/06).
  */
-data class ItemIcon(val url: String, val width: Int, val height: Int)
+data class ItemIcon(
+  val url: String,
+  val width: Int,
+  val height: Int
+)
 
-data class Item(val type: Int, val content: String, val format: String, val background: String,
-    val width: Int, val height: Int, val icon: ItemIcon?)
+data class Item(
+  val type: Int,
+  val content: String,
+  val format: String,
+  val background: String,
+  val width: Int,
+  val height: Int,
+  val icon: ItemIcon?
+)

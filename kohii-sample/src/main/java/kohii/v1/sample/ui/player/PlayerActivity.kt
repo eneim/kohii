@@ -35,7 +35,10 @@ class PlayerActivity : BaseActivity() {
 
   companion object {
     private const val EXTRA_INIT_DATA = "kohii::player::init_data"
-    fun createIntent(context: Context, initData: InitData): Intent {
+    fun createIntent(
+      context: Context,
+      initData: InitData
+    ): Intent {
       val extras = Bundle().also {
         it.putParcelable(EXTRA_INIT_DATA, initData)
       }
@@ -68,6 +71,6 @@ class PlayerActivity : BaseActivity() {
 
 @Parcelize
 data class InitData(
-    val tag: String,
-    val aspectRatio: Float
+  val tag: String,
+  val aspectRatio: Float
 ) : Parcelable

@@ -26,7 +26,10 @@ interface PlayerProvider {
 
   fun acquirePlayer(media: Media): Player
 
-  fun releasePlayer(media: Media, player: Player)
+  fun releasePlayer(
+    media: Media,
+    player: Player
+  )
 
   fun cleanUp()
 }

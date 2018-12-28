@@ -38,7 +38,7 @@ import kohii.v1.sample.ui.player.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
-class ScrollViewFragment : BaseFragment(), Playback.Callback<PlayerView>, PlaybackEventListener {
+class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListener {
 
   companion object {
     const val videoUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
@@ -47,18 +47,28 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback<PlayerView>, Playba
 
   private var playback: Playback<PlayerView>? = null
   private val listener = object : PlayerEventListener {
-    override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-        pixelWidthHeightRatio: Float) {
+    override fun onVideoSizeChanged(
+      width: Int,
+      height: Int,
+      unappliedRotationDegrees: Int,
+      pixelWidthHeightRatio: Float
+    ) {
       startPostponedEnterTransition()
     }
   }
 
-  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-      savedInstanceState: Bundle?): View {
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View {
     return inflater.inflate(R.layout.fragment_scroll_view, container, false)
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
     super.onViewCreated(view, savedInstanceState)
     prepareTransitions()
     postponeEnterTransition()
@@ -66,7 +76,8 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback<PlayerView>, Playba
     playback = Kohii[this].setUp(videoUrl)
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = videoUrl)
-        .asPlayable().bind(playerView)
+        .asPlayable()
+        .bind(playerView)
 
     val transView: View = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView, videoUrl)
@@ -118,8 +129,10 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback<PlayerView>, Playba
 
     // A similar mapping is set at the ImagePagerFragment with a setEnterSharedElementCallback.
     setEnterSharedElementCallback(object : SharedElementCallback() {
-      override fun onMapSharedElements(names: MutableList<String>?,
-          sharedElements: MutableMap<String, View>?) {
+      override fun onMapSharedElements(
+        names: MutableList<String>?,
+        sharedElements: MutableMap<String, View>?
+      ) {
         // Map the first shared element name to the child ImageView.
         sharedElements?.put(names?.get(0)!!, playerView.findViewById(R.id.exo_content_frame))
       }
@@ -136,19 +149,22 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback<PlayerView>, Playba
 
   override fun onPlaying() {
     view?.run {
-      Snackbar.make(this, "State: Playing", Snackbar.LENGTH_LONG).show()
+      Snackbar.make(this, "State: Playing", Snackbar.LENGTH_LONG)
+          .show()
     }
   }
 
   override fun onPaused() {
     view?.run {
-      Snackbar.make(this, "State: Paused", Snackbar.LENGTH_LONG).show()
+      Snackbar.make(this, "State: Paused", Snackbar.LENGTH_LONG)
+          .show()
     }
   }
 
   override fun onCompleted() {
     view?.run {
-      Snackbar.make(this, "State: Ended", Snackbar.LENGTH_LONG).show()
+      Snackbar.make(this, "State: Ended", Snackbar.LENGTH_LONG)
+          .show()
     }
   }
 
@@ -156,13 +172,21 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback<PlayerView>, Playba
 
   // BEGIN: Playback.Callback
 
-  override fun onActive(playback: Playback<PlayerView>, target: PlayerView?) {
-    Toast.makeText(requireContext(), "Target available", Toast.LENGTH_SHORT).show()
+  override fun onActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
+    Toast.makeText(requireContext(), "Target available", Toast.LENGTH_SHORT)
+        .show()
     startPostponedEnterTransition()
   }
 
-  override fun onInActive(playback: Playback<PlayerView>, target: PlayerView?) {
-    Toast.makeText(requireContext(), "Target unavailable", Toast.LENGTH_SHORT).show()
+  override fun onInActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
+    Toast.makeText(requireContext(), "Target unavailable", Toast.LENGTH_SHORT)
+        .show()
   }
 
   // END: Playback.Callback

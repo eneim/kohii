@@ -32,11 +32,11 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  */
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Playback<T> internal constructor(
-    internal val kohii: Kohii,
-    internal val playable: Playable,
-    internal val manager: Manager,
-    internal val target: T?,
-    internal val delayer: Delayer = NO_DELAY
+  internal val kohii: Kohii,
+  internal val playable: Playable,
+  internal val manager: Manager,
+  internal val target: T?,
+  internal val delayer: Delayer = NO_DELAY
 ) {
 
   companion object {
@@ -44,10 +44,12 @@ abstract class Playback<T> internal constructor(
     const val STATE_BUFFERING = Player.STATE_BUFFERING
     const val STATE_READY = Player.STATE_READY
     const val STATE_END = Player.STATE_ENDED
+
+    const val DELAY_INFINITE = -1L
+
     val NO_DELAY = object : Delayer {
       override fun getInitDelay() = 0L
     }
-    private const val MSG_PLAY = 100
   }
 
   open class Token : Comparable<Token> {
@@ -63,9 +65,6 @@ abstract class Playback<T> internal constructor(
   }
 
   private var listenerHandler: Handler? = null
-  // TODO [20180905] consider to move this to one layer up.
-  // TODO [20181022] this Handler must be used by a Manager, to dispatch the playback of many.
-  private var dispatcherHandler: Handler? = null
 
   // Listeners for Playable. Playable will access these filed on demand.
   internal val volumeListeners by lazy { VolumeChangedListeners() }
@@ -74,9 +73,9 @@ abstract class Playback<T> internal constructor(
 
   // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
-  private val callbacks = CopyOnWriteArraySet<Callback<T>>()
+  private val callbacks = CopyOnWriteArraySet<Callback>()
 
-  internal var internalCallback: InternalCallback<T>? = null
+  internal var internalCallback: InternalCallback? = null
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound and released.
   internal open val token: Token?
@@ -95,11 +94,11 @@ abstract class Playback<T> internal constructor(
     this.listeners.remove(listener)
   }
 
-  fun addCallback(callback: Callback<T>) {
+  fun addCallback(callback: Callback) {
     this.callbacks.add(callback)
   }
 
-  fun removeCallback(callback: Callback<T>?) {
+  fun removeCallback(callback: Callback?) {
     this.callbacks.remove(callback)
   }
 
@@ -133,7 +132,8 @@ abstract class Playback<T> internal constructor(
 
   // Used by subclasses to dispatch internal event listeners
   internal fun dispatchPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
-    listenerHandler?.obtainMessage(playbackState, playWhenReady)?.sendToTarget()
+    listenerHandler?.obtainMessage(playbackState, playWhenReady)
+        ?.sendToTarget()
   }
 
   internal fun dispatchFirstFrameRendered() {
@@ -145,24 +145,14 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun play() {
-    val delay = delayer.getInitDelay()
-    dispatcherHandler?.removeMessages(MSG_PLAY)
-    when {
-      delay > 0 -> dispatcherHandler?.sendEmptyMessageDelayed(MSG_PLAY, delay) ?: playable.play()
-      delay == 0L -> playable.play()
-      delay < 0 -> {
-        // Do nothing.
-      }
-    }
+    playable.play()
   }
 
   internal fun pause() {
-    dispatcherHandler?.removeMessages(MSG_PLAY)
     playable.pause()
   }
 
   internal fun release() {
-    dispatcherHandler?.removeMessages(MSG_PLAY)
     playable.release()
   }
 
@@ -177,7 +167,6 @@ abstract class Playback<T> internal constructor(
   @CallSuper
   internal open fun onRemoved() {
     internalCallback?.onRemoved(this)
-    dispatcherHandler?.removeCallbacksAndMessages(null)
     listenerHandler?.removeCallbacksAndMessages(null)
     this.callbacks.clear()
     this.listeners.clear()
@@ -216,22 +205,14 @@ abstract class Playback<T> internal constructor(
       }
       true
     })
-
-    this.dispatcherHandler = Handler(Handler.Callback {
-      if (it.what == MSG_PLAY) {
-        playable.play()
-      }
-      true
-    })
   }
 
   @CallSuper
   internal open fun onDestroyed() {
-    if (this.manager.mapWeakPlayableToTarget[this.playable] === this.target) {
+    /* if (this.manager.mapWeakPlayableToTarget[this.playable] == this.target) {
       this.manager.mapWeakPlayableToTarget.remove(this.playable)
-    }
+    } */
     this.listenerHandler = null
-    this.dispatcherHandler = null
   }
 
   override fun toString(): String {
@@ -239,17 +220,24 @@ abstract class Playback<T> internal constructor(
   }
 
   // For internal flow only.
-  internal interface InternalCallback<T> {
+  internal interface InternalCallback {
     // Called when the playback is added to Manager
-    fun onAdded(playback: Playback<T>)
+    fun onAdded(playback: Playback<*>)
 
     // Called when the playback is removed from Manager
-    fun onRemoved(playback: Playback<T>)
+    fun onRemoved(playback: Playback<*>)
   }
 
-  interface Callback<T> {
-    fun onActive(playback: Playback<T>, target: T?)
-    fun onInActive(playback: Playback<T>, target: T?)
+  interface Callback {
+    fun onActive(
+      playback: Playback<*>,
+      target: Any?
+    )
+
+    fun onInActive(
+      playback: Playback<*>,
+      target: Any?
+    )
   }
 
   interface Delayer {

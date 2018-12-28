@@ -41,13 +41,14 @@ import java.util.WeakHashMap
  * @author eneim (2018/10/27).
  */
 class DefaultPlayerProvider(
-    private val context: Context,
-    private val bandwidthMeterFactory: BandwidthMeterFactory = DefaultBandwidthMeterFactory(),
-    private val drmSessionManagerProvider: DrmSessionManagerProvider? = null,
-    private val loadControl: LoadControl = DefaultLoadControl(),
-    private val renderersFactory: RenderersFactory = DefaultRenderersFactory(
-        context.applicationContext, EXTENSION_RENDERER_MODE_OFF),
-    internal val trackSelector: TrackSelector = DefaultTrackSelector()
+  private val context: Context,
+  private val bandwidthMeterFactory: BandwidthMeterFactory = DefaultBandwidthMeterFactory(),
+  private val drmSessionManagerProvider: DrmSessionManagerProvider? = null,
+  private val loadControl: LoadControl = DefaultLoadControl(),
+  private val renderersFactory: RenderersFactory = DefaultRenderersFactory(
+      context.applicationContext, EXTENSION_RENDERER_MODE_OFF
+  ),
+  internal val trackSelector: TrackSelector = DefaultTrackSelector()
 ) : PlayerProvider {
 
   companion object {
@@ -98,7 +99,10 @@ class DefaultPlayerProvider(
     }
   }
 
-  override fun releasePlayer(media: Media, player: Player) {
+  override fun releasePlayer(
+    media: Media,
+    player: Player
+  ) {
     player.stop(true)
     if (drmPlayerCache.containsKey(player)) {
       player.release()

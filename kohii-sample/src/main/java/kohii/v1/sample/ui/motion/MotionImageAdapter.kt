@@ -36,14 +36,22 @@ import kohii.v1.sample.svg.GlideApp
  */
 @Suppress("unused")
 @BindingAdapter("backdrop")
-fun setBackdrop(view: ImageView, url: String) {
-  GlideApp.with(view).load(Uri.parse(url)).into(view)
+fun setBackdrop(
+  view: ImageView,
+  url: String
+) {
+  GlideApp.with(view)
+      .load(Uri.parse(url))
+      .into(view)
 }
 
 @BindingAdapter("video")
-fun setVideo(view: PlayerView, video: Video) {
-  (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)?.setAspectRatio(
-      video.width / video.height)
+fun setVideo(
+  view: PlayerView,
+  video: Video
+) {
+  (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)
+      ?.setAspectRatio(video.width / video.height)
 
   Kohii[view.context].setUp(MediaItem(video.url, "mp4"))
       .copy(
@@ -51,6 +59,7 @@ fun setVideo(view: PlayerView, video: Video) {
           prefetch = true,
           repeatMode = Player.REPEAT_MODE_ONE
       )
-      .asPlayable().bind(view)
+      .asPlayable()
+      .bind(view)
   ViewCompat.setTransitionName(view, video.url)
 }

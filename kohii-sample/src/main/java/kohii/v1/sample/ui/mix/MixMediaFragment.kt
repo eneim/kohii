@@ -44,16 +44,25 @@ class MixMediaFragment : BaseFragment() {
     super.onCreate(savedInstanceState)
     val asset = requireActivity().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
-    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+    val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
     items = adapter.fromJson(Okio.buffer(Okio.source(asset.open("medias.json"))))!!
   }
 
-  override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View? {
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    parent: ViewGroup?,
+    state: Bundle?
+  ): View? {
     return inflater.inflate(R.layout.fragment_recycler_view, parent, false)
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
     super.onViewCreated(view, savedInstanceState)
     (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)

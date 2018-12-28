@@ -39,14 +39,17 @@ class MotionFragment : BaseFragment(), Presenter {
 
   var binding: FragmentMotionBinding? = null
 
-  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, st: Bundle?): View? {
-    binding = DataBindingUtil.inflate(
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
+    binding = (DataBindingUtil.inflate(
         inflater,
         R.layout.fragment_motion,
         container,
         false
-    ) as FragmentMotionBinding
-    binding!!.motion = Motion()
+    ) as FragmentMotionBinding).also { it.motion = Motion() }
     return binding!!.root
   }
 
@@ -60,10 +63,14 @@ class MotionFragment : BaseFragment(), Presenter {
     binding?.presenter = null
   }
 
-  override fun onVideoClick(container: View, video: Video) {
-    startActivity(PlayerActivity.createIntent(requireContext(), InitData(
-        tag = video.url,
-        aspectRatio = video.width / video.height
-    )))
+  override fun onVideoClick(
+    container: View,
+    video: Video
+  ) {
+    startActivity(
+        PlayerActivity.createIntent(
+            requireContext(), InitData(tag = video.url, aspectRatio = video.width / video.height)
+        )
+    )
   }
 }

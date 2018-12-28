@@ -27,5 +27,8 @@ import kohii.v1.sample.common.Video
  */
 interface Presenter {
 
-  fun onVideoClick(container: View, video: Video)
+  fun onVideoClick(
+    container: View,
+    video: Video
+  )
 }

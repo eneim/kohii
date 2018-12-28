@@ -24,9 +24,9 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
  * @author eneim (2018/07/06).
  */
 abstract class BaseViewHolder(
-    val inflater: LayoutInflater,
-    layoutRes: Int,
-    val parent: ViewGroup
+  val inflater: LayoutInflater,
+  layoutRes: Int,
+  val parent: ViewGroup
 ) : ViewHolder(inflater.inflate(layoutRes, parent, false)) {
 
   abstract fun bind(item: Item?)
