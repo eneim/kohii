@@ -18,7 +18,6 @@ package kohii.v1.sample
 
 import android.os.Bundle
 import kohii.v1.sample.common.BaseActivity
-import kohii.v1.sample.ui.mix.MixMediaFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
@@ -37,8 +36,12 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main_activity)
     if (savedInstanceState == null) {
-      supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer,
-          MixMediaFragment.newInstance(), RecyclerViewFragment::class.java.simpleName).commit()
+      supportFragmentManager.beginTransaction()
+          .replace(
+              R.id.fragmentContainer,
+              RecyclerViewFragment.newInstance(), RecyclerViewFragment::class.java.simpleName
+          )
+          .commit()
     }
   }
 }

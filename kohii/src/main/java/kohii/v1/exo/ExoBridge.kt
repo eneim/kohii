@@ -60,10 +60,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @Suppress("MemberVisibilityCanBePrivate")
 internal open class ExoBridge(
-    context: Context,
-    private val media: Media,
-    private val playerProvider: PlayerProvider,
-    mediaSourceFactoryProvider: MediaSourceFactoryProvider
+  context: Context,
+  private val media: Media,
+  private val playerProvider: PlayerProvider,
+  mediaSourceFactoryProvider: MediaSourceFactoryProvider
 ) : PlayerEventListener, Bridge, ErrorMessageProvider<ExoPlaybackException> {
 
   companion object {
@@ -313,7 +313,8 @@ internal open class ExoBridge(
     if (this.errorListeners.size > 0) {
       this.errorListeners.onError(RuntimeException(message))
     } else if (playerView != null) {
-      Toast.makeText(playerView!!.context, message, Toast.LENGTH_SHORT).show()
+      Toast.makeText(playerView!!.context.applicationContext, message, Toast.LENGTH_SHORT)
+          .show()
     }
   }
 
@@ -387,8 +388,10 @@ internal open class ExoBridge(
     }
   }
 
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
+  override fun onTracksChanged(
+    trackGroups: TrackGroupArray?,
+    trackSelections: TrackSelectionArray?
+  ) {
     if (trackGroups === lastSeenTrackGroupArray) return
     lastSeenTrackGroupArray = trackGroups
     val trackSelector = (playerProvider as? DefaultPlayerProvider)?.trackSelector

@@ -64,12 +64,16 @@ interface Playable {
 
   /// Playback controller
 
+  // Must be called by Playback
   fun prepare()
 
+  // Must be called by Playback
   fun play()
 
+  // Must be called by Playback
   fun pause()
 
+  // Must be called by Playback
   fun release()
 
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
@@ -82,24 +86,24 @@ interface Playable {
 
   // data class for copying convenience.
   data class Builder(
-      val kohii: Kohii,
-      val media: Media,
-      val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
-      val tag: Any? = null,
-      val prefetch: Boolean = false,
-      @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
-      val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
+    val kohii: Kohii,
+    val media: Media,
+    val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
+    val tag: Any? = null,
+    val prefetch: Boolean = false,
+    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
+    val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
   ) {
     // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.
     // If the builder has no valid tag (a.k.a tag is null), then always return new one.
     // TODO [20181021] Consider to make this to use the Factory mechanism?
     fun asPlayable(): Playable {
-      return (
+      return ((
           if (tag != null)
             kohii.mapTagToPlayable.getOrPut(tag) { ExoPlayable(kohii, media, this) }
           else
             ExoPlayable(kohii, media, this)
-          ).also { kohii.mapWeakPlayableToManager[it] = null }
+          ).also { kohii.mapWeakPlayableToManager[it] = null })
     }
   }
 }

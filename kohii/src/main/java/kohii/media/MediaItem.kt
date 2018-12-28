@@ -24,15 +24,15 @@ import kotlinx.android.parcel.Parcelize
  */
 @Parcelize
 open class MediaItem(
-    override val uri: Uri,
-    override val type: String? = null,
-    override val mediaDrm: MediaDrm? = null
+  override val uri: Uri,
+  override val type: String? = null,
+  override val mediaDrm: MediaDrm? = null
 ) : Media {
 
   constructor(
-      url: String,
-      type: String? = null,
-      mediaDrm: MediaDrm? = null
+    url: String,
+    type: String? = null,
+    mediaDrm: MediaDrm? = null
   ) : this(Uri.parse(url), type, mediaDrm)
 
   override fun equals(other: Any?): Boolean {
@@ -54,4 +54,9 @@ open class MediaItem(
     result = 31 * result + (mediaDrm?.hashCode() ?: 0)
     return result
   }
+
+  override fun toString(): String {
+    return "K::Media(uri=$uri, type=$type, mediaDrm=$mediaDrm)"
+  }
+
 }

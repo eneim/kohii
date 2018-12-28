@@ -42,8 +42,8 @@ import kohii.media.Media
  * @author eneim (2018/10/27).
  */
 class DefaultMediaSourceFactoryProvider(
-    private val upstreamFactory: DataSource.Factory,
-    private val mediaCache: Cache?
+  private val upstreamFactory: DataSource.Factory,
+  private val mediaCache: Cache?
 ) : MediaSourceFactoryProvider {
 
   private val dataSourceFactory: DataSource.Factory

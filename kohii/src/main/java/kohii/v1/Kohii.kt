@@ -19,7 +19,6 @@ package kohii.v1
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
-import android.app.Dialog
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -60,8 +59,8 @@ class Kohii(context: Context) {
 
   internal val app = context.applicationContext as Application
 
-  // Map between Context with the Manager that is hosted on it.
-  internal val mapWeakContextToManager = WeakHashMap<Context, Manager>()
+  // Map between Window with the Manager that is hosted on it.
+  internal val mapWeakWindowToManager = WeakHashMap<Window, Manager>()
 
   // Which Playable is managed by which Manager
   internal val mapWeakPlayableToManager = WeakHashMap<Playable, Manager?>()
@@ -76,40 +75,41 @@ class Kohii(context: Context) {
 
   init {
     app.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
-      override fun onActivityCreated(activity: Activity, state: Bundle?) {
-      }
+      override fun onActivityCreated(
+        activity: Activity,
+        state: Bundle?
+      ) = Unit
 
       override fun onActivityStarted(activity: Activity) {
-        mapWeakContextToManager[activity]?.onHostStarted()
+        mapWeakWindowToManager[activity.window]?.onHostStarted()
       }
 
-      override fun onActivityResumed(activity: Activity) {
-        // ignored
-      }
+      override fun onActivityResumed(activity: Activity) = Unit
 
-      override fun onActivityPaused(activity: Activity) {
-        // ignored
-      }
+      override fun onActivityPaused(activity: Activity) = Unit
 
       // Note [20181021]: (eneim) Considered to free unused resource here, due to the nature of onDestroy.
       // But this method is also called when User click to "Current Apps" thing, and releasing
       // stuff there is not good for UX.
       override fun onActivityStopped(activity: Activity) {
-        mapWeakContextToManager[activity]?.onHostStopped(activity.isChangingConfigurations)
+        mapWeakWindowToManager[activity.window]?.onHostStopped(activity.isChangingConfigurations)
       }
 
-      override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-      }
+      override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle
+      ) = Unit
 
       // Note [20180527]: (eneim) This method is called before DecorView is detached.
       // Note [20181021]: (eneim) I also try to clean up any unused Player instances here.
       // I acknowledge that onDestroy() can be ignored by System. But it is the case where the
       // whole process is also destroyed. So nothing on-memory will remain.
       override fun onActivityDestroyed(activity: Activity) {
-        mapWeakContextToManager.remove(activity)?.let {
-          it.onHostDestroyed()
-          it.onDetached() // Manager should not outlive Activity, any second.
-        }
+        mapWeakWindowToManager.remove(activity.window)
+            ?.let {
+              it.onHostDestroyed()
+              it.onDetached() // Manager should not outlive Activity, any second.
+            }
 
         // Debug only.
         if (BuildConfig.DEBUG) {
@@ -123,7 +123,7 @@ class Kohii(context: Context) {
         }
 
         // Activity is not being recreated, and there is no Manager available.
-        if (!activity.isChangingConfigurations && mapWeakContextToManager.isEmpty()) {
+        if (!activity.isChangingConfigurations && mapWeakWindowToManager.isEmpty()) {
           this@Kohii.cleanUp()
         }
       }
@@ -145,8 +145,8 @@ class Kohii(context: Context) {
     // MediaSourceFactoryProvider
     var tempDir = this.app.getExternalFilesDir(null)
     if (tempDir == null) tempDir = this.app.filesDir
-    val downloadDir = tempDir
-    val contentDir = File(downloadDir, DOWNLOAD_CONTENT_DIRECTORY)
+    val fileDir = tempDir
+    val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
     val mediaCache = SimpleCache(contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE))
     val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
     mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
@@ -154,19 +154,22 @@ class Kohii(context: Context) {
     bridgeProvider = DefaultBridgeProvider(playerProvider, mediaSourceFactoryProvider)
   }
 
-  internal class ManagerAttachStateListener(context: Context, val view: View) :
-      View.OnAttachStateChangeListener {
+  internal class ManagerAttachStateListener(
+    window: Window,
+    val view: View
+  ) : View.OnAttachStateChangeListener {
 
-    private val weakContext = WeakReference(context)
+    private val weakWindow = WeakReference(window)
 
     override fun onViewAttachedToWindow(v: View) {
-      kohii!!.mapWeakContextToManager[weakContext.get()]?.onAttached()
+      kohii!!.mapWeakWindowToManager[weakWindow.get()]?.onAttached()
     }
 
     // Will get called after Activity's onDestroy().
     override fun onViewDetachedFromWindow(v: View) {
       // The next line may not be called, we may already remove this in onActivityDestroyed.
-      kohii!!.mapWeakContextToManager.remove(weakContext.get())?.onDetached()
+      kohii!!.mapWeakWindowToManager.remove(weakWindow.get())
+          ?.onDetached()
       if (this.view === v) this.view.removeOnAttachStateChangeListener(this)
     }
   }
@@ -200,18 +203,16 @@ class Kohii(context: Context) {
       handler.removeMessages(EVENT_SCROLL)
       handler.sendEmptyMessageDelayed(EVENT_SCROLL, EVENT_DELAY)
     }
-
-    companion object {
-      private const val EVENT_SCROLL = 1
-      private const val EVENT_IDLE = 2
-      private const val EVENT_DELAY = (3 * 1000 / 60).toLong()  // 50 ms, 3 frames
-    }
   }
 
   companion object {
     private const val TAG = "Kohii:X"
-    private const val DOWNLOAD_CONTENT_DIRECTORY = "kohii_content"
+    private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
     private const val CACHE_SIZE = 32 * 1024 * 1024L // 32 Megabytes
+
+    private const val EVENT_SCROLL = 1
+    private const val EVENT_IDLE = 2
+    private const val EVENT_DELAY = (3 * 1000 / 60).toLong()  // 50 ms, 3 frames
 
     @Volatile
     private var kohii: Kohii? = null
@@ -221,9 +222,16 @@ class Kohii(context: Context) {
       kohii ?: Kohii(context).also { kohii = it }
     }
 
-    operator fun get(fragment: Fragment) = get(fragment.requireActivity())
+    operator fun get(fragment: Fragment) = get(fragment.requireActivity().window)
 
-    internal fun getUserAgent(context: Context, appName: String): String {
+    // Not many place we can have a Window, other than Activity and Dialog.
+    // In practice, client must call this from Dialog or Activity, so it will create a Manager in advance.
+    operator fun get(window: Window) = get(window.context).also { it.requireManager(window) }
+
+    internal fun getUserAgent(
+      context: Context,
+      appName: String
+    ): String {
       val versionName = try {
         val packageName = context.packageName
         val info = context.packageManager.getPackageInfo(packageName, 0)
@@ -238,56 +246,58 @@ class Kohii(context: Context) {
 
   //// instance methods
 
-  // TODO consider how to support Dialog (Dialog has different Window to Activity).
-  internal fun getManager(dialog: Dialog): Manager {
-    val window = dialog.window as Window
-    val decorView = window.peekDecorView() // peek to read, not create
-        ?: throw IllegalStateException("DecorView is null for ${window.context}")
-    return mapWeakContextToManager[window.context] ?: //
+  internal fun requireManager(window: Window): Manager {
+    // Peek to read, not to create new.
+    val decorView = requireNotNull(window.peekDecorView()) { "DecorView is null for $window" }
+    return mapWeakWindowToManager[window] ?: //
     Manager.Builder(this, decorView).build().also {
-      mapWeakContextToManager[window.context] = it
+      mapWeakWindowToManager[window] = it
       if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
-      decorView.addOnAttachStateChangeListener(
-          ManagerAttachStateListener(window.context, decorView))
+      decorView.addOnAttachStateChangeListener(ManagerAttachStateListener(window, decorView))
     }
   }
 
-  internal fun getManager(context: Context): Manager {
-    // TODO [20181027] Consider the case of Dialog (has different Window with the host Activity)
-    if (context !is Activity) {
-      throw RuntimeException("Expect Activity, got: " + context.javaClass.simpleName)
-    }
-
-    val decorView = context.window.peekDecorView()  // peek to read, not create
-        ?: throw IllegalStateException("DecorView is null for $context")
-    return mapWeakContextToManager[context] ?: //
-    Manager.Builder(this, decorView).build().also {
-      mapWeakContextToManager[context] = it
-      if (ViewCompat.isAttachedToWindow(decorView)) it.onAttached()
-      decorView.addOnAttachStateChangeListener(ManagerAttachStateListener(context, decorView))
-    }
+  // If called by Context, it must be Activity.
+  internal fun requireManager(context: Context): Manager {
+    return mapWeakWindowToManager.entries.firstOrNull { it.key.context === context }?.value // cache
+        ?: (requireManager( // no cache, now create new using context. will fail for non-Activity.
+            (context as? Activity)?.window ?: throw RuntimeException(
+                "Expect Activity, got: " + context.javaClass.simpleName
+            )
+        ))
   }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
   // Always get called after playable.release()
-  internal fun releasePlayable(tag: Any?, playable: Playable) {
+  internal fun releasePlayable(
+    tag: Any?,
+    playable: Playable
+  ) {
     tag?.run {
-      if (mapTagToPlayable.remove(tag) != playable) {
+      if (mapTagToPlayable.remove(tag) !== playable) {
         throw IllegalArgumentException("Illegal playable removal: $playable")
       }
     } ?: playable.release()
   }
 
   /** Called when a Manager becomes active to a Playback that it already manages. */
-  internal fun onManagerActiveForPlayback(manager: Manager, playback: Playback<*>) {
-    mapWeakPlayableToManager[playback.playable] = manager
-    // Check if the Playable is already bound to the Playback's target.
-    if (manager.mapWeakPlayableToTarget[playback.playable] == playback.target) {
-      manager.restorePlaybackInfo(playback)
+  internal fun onManagerActiveForPlayback(
+    manager: Manager,
+    playback: Playback<*>
+  ) {
+    if (mapWeakPlayableToManager[playback.playable] == null) {
+      mapWeakPlayableToManager[playback.playable] = manager
+      // Check if the Playable is already bound to the Playback's target.
+      /* if (manager.mapWeakPlayableToTarget[playback.playable] === playback.target) {
+        manager.tryRestorePlaybackInfo(playback)
+        // TODO [20180905] double check the usage of 'shouldPrepare()' here.
+        if (playback.token?.shouldPrepare() == true) playback.prepare()
+      } */
+      manager.tryRestorePlaybackInfo(playback)
       // TODO [20180905] double check the usage of 'shouldPrepare()' here.
       if (playback.token?.shouldPrepare() == true) playback.prepare()
+      /* if (manager.mapAttachedPlaybackToTime[playback] != null) <-- always true */ playback.onActive()
     }
-    /* if (manager.mapAttachedPlaybackToTime[playback] != null) <-- always true */ playback.onActive()
   }
 
   /**
@@ -299,33 +309,33 @@ class Kohii(context: Context) {
    * @param configChange If true, the Activity is being recreated by a config change, false otherwise.
    */
   internal fun onManagerInActiveForPlayback(
-      manager: Manager,
-      playback: Playback<*>,
-      configChange: Boolean
+    manager: Manager,
+    playback: Playback<*>,
+    configChange: Boolean
   ) {
     val playable = playback.playable
     // Only pause this playback if [1] config change is happening and [2] the playable is managed
     // by this manager, or by no-one else.
     // FYI: The Playable instances holds the actual playback resource. It is not managed by anything
     // else when the Activity is destroyed and to be recreated (config change).
-    if (mapWeakPlayableToManager[playable] == manager || mapWeakPlayableToManager[playable] == null) {
+    if (mapWeakPlayableToManager[playable] === manager || mapWeakPlayableToManager[playable] == null) {
       if (!configChange) {
         playback.pause()
-        manager.savePlaybackInfo(playback)
+        manager.trySavePlaybackInfo(playback)
       }
     }
     /* if (manager.mapAttachedPlaybackToTime[playback] != null) <-- always true */ playback.onInActive()
     // There is no recreation. If the manager is managing the playable, unload the Playable.
     if (!configChange) {
-      if (mapWeakPlayableToManager[playable] == manager) mapWeakPlayableToManager[playable] = null
+      if (mapWeakPlayableToManager[playable] === manager) mapWeakPlayableToManager[playable] = null
     }
   }
 
   // Gat called when Kohii should free all resources.
-  // FIXME [20180805] Now, this is called when activity destroy is detected, and there is no further
-  // Manager to be alive. In the future, we may consider to have non-Activity Manager.
+  // FIXME [20180805] Now, this is called when activity destroy is detected, and there is no
+  // Manager be alive. In the future, we may consider to have non-Activity Manager.
   internal fun cleanUp() {
-    (playerProvider as DefaultPlayerProvider).cleanUp()
+    playerProvider.cleanUp()
   }
 
   //// [BEGIN] Public API

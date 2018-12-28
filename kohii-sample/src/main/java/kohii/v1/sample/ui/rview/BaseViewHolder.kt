@@ -16,16 +16,19 @@
 
 package kohii.v1.sample.ui.rview
 
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 /**
  * @author eneim (2018/07/06).
  */
-abstract class BaseViewHolder(inflater: LayoutInflater, layoutRes: Int,
-    parent: ViewGroup) : ViewHolder(
+abstract class BaseViewHolder(
+  inflater: LayoutInflater,
+  layoutRes: Int,
+  parent: ViewGroup
+) : ViewHolder(
     inflater.inflate(layoutRes, parent, false)
 ) {
 
@@ -36,15 +39,21 @@ abstract class BaseViewHolder(inflater: LayoutInflater, layoutRes: Int,
   interface OnClickListener {
 
     fun onItemClick(
-        itemView: View,   // The main View receives the click
-        transView: View?, // The view to use in SharedElement Transition.
-        adapterPos: Int,  // The adapter position.
-        payload: Any      // Payload, for Video it is the tag (String), used as Transition name.
+      itemView: View,   // The main View receives the click
+      transView: View?, // The view to use in SharedElement Transition.
+      adapterPos: Int,  // The adapter position.
+      payload: Any      // Payload, for Video it is the tag (String), used as Transition name.
     )
 
-    fun onItemLoaded(itemView: View, adapterPos: Int)
+    fun onItemLoaded(
+      itemView: View,
+      adapterPos: Int
+    )
 
-    fun onItemLoadFailed(adapterPos: Int, error: Exception)
+    fun onItemLoadFailed(
+      adapterPos: Int,
+      error: Exception
+    )
   }
 
   override fun toString(): String {

@@ -24,8 +24,8 @@ import kohii.v1.Playable
  * @author eneim (2018/10/28).
  */
 class DefaultBridgeProvider(
-    private val playerProvider: PlayerProvider,
-    private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
+  private val playerProvider: PlayerProvider,
+  private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
 ) : BridgeProvider {
 
   override fun provideBridge(builder: Playable.Builder): Bridge {

@@ -34,18 +34,24 @@ import kohii.v1.sample.R
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
-    inflater: LayoutInflater,
-    parent: ViewGroup,
-    val listener: OnClickListener
+  inflater: LayoutInflater,
+  parent: ViewGroup,
+  val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
-    View.OnClickListener, PlaybackEventListener, Playback.Callback<PlayerView> {
+    View.OnClickListener, PlaybackEventListener, Playback.Callback {
 
-  override fun onActive(playback: Playback<PlayerView>, target: PlayerView?) {
+  override fun onActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
     listener.onItemLoaded(itemView, adapterPosition)
     ViewCompat.setTransitionName(transView, itemTag)
   }
 
-  override fun onInActive(playback: Playback<PlayerView>, target: PlayerView?) {
+  override fun onInActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
     ViewCompat.setTransitionName(transView, null)
   }
 
@@ -79,7 +85,7 @@ class VideoViewHolder(
   override fun bind(item: Item?) {
     itemView.setOnClickListener(this)
     if (item != null) {
-      itemTag = item.content + "@" + adapterPosition
+      itemTag = "${item.content}@$adapterPosition"
 
       playerContainer.setAspectRatio(item.width / item.height.toFloat())
       val playable = Kohii[itemView.context]
@@ -87,10 +93,11 @@ class VideoViewHolder(
           .copy(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
           .asPlayable()
 
-      playback = playable.bind(playerView).also {
-        it.addPlaybackEventListener(this@VideoViewHolder)
-        it.addCallback(this@VideoViewHolder)
-      }
+      playback = playable.bind(playerView)
+          .also {
+            it.addPlaybackEventListener(this@VideoViewHolder)
+            it.addCallback(this@VideoViewHolder)
+          }
     }
   }
 

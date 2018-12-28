@@ -25,7 +25,7 @@ import kohii.v1.sample.R
  * @author eneim (2018/07/06).
  */
 class ItemsAdapter( //
-    private val items: List<Item> //
+  private val items: List<Item> //
 ) : Adapter<BaseViewHolder>() {
 
   private var inflater: LayoutInflater? = null
@@ -34,7 +34,10 @@ class ItemsAdapter( //
     setHasStableIds(true)
   }
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+  override fun onCreateViewHolder(
+    parent: ViewGroup,
+    viewType: Int
+  ): BaseViewHolder {
     if (inflater == null || inflater!!.context != parent.context) {
       inflater = LayoutInflater.from(parent.context)
     }
@@ -49,14 +52,18 @@ class ItemsAdapter( //
 
   override fun getItemId(position: Int): Long {
     val item = items[position]
-    return item.hashCode().toLong()
+    return item.hashCode()
+        .toLong()
   }
 
   override fun getItemViewType(position: Int): Int {
     return R.layout.holder_mix_view
   }
 
-  override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+  override fun onBindViewHolder(
+    holder: BaseViewHolder,
+    position: Int
+  ) {
     holder.bind(items[position % items.size])
   }
 

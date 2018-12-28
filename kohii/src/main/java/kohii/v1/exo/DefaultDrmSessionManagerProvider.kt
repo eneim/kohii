@@ -35,13 +35,12 @@ import kohii.media.Media
 import kohii.v1.R
 import java.util.UUID
 
-
 /**
  * @author eneim (2018/10/27).
  */
 class DefaultDrmSessionManagerProvider(
-    private val context: Context,
-    private val httpDataSourceFactory: HttpDataSource.Factory
+  private val context: Context,
+  private val httpDataSourceFactory: HttpDataSource.Factory
 ) : DrmSessionManagerProvider {
 
   override fun provideDrmSessionManager(media: Media): DrmSessionManager<FrameworkMediaCrypto>? {
@@ -57,8 +56,10 @@ class DefaultDrmSessionManagerProvider(
         errorStringId = R.string.error_drm_unsupported_scheme
       } else {
         try {
-          drmSessionManager = buildDrmSessionManagerV18(drmSchemeUuid, mediaDrm.licenseUrl,
-              mediaDrm.keyRequestPropertiesArray, mediaDrm.multiSession, httpDataSourceFactory)
+          drmSessionManager = buildDrmSessionManagerV18(
+              drmSchemeUuid, mediaDrm.licenseUrl,
+              mediaDrm.keyRequestPropertiesArray, mediaDrm.multiSession, httpDataSourceFactory
+          )
         } catch (e: UnsupportedDrmException) {
           e.printStackTrace()
           errorStringId =
@@ -75,9 +76,10 @@ class DefaultDrmSessionManagerProvider(
 
     if (drmSessionManager == null) {
       val error =
-          if (TextUtils.isEmpty(subString)) context.getString(errorStringId)
-          else context.getString(errorStringId) + ": " + subString
-      Toast.makeText(context, error, LENGTH_SHORT).show()
+        if (TextUtils.isEmpty(subString)) context.getString(errorStringId)
+        else "${context.getString(errorStringId)}: $subString"
+      Toast.makeText(context, error, LENGTH_SHORT)
+          .show()
     }
 
     return drmSessionManager
@@ -86,11 +88,11 @@ class DefaultDrmSessionManagerProvider(
   @RequiresApi(18) //
   @Throws(UnsupportedDrmException::class)
   private fun buildDrmSessionManagerV18(
-      uuid: UUID,
-      licenseUrl: String?,
-      keyRequestProperties: Array<String>?,
-      multiSession: Boolean,
-      httpDataSourceFactory: HttpDataSource.Factory
+    uuid: UUID,
+    licenseUrl: String?,
+    keyRequestProperties: Array<String>?,
+    multiSession: Boolean,
+    httpDataSourceFactory: HttpDataSource.Factory
   ): DrmSessionManager<FrameworkMediaCrypto> {
     val drmCallback = HttpMediaDrmCallback(licenseUrl, httpDataSourceFactory)
     if (keyRequestProperties != null) {

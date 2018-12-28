@@ -39,13 +39,13 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author eneim (2018/06/25).
  */
 open class KohiiPlayer(
-    context: Context,
-    renderersFactory: RenderersFactory,
-    trackSelector: TrackSelector,
-    loadControl: LoadControl,
-    bandwidthMeter: BandwidthMeter,
-    drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?,
-    looper: Looper
+  context: Context,
+  renderersFactory: RenderersFactory,
+  trackSelector: TrackSelector,
+  loadControl: LoadControl,
+  bandwidthMeter: BandwidthMeter,
+  drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?,
+  looper: Looper
 ) : SimpleExoPlayer( //
     context,
     renderersFactory,

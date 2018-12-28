@@ -37,18 +37,24 @@ import kohii.v1.sample.R
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
-    inflater: LayoutInflater,
-    parent: ViewGroup
+  inflater: LayoutInflater,
+  parent: ViewGroup
 ) : BaseViewHolder(
     inflater,
     R.layout.holder_mix_view,
     parent
-), PlaybackEventListener, Playback.Callback<PlayerView> {
+), PlaybackEventListener, Playback.Callback {
 
-  override fun onActive(playback: Playback<PlayerView>, target: PlayerView?) {
+  override fun onActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
   }
 
-  override fun onInActive(playback: Playback<PlayerView>, target: PlayerView?) {
+  override fun onInActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
   }
 
   override fun onFirstFrameRendered() {
@@ -108,10 +114,11 @@ class VideoViewHolder(
           )
           .asPlayable()
 
-      playback = playable.bind(playerView).also {
-        it.addPlaybackEventListener(this@VideoViewHolder)
-        it.addCallback(this@VideoViewHolder)
-      }
+      playback = playable.bind(playerView)
+          .also {
+            it.addPlaybackEventListener(this@VideoViewHolder)
+            it.addCallback(this@VideoViewHolder)
+          }
     }
   }
 

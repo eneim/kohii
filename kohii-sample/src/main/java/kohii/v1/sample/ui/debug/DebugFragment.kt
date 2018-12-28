@@ -60,12 +60,18 @@ class DebugFragment : BaseFragment() {
         .asPlayable()
   }
 
-  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-      savedInstanceState: Bundle?): View {
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View {
     return inflater.inflate(R.layout.fragment_debug, container, false)
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
     super.onViewCreated(view, savedInstanceState)
     playable.bind(playerView)
 
@@ -74,10 +80,14 @@ class DebugFragment : BaseFragment() {
 
     // Click to open activity
     playerContainer.setOnClickListener {
-      startActivity(PlayerActivity.createIntent(requireContext(), InitData(
-          tag = videoUrl,
-          aspectRatio = 1920 / 1080.toFloat()
-      )))
+      startActivity(
+          PlayerActivity.createIntent(
+              requireContext(), InitData(
+              tag = videoUrl,
+              aspectRatio = 1920 / 1080.toFloat()
+          )
+          )
+      )
     }
 
     // Debug some certain functions.
@@ -87,8 +97,10 @@ class DebugFragment : BaseFragment() {
     // Open the demo for RecyclerView.
     openRecyclerView.setOnClickListener {
       fragmentManager!!.beginTransaction()
-          .replace(R.id.fragmentContainer, RecyclerViewFragment.newInstance(),
-              RecyclerViewFragment::class.java.simpleName)
+          .replace(
+              R.id.fragmentContainer, RecyclerViewFragment.newInstance(),
+              RecyclerViewFragment::class.java.simpleName
+          )
           .addToBackStack(null)
           .commit()
     }
@@ -96,8 +108,10 @@ class DebugFragment : BaseFragment() {
     // Open the demo for simple ScrollView.
     openScrollView1.setOnClickListener {
       fragmentManager!!.beginTransaction()
-          .replace(R.id.fragmentContainer, ScrollViewFragment.newInstance(),
-              ScrollViewFragment::class.java.simpleName)
+          .replace(
+              R.id.fragmentContainer, ScrollViewFragment.newInstance(),
+              ScrollViewFragment::class.java.simpleName
+          )
           .addToBackStack(null)
           .commit()
     }
@@ -105,8 +119,10 @@ class DebugFragment : BaseFragment() {
     // Open the demo for a more complicated ScrollView.
     openScrollView2.setOnClickListener {
       fragmentManager!!.beginTransaction()
-          .replace(R.id.fragmentContainer, MotionFragment.newInstance(),
-              MotionFragment::class.java.simpleName)
+          .replace(
+              R.id.fragmentContainer, MotionFragment.newInstance(),
+              MotionFragment::class.java.simpleName
+          )
           .addToBackStack(null)
           .commit()
     }
