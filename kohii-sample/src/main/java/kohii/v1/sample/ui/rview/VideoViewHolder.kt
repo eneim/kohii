@@ -45,14 +45,12 @@ class VideoViewHolder(
     target: Any?
   ) {
     listener.onItemLoaded(itemView, adapterPosition)
-    ViewCompat.setTransitionName(transView, itemTag)
   }
 
   override fun onInActive(
     playback: Playback<*>,
     target: Any?
   ) {
-    ViewCompat.setTransitionName(transView, null)
   }
 
   override fun onFirstFrameRendered() {
@@ -98,6 +96,8 @@ class VideoViewHolder(
             it.addPlaybackEventListener(this@VideoViewHolder)
             it.addCallback(this@VideoViewHolder)
           }
+
+      ViewCompat.setTransitionName(transView, itemTag)
     }
   }
 

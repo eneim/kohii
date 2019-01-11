@@ -72,6 +72,7 @@ interface ErrorListener {
 }
 
 class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerEventListener {
+
   override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
     this.forEach { it.onPlaybackParametersChanged(playbackParameters) }
   }

@@ -34,15 +34,28 @@ import kohii.v1.PlaybackEventListener
 import kohii.v1.PlayerEventListener
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.ui.player.PlayerDialogFragment
 import kohii.v1.sample.ui.player.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
-class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListener {
+class ScrollViewFragment : BaseFragment(),
+    Playback.Callback,
+    PlaybackEventListener,
+    PlayerDialogFragment.Callback {
 
   companion object {
-    const val videoUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
-    fun newInstance() = ScrollViewFragment()
+    const val pageTagKey = "kohii:demo:page:tag"
+    const val videoUrl =
+      "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+
+    fun newInstance() = ScrollViewFragment().also {
+      it.arguments = Bundle()
+    }
+
+    fun newInstance(tag: String) = newInstance().also {
+      it.arguments?.putString(pageTagKey, tag)
+    }
   }
 
   private var playback: Playback<PlayerView>? = null
@@ -75,9 +88,10 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
 
     playback = Kohii[this].setUp(videoUrl)
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
-        .copy(tag = videoUrl)
+        .copy(tag = this.arguments?.get(pageTagKey) ?: videoUrl)
         .asPlayable()
         .bind(playerView)
+        .also { it.observe(viewLifecycleOwner) }
 
     val transView: View = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView, videoUrl)
@@ -102,6 +116,11 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
             .addToBackStack(null)
             .commit()
       }
+
+      /* playerContainer.setOnClickListener {
+        PlayerDialogFragment.newInstance(videoUrl)
+            .show(childFragmentManager, videoUrl)
+      } */
     }
   }
 
@@ -190,4 +209,12 @@ class ScrollViewFragment : BaseFragment(), Playback.Callback, PlaybackEventListe
   }
 
   // END: Playback.Callback
+
+  override fun onDialogActive(tag: Any) {
+  }
+
+  override fun onDialogInActive(tag: Any) {
+    Kohii[this].findPlayable(tag)
+        ?.bind(playerView)
+  }
 }

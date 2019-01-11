@@ -64,7 +64,7 @@ class PlayerActivity : BaseActivity() {
         playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       }
 
-      Kohii[this].findPlayable(it.tag)?.bind(playerView = this.playerView) ?: finish()
+      Kohii[this].findPlayable(it.tag)?.bind(target = this.playerView) ?: finish()
     } ?: finish()
   }
 }

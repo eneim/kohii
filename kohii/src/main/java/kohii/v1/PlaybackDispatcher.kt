@@ -47,7 +47,7 @@ class PlaybackDispatcher : Handler.Callback {
 
   internal fun play(playback: Playback<*>) {
     handler?.let {
-      val delay = playback.delayer.getInitDelay()
+      val delay = playback.delay.invoke()
       it.removeMessages(MSG_PLAY, playback)
       when {
         delay <= Playback.DELAY_INFINITE -> {
