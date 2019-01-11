@@ -51,6 +51,12 @@ interface Playable {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
     const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
     const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
+
+    const val STATE_IDLE = Player.STATE_IDLE
+    const val STATE_BUFFERING = Player.STATE_BUFFERING
+    const val STATE_READY = Player.STATE_READY
+    const val STATE_END = Player.STATE_ENDED
+
     internal val NO_TAG = Any()
   }
 
@@ -58,9 +64,13 @@ interface Playable {
   @IntDef(REPEAT_MODE_OFF, REPEAT_MODE_ONE, REPEAT_MODE_ALL)
   annotation class RepeatMode
 
+  @Retention(SOURCE)
+  @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)
+  annotation class State
+
   val tag: Any
 
-  fun bind(playerView: PlayerView): Playback<PlayerView>
+  fun bind(target: PlayerView): Playback<PlayerView>
 
   /// Playback controller
 
@@ -91,7 +101,7 @@ interface Playable {
     val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
     val tag: Any? = null,
     val prefetch: Boolean = false,
-    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
+    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF, // FIXME 190104 should be Playback's option?
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
   ) {
     // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.

@@ -18,9 +18,11 @@ package kohii.v1.sample
 
 import android.os.Bundle
 import kohii.v1.sample.common.BaseActivity
+import kohii.v1.sample.ui.pager.PagerMainFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
+import kohii.v1.sample.ui.sview.ScrollViewFragment
 
 class MainActivity : BaseActivity(), PlayerInfoHolder {
 
@@ -39,7 +41,7 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
       supportFragmentManager.beginTransaction()
           .replace(
               R.id.fragmentContainer,
-              RecyclerViewFragment.newInstance(), RecyclerViewFragment::class.java.simpleName
+              PagerMainFragment.newInstance(), RecyclerViewFragment::class.java.simpleName
           )
           .commit()
     }

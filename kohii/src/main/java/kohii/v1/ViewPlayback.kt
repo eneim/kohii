@@ -34,13 +34,13 @@ open class ViewPlayback<V : View>(
   playable: Playable,
   manager: Manager,
   target: V?,
-  delayer: Delayer = Playback.NO_DELAY
+  delay: () -> Long = Playback.NO_DELAY
 ) : Playback<V>(
     kohii,
     playable,
     manager,
     target,
-    delayer
+    delay
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   // For debugging purpose only.
@@ -114,11 +114,11 @@ open class ViewPlayback<V : View>(
     if (this.targetAttached.compareAndSet(false, true)) {
       super.target?.also {
         // Find a ancestor of target whose parent is a CoordinatorLayout, or null.
-        val corChild = findSuitableParent(manager.decorView, it)
+        // TODO [20180620] deal with CoordinatorLayout.
+        /* val corChild = findSuitableParent(manager.decorView, it)
         val params = corChild?.layoutParams
         if (params is CoordinatorLayout.LayoutParams) {
-          // TODO [20180620] deal with CoordinatorLayout.
-        }
+        } */
 
         manager.onTargetActive(it)
         it.addOnLayoutChangeListener(this)
@@ -155,7 +155,8 @@ open class ViewPlayback<V : View>(
   data class ViewToken internal constructor(
     internal val managerRect: Rect,
     internal val viewRect: Rect,
-    internal val areaOffset: Float
+    internal val areaOffset: Float,
+    internal val canRelease: Boolean = true
   ) : Token() {
     override fun compareTo(other: Token): Int {
       // TODO [20180813] may need better comparison regarding the orientations.
@@ -164,6 +165,10 @@ open class ViewPlayback<V : View>(
 
     override fun shouldPlay(): Boolean {
       return areaOffset >= 0.75f  // TODO [20180714] make this configurable
+    }
+
+    override fun shouldRelease(): Boolean {
+      return canRelease
     }
   }
 

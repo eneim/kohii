@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class Manager internal constructor(
   val kohii: Kohii,
+  @Suppress("MemberVisibilityCanBePrivate")
   val decorView: View,
   private val playerSelector: PlayerSelector = Manager.DEFAULT_SELECTOR
 ) {
@@ -62,9 +63,6 @@ class Manager internal constructor(
 
   internal val viewRect: Rect by lazy { Rect().also { this.decorView.getLocalVisibleRect(it) } }
 
-  // FIXME [20181226] No need to use this, but need some UAT test to confirm.
-  // internal val mapWeakPlayableToTarget = WeakHashMap<Playable, Any /* Target */>()
-
   private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
   private val mapDetachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
 
@@ -91,7 +89,7 @@ class Manager internal constructor(
     lifecycle events will be executed:
     A0@onPause() --> A1@onCreate() --> A1@onStart() --> A1@onPostCreate() --> A1@onResume() -->
     A1@onPostResume() --> A0@onStop() --> A0@onSaveInstanceState().
-    Therefore, handling Manager activeness of Playable requires some order handling.
+    Therefore, handling Manager activeness of Playable should take into account the order.
    */
   internal fun onHostStarted() {
     mapAttachedPlaybackToTime.forEach {
@@ -118,15 +116,6 @@ class Manager internal constructor(
         }
       }
     }).clear()
-
-    // FIXME [20181226] Try the code above, If it is wrong, change to code below.
-    /* (mapWeakPlayableToTarget.apply {
-      this.entries.forEach {
-        if (kohii.mapWeakPlayableToManager[it.key] === this@Manager) {
-          kohii.mapWeakPlayableToManager[it.key] = null
-        }
-      }
-    }).clear() */
   }
 
   // Get called when the DecorView is attached to Window
@@ -177,6 +166,8 @@ class Manager internal constructor(
     this.scrolling.set(scrolling)
   }
 
+  internal fun findPlaybackForTarget(target: Any?) = this.mapTargetToPlayback[target]
+
   internal fun dispatchRefreshAll() {
     dispatcher?.dispatchRefreshAll()
   }
@@ -191,7 +182,7 @@ class Manager internal constructor(
         // this.prepare() ⬇
         if (it.token?.shouldPrepare() == true) it.prepare()
       } */
-      tryRestorePlaybackInfo(it)
+      tryRestorePlaybackInfo(it) // FIXME Note: only do this for proper target. https://is.gd/CLHXK4
       // this.prepare() ⬇
       if (it.token?.shouldPrepare() == true) it.prepare()
       it.onActive()
@@ -203,16 +194,16 @@ class Manager internal constructor(
   fun onTargetInActive(target: Any) {
     mapTargetToPlayback[target]?.let {
       mapDetachedPlaybackToTime[it] = System.nanoTime()
-      val toInActive = mapAttachedPlaybackToTime.remove(it) != null
-      it.pause()
+      // Playback#onInActive() will also update the Playback -- Playable relationship.
+      mapAttachedPlaybackToTime.remove(it)
+          ?.run { it.onInActive() } // must call before this@Manager.dispatchRefreshAll()
       this@Manager.dispatchRefreshAll()
-      if (toInActive) it.onInActive()
-      /* if (this@Manager.mapWeakPlayableToTarget[it.playable] === it.target) {
-        trySavePlaybackInfo(it)
+      if (kohii.mapWeakPlayableToManager[it.playable] === this) {
+        // Only release if this Manager manages the Playable.
+        it.pause()
+        trySavePlaybackInfo(it) // FIXME Note: only do this for proper target. https://is.gd/CLHXK4
         it.release()
-      } */
-      trySavePlaybackInfo(it)
-      it.release()
+      }
     }
   }
 

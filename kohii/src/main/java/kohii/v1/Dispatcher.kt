@@ -66,7 +66,7 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
   }
 
   companion object {
-    private const val MSG_DELAY = (5 * 1000 / 60).toLong()  // 5 frames
+    private const val MSG_DELAY = (3 * 1000 / 60).toLong()  // 3 frames
 
     private const val MSG_REFRESH = 1
     private const val MSG_TARGET_INACTIVE = 2

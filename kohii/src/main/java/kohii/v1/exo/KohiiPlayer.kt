@@ -65,8 +65,10 @@ open class KohiiPlayer(
   }
 
   private val volumeChangedListeners by lazy { CopyOnWriteArraySet<VolumeChangedListener>() }
+  private val _volumeInfo = VolumeInfo(false, 1.0F) // backing field.
 
-  override val volumeInfo = VolumeInfo(false, 1f)
+  override val volumeInfo
+    get() = VolumeInfo(_volumeInfo)
 
   @CallSuper
   override fun setVolume(audioVolume: Float) {
@@ -74,9 +76,9 @@ open class KohiiPlayer(
   }
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    val changed = this.volumeInfo !== volumeInfo // Compare equality
+    val changed = this._volumeInfo != volumeInfo // Compare equality, not reference.
     if (changed) {
-      this.volumeInfo.setTo(volumeInfo.mute, volumeInfo.volume)
+      this._volumeInfo.setTo(volumeInfo.mute, volumeInfo.volume)
       super.setVolume(if (volumeInfo.mute) 0F else volumeInfo.volume)
       this.volumeChangedListeners.forEach { it.onVolumeChanged(volumeInfo) }
     }

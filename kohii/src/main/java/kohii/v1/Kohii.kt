@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
+import android.content.ContextWrapper
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -78,7 +79,10 @@ class Kohii(context: Context) {
       override fun onActivityCreated(
         activity: Activity,
         state: Bundle?
-      ) = Unit
+      ) {
+        // On recreation, we actively create and cache a Manager to prevent bad things to Playables.
+        if (state != null) requireManager(activity.window)
+      }
 
       override fun onActivityStarted(activity: Activity) {
         mapWeakWindowToManager[activity.window]?.onHostStarted()
@@ -174,33 +178,36 @@ class Kohii(context: Context) {
     }
   }
 
-  // TODO [20181022] Is it safe to use this class for Activity's lifetime?
   internal class GlobalScrollChangeListener(val manager: Manager) : OnScrollChangedListener {
 
     private val scrollConsumed = AtomicBoolean(false)
-    val managerRef = WeakReference(manager)
+    val weakManager = WeakReference(manager)
 
     private val handler: Handler = object : Handler(Looper.getMainLooper()) {
       override fun handleMessage(msg: Message) {
-        val manager = managerRef.get() ?: return
+        val manager = weakManager.get() ?: return
         when (msg.what) {
           EVENT_SCROLL -> {
             manager.setScrolling(true)
-            manager.dispatchRefreshAll()
+            // manager.dispatchRefreshAll()
             this.sendEmptyMessageDelayed(EVENT_IDLE, EVENT_DELAY)
           }
           EVENT_IDLE -> {
             manager.setScrolling(false)
-            manager.dispatchRefreshAll()
+            // manager.dispatchRefreshAll()
           }
+        }
+
+        // TODO double check this behavior.
+        if (!scrollConsumed.getAndSet(true)) {
+          manager.dispatchRefreshAll()
         }
       }
     }
 
     override fun onScrollChanged() {
       scrollConsumed.set(false)
-      handler.removeMessages(EVENT_IDLE)
-      handler.removeMessages(EVENT_SCROLL)
+      handler.removeCallbacksAndMessages(null)
       handler.sendEmptyMessageDelayed(EVENT_SCROLL, EVENT_DELAY)
     }
   }
@@ -212,7 +219,7 @@ class Kohii(context: Context) {
 
     private const val EVENT_SCROLL = 1
     private const val EVENT_IDLE = 2
-    private const val EVENT_DELAY = (3 * 1000 / 60).toLong()  // 50 ms, 3 frames
+    private const val EVENT_DELAY = (1 * 1000 / 60).toLong()  // 1 frames
 
     @Volatile
     private var kohii: Kohii? = null
@@ -228,6 +235,7 @@ class Kohii(context: Context) {
     // In practice, client must call this from Dialog or Activity, so it will create a Manager in advance.
     operator fun get(window: Window) = get(window.context).also { it.requireManager(window) }
 
+    // ExoPlayer's doesn't catch a RuntimeException and crash if Device has too many App installed.
     internal fun getUserAgent(
       context: Context,
       appName: String
@@ -241,6 +249,23 @@ class Kohii(context: Context) {
       }
 
       return "$appName/$versionName (Linux;Android ${Build.VERSION.RELEASE}) $VERSION_SLASHY"
+    }
+
+    internal fun checkContext(
+      first: ContextWrapper,
+      second: ContextWrapper
+    ): Boolean {
+      val firstApp = first.applicationContext
+      val secondApp = second.applicationContext
+      if (firstApp !== secondApp) return false
+
+      var temp = first as ContextWrapper?
+      while (temp != null && temp !== firstApp) {
+        if (temp.baseContext === second) return true
+        temp = temp.baseContext as? ContextWrapper
+      }
+
+      return false
     }
   }
 
@@ -280,32 +305,31 @@ class Kohii(context: Context) {
     } ?: playable.release()
   }
 
-  /** Called when a Manager becomes active to a Playback that it already manages. */
+  /**
+   * Called when a Manager becomes active to a Playback that it already manages.
+   *
+   * @param manager The [Manager] whose Activity is stopped.
+   * @param playback The [Playback] that is managed by the manager, and in 'attached' playback cache.
+   */
   internal fun onManagerActiveForPlayback(
     manager: Manager,
     playback: Playback<*>
   ) {
     if (mapWeakPlayableToManager[playback.playable] == null) {
       mapWeakPlayableToManager[playback.playable] = manager
-      // Check if the Playable is already bound to the Playback's target.
-      /* if (manager.mapWeakPlayableToTarget[playback.playable] === playback.target) {
-        manager.tryRestorePlaybackInfo(playback)
-        // TODO [20180905] double check the usage of 'shouldPrepare()' here.
-        if (playback.token?.shouldPrepare() == true) playback.prepare()
-      } */
       manager.tryRestorePlaybackInfo(playback)
       // TODO [20180905] double check the usage of 'shouldPrepare()' here.
       if (playback.token?.shouldPrepare() == true) playback.prepare()
-      /* if (manager.mapAttachedPlaybackToTime[playback] != null) <-- always true */ playback.onActive()
+      playback.onActive()
     }
   }
 
   /**
    * Called when the Activity mapped to a Manager is stopped. When called, a [Playback]'s target is
-   * considered 'unavailable' even if it is not detached yet (in case the target is a [View])
+   * considered 'inactive' even if it is not detached yet (in case the target is a [View])
    *
    * @param manager The [Manager] whose Activity is stopped.
-   * @param playback The [Playback] that is managed by the manager.
+   * @param playback The [Playback] that is managed by the manager, and in 'attached' playback cache.
    * @param configChange If true, the Activity is being recreated by a config change, false otherwise.
    */
   internal fun onManagerInActiveForPlayback(
@@ -314,17 +338,18 @@ class Kohii(context: Context) {
     configChange: Boolean
   ) {
     val playable = playback.playable
-    // Only pause this playback if [1] config change is happening and [2] the playable is managed
-    // by this manager, or by no-one else.
+    // Only pause this playback if
+    // - [1] config change is not happening and
+    // - [2] the playable is managed by this manager, or by no-one.
     // FYI: The Playable instances holds the actual playback resource. It is not managed by anything
     // else when the Activity is destroyed and to be recreated (config change).
-    if (mapWeakPlayableToManager[playable] === manager || mapWeakPlayableToManager[playable] == null) {
-      if (!configChange) {
+    if (!configChange) {
+      if (mapWeakPlayableToManager[playable] === manager) {
         playback.pause()
         manager.trySavePlaybackInfo(playback)
       }
     }
-    /* if (manager.mapAttachedPlaybackToTime[playback] != null) <-- always true */ playback.onInActive()
+    playback.onInActive()
     // There is no recreation. If the manager is managing the playable, unload the Playable.
     if (!configChange) {
       if (mapWeakPlayableToManager[playable] === manager) mapWeakPlayableToManager[playable] = null
@@ -333,7 +358,7 @@ class Kohii(context: Context) {
 
   // Gat called when Kohii should free all resources.
   // FIXME [20180805] Now, this is called when activity destroy is detected, and there is no
-  // Manager be alive. In the future, we may consider to have non-Activity Manager.
+  // Manager be alive. In the future, we may consider to have non-UI Manager.
   internal fun cleanUp() {
     playerProvider.cleanUp()
   }

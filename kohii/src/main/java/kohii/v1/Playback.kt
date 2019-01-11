@@ -18,11 +18,18 @@ package kohii.v1
 
 import android.os.Handler
 import androidx.annotation.CallSuper
-import androidx.annotation.IntDef
-import com.google.android.exoplayer2.Player
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
+import kohii.v1.Playable.Companion.STATE_BUFFERING
+import kohii.v1.Playable.Companion.STATE_END
+import kohii.v1.Playable.Companion.STATE_IDLE
+import kohii.v1.Playable.Companion.STATE_READY
+import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
-import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
  * Instance of this class will be tight to a Target. And that target is not reusable, so instance
@@ -36,20 +43,12 @@ abstract class Playback<T> internal constructor(
   internal val playable: Playable,
   internal val manager: Manager,
   internal val target: T?,
-  internal val delayer: Delayer = NO_DELAY
-) {
+  internal val delay: () -> Long = NO_DELAY
+) : LifecycleObserver {
 
   companion object {
-    const val STATE_IDLE = Player.STATE_IDLE
-    const val STATE_BUFFERING = Player.STATE_BUFFERING
-    const val STATE_READY = Player.STATE_READY
-    const val STATE_END = Player.STATE_ENDED
-
     const val DELAY_INFINITE = -1L
-
-    val NO_DELAY = object : Delayer {
-      override fun getInitDelay() = 0L
-    }
+    val NO_DELAY = { 0L }
   }
 
   open class Token : Comparable<Token> {
@@ -75,15 +74,12 @@ abstract class Playback<T> internal constructor(
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
   private val callbacks = CopyOnWriteArraySet<Callback>()
 
+  internal var lifecycle: Lifecycle? = null
   internal var internalCallback: InternalCallback? = null
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound and released.
   internal open val token: Token?
     get() = null
-
-  @Retention(SOURCE)  //
-  @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)  //
-  annotation class State
 
   // [BEGIN] Public API
   fun addPlaybackEventListener(listener: PlaybackEventListener) {
@@ -118,6 +114,10 @@ abstract class Playback<T> internal constructor(
     this.playerListeners.remove(listener)
   }
 
+  fun observe(lifecycleOwner: LifecycleOwner) {
+    this.lifecycle = lifecycleOwner.lifecycle.also { it.addObserver(this) }
+  }
+
   var volumeInfo: VolumeInfo
     get() {
       return playable.volumeInfo
@@ -126,9 +126,20 @@ abstract class Playback<T> internal constructor(
       playable.setVolumeInfo(value)
     }
 
+  val tag = playable.tag
+
   // [END] Public API
 
   /// Internal APIs
+
+  // Lifecycle
+
+  @OnLifecycleEvent(ON_DESTROY)
+  fun onLifecycleDestroyed() {
+    manager.performDestroyPlayback(this)
+    lifecycle?.removeObserver(this)
+    lifecycle = null
+  }
 
   // Used by subclasses to dispatch internal event listeners
   internal fun dispatchPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
@@ -157,7 +168,7 @@ abstract class Playback<T> internal constructor(
   }
 
   // Being added to Manager
-  // The target may not be attached to View/Window.
+  // The target may not be attached to View/Window yet.
   @CallSuper
   internal open fun onAdded() {
     internalCallback?.onAdded(this)
@@ -209,14 +220,14 @@ abstract class Playback<T> internal constructor(
 
   @CallSuper
   internal open fun onDestroyed() {
-    /* if (this.manager.mapWeakPlayableToTarget[this.playable] == this.target) {
-      this.manager.mapWeakPlayableToTarget.remove(this.playable)
-    } */
     this.listenerHandler = null
+    lifecycle?.removeObserver(this)
+    lifecycle = null
   }
 
   override fun toString(): String {
-    return javaClass.simpleName + "@" + hashCode() + "@" + playable
+    val playableStr = "${playable.javaClass.simpleName}@${Integer.toHexString(playable.hashCode())}"
+    return "${javaClass.simpleName}@${Integer.toHexString(hashCode())}::$playableStr"
   }
 
   // For internal flow only.
@@ -238,13 +249,5 @@ abstract class Playback<T> internal constructor(
       playback: Playback<*>,
       target: Any?
     )
-  }
-
-  interface Delayer {
-    // return the delay to start the Playback.
-    // default implementation will use Handler to dispatch the call to "play()", accept that:
-    // - if returns negative, it will postpone the playback.
-    // - if returns zero, it will start the playback immediately without using Handler.
-    fun getInitDelay(): Long
   }
 }
