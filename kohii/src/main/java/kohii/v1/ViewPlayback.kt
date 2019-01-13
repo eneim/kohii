@@ -72,12 +72,14 @@ open class ViewPlayback<V : View>(
 
   private val targetAttached = AtomicBoolean(false)
 
+  // TODO [20190112] deal with scaled/transformed View and/or its Parent.
   override val token: ViewToken?
     get() {
       if (target == null || !this.targetAttached.get()) return null
 
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
+      if (!visible) return ViewToken(manager.viewRect, playerRect, -1F)
 
       val drawRect = Rect()
       target.getDrawingRect(drawRect)
@@ -88,7 +90,6 @@ open class ViewPlayback<V : View>(
         val visibleArea = playerRect.height() * playerRect.width()
         offset = visibleArea / drawArea.toFloat()
       }
-      if (!visible) offset *= -1 // mark as negative.
       return ViewToken(manager.viewRect, playerRect, offset)
     }
 
@@ -164,7 +165,7 @@ open class ViewPlayback<V : View>(
     }
 
     override fun shouldPlay(): Boolean {
-      return areaOffset >= 0.75f  // TODO [20180714] make this configurable
+      return areaOffset >= 0.65f  // TODO [20180714] make this configurable
     }
 
     override fun shouldRelease(): Boolean {

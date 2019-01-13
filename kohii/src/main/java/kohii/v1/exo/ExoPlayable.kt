@@ -114,7 +114,7 @@ class ExoPlayable internal constructor(
       this.bridge.removeEventListener(this.listener!!)
       this.listener = null
     }
-    // FIXME: ⬇ Why?
+    // Note|eneim|20190113: only call release when there is no more Manager manage this.
     if (kohii.mapWeakPlayableToManager[this] == null) {
       playback.release()
       // There is no other Manager to manage this Playable, and we are removing the last one, so ...
@@ -140,9 +140,7 @@ class ExoPlayable internal constructor(
     kohii.mapWeakWindowToManager.values.mapNotNull { it.findPlaybackForTarget(target) }
         .filter { it.playable !== this@ExoPlayable || it.manager !== manager }
         // These Playbacks were results of other Playables bound to the same Target.
-        .forEach { pk ->
-          pk.manager.onTargetInActive(target)
-        }
+        .forEach { pk -> pk.manager.onTargetInActive(target) }
 
     // Put this Playable to the Manager, make sure only one Manager will be managing it.
     kohii.mapWeakPlayableToManager.put(this, manager)

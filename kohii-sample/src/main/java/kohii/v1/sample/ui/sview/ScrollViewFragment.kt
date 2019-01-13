@@ -20,20 +20,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.material.snackbar.Snackbar
 import kohii.v1.Kohii
 import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
 import kohii.v1.PlayerEventListener
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.isLandscape
 import kohii.v1.sample.ui.player.PlayerDialogFragment
 import kohii.v1.sample.ui.player.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
@@ -41,13 +39,14 @@ import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
 class ScrollViewFragment : BaseFragment(),
     Playback.Callback,
-    PlaybackEventListener,
     PlayerDialogFragment.Callback {
 
   companion object {
     const val pageTagKey = "kohii:demo:page:tag"
     const val videoUrl =
-      "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+      // "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+      // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
+      "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
 
     fun newInstance() = ScrollViewFragment().also {
       it.arguments = Bundle()
@@ -70,12 +69,17 @@ class ScrollViewFragment : BaseFragment(),
     }
   }
 
+  private var landscape: Boolean = false
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    return inflater.inflate(R.layout.fragment_scroll_view, container, false)
+    landscape = requireActivity().isLandscape()
+    val viewRes =
+      if (landscape) R.layout.fragment_scroll_view_horizontal else R.layout.fragment_scroll_view
+    return inflater.inflate(viewRes, container, false)
   }
 
   override fun onViewCreated(
@@ -87,7 +91,7 @@ class ScrollViewFragment : BaseFragment(),
     postponeEnterTransition()
 
     playback = Kohii[this].setUp(videoUrl)
-        .copy(repeatMode = Player.REPEAT_MODE_ONE)
+        .copy(repeatMode = Player.REPEAT_MODE_ONE, prefetch = landscape)
         .copy(tag = this.arguments?.get(pageTagKey) ?: videoUrl)
         .asPlayable()
         .bind(playerView)
@@ -100,27 +104,30 @@ class ScrollViewFragment : BaseFragment(),
   override fun onStart() {
     super.onStart()
     playback?.also {
-      it.addPlaybackEventListener(this@ScrollViewFragment)
       it.addCallback(this@ScrollViewFragment)
       it.addPlayerEventListener(listener)
     }
 
-    view?.run {
-      val transView: View = playerView.findViewById(R.id.exo_content_frame)
-      playerContainer.setOnClickListener {
-        (exitTransition as TransitionSet).excludeTarget(this, true)
-        fragmentManager!!.beginTransaction()
-            .setReorderingAllowed(true)
-            .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
-            .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
-            .addToBackStack(null)
-            .commit()
-      }
+    if (!landscape) {
+      view?.run {
+        val transView: View = playerView.findViewById(R.id.exo_content_frame)
+        playerContainer.setOnClickListener {
+          (exitTransition as TransitionSet).excludeTarget(this, true)
+          fragmentManager!!.beginTransaction()
+              .setReorderingAllowed(true)
+              .addSharedElement(transView, ViewCompat.getTransitionName(transView)!!)
+              .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoUrl), videoUrl)
+              .addToBackStack(null)
+              .commit()
+        }
 
-      /* playerContainer.setOnClickListener {
-        PlayerDialogFragment.newInstance(videoUrl)
+        /*
+        playerContainer.setOnClickListener {
+          PlayerDialogFragment.newInstance(videoUrl)
             .show(childFragmentManager, videoUrl)
-      } */
+        }
+        */
+      }
     }
   }
 
@@ -134,7 +141,6 @@ class ScrollViewFragment : BaseFragment(),
   override fun onStop() {
     super.onStop()
     playback?.removeCallback(this)
-    playback?.removePlaybackEventListener(this)
     playback?.removePlayerEventListener(listener)
     playerContainer.setOnClickListener(null)
   }
@@ -158,55 +164,19 @@ class ScrollViewFragment : BaseFragment(),
     })
   }
 
-  // BEGIN: PlaybackEventListener
-
-  override fun onFirstFrameRendered() {
-  }
-
-  override fun onBuffering(playWhenReady: Boolean) {
-  }
-
-  override fun onPlaying() {
-    view?.run {
-      Snackbar.make(this, "State: Playing", Snackbar.LENGTH_LONG)
-          .show()
-    }
-  }
-
-  override fun onPaused() {
-    view?.run {
-      Snackbar.make(this, "State: Paused", Snackbar.LENGTH_LONG)
-          .show()
-    }
-  }
-
-  override fun onCompleted() {
-    view?.run {
-      Snackbar.make(this, "State: Ended", Snackbar.LENGTH_LONG)
-          .show()
-    }
-  }
-
-  // END: PlaybackEventListener
-
   // BEGIN: Playback.Callback
 
   override fun onActive(
     playback: Playback<*>,
     target: Any?
   ) {
-    Toast.makeText(requireContext(), "Target available", Toast.LENGTH_SHORT)
-        .show()
     startPostponedEnterTransition()
   }
 
   override fun onInActive(
     playback: Playback<*>,
     target: Any?
-  ) {
-    Toast.makeText(requireContext(), "Target unavailable", Toast.LENGTH_SHORT)
-        .show()
-  }
+  ) = Unit
 
   // END: Playback.Callback
 

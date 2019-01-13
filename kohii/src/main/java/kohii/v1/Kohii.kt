@@ -27,7 +27,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver.OnScrollChangedListener
 import android.view.Window
@@ -81,7 +80,7 @@ class Kohii(context: Context) {
         state: Bundle?
       ) {
         // On recreation, we actively create and cache a Manager to prevent bad things to Playables.
-        if (state != null) requireManager(activity.window)
+        if (state != null) fetchManager(activity.window)
       }
 
       override fun onActivityStarted(activity: Activity) {
@@ -114,17 +113,6 @@ class Kohii(context: Context) {
               it.onHostDestroyed()
               it.onDetached() // Manager should not outlive Activity, any second.
             }
-
-        // Debug only.
-        if (BuildConfig.DEBUG) {
-          mapWeakPlayableToManager.forEach {
-            if (it.value == null) {
-              Log.w(TAG, "onActivityDestroyed(): ${it.key} -- ${it.value}")
-            } else {
-              Log.d(TAG, "onActivityDestroyed(): ${it.key} -- ${it.value}")
-            }
-          }
-        }
 
         // Activity is not being recreated, and there is no Manager available.
         if (!activity.isChangingConfigurations && mapWeakWindowToManager.isEmpty()) {
@@ -270,6 +258,13 @@ class Kohii(context: Context) {
   }
 
   //// instance methods
+
+  internal fun fetchManager(window: Window): Manager? {
+    return window.peekDecorView()
+        ?.let {
+          requireManager(window)
+        }
+  }
 
   internal fun requireManager(window: Window): Manager {
     // Peek to read, not to create new.

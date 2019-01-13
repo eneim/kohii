@@ -28,5 +28,5 @@
   <item name="videoThumb" type="id"/>
 
   <dimen name="pager_horizontal_space">24dp</dimen>
-  <dimen name="pager_horizontal_space_x3">24dp</dimen>
+  <dimen name="pager_horizontal_space_x3">96dp</dimen>
 </resources>
