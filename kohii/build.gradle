@@ -54,6 +54,7 @@ dependencies {
   // implementation libraries.androidx.appcompat
   // implementation libraries.androidx.recyclerview
   implementation libraries.androidx.material
+  implementation libraries.androidx.lifecycle
 
   testImplementation libraries.junit
   androidTestImplementation libraries.supporttest.runner

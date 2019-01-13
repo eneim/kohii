@@ -16,108 +16,167 @@
 
 package kohii.v1.exo
 
+import android.content.Context
+import android.util.Pair
+import android.widget.Toast
+import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
+import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
+import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.TrackGroupArray
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.util.ErrorMessageProvider
+import kohii.addEventListener
+import kohii.getVolumeInfo
+import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.PlaybackInfo.Companion.INDEX_UNSET
 import kohii.media.PlaybackInfo.Companion.TIME_UNSET
 import kohii.media.VolumeInfo
+import kohii.removeEventListener
+import kohii.setVolumeInfo
 import kohii.v1.Bridge
-import kohii.v1.DefaultEventListener
 import kohii.v1.ErrorListener
 import kohii.v1.ErrorListeners
-import kohii.v1.Kohii
-import kohii.v1.Playable.Builder
+import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.PlayerEventListeners
+import kohii.v1.R
 import kohii.v1.VolumeChangedListener
 import kohii.v1.VolumeChangedListeners
+import kohii.v1.VolumeInfoController
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author eneim (2018/06/24).
  */
-class ExoBridge(
-    private val kohii: Kohii,
-    private val builder: Builder
-) : DefaultEventListener(), Bridge {
+@Suppress("MemberVisibilityCanBePrivate")
+internal open class ExoBridge(
+  context: Context,
+  private val media: Media,
+  private val playerProvider: PlayerProvider,
+  mediaSourceFactoryProvider: MediaSourceFactoryProvider
+) : PlayerEventListener, Bridge, ErrorMessageProvider<ExoPlaybackException> {
 
-  private val eventListeners by lazy { PlayerEventListeners() }  // original listener.
-  private val volumeListeners by lazy { VolumeChangedListeners() }
-  private val errorListeners by lazy { ErrorListeners() }
+  companion object {
+    internal fun isBehindLiveWindow(error: ExoPlaybackException?): Boolean {
+      if (error?.type != ExoPlaybackException.TYPE_SOURCE) return false
+      var cause: Throwable? = error.sourceException
+      while (cause != null) {
+        if (cause is BehindLiveWindowException) return true
+        cause = cause.cause
+      }
+      return false
+    }
+  }
 
-  private val listenerIsSet = AtomicBoolean(false)
+  private val context = context.applicationContext
+  private val mediaSourceFactory = mediaSourceFactoryProvider.provideMediaSourceFactory(media)
 
-  private val _playbackInfo = PlaybackInfo()
-  private var mediaSource: MediaSource? = null
-  private var player: Player? = null
+  protected val eventListeners by lazy { PlayerEventListeners() } // Set, so no duplicated
+  protected val volumeListeners by lazy { VolumeChangedListeners() } // Set, so no duplicated
+  protected val errorListeners by lazy { ErrorListeners() } // Set, so no duplicated
+
+  private var listenerApplied = AtomicBoolean(false)
+  private var sourcePrepared = AtomicBoolean(false)
+
+  private var _playbackInfo = PlaybackInfo() // Backing field for PlaybackInfo set/get
+  private var _repeatMode = Playable.REPEAT_MODE_OFF // Backing field
+  private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
+
+  protected var mediaSource: MediaSource? = null
+  protected var player: Player? = null
+
+  private var lastSeenTrackGroupArray: TrackGroupArray? = null
+  private var inErrorState = false
 
   override fun prepare(loadSource: Boolean) {
+    this.addEventListener(this)
+
+    if (player == null) {
+      sourcePrepared.set(false)
+      listenerApplied.set(false)
+      // player = playerProvider.acquirePlayer(this.media)
+    }
+
     if (loadSource) {
-      ensureMediaSource()
+      prepareMediaSource()
       ensurePlayerView()
     }
+
+    this.lastSeenTrackGroupArray = null
+    this.inErrorState = false
   }
 
   override var playerView: PlayerView? = null
     set(value) {
-      if (field === value) return
-      if (value == null)
-        field!!.player = null
-      else {
-        this.player?.run {
-          PlayerView.switchTargetView(this, field, value)
+      if (field == value) return // same reference
+      this.lastSeenTrackGroupArray = null
+      this.inErrorState = false
+      if (value == null) {
+        field?.let {
+          // 'field' must be not null here
+          it.player = null
+          it.setErrorMessageProvider(null)
+        }
+      } else {
+        this.player?.let {
+          PlayerView.switchTargetView(it, field, value)
         }
       }
 
       field = value
+      field?.setErrorMessageProvider(this)
     }
 
   override fun play() {
-    ensureMediaSource()
+    prepareMediaSource()
+    requireNotNull(player) { "Bridge#play(): Player is null!" }
     ensurePlayerView()
     player!!.playWhenReady = true
   }
 
   override fun pause() {
-    player?.playWhenReady = false
+    if (sourcePrepared.get()) player?.playWhenReady = false
   }
 
   override fun reset() {
     playbackInfo.reset()
-    player?.stop(true)
-    // TODO [20180214] double check this when ExoPlayer 2.7.0 is released.
-    // TODO [20180326] reusable MediaSource will be added after ExoPlayer 2.7.1.
-    // TODO [20180626] double check 2.8.x
-    this.mediaSource = null // so it will be re-prepared when play() is called.
+    player?.let {
+      it.setVolumeInfo(VolumeInfo(false, 1.0F))
+      it.stop(true)
+    }
+    this.mediaSource = null // So it will be re-prepared later.
+    this.sourcePrepared.set(false)
+    this.lastSeenTrackGroupArray = null
+    this.inErrorState = false
   }
 
   override fun release() {
+    this.removeEventListener(this)
     this.playerView = null
-    player?.also {
-      it.stop(true)
-      if (listenerIsSet.compareAndSet(true, false)) {
-        it.removeListener(eventListeners)
-        (it as? KohiiPlayer)?.clearOnVolumeChangedListener()
-
-        if (it is SimpleExoPlayer) {
-          it.apply {
-            this.removeTextOutput(eventListeners)
-            this.removeVideoListener(eventListeners)
-            this.removeMetadataOutput(eventListeners)
-          }
-        }
-        it.removeListener(this)
+    player?.let {
+      if (listenerApplied.compareAndSet(true, false)) {
+        it.removeEventListener(eventListeners)
       }
-      kohii.exoStore.releasePlayer(it, builder.config)
+      (it as? VolumeInfoController)?.removeVolumeChangedListener(volumeListeners)
+      it.stop(true)
+      playerProvider.releasePlayer(this.media, it)
     }
 
     this.player = null
     this.mediaSource = null
+    this.sourcePrepared.set(false)
+    this.lastSeenTrackGroupArray = null
+    this.inErrorState = false
   }
 
   override fun addEventListener(listener: PlayerEventListener) {
@@ -130,12 +189,10 @@ class ExoBridge(
 
   override fun addVolumeChangeListener(listener: VolumeChangedListener) {
     this.volumeListeners.add(listener)
-    (player as? KohiiPlayer)?.addOnVolumeChangedListener(listener)
   }
 
   override fun removeVolumeChangeListener(listener: VolumeChangedListener?) {
     this.volumeListeners.remove(listener)
-    (player as? KohiiPlayer)?.removeOnVolumeChangedListener(listener)
   }
 
   override fun addErrorListener(errorListener: ErrorListener) {
@@ -150,21 +207,22 @@ class ExoBridge(
     get() = player?.playWhenReady ?: false
 
   override val volumeInfo: VolumeInfo
-    get() = playbackInfo.volumeInfo
+    get() = this.playbackInfo.volumeInfo // this will first update the PlaybackInfo via getter.
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    val changed = playbackInfo.volumeInfo != volumeInfo
+    val changed = playbackInfo.volumeInfo !== volumeInfo // Compare value.
     if (changed) {
       playbackInfo.volumeInfo = volumeInfo
-      ExoStore.setVolumeInfo(player!!, playbackInfo.volumeInfo)
+      player?.setVolumeInfo(playbackInfo.volumeInfo)
     }
     return changed
   }
 
-  override var parameters: PlaybackParameters?
-    get() = player!!.playbackParameters
+  override var parameters: PlaybackParameters
+    get() = _playbackParams
     set(value) {
-      player!!.playbackParameters = value
+      _playbackParams = value
+      player?.playbackParameters = value
     }
 
   override var playbackInfo: PlaybackInfo
@@ -177,71 +235,175 @@ class ExoBridge(
       _playbackInfo.resumePosition = value.resumePosition
       _playbackInfo.volumeInfo = value.volumeInfo
 
-      if (player != null) {
-        ExoStore.setVolumeInfo(player!!, _playbackInfo.volumeInfo)
+      player?.let {
+        it.setVolumeInfo(_playbackInfo.volumeInfo)
         val haveResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
         if (haveResumePosition) {
-          player!!.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
+          it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
         }
       }
     }
 
-  override fun onPlayerError(error: ExoPlaybackException?) {
-    super.onPlayerError(error)
-    if (error != null) this.errorListeners.onError(error)
-  }
+  override var repeatMode: Int
+    get() = _repeatMode
+    set(value) {
+      _repeatMode = value
+      this.player?.let { it.repeatMode = value }
+    }
 
   private fun updatePlaybackInfo() {
-    if (player == null) return
-    if (player!!.playbackState == Player.STATE_IDLE) return
-    _playbackInfo.resumeWindow = player?.currentWindowIndex ?: INDEX_UNSET
-    _playbackInfo.resumePosition = if (player?.isCurrentWindowSeekable == true)
-      Math.max(0, player?.currentPosition ?: 0)
-    else
-      TIME_UNSET
-    _playbackInfo.volumeInfo = VolumeInfo.SCRAP
-  }
-
-  private fun ensurePlayerView() {
-    playerView?.run {
-      if (this.player != this@ExoBridge.player) this.player = this@ExoBridge.player
+    player?.let {
+      if (it.playbackState == Player.STATE_IDLE) return
+      _playbackInfo.resumeWindow = it.currentWindowIndex
+      _playbackInfo.resumePosition =
+          if (it.isCurrentWindowSeekable) Math.max(0, it.currentPosition) else TIME_UNSET
+      _playbackInfo.volumeInfo = it.getVolumeInfo()
     }
   }
 
-  private fun ensureMediaSource() {
-    if (mediaSource == null) {  // Only actually prepare the source on demand.
+  private fun ensurePlayerView() {
+    playerView?.let { if (it.player != this.player) it.player = this.player }
+  }
+
+  private fun prepareMediaSource() {
+    // Note: we allow subclass to create MediaSource on demand. So it can be not-null here.
+    // The flag sourcePrepared can also be set to false somewhere else.
+    if (mediaSource == null) {
+      sourcePrepared.set(false)
+      mediaSource = mediaSourceFactory.createMediaSource(this.media.uri)
+    }
+
+    if (!sourcePrepared.get()) {
       ensurePlayer()
-      mediaSource = kohii.exoStore.createMediaSource(this.builder)
-      (player as? KohiiPlayer)?.prepare(mediaSource,
-          playbackInfo.resumeWindow == INDEX_UNSET, false)
+      (player as? ExoPlayer)?.let {
+        it.prepare(mediaSource, playbackInfo.resumeWindow == INDEX_UNSET, false)
+        sourcePrepared.set(true)
+      }
     }
   }
 
   private fun ensurePlayer() {
-    // 1. If player is set to null somewhere
     if (player == null) {
-      player = kohii.exoStore.acquirePlayer(this.builder.config)
-      player!!.repeatMode = builder.repeatMode
-      ExoStore.setVolumeInfo(player!!, _playbackInfo.volumeInfo)
-      val haveResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET
-      if (haveResumePosition) {
-        player!!.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
-      }
-      listenerIsSet.set(false)
+      sourcePrepared.set(false)
+      listenerApplied.set(false)
+      player = playerProvider.acquirePlayer(this.media)
     }
 
-    // 2. Player is just created, or Player is not null, but the listeners are reset.
-    if (listenerIsSet.compareAndSet(false, true)) {
-      player!!.addListener(this)
-      player!!.addListener(eventListeners)
-      (player as? SimpleExoPlayer)?.run {
-        this.addVideoListener(eventListeners)
-        this.addTextOutput(eventListeners)
-        this.addMetadataOutput(eventListeners)
+    player!!.let {
+      if (!listenerApplied.get()) {
+        (player as? VolumeInfoController)?.addVolumeChangedListener(volumeListeners)
+        it.addEventListener(eventListeners)
+        listenerApplied.set(true)
       }
 
-      (player as? KohiiPlayer)?.run {
-        this.addOnVolumeChangedListener(volumeListeners)
+      it.playbackParameters = _playbackParams
+      val hasResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET
+      if (hasResumePosition) {
+        it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
+      }
+      it.setVolumeInfo(_playbackInfo.volumeInfo)
+      it.repeatMode = _repeatMode
+    }
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected fun onErrorMessage(message: String) {
+    // Sub class can have custom reaction about the error here, including not to show this toast
+    // (by not calling super.onErrorMessage(message)).
+    if (this.errorListeners.size > 0) {
+      this.errorListeners.onError(RuntimeException(message))
+    } else if (playerView != null) {
+      Toast.makeText(playerView!!.context.applicationContext, message, Toast.LENGTH_SHORT)
+          .show()
+    }
+  }
+
+  /// ErrorMessageProvider<ExoPlaybackException> ⬇︎
+
+  override fun getErrorMessage(e: ExoPlaybackException?): Pair<Int, String> {
+    var errorString = context.getString(R.string.error_generic)
+    if (e?.type == ExoPlaybackException.TYPE_RENDERER) {
+      val exception = e.rendererException
+      if (exception is DecoderInitializationException) {
+        // Special case for decoder initialization failures.
+        errorString = if (exception.decoderName == null) {
+          when {
+            exception.cause is MediaCodecUtil.DecoderQueryException ->
+              context.getString(R.string.error_querying_decoders)
+            exception.secureDecoderRequired ->
+              context.getString(R.string.error_no_secure_decoder, exception.mimeType)
+            else -> context.getString(R.string.error_no_decoder, exception.mimeType)
+          }
+        } else {
+          context.getString(R.string.error_instantiating_decoder, exception.decoderName)
+        }
+      }
+    }
+
+    return Pair.create(0, errorString)
+  }
+
+  /// DefaultEventListener ⬇︎
+
+  override fun onPlayerError(error: ExoPlaybackException?) {
+    if (playerView == null) {
+      var errorString: String? = null
+      if (error?.type == ExoPlaybackException.TYPE_RENDERER) {
+        val exception = error.rendererException
+        if (exception is DecoderInitializationException) {
+          // Special case for decoder initialization failures.
+          errorString = if (exception.decoderName == null) {
+            when {
+              exception.cause is MediaCodecUtil.DecoderQueryException ->
+                context.getString(R.string.error_querying_decoders)
+              exception.secureDecoderRequired ->
+                context.getString(R.string.error_no_secure_decoder, exception.mimeType)
+              else -> context.getString(R.string.error_no_decoder, exception.mimeType)
+            }
+          } else {
+            context.getString(R.string.error_instantiating_decoder, exception.decoderName)
+          }
+        }
+      }
+
+      if (errorString != null) onErrorMessage(errorString)
+    }
+
+    inErrorState = true
+    if (isBehindLiveWindow(error)) {
+      reset()
+    } else {
+      updatePlaybackInfo()
+    }
+    if (error != null) this.errorListeners.onError(error)
+  }
+
+  override fun onPositionDiscontinuity(reason: Int) {
+    if (inErrorState) {
+      // Adapt from ExoPlayer demo.
+      // "This will only occur if the user has performed a seek whilst in the error state. Update
+      // the resume position so that if the user then retries, playback will resume from the
+      // position to which they seek." - ExoPlayer
+      updatePlaybackInfo()
+    }
+  }
+
+  override fun onTracksChanged(
+    trackGroups: TrackGroupArray?,
+    trackSelections: TrackSelectionArray?
+  ) {
+    if (trackGroups === lastSeenTrackGroupArray) return
+    lastSeenTrackGroupArray = trackGroups
+    val trackSelector = (playerProvider as? DefaultPlayerProvider)?.trackSelector
+        as? MappingTrackSelector ?: return
+    val trackInfo = trackSelector.currentMappedTrackInfo
+    if (trackInfo != null) {
+      if (trackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+        onErrorMessage(context.getString(R.string.error_unsupported_video))
+      }
+
+      if (trackInfo.getTypeSupport(C.TRACK_TYPE_AUDIO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+        onErrorMessage(context.getString(R.string.error_unsupported_audio))
       }
     }
   }

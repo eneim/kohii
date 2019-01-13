@@ -16,13 +16,14 @@
 
 package kohii.v1
 
-import android.net.Uri
 import androidx.annotation.IntDef
+import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.v1.exo.Config
+import kohii.v1.exo.ExoPlayable
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
@@ -32,7 +33,15 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * - Created by calling [Kohii.setUp], will be managed by at least one [Manager].
  * - Destroyed if:
- *  - All [Manager] manage the Playable is destroyed/detached from its lifecycle.
+ *  - All [Manager]s manage the Playable is destroyed/detached from its lifecycle.
+ *
+ * - A [Playable] can be bound to a Target to produce a [Playback]. Due to the reusable nature of
+ * [Playable], the call to bind it is not limited to one Target. Which means that, a [Playable] can
+ * be rebound to any number of other Targets. If a [Playable] X is bound to a Target A, and this binding
+ * produced a [Playback] xRa, then the [Playable] X is rebound to a Target B, it will first produce
+ * a produce a [Playback] xRb. But before that, the [Playback] xRa must also be destroyed.
+ *
+ * (Think about how a couple separates ... and then come back ...)
  *
  * @author eneim (2018/06/24).
  */
@@ -42,71 +51,69 @@ interface Playable {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
     const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
     const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
+
+    const val STATE_IDLE = Player.STATE_IDLE
+    const val STATE_BUFFERING = Player.STATE_BUFFERING
+    const val STATE_READY = Player.STATE_READY
+    const val STATE_END = Player.STATE_ENDED
+
+    internal val NO_TAG = Any()
   }
 
   @Retention(SOURCE)
   @IntDef(REPEAT_MODE_OFF, REPEAT_MODE_ONE, REPEAT_MODE_ALL)
   annotation class RepeatMode
 
-  fun bind(playerView: PlayerView): Playback<PlayerView>
+  @Retention(SOURCE)
+  @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)
+  annotation class State
+
+  val tag: Any
+
+  fun bind(target: PlayerView): Playback<PlayerView>
 
   /// Playback controller
 
+  // Must be called by Playback
   fun prepare()
 
+  // Must be called by Playback
   fun play()
 
+  // Must be called by Playback
   fun pause()
 
+  // Must be called by Playback
   fun release()
 
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 
+  // Getter
   val volumeInfo: VolumeInfo
 
+  // Setter/Getter
   var playbackInfo: PlaybackInfo
 
   // data class for copying convenience.
   data class Builder(
-      val kohii: Kohii,
-      val contentUri: Uri,
-      val config: Config = kohii.exoStore.defaultConfig,
-      val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
-      val mediaType: String? = null,
-      val tag: Any? = null,
-      val prepareAlwaysLoad: Boolean = false,
-      @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
+    val kohii: Kohii,
+    val media: Media,
+    val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
+    val tag: Any? = null,
+    val prefetch: Boolean = false,
+    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF, // FIXME 190104 should be Playback's option?
+    val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
   ) {
+    // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.
+    // If the builder has no valid tag (a.k.a tag is null), then always return new one.
+    // TODO [20181021] Consider to make this to use the Factory mechanism?
     fun asPlayable(): Playable {
-      return this.kohii.acquirePlayable(this.contentUri, this)
+      return ((
+          if (tag != null)
+            kohii.mapTagToPlayable.getOrPut(tag) { ExoPlayable(kohii, media, this) }
+          else
+            ExoPlayable(kohii, media, this)
+          ).also { kohii.mapWeakPlayableToManager[it] = null })
     }
-
-    // for Java's Builder usage.
-
-    @Deprecated("Kohii works better with Kotlin than Java.",
-        ReplaceWith("this.copy(tag = tag)", "kohii.v1.Playable.Builder"))
-    fun setTag(tag: Any?) = this.copy(tag = tag)
-
-    @Deprecated("Kohii works better with Kotlin than Java.",
-        ReplaceWith("this.copy(config = config)", "kohii.v1.Playable.Builder"))
-    fun setConfig(config: Config) = this.copy(config = config)
-
-    @Deprecated("Kohii works better with Kotlin than Java.",
-        ReplaceWith("this.copy(mediaType = mediaType)", "kohii.v1.Playable.Builder"))
-    fun setMediaType(mediaType: String?) = this.copy(mediaType = mediaType)
-
-    @Deprecated("Kohii works better with Kotlin than Java.",
-        ReplaceWith("this.copy(playbackInfo = playbackInfo)", "kohii.v1.Playable.Builder"))
-    fun setPlaybackInfo(playbackInfo: PlaybackInfo) = this.copy(playbackInfo = playbackInfo)
-
-    @Deprecated("Kohii works better with Kotlin than Java.",
-        ReplaceWith("this.copy(repeatMode = repeatMode)", "kohii.v1.Playable.Builder"))
-    fun setRepeatMode(repeatMode: Int) = this.copy(repeatMode = repeatMode)
-
-    @Deprecated("Kohii works better with Kotlin than Java.",
-        ReplaceWith("this.copy(prepareAlwaysLoad = prepareAlwaysLoad)",
-            "kohii.v1.Playable.Builder"))
-    fun setPrepareAlwaysLoad(prepareAlwaysLoad: Boolean) = this.copy(
-        prepareAlwaysLoad = prepareAlwaysLoad)
   }
 }

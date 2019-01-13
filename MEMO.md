@@ -32,3 +32,7 @@
 
 - Target is a View, and it is not attached to the Window, or it has been detached from the Window.
 - Regardless of the target status, its Manager is stopped/inactive.
+
+## [20180905]
+
+- A Playback should be configurable even after created. This way, user can change the behaviour on demand. All the changes will be reflected via Playable and Bridge instance.

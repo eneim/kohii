@@ -20,6 +20,8 @@ import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.audio.AudioListener
 import com.google.android.exoplayer2.metadata.Metadata
 import com.google.android.exoplayer2.metadata.MetadataOutput
 import com.google.android.exoplayer2.source.TrackGroupArray
@@ -33,7 +35,10 @@ import java.util.concurrent.CopyOnWriteArraySet
 /**
  * @author eneim (2018/06/24).
  */
+// TODO [20181226] rename to PlayableEventListener
 interface PlaybackEventListener {
+
+  fun onFirstFrameRendered()
 
   fun onBuffering(playWhenReady: Boolean)  // ExoPlayer state: 2
 
@@ -42,6 +47,18 @@ interface PlaybackEventListener {
   fun onPaused()   // ExoPlayer state: 3, play flag: false
 
   fun onCompleted()  // ExoPlayer state: 4
+}
+
+interface PlayerEventListener : Player.EventListener,
+    VideoListener,
+    AudioListener,
+    TextOutput,
+    MetadataOutput {
+  override fun onCues(cues: MutableList<Cue>?) {
+  }
+
+  override fun onMetadata(metadata: Metadata?) {
+  }
 }
 
 interface VolumeChangedListener {
@@ -54,9 +71,8 @@ interface ErrorListener {
   fun onError(error: Exception)
 }
 
-interface PlayerEventListener : Player.EventListener, VideoListener, TextOutput, MetadataOutput
-
 class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerEventListener {
+
   override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
     this.forEach { it.onPlaybackParametersChanged(playbackParameters) }
   }
@@ -65,8 +81,10 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerE
     this.forEach { it.onSeekProcessed() }
   }
 
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
+  override fun onTracksChanged(
+    trackGroups: TrackGroupArray?,
+    trackSelections: TrackSelectionArray?
+  ) {
     this.forEach { it.onTracksChanged(trackGroups, trackSelections) }
   }
 
@@ -90,16 +108,27 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerE
     this.forEach { it.onShuffleModeEnabledChanged(shuffleModeEnabled) }
   }
 
-  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
+  override fun onTimelineChanged(
+    timeline: Timeline?,
+    manifest: Any?,
+    reason: Int
+  ) {
     this.forEach { it.onTimelineChanged(timeline, manifest, reason) }
   }
 
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+  override fun onPlayerStateChanged(
+    playWhenReady: Boolean,
+    playbackState: Int
+  ) {
     this.forEach { it.onPlayerStateChanged(playWhenReady, playbackState) }
   }
 
-  override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-      pixelWidthHeightRatio: Float) {
+  override fun onVideoSizeChanged(
+    width: Int,
+    height: Int,
+    unappliedRotationDegrees: Int,
+    pixelWidthHeightRatio: Float
+  ) {
     this.forEach {
       it.onVideoSizeChanged(width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
     }
@@ -116,6 +145,18 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerE
   override fun onMetadata(metadata: Metadata?) {
     this.forEach { it.onMetadata(metadata) }
   }
+
+  override fun onAudioAttributesChanged(audioAttributes: AudioAttributes?) {
+    this.forEach { it.onAudioAttributesChanged(audioAttributes) }
+  }
+
+  override fun onVolumeChanged(volume: Float) {
+    this.forEach { it.onVolumeChanged(volume) }
+  }
+
+  override fun onAudioSessionId(audioSessionId: Int) {
+    this.forEach { it.onAudioSessionId(audioSessionId) }
+  }
 }
 
 class VolumeChangedListeners : CopyOnWriteArraySet<VolumeChangedListener>(), VolumeChangedListener {
@@ -128,66 +169,4 @@ class ErrorListeners : CopyOnWriteArraySet<ErrorListener>(), ErrorListener {
   override fun onError(error: Exception) {
     this.forEach { it.onError(error) }
   }
-
-}
-
-abstract class DefaultEventListener : PlayerEventListener {
-  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
-
-  }
-
-  override fun onSeekProcessed() {
-
-  }
-
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
-
-  }
-
-  override fun onPlayerError(error: ExoPlaybackException?) {
-
-  }
-
-  override fun onLoadingChanged(isLoading: Boolean) {
-
-  }
-
-  override fun onPositionDiscontinuity(reason: Int) {
-
-  }
-
-  override fun onRepeatModeChanged(repeatMode: Int) {
-
-  }
-
-  override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-
-  }
-
-  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
-
-  }
-
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-
-  }
-
-  override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-      pixelWidthHeightRatio: Float) {
-
-  }
-
-  override fun onRenderedFirstFrame() {
-
-  }
-
-  override fun onCues(cues: MutableList<Cue>?) {
-
-  }
-
-  override fun onMetadata(metadata: Metadata?) {
-
-  }
-
 }

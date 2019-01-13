@@ -34,9 +34,9 @@ import kohii.v1.sample.svg.SvgSoftwareLayerSetter
  */
 @Suppress("MemberVisibilityCanBePrivate", "DEPRECATION")
 class TextViewHolder(
-    inflater: LayoutInflater,
-    parent: ViewGroup,
-    private val dp2Px: (Int) -> Int
+  inflater: LayoutInflater,
+  parent: ViewGroup,
+  private val dp2Px: (Int) -> Int
 ) : BaseViewHolder(inflater, R.layout.holder_text_view, parent) {
 
   val textView = itemView.findViewById(R.id.contentView) as TextView
@@ -50,15 +50,20 @@ class TextViewHolder(
       itemView.setBackgroundColor(Color.parseColor(item.background))
       iconView.isVisible = item.icon != null
       textView.text = item.content
-      val textApp = if (item.format == "text:title") R.style.TextAppearance_AppCompat_Large else R.style.TextAppearance_AppCompat_Medium
+      val textApp =
+        if (item.format == "text:title") R.style.TextAppearance_AppCompat_Large else R.style.TextAppearance_AppCompat_Medium
       textView.setTextAppearance(textView.context, textApp)
-      val textColor = if (item.background == "#ffffff") R.color.abc_primary_text_material_light else R.color.abc_primary_text_material_dark
+      val textColor =
+        if (item.background == "#ffffff") R.color.abc_primary_text_material_light else R.color.abc_primary_text_material_dark
       textView.setTextColor(ContextCompat.getColor(itemView.context, textColor))
 
       if (item.icon != null) {
-        GlideApp.with(itemView).`as`(PictureDrawable::class.java)
-            .listener(SvgSoftwareLayerSetter()).load(item.icon.url)
-            .override(dp2Px(item.icon.width), dp2Px(item.icon.height)).into(iconView)
+        GlideApp.with(itemView)
+            .`as`(PictureDrawable::class.java)
+            .listener(SvgSoftwareLayerSetter())
+            .load(item.icon.url)
+            .override(dp2Px(item.icon.width), dp2Px(item.icon.height))
+            .into(iconView)
       }
     }
   }

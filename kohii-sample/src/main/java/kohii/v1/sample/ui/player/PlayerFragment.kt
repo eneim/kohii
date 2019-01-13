@@ -23,7 +23,6 @@ import android.view.ViewGroup
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
-import kohii.v1.DefaultEventListener
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlayerEventListener
@@ -56,21 +55,31 @@ class PlayerFragment : BaseFragment() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    listener = object : DefaultEventListener() {
-      override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-          pixelWidthHeightRatio: Float) {
+    listener = object : PlayerEventListener {
+      override fun onVideoSizeChanged(
+        width: Int,
+        height: Int,
+        unappliedRotationDegrees: Int,
+        pixelWidthHeightRatio: Float
+      ) {
         startPostponedEnterTransition()
         playback?.removePlayerEventListener(this)
       }
     }
   }
 
-  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-      savedInstanceState: Bundle?): View? {
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
     return inflater.inflate(R.layout.fragment_player, container, false)
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
     super.onViewCreated(view, savedInstanceState)
     // Avoid a postponeEnterTransition on orientation change, and postpone only of first creation.
     if (savedInstanceState == null) {
@@ -82,9 +91,11 @@ class PlayerFragment : BaseFragment() {
     transView = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView!!, playableTag)
 
-    playback = Kohii[requireContext()].findPlayable(playableTag)?.bind(playerView)?.also {
-      it.addPlayerEventListener(listener!!)
-    }
+    playback = Kohii[requireContext()].findPlayable(playableTag)
+        ?.bind(playerView)
+        ?.also {
+          it.addPlayerEventListener(listener!!)
+        }
   }
 
   override fun onStop() {
@@ -98,13 +109,15 @@ class PlayerFragment : BaseFragment() {
   private fun prepareSharedElementTransition() {
     val transition = TransitionInflater.from(requireContext())
         .inflateTransition(R.transition.player_shared_element_transition)
-    transition.duration = 375
+    transition.duration = 275
     sharedElementEnterTransition = transition
 
     // A similar mapping is set at the GridFragment with a setExitSharedElementCallback.
     setEnterSharedElementCallback(object : SharedElementCallback() {
-      override fun onMapSharedElements(names: MutableList<String>?,
-          sharedElements: MutableMap<String, View>?) {
+      override fun onMapSharedElements(
+        names: MutableList<String>?,
+        sharedElements: MutableMap<String, View>?
+      ) {
         // Map the first shared element name to the child ImageView.
         if (view !== null && transView != null) {
           sharedElements?.put(names?.get(0)!!, transView!!)

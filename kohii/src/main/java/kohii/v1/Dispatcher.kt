@@ -32,11 +32,11 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
     val what = msg.what
     when (what) {
       MSG_REFRESH -> manager.performRefreshAll()
-      MSG_TARGET_UNAVAILABLE -> {
-        (msg.obj as Playback<*>).target?.run { manager.onTargetUnAvailable(this) }
+      MSG_TARGET_INACTIVE -> {
+        (msg.obj as Playback<*>).target?.run { manager.onTargetInActive(this) }
       }
-      MSG_TARGET_AVAILABLE -> {
-        (msg.obj as Playback<*>).target?.run { manager.onTargetAvailable(this) }
+      MSG_TARGET_ACTIVE -> {
+        (msg.obj as Playback<*>).target?.run { manager.onTargetActive(this) }
       }
     }
   }
@@ -49,25 +49,27 @@ internal class Dispatcher(private val manager: Manager) : Handler() {
     sendEmptyMessageDelayed(MSG_REFRESH, MSG_DELAY)
   }
 
+  // TODO [20180911] Why we need this???. For non-RecyclerView's children?
   fun dispatchTargetUnAvailable(playback: Playback<*>) {
     // As early as possible
-    if (!hasMessages(MSG_TARGET_UNAVAILABLE, playback)) {
-      obtainMessage(MSG_TARGET_UNAVAILABLE, playback).sendToTarget()
+    if (!hasMessages(MSG_TARGET_INACTIVE, playback)) {
+      obtainMessage(MSG_TARGET_INACTIVE, playback).sendToTarget()
     }
   }
 
+  // TODO [20180911] Why we need this???. For non-RecyclerView's children?
   fun dispatchTargetAvailable(playback: Playback<*>) {
     // As early as possible
-    if (!hasMessages(MSG_TARGET_AVAILABLE, playback)) {
-      obtainMessage(MSG_TARGET_AVAILABLE, playback).sendToTarget()
+    if (!hasMessages(MSG_TARGET_ACTIVE, playback)) {
+      obtainMessage(MSG_TARGET_ACTIVE, playback).sendToTarget()
     }
   }
 
   companion object {
-    private const val MSG_DELAY = (5 * 1000 / 60).toLong()  // 5 frames
+    private const val MSG_DELAY = (3 * 1000 / 60).toLong()  // 3 frames
 
     private const val MSG_REFRESH = 1
-    private const val MSG_TARGET_UNAVAILABLE = 2
-    private const val MSG_TARGET_AVAILABLE = 3
+    private const val MSG_TARGET_INACTIVE = 2
+    private const val MSG_TARGET_ACTIVE = 3
   }
 }

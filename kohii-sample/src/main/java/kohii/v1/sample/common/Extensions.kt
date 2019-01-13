@@ -16,7 +16,9 @@
 
 package kohii.v1.sample.common
 
+import android.app.Activity
 import android.content.res.Resources
+import android.graphics.Point
 import android.util.TypedValue
 import android.view.View
 
@@ -24,26 +26,36 @@ import android.view.View
  * @author eneim (2018/07/30).
  */
 fun Int.toPixel(resources: Resources): Int {
-  return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this.toFloat(),
-      resources.displayMetrics).toInt()
+  return TypedValue.applyDimension(
+      TypedValue.COMPLEX_UNIT_DIP, this.toFloat(),
+      resources.displayMetrics
+  )
+      .toInt()
 }
 
 // Improved (or Degraded?) version of ktx.doOnNextLayout
 inline fun <reified T : View> View.doOnNextLayoutAs(crossinline action: (view: T) -> Unit) {
   addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
     override fun onLayoutChange(
-        view: View,
-        left: Int,
-        top: Int,
-        right: Int,
-        bottom: Int,
-        oldLeft: Int,
-        oldTop: Int,
-        oldRight: Int,
-        oldBottom: Int
+      view: View,
+      left: Int,
+      top: Int,
+      right: Int,
+      bottom: Int,
+      oldLeft: Int,
+      oldTop: Int,
+      oldRight: Int,
+      oldBottom: Int
     ) {
       view.removeOnLayoutChangeListener(this)
       action(view as T)
     }
   })
+}
+
+fun Activity.isLandscape(): Boolean {
+  return Point().let {
+    this.windowManager.defaultDisplay.getSize(it)
+    it.x >= it.y
+  }
 }

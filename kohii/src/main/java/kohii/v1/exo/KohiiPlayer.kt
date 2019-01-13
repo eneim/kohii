@@ -16,6 +16,9 @@
 
 package kohii.v1.exo
 
+import android.content.Context
+import android.os.Looper
+import android.util.Log
 import androidx.annotation.CallSuper
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
@@ -23,49 +26,70 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import com.google.android.exoplayer2.trackselection.TrackSelector
+import com.google.android.exoplayer2.upstream.BandwidthMeter
 import kohii.media.VolumeInfo
 import kohii.v1.VolumeChangedListener
+import kohii.v1.VolumeInfoController
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
+ * Extend the [SimpleExoPlayer] to have custom configuration.
+ *
  * @author eneim (2018/06/25).
  */
 open class KohiiPlayer(
-    renderersFactory: RenderersFactory,
-    trackSelector: TrackSelector,
-    loadControl: LoadControl,
-    drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?
-) : SimpleExoPlayer(renderersFactory, trackSelector, loadControl, drmSessionManager) {
+  context: Context,
+  renderersFactory: RenderersFactory,
+  trackSelector: TrackSelector,
+  loadControl: LoadControl,
+  bandwidthMeter: BandwidthMeter,
+  drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?,
+  looper: Looper
+) : SimpleExoPlayer( //
+    context,
+    renderersFactory,
+    trackSelector,
+    loadControl,
+    bandwidthMeter,
+    drmSessionManager,
+    looper
+), VolumeInfoController {
 
-  private var volumeChangedListeners: CopyOnWriteArraySet<VolumeChangedListener>? = null
+  companion object {
+    val instanceCount = AtomicInteger(0)
+  }
 
-  val volumeInfo = VolumeInfo(false, 1f)
+  init {
+    Log.w("Kohii:Player", "KohiiPlayer: ${instanceCount.incrementAndGet()}")
+  }
+
+  private val volumeChangedListeners by lazy { CopyOnWriteArraySet<VolumeChangedListener>() }
+  private val _volumeInfo = VolumeInfo(false, 1.0F) // backing field.
+
+  override val volumeInfo
+    get() = VolumeInfo(_volumeInfo)
 
   @CallSuper
   override fun setVolume(audioVolume: Float) {
     this.setVolumeInfo(VolumeInfo(audioVolume == 0f, audioVolume))
   }
 
-  fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    val changed = this.volumeInfo != volumeInfo
+  override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
+    val changed = this._volumeInfo != volumeInfo // Compare equality, not reference.
     if (changed) {
-      this.volumeInfo.setTo(volumeInfo.mute, volumeInfo.volume)
+      this._volumeInfo.setTo(volumeInfo.mute, volumeInfo.volume)
       super.setVolume(if (volumeInfo.mute) 0F else volumeInfo.volume)
-      this.volumeChangedListeners?.forEach { it.onVolumeChanged(volumeInfo) }
+      this.volumeChangedListeners.forEach { it.onVolumeChanged(volumeInfo) }
     }
     return changed
   }
 
-  fun addOnVolumeChangedListener(listener: VolumeChangedListener) {
-    if (volumeChangedListeners == null) volumeChangedListeners = CopyOnWriteArraySet()
-    volumeChangedListeners!!.add(listener)
+  override fun addVolumeChangedListener(listener: VolumeChangedListener) {
+    volumeChangedListeners.add(listener)
   }
 
-  fun removeOnVolumeChangedListener(listener: VolumeChangedListener?) {
-    if (volumeChangedListeners != null) volumeChangedListeners!!.remove(listener)
-  }
-
-  fun clearOnVolumeChangedListener() {
-    if (volumeChangedListeners != null) volumeChangedListeners!!.clear()
+  override fun removeVolumeChangedListener(listener: VolumeChangedListener?) {
+    volumeChangedListeners.remove(listener)
   }
 }

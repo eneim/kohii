@@ -18,14 +18,14 @@ ext {
   buildConfig = //
       [//
        compileSdk: 28,
-       minSdk    : 16,
+       minSdk    : 16, // TODO consider to make this to 19 >.<
        targetSdk : 28,
        'version' : //
            [//
             'major': 1,
             'minor': 0,
             'patch': 0,
-            'build': 2803, // ExoPlayer version number.
+            'build': 2903, // ExoPlayer version number.
            ], //
       ]
 
@@ -41,14 +41,14 @@ ext {
 
   versions = //
       [//
-       kotlin          : "1.2.60",
-       supportLibrary  : "28.0.0-rc01",
-       gradlePlugin    : "3.2.0-beta05",
-       jetpack         : "1.0.0-rc01",
-       constraintLayout: "2.0.0-alpha2",
-       xlifecycle      : "2.0.0-rc01",
+       kotlin          : "1.3.11",
+       supportLibrary  : "28.0.0",
+       gradlePlugin    : "3.4.0-alpha10",
+       jetpack         : "1.0.0",
+       constraintLayout: "2.0.0-alpha3",
+       xlifecycle      : "2.0.0",
        lifecycle       : "1.1.1",
-       exoplayer       : "2.8.3",
+       exoplayer       : "2.9.3",
        espresso        : "3.0.2", //
       ]
 
@@ -84,10 +84,10 @@ ext {
 
        xtest        : //
            [//
-            runner  : "androidx.test:runner:1.1.0-alpha3",
+            runner  : "androidx.test:runner:1.1.0",
             espresso: //
                 [//
-                 core: "androidx.test.espresso:espresso-core:3.1.0-alpha3", //
+                 core: "androidx.test.espresso:espresso-core:3.1.0", //
                 ], //
            ],
 

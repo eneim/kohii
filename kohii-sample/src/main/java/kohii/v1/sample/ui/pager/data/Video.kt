@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.sample.ui.pager.data
 
-import com.google.android.exoplayer2.source.MediaSource
-import kohii.v1.Playable
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-/**
- * @author eneim (2018/06/25).
- */
-interface MediaSourceFactory {
-
-  fun createMediaSource(builder: Playable.Builder): MediaSource
-}
+@Parcelize
+data class Video(
+  val feed_instance_id: String,
+  val title: String,
+  val kind: String,
+  val playlist: List<Playlist>,
+  val description: String
+) : Parcelable

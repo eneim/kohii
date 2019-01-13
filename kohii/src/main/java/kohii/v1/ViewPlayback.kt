@@ -18,7 +18,6 @@ package kohii.v1
 
 import android.graphics.Point
 import android.graphics.Rect
-import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
@@ -30,48 +29,57 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-internal open class ViewPlayback<V : View>(
-    kohii: Kohii,
-    playable: Playable,
-    uri: Uri,
-    manager: Manager,
-    target: V?,
-    builder: Playable.Builder,
-    delayer: Delayer = Playback.NO_DELAY
+open class ViewPlayback<V : View>(
+  kohii: Kohii,
+  playable: Playable,
+  manager: Manager,
+  target: V?,
+  delay: () -> Long = Playback.NO_DELAY
 ) : Playback<V>(
-    kohii, playable, uri, manager, target, builder, delayer
+    kohii,
+    playable,
+    manager,
+    target,
+    delay
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   // For debugging purpose only.
-  private val debugListener = object : PlaybackEventListener {
-    override fun onBuffering(playWhenReady: Boolean) {
-      Log.d("Kohii:P", "buffering: " + this@ViewPlayback)
-    }
+  private val debugListener: PlaybackEventListener by lazy {
+    object : PlaybackEventListener {
+      override fun onFirstFrameRendered() {
+        Log.d("Kohii:P", "first frame: ${this@ViewPlayback}")
+      }
 
-    override fun onPlaying() {
-      Log.d("Kohii:P", "playing: " + this@ViewPlayback)
-      target?.keepScreenOn = true
-    }
+      override fun onBuffering(playWhenReady: Boolean) {
+        Log.d("Kohii:P", "buffering: ${this@ViewPlayback}")
+      }
 
-    override fun onPaused() {
-      Log.w("Kohii:P", "paused: " + this@ViewPlayback)
-    }
+      override fun onPlaying() {
+        Log.d("Kohii:P", "playing: ${this@ViewPlayback}")
+        target?.keepScreenOn = true
+      }
 
-    override fun onCompleted() {
-      Log.d("Kohii:P", "ended: " + this@ViewPlayback)
-      target?.keepScreenOn = false
+      override fun onPaused() {
+        Log.w("Kohii:P", "paused: ${this@ViewPlayback}")
+      }
+
+      override fun onCompleted() {
+        Log.d("Kohii:P", "ended: ${this@ViewPlayback}")
+        target?.keepScreenOn = false
+      }
     }
   }
 
   private val targetAttached = AtomicBoolean(false)
 
+  // TODO [20190112] deal with scaled/transformed View and/or its Parent.
   override val token: ViewToken?
     get() {
       if (target == null || !this.targetAttached.get()) return null
 
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
-      if (!visible) return null
+      if (!visible) return ViewToken(manager.viewRect, playerRect, -1F)
 
       val drawRect = Rect()
       target.getDrawingRect(drawRect)
@@ -82,38 +90,38 @@ internal open class ViewPlayback<V : View>(
         val visibleArea = playerRect.height() * playerRect.width()
         offset = visibleArea / drawArea.toFloat()
       }
-      return ViewToken(playerRect.centerX().toFloat(), playerRect.centerY().toFloat(), offset)
+      return ViewToken(manager.viewRect, playerRect, offset)
     }
 
   @CallSuper
   override fun onAdded() {
+    super.onAdded()
     target?.run {
       if (ViewCompat.isAttachedToWindow(this)) {
         this@ViewPlayback.onViewAttachedToWindow(this)
       }
       this.addOnAttachStateChangeListener(this@ViewPlayback)
     }
-    super.onAdded()
-    super.addPlaybackEventListener(this.debugListener)
+    if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
   override fun onRemoved() {
-    super.removePlaybackEventListener(this.debugListener)
-    super.onRemoved()
+    if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
     target?.removeOnAttachStateChangeListener(this)
+    super.onRemoved()
   }
 
   override fun onViewAttachedToWindow(v: View) {
     if (this.targetAttached.compareAndSet(false, true)) {
       super.target?.also {
         // Find a ancestor of target whose parent is a CoordinatorLayout, or null.
-        val corChild = findSuitableParent(manager.decorView, it)
+        // TODO [20180620] deal with CoordinatorLayout.
+        /* val corChild = findSuitableParent(manager.decorView, it)
         val params = corChild?.layoutParams
         if (params is CoordinatorLayout.LayoutParams) {
-          // TODO [20180620] deal with CoordinatorLayout.
-        }
+        } */
 
-        manager.onTargetAvailable(it)
+        manager.onTargetActive(it)
         it.addOnLayoutChangeListener(this)
       }
     }
@@ -123,47 +131,63 @@ internal open class ViewPlayback<V : View>(
     if (this.targetAttached.compareAndSet(true, false)) {
       super.target?.run {
         this.removeOnLayoutChangeListener(this@ViewPlayback)
-        manager.onTargetUnAvailable(this)
+        manager.onTargetInActive(this)
       }
     }
   }
 
-  override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int,
-      oldTop: Int, oldRight: Int, oldBottom: Int) {
+  override fun onLayoutChange(
+    v: View,
+    left: Int,
+    top: Int,
+    right: Int,
+    bottom: Int,
+    oldLeft: Int,
+    oldTop: Int,
+    oldRight: Int,
+    oldBottom: Int
+  ) {
     if (layoutDidChange(left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)) {
       manager.onPlaybackInternalChanged(this)
     }
   }
 
   // Location on screen, with visible offset within target's parent.
-  @Suppress("MemberVisibilityCanBePrivate")
-  internal data class ViewToken internal constructor(
-      internal val centerX: Float,
-      internal val centerY: Float,
-      internal val areaOffset: Float
+  data class ViewToken internal constructor(
+    internal val managerRect: Rect,
+    internal val viewRect: Rect,
+    internal val areaOffset: Float,
+    internal val canRelease: Boolean = true
   ) : Token() {
     override fun compareTo(other: Token): Int {
-      // TODO [20180813] may need better comparison
+      // TODO [20180813] may need better comparison regarding the orientations.
       return if (other is ViewToken) CENTER_Y.compare(this, other) else super.compareTo(other)
     }
 
-    override fun wantsToPlay(): Boolean {
-      return areaOffset >= 0.75f  // TODO [20180714] make this configurable
+    override fun shouldPlay(): Boolean {
+      return areaOffset >= 0.65f  // TODO [20180714] make this configurable
+    }
+
+    override fun shouldRelease(): Boolean {
+      return canRelease
     }
   }
 
   @Suppress("unused")
   companion object {
     val CENTER_Y: Comparator<ViewToken> = Comparator { o1, o2 ->
-      compareValues(o1.centerY, o2.centerY)
+      compareValues(o1.viewRect.centerY(), o2.viewRect.centerY())
     }
 
     val CENTER_X: Comparator<ViewToken> = Comparator { o1, o2 ->
-      compareValues(o1.centerX, o2.centerX)
+      compareValues(o1.viewRect.centerX(), o2.viewRect.centerX())
     }
 
     // Find a CoordinatorLayout parent of View, which doesn't reach 'root' View.
-    private fun findSuitableParent(root: View, target: View?): View? {
+    private fun findSuitableParent(
+      root: View,
+      target: View?
+    ): View? {
       var view = target
       do {
         if (view != null && view.parent is CoordinatorLayout) {
@@ -181,8 +205,16 @@ internal open class ViewPlayback<V : View>(
       return null
     }
 
-    private fun layoutDidChange(left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int,
-        oldTop: Int, oldRight: Int, oldBottom: Int): Boolean {
+    private fun layoutDidChange(
+      left: Int,
+      top: Int,
+      right: Int,
+      bottom: Int,
+      oldLeft: Int,
+      oldTop: Int,
+      oldRight: Int,
+      oldBottom: Int
+    ): Boolean {
       return top != oldTop || bottom != oldBottom || left != oldLeft || right != oldRight
     }
   }
