@@ -20,8 +20,8 @@ package kohii.v1.sample.common
  * @author eneim (2018/07/15).
  */
 data class Video(
-    val url: String,
-    val thumb: String?,
-    val width: Float,
-    val height: Float
+  val url: String,
+  val thumb: String?,
+  val width: Float,
+  val height: Float
 )

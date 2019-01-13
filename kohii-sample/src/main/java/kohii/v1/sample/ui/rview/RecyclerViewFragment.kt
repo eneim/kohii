@@ -36,7 +36,6 @@ import kohii.v1.sample.common.doOnNextLayoutAs
 import kohii.v1.sample.common.toPixel
 import okio.Okio
 
-
 /**
  * @author eneim (2018/07/06).
  */
@@ -46,7 +45,10 @@ class RecyclerViewFragment : BaseFragment() {
     fun newInstance() = RecyclerViewFragment()
   }
 
-  data class PlayerInfo(val adapterPos: Int, val viewTop: Int)
+  data class PlayerInfo(
+    val adapterPos: Int,
+    val viewTop: Int
+  )
 
   // implemented by host (Activity) to manage shared elements transition information.
   interface PlayerInfoHolder {
@@ -62,12 +64,18 @@ class RecyclerViewFragment : BaseFragment() {
     super.onCreate(savedInstanceState)
     val asset = requireActivity().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
-    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+    val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
     items = adapter.fromJson(Okio.buffer(Okio.source(asset.open("theme.json"))))
   }
 
-  override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View? {
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    parent: ViewGroup?,
+    state: Bundle?
+  ): View? {
     return inflater.inflate(R.layout.fragment_recycler_view, parent, false)
   }
 
@@ -86,7 +94,10 @@ class RecyclerViewFragment : BaseFragment() {
     playerInfoHolder = null
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
     super.onViewCreated(view, savedInstanceState)
     if (items == null) return
 
@@ -96,24 +107,27 @@ class RecyclerViewFragment : BaseFragment() {
     val data = ArrayList(items!!).apply { this.addAll(items!!) }
     container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)
-      it.layoutManager = LinearLayoutManager(
-          requireContext()).apply { this.isItemPrefetchEnabled = true }
+      it.layoutManager = LinearLayoutManager(requireContext())
+          .apply { this.isItemPrefetchEnabled = true }
       it.adapter = ItemsAdapter(this, data) { dp -> dp.toPixel(resources) }
     }
 
-    this.playerInfoHolder?.fetchPlayerInfo()?.run {
-      container!!.doOnNextLayoutAs<RecyclerView> {
-        val layout = it.layoutManager as LinearLayoutManager
-        val viewAtPosition = layout.findViewByPosition(this.adapterPos)
-        // Scroll to position if the view for the current position is null (not currently part of
-        // layout manager children), or it's not completely visible.
-        if (viewAtPosition == null || layout.isViewPartiallyVisible(viewAtPosition, false, true)) {
-          it.postDelayed(200) {
-            layout.scrollToPositionWithOffset(this.adapterPos, this.viewTop)
+    this.playerInfoHolder?.fetchPlayerInfo()
+        ?.run {
+          container?.doOnNextLayoutAs<RecyclerView> {
+            val layout = it.layoutManager as LinearLayoutManager
+            val viewAtPosition = layout.findViewByPosition(this.adapterPos)
+            // Scroll to position if the view for the current position is null (not currently part of
+            // layout manager children), or it's not completely visible.
+            if (viewAtPosition == null ||
+                layout.isViewPartiallyVisible(viewAtPosition, false, true)
+            ) {
+              it.postDelayed(200) {
+                layout.scrollToPositionWithOffset(this.adapterPos, this.viewTop)
+              }
+            }
           }
         }
-      }
-    }
   }
 
   private fun prepareTransitions() {
@@ -125,7 +139,10 @@ class RecyclerViewFragment : BaseFragment() {
 
     val playerInfo = this.fetchPlayerInfo() ?: return
     setEnterSharedElementCallback(object : SharedElementCallback() {
-      override fun onMapSharedElements(names: List<String>?, elements: MutableMap<String, View>?) {
+      override fun onMapSharedElements(
+        names: List<String>?,
+        elements: MutableMap<String, View>?
+      ) {
         // Locate the ViewHolder for the clicked position.
         val holder = container?.findViewHolderForAdapterPosition(playerInfo.adapterPos)
         if (holder is VideoViewHolder) {

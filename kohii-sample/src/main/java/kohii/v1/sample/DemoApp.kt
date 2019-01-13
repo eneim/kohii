@@ -17,33 +17,20 @@
 package kohii.v1.sample
 
 import android.app.Application
-import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
-import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import com.squareup.leakcanary.LeakCanary
-import kohii.v1.exo.Config
 
 /**
  * @author eneim (2018/06/26).
  */
 class DemoApp : Application() {
 
-  companion object {
-    lateinit var app: DemoApp
-  }
-
   override fun onCreate() {
     super.onCreate()
-    app = this
     if (LeakCanary.isInAnalyzerProcess(this)) {
       // This process is dedicated to LeakCanary for heap analysis.
       // You should not init your app in this process.
       return
     }
     LeakCanary.install(this)
-  }
-
-  val config: Config by lazy {
-    Config.DEFAULT_CONFIG.copy(
-        cache = SimpleCache(cacheDir, LeastRecentlyUsedCacheEvictor(32 * 1024 * 1024)))
   }
 }

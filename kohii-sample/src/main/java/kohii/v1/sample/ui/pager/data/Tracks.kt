@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.sample.ui.pager.data
 
-import com.google.android.exoplayer2.Player
-import kohii.media.MediaDrm
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-/**
- * @author eneim (2018/06/25).
- */
-interface PlayerFactory {
-
-  fun createPlayer(mediaDrm: MediaDrm?): Player
-}
+@Parcelize
+data class Tracks(
+  val kind: String,
+  val file: String
+) : Parcelable

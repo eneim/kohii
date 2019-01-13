@@ -18,10 +18,11 @@ package kohii.v1.sample
 
 import android.os.Bundle
 import kohii.v1.sample.common.BaseActivity
-import kohii.v1.sample.ui.debug.DebugFragment
+import kohii.v1.sample.ui.pager.PagerMainFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
+import kohii.v1.sample.ui.sview.ScrollViewFragment
 
 class MainActivity : BaseActivity(), PlayerInfoHolder {
 
@@ -37,8 +38,12 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main_activity)
     if (savedInstanceState == null) {
-      supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer,
-          DebugFragment.newInstance(), RecyclerViewFragment::class.java.simpleName).commit()
+      supportFragmentManager.beginTransaction()
+          .replace(
+              R.id.fragmentContainer,
+              PagerMainFragment.newInstance(), RecyclerViewFragment::class.java.simpleName
+          )
+          .commit()
     }
   }
 }

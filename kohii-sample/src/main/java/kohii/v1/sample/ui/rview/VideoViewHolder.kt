@@ -27,7 +27,6 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 
 /**
@@ -35,19 +34,27 @@ import kohii.v1.sample.R
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
-    inflater: LayoutInflater,
-    parent: ViewGroup,
-    val listener: OnClickListener
+  inflater: LayoutInflater,
+  parent: ViewGroup,
+  val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
     View.OnClickListener, PlaybackEventListener, Playback.Callback {
 
-  override fun onTargetAvailable(playback: Playback<*>) {
+  override fun onActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
     listener.onItemLoaded(itemView, adapterPosition)
-    ViewCompat.setTransitionName(transView, itemTag)
   }
 
-  override fun onTargetUnAvailable(playback: Playback<*>) {
-    ViewCompat.setTransitionName(transView, null)
+  override fun onInActive(
+    playback: Playback<*>,
+    target: Any?
+  ) {
+  }
+
+  override fun onFirstFrameRendered() {
+    Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
   }
 
   override fun onBuffering(playWhenReady: Boolean) {
@@ -76,19 +83,21 @@ class VideoViewHolder(
   override fun bind(item: Item?) {
     itemView.setOnClickListener(this)
     if (item != null) {
-      itemTag = item.content + "@" + adapterPosition
+      itemTag = "${item.content}@$adapterPosition"
 
       playerContainer.setAspectRatio(item.width / item.height.toFloat())
       val playable = Kohii[itemView.context]
           .setUp(item.content)
-          .copy(tag = itemTag)
-          .copy(repeatMode = Player.REPEAT_MODE_ONE)
-          .copy(config = DemoApp.app.config)
+          .copy(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
           .asPlayable()
-      playback = playable.bind(playerView).also {
-        it.addPlaybackEventListener(this@VideoViewHolder)
-        it.addCallback(this@VideoViewHolder)
-      }
+
+      playback = playable.bind(playerView)
+          .also {
+            it.addPlaybackEventListener(this@VideoViewHolder)
+            it.addCallback(this@VideoViewHolder)
+          }
+
+      ViewCompat.setTransitionName(transView, itemTag)
     }
   }
 

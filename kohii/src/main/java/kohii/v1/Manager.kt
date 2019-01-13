@@ -16,30 +16,30 @@
 
 package kohii.v1
 
+import android.graphics.Rect
 import android.view.View
 import kohii.media.PlaybackInfo
 import kohii.v1.Kohii.GlobalScrollChangeListener
 import kohii.v1.Playback.Token
 import java.util.Comparator
 import java.util.TreeMap
-import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author eneim (2018/06/24).
  */
 class Manager internal constructor(
-    val kohii: Kohii,
-    val decorView: View,
-    private val playerSelector: PlayerSelector = Manager.DEFAULT_SELECTOR
+  val kohii: Kohii,
+  @Suppress("MemberVisibilityCanBePrivate")
+  val decorView: View,
+  private val playerSelector: PlayerSelector = Manager.DEFAULT_SELECTOR
 ) {
 
   class Builder(
-      private val kohii: Kohii,
-      private val decorView: View,
-      private val playerSelector: PlayerSelector = Manager.DEFAULT_SELECTOR
+    private val kohii: Kohii,
+    private val decorView: View,
+    private val playerSelector: PlayerSelector = Manager.DEFAULT_SELECTOR
   ) {
-
     fun build(): Manager {
       return Manager(kohii, decorView, playerSelector)
     }
@@ -48,26 +48,30 @@ class Manager internal constructor(
   companion object {
     val TOKEN_COMPARATOR: Comparator<Token> = Comparator { o1, o2 -> o1.compareTo(o2) }
     val DEFAULT_SELECTOR = object : PlayerSelector {
-      override fun select(candidates: List<Playback<*>>): Collection<Playback<*>> {
-        return if (candidates.isNotEmpty()) arrayListOf(candidates[0]) else emptyList()
+      override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+        return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
       }
     }
   }
 
   interface PlayerSelector {
-    fun select(candidates: List<Playback<*>>): Collection<Playback<*>>
+    fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>>
   }
 
   private val attachFlag = AtomicBoolean(false)
   private val scrolling = AtomicBoolean(false)  // must start as 'not scrolling'.
 
-  internal val mapWeakPlayableToTarget = WeakHashMap<Playable, Any /* Target */>()
-  // TODO [20180806] use WeakHashMap with ReferenceQueue and catch the QC-ed Target in cleanup thread?
-  internal val mapTargetToPlayback = LinkedHashMap<Any? /* Target */, Playback<*>>()
+  // TODO [20190112] Need proper calculation
+  internal val viewRect: Rect by lazy { Rect().also { this.decorView.getGlobalVisibleRect(it) } }
 
-  private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
   private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
   private val mapDetachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
+
+  // TODO [20180806] use WeakHashMap with ReferenceQueue and catch the QC-ed Target in cleanup thread?
+  // As a target has no idea which Playable it is bound to, Manager need to manage the link
+  // So that when adding new link, it can effectively clean up old links.
+  private val mapTargetToPlayback = LinkedHashMap<Any? /* Target */, Playback<*>>()
+  private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
   // Candidates to hold playbacks for a refresh call.
   private val candidates = TreeMap<Token, Playback<*>>(TOKEN_COMPARATOR)
@@ -76,6 +80,7 @@ class Manager internal constructor(
   private var scrollChangeListener: GlobalScrollChangeListener? = null
   // Dispatch certain events/actions
   private var dispatcher: Dispatcher? = null
+  private val playbackDispatcher = PlaybackDispatcher()
 
   private fun isScrolling() = this.scrolling.get()
 
@@ -87,41 +92,40 @@ class Manager internal constructor(
     lifecycle events will be executed:
     A0@onPause() --> A1@onCreate() --> A1@onStart() --> A1@onPostCreate() --> A1@onResume() -->
     A1@onPostResume() --> A0@onStop() --> A0@onSaveInstanceState().
-    Therefore, handling Manager activeness of Playable requires some order handling.
+    Therefore, handling Manager activeness of Playable should take into account the order.
    */
   internal fun onHostStarted() {
-    mapAttachedPlaybackToTime.keys.forEach {
-      kohii.onManagerActiveForPlayback(this, it)
+    mapAttachedPlaybackToTime.forEach {
+      kohii.onManagerActiveForPlayback(this, it.key)
     }
     this.dispatchRefreshAll()
   }
 
   // Called when the Activity bound to this Manager is stopped.
   internal fun onHostStopped(configChange: Boolean) {
-    mapAttachedPlaybackToTime.keys.forEach {
-      kohii.onManagerInActiveForPlayback(this, it, configChange)
+    mapAttachedPlaybackToTime.forEach {
+      kohii.onManagerInActiveForPlayback(this, it.key, configChange)
     }
   }
 
   // Called when the Activity bound to this Manager is destroyed.
   internal fun onHostDestroyed() {
     // Wrap by an ArrayList because we also remove entry while iterating by performDestroyPlayback
-    ArrayList(mapTargetToPlayback.values).apply {
-      this.forEach { performDestroyPlayback(it) }
-    }.clear()
-    mapWeakPlayableToTarget.apply {
-      this.entries.forEach {
-        if (kohii.mapWeakPlayableToManager[it.key] == this@Manager) {
-          kohii.mapWeakPlayableToManager[it.key] = null
+    (ArrayList(mapTargetToPlayback.values).apply {
+      this.forEach {
+        performDestroyPlayback(it)
+        if (kohii.mapWeakPlayableToManager[it.playable] === this@Manager) {
+          kohii.mapWeakPlayableToManager[it.playable] = null
         }
       }
-    }.clear()
+    }).clear()
   }
 
   // Get called when the DecorView is attached to Window
   internal fun onAttached() {
     if (dispatcher == null) dispatcher = Dispatcher(this)
     if (attachFlag.compareAndSet(false, true)) {
+      playbackDispatcher.onAttached()
       // Do something on the first time this Manager is attached.
       if (this.scrollChangeListener == null) {
         this.scrollChangeListener = GlobalScrollChangeListener(this)
@@ -141,21 +145,22 @@ class Manager internal constructor(
         this.decorView.viewTreeObserver.removeOnScrollChangedListener(scrollChangeListener)
         this.scrollChangeListener = null
       }
+      playbackDispatcher.onDetached()
     }
 
     dispatcher?.removeCallbacksAndMessages(null)
     dispatcher = null
   }
 
-  internal fun savePlaybackInfo(playback: Playback<*>) {
-    if (playback.validTag()) {
-      mapPlayableTagToInfo[playback.tag] = playback.playable.playbackInfo
+  internal fun trySavePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
     }
   }
 
-  internal fun restorePlaybackInfo(playback: Playback<*>) {
-    if (playback.validTag()) {
-      val info = mapPlayableTagToInfo.remove(playback.tag)
+  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
       if (info != null) playback.playable.playbackInfo = info
     }
   }
@@ -164,35 +169,44 @@ class Manager internal constructor(
     this.scrolling.set(scrolling)
   }
 
+  internal fun findPlaybackForTarget(target: Any?) = this.mapTargetToPlayback[target]
+
   internal fun dispatchRefreshAll() {
-    dispatcher?.dispatchRefreshAll() ?: performRefreshAll()
+    dispatcher?.dispatchRefreshAll()
   }
 
   // Called when a Playback's target is attached. Eg: PlayerView is attached to window.
-  fun onTargetAvailable(target: Any) {
-    mapTargetToPlayback[target]?.run {
-      mapAttachedPlaybackToTime[this] = System.nanoTime()
-      mapDetachedPlaybackToTime.remove(this)
-      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.target) {
-        restorePlaybackInfo(this)
-        this.prepare()
-      }
-      this.onTargetAvailable()
+  fun onTargetActive(target: Any) {
+    mapTargetToPlayback[target]?.let {
+      mapAttachedPlaybackToTime[it] = System.nanoTime()
+      mapDetachedPlaybackToTime.remove(it)
+      /* if (this@Manager.mapWeakPlayableToTarget[it.playable] === it.target) {
+        tryRestorePlaybackInfo(it)
+        // this.prepare() ⬇
+        if (it.token?.shouldPrepare() == true) it.prepare()
+      } */
+      tryRestorePlaybackInfo(it) // FIXME Note: only do this for proper target. https://is.gd/CLHXK4
+      // this.prepare() ⬇
+      if (it.token?.shouldPrepare() == true) it.prepare()
+      it.onActive()
       this@Manager.dispatchRefreshAll()
-    } ?: throw IllegalStateException("No Playback found for target: $target")
+    } ?: throw IllegalStateException("Target is available but Playback is not found: $target")
   }
 
   // Called when a Playback's target is detached. Eg: PlayerView is detached from window.
-  fun onTargetUnAvailable(target: Any) {
-    mapTargetToPlayback[target]?.run {
-      mapDetachedPlaybackToTime[this] = System.nanoTime()
-      mapAttachedPlaybackToTime.remove(this)
-      this.pause()
+  // Call this will also save old PlaybackInfo if needed.
+  fun onTargetInActive(target: Any) {
+    mapTargetToPlayback[target]?.let {
+      mapDetachedPlaybackToTime[it] = System.nanoTime() // Mark as detached/inactive
+      // Call before this@Manager.dispatchRefreshAll()
+      mapAttachedPlaybackToTime.remove(it)
+          ?.run { it.onInActive() }
       this@Manager.dispatchRefreshAll()
-      this.onTargetUnAvailable()
-      if (this@Manager.mapWeakPlayableToTarget[this.playable] == this.target) {
-        savePlaybackInfo(this)
-        this.release()
+      if (kohii.mapWeakPlayableToManager[it.playable] === this) {
+        // Only release if this Manager manages the Playable.
+        it.pause()
+        trySavePlaybackInfo(it) // FIXME Note: only do this for proper target. https://is.gd/CLHXK4
+        it.release()
       }
     }
   }
@@ -200,7 +214,7 @@ class Manager internal constructor(
   // Called when something has changed about the Playback. Eg: playback's target has layout change.
   fun <T> onPlaybackInternalChanged(playback: Playback<T>) {
     if (!isScrolling()) {
-      if (playback.token?.wantsToPlay() == true) this.dispatchRefreshAll()
+      if (playback.token?.shouldPlay() == true) this.dispatchRefreshAll()
     }
   }
 
@@ -211,9 +225,12 @@ class Manager internal constructor(
   // - mapDetachedPlaybackToTime
   // - mapPlayableTagToInfo
   fun performDestroyPlayback(playback: Playback<*>) {
-    mapAttachedPlaybackToTime.remove(playback)
+    val toInActive = mapAttachedPlaybackToTime.remove(playback) != null
     mapDetachedPlaybackToTime.remove(playback)
-    mapTargetToPlayback.remove(playback.target).also { it?.onTargetUnAvailable() }
+    mapTargetToPlayback.remove(playback.target)?.also {
+      if (toInActive) it.onInActive()
+    } ?: if (toInActive) playback.onInActive()
+    playbackDispatcher.onPlaybackRemoved(playback)
     playback.onRemoved()
     playback.onDestroyed()
   }
@@ -225,71 +242,87 @@ class Manager internal constructor(
    */
   fun <T> performAddPlayback(playback: Playback<T>): Playback<T> {
     val target = playback.target
+    val cache = this.mapTargetToPlayback[target]
     var shouldAdd = target != null // playback must have a valid target.
     if (shouldAdd) {
       // Not-null target may be already a target of another Playback before.
-      // Here we also make sure if we need to torn that old Playback down first or not.
-      val cache = this.mapTargetToPlayback[target]
+      // Here we also make sure if we need to destroy that old Playback down first or not.
       shouldAdd = cache == null || cache !== playback
     }
 
     if (shouldAdd) {
-      this.mapTargetToPlayback.put(target!!, playback)?.run {
-        if (mapAttachedPlaybackToTime.remove(this) != null) {
-          throw RuntimeException("Old playback is still attached. This should not happen ...")
-        } else {
-          mapDetachedPlaybackToTime.remove(this)
-        }
-        this.onRemoved()
-      }
+      if (cache != null) performDestroyPlayback(cache)
+      this.mapTargetToPlayback[target] = playback
       playback.onAdded()
     }
 
-    // In case we are adding nothing new, and the playback is already there.
+    // In case we are adding existing one (should not happen, but for safety).
     if (mapAttachedPlaybackToTime.containsKey(playback)) {
-      // shouldQueue is true when the target is not null and no pre-exist playback.
-      if (shouldAdd && playback.token?.wantsToPlay() == true) this.dispatchRefreshAll()
+      // shouldAdd is true when the target is not null and no pre-exist playback.
+      if (shouldAdd && playback.token?.shouldPlay() == true) this.dispatchRefreshAll()
     }
 
     return playback
   }
 
   // Important. Do the refresh stuff. Change the playback items, etc.
+  /**
+   * This method is triggered once there is scroll change in the UI Hierarchy, including changing from
+   * idle to scroll or vice versa.
+   *
+   * This method is also be called when there is update in the content, for example Target of a Playback
+   * is attached/detached or the Manager itself is attached to the Window.
+   *
+   * Design target:
+   *
+   * - [1] Update current attached/detached Playbacks.
+   * - [2] Pause the Playbacks those are out of interest (eg: not visible enough).
+   * - [3] Allow client to select Playback that is available for a playback.
+   */
   fun performRefreshAll() {
     candidates.clear()
 
-    mapDetachedPlaybackToTime.keys.filter { it.token != null }.also { it ->
-      dispatcher?.apply {
-        it.forEach { this.dispatchTargetAvailable(it) }
-      }
-    }
+    // Confirm if any detached view is re-attached to the Window. Not happen all the time.
+    mapDetachedPlaybackToTime.keys.filter { it.token != null }
+        .also { items ->
+          dispatcher?.apply {
+            // In case the container is non-RecyclerView (so all View are attached to Parent),
+            // By refreshing the list, we detect Views those are out of sight, and those are not.
+            items.forEach { playback -> this.dispatchTargetAvailable(playback) }
+          }
+        }
 
-    // List of all possible candidates.
+    // List of all attached Playbacks.
     val playbacks = ArrayList(mapAttachedPlaybackToTime.keys)
+    // Filter out the bad ones.
     for (playback in playbacks) {
       // Get token here and use later, rather than getting it many times.
       val token = playback.token
-      // Doing this will sort the playback using LocToken's center Y value.
-      if (token == null) {
+      if (token == null) { // Should not null here, but still checking for safety.
+        // In case the container is non-RecyclerView (so all View are attached to Parent),
+        // By refreshing the list, we detect Views those are out of sight, and those are not.
         dispatcher?.dispatchTargetUnAvailable(playback)
-      } else if (token.wantsToPlay()) candidates[token] = playback
+      } else if (token.shouldPlay()) {
+        // This will also sort the playback using Token's comparator.
+        candidates[token] = playback
+      }
     }
 
     val toPlay = playerSelector.select(ArrayList(candidates.values))
-
     playbacks.removeAll(toPlay)
     playbacks.addAll(mapDetachedPlaybackToTime.keys)
     // Keep only non-play-candidate ones, and pause them.
     for (playback in playbacks) {
-      playback.pause()
+      playbackDispatcher.pause(playback)
     }
-    // Now kick play the play-candidate
+    // Now start the play-candidate
     if (!isScrolling()) {
       for (playback in toPlay) {
-        playback.play()
+        playbackDispatcher.play(playback)
       }
     }
     // Clean up cache
     candidates.clear()
   }
+
 }

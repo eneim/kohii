@@ -21,19 +21,25 @@ import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
+import kohii.v1.Playable.RepeatMode
 
 /**
- * Bridge between a Playable and a Target. Currently this interface is designed based on ExoPlayer.
+ * Bridge between a [Playable] and a Target. Currently this interface is designed based on ExoPlayer API.
  *
  * @author eneim (2018/06/24).
  */
-internal interface Bridge {
+interface Bridge {
 
+  //  set/get
   var playerView: PlayerView?
 
+  // set/get
   var playbackInfo: PlaybackInfo
 
-  var parameters: PlaybackParameters?
+  // set/get
+  var parameters: PlaybackParameters
+
+  @RepeatMode var repeatMode: Int
 
   val isPlaying: Boolean
 
@@ -53,8 +59,10 @@ internal interface Bridge {
    */
   fun prepare(loadSource: Boolean)
 
+  /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to true */
   fun play()
 
+  /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to false */
   fun pause()
 
   /**

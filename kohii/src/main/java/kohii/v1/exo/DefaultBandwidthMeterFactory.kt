@@ -16,14 +16,9 @@
 
 package kohii.v1.exo
 
-import com.google.android.exoplayer2.drm.DrmSessionManager
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
-import kohii.media.MediaDrm
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 
-/**
- * @author eneim (2018/06/25).
- */
-interface DrmSessionManagerFactory {
+class DefaultBandwidthMeterFactory : BandwidthMeterFactory {
 
-  fun createDrmSessionManager(mediaDrm: MediaDrm): DrmSessionManager<FrameworkMediaCrypto>
+  override fun createBandwidthMeter() = DefaultBandwidthMeter()
 }

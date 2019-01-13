@@ -32,9 +32,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author eneim (2018/07/06).
  */
 class ItemsAdapter(
-    private val fragment: RecyclerViewFragment,
-    private val items: List<Item>,
-    private val dp2Px: (Int) -> Int
+  private val fragment: RecyclerViewFragment,
+  private val items: List<Item>,
+  private val dp2Px: (Int) -> Int
 ) : Adapter<BaseViewHolder>() {
 
   private var inflater: LayoutInflater? = null
@@ -43,7 +43,10 @@ class ItemsAdapter(
     setHasStableIds(true)
   }
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+  override fun onCreateViewHolder(
+    parent: ViewGroup,
+    viewType: Int
+  ): BaseViewHolder {
     if (inflater == null || inflater!!.context != parent.context) {
       inflater = LayoutInflater.from(parent.context)
     }
@@ -59,7 +62,8 @@ class ItemsAdapter(
 
   override fun getItemId(position: Int): Long {
     val item = items[position]
-    return item.hashCode().toLong()
+    return item.hashCode()
+        .toLong()
   }
 
   override fun getItemViewType(position: Int): Int {
@@ -71,7 +75,10 @@ class ItemsAdapter(
     }
   }
 
-  override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+  override fun onBindViewHolder(
+    holder: BaseViewHolder,
+    position: Int
+  ) {
     holder.bind(items[position % items.size])
   }
 
@@ -88,7 +95,12 @@ class ItemsAdapter(
   class VideoClickImpl(private val fragment: RecyclerViewFragment) : OnClickListener {
     private val enterTransitionStarted: AtomicBoolean = AtomicBoolean()
 
-    override fun onItemClick(itemView: View, transView: View?, adapterPos: Int, payload: Any) {
+    override fun onItemClick(
+      itemView: View,
+      transView: View?,
+      adapterPos: Int,
+      payload: Any
+    ) {
       if (transView == null) return
       val transName = ViewCompat.getTransitionName(transView) ?: return
       val tag = payload as? String ?: return
@@ -105,7 +117,10 @@ class ItemsAdapter(
           .commit()
     }
 
-    override fun onItemLoaded(itemView: View, adapterPos: Int) {
+    override fun onItemLoaded(
+      itemView: View,
+      adapterPos: Int
+    ) {
       val playerInfo = fragment.fetchPlayerInfo()
       if (playerInfo == null || adapterPos != playerInfo.adapterPos) return
       if (enterTransitionStarted.getAndSet(true)) return
@@ -113,7 +128,10 @@ class ItemsAdapter(
       fragment.startPostponedEnterTransition()
     }
 
-    override fun onItemLoadFailed(adapterPos: Int, error: Exception) {
+    override fun onItemLoadFailed(
+      adapterPos: Int,
+      error: Exception
+    ) {
       if (enterTransitionStarted.getAndSet(true)) return
       fragment.recordPlayerInfo(null)
       fragment.startPostponedEnterTransition()

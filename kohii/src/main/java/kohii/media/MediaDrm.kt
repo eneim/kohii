@@ -16,6 +16,7 @@
 
 package kohii.media
 
+import android.os.Parcelable
 import androidx.core.util.ObjectsCompat
 import java.util.Arrays
 
@@ -24,7 +25,7 @@ import java.util.Arrays
  *
  * @author eneim (2018/06/25).
  */
-interface MediaDrm : Comparable<MediaDrm> {
+interface MediaDrm : Comparable<MediaDrm>, Parcelable {
 
   // DRM Scheme
   val type: String
@@ -33,14 +34,14 @@ interface MediaDrm : Comparable<MediaDrm> {
 
   val keyRequestPropertiesArray: Array<String>?
 
-  fun multiSession(): Boolean
+  val multiSession: Boolean
 
   override fun compareTo(other: MediaDrm): Int {
     var result = type.compareTo(other.type)
     if (result == 0) {
-      result = this.multiSession().compareTo(other.multiSession())
+      result = this.multiSession.compareTo(other.multiSession)
     }
-    
+
     if (result == 0) {
       result = (if (ObjectsCompat.equals(this.licenseUrl, other.licenseUrl)) 0 else -1)
     }
