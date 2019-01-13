@@ -61,12 +61,15 @@ class Manager internal constructor(
   private val attachFlag = AtomicBoolean(false)
   private val scrolling = AtomicBoolean(false)  // must start as 'not scrolling'.
 
-  internal val viewRect: Rect by lazy { Rect().also { this.decorView.getLocalVisibleRect(it) } }
+  // TODO [20190112] Need proper calculation
+  internal val viewRect: Rect by lazy { Rect().also { this.decorView.getGlobalVisibleRect(it) } }
 
   private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
   private val mapDetachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
 
   // TODO [20180806] use WeakHashMap with ReferenceQueue and catch the QC-ed Target in cleanup thread?
+  // As a target has no idea which Playable it is bound to, Manager need to manage the link
+  // So that when adding new link, it can effectively clean up old links.
   private val mapTargetToPlayback = LinkedHashMap<Any? /* Target */, Playback<*>>()
   private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
@@ -191,12 +194,13 @@ class Manager internal constructor(
   }
 
   // Called when a Playback's target is detached. Eg: PlayerView is detached from window.
+  // Call this will also save old PlaybackInfo if needed.
   fun onTargetInActive(target: Any) {
     mapTargetToPlayback[target]?.let {
-      mapDetachedPlaybackToTime[it] = System.nanoTime()
-      // Playback#onInActive() will also update the Playback -- Playable relationship.
+      mapDetachedPlaybackToTime[it] = System.nanoTime() // Mark as detached/inactive
+      // Call before this@Manager.dispatchRefreshAll()
       mapAttachedPlaybackToTime.remove(it)
-          ?.run { it.onInActive() } // must call before this@Manager.dispatchRefreshAll()
+          ?.run { it.onInActive() }
       this@Manager.dispatchRefreshAll()
       if (kohii.mapWeakPlayableToManager[it.playable] === this) {
         // Only release if this Manager manages the Playable.

@@ -136,6 +136,7 @@ abstract class Playback<T> internal constructor(
 
   @OnLifecycleEvent(ON_DESTROY)
   fun onLifecycleDestroyed() {
+    (this.target as? Any)?.let { manager.onTargetInActive(it) }
     manager.performDestroyPlayback(this)
     lifecycle?.removeObserver(this)
     lifecycle = null

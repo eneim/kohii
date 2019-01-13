@@ -16,7 +16,9 @@
 
 package kohii.v1.sample.common
 
+import android.app.Activity
 import android.content.res.Resources
+import android.graphics.Point
 import android.util.TypedValue
 import android.view.View
 
@@ -49,4 +51,11 @@ inline fun <reified T : View> View.doOnNextLayoutAs(crossinline action: (view: T
       action(view as T)
     }
   })
+}
+
+fun Activity.isLandscape(): Boolean {
+  return Point().let {
+    this.windowManager.defaultDisplay.getSize(it)
+    it.x >= it.y
+  }
 }

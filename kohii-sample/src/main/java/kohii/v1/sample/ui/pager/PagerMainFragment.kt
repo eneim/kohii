@@ -20,13 +20,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.ui.sview.ScrollViewFragment
+import kohii.v1.sample.common.isLandscape
+import kohii.v1.sample.ui.pager.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
+import okio.Okio
 
 class PagerMainFragment : BaseFragment() {
 
@@ -34,13 +41,29 @@ class PagerMainFragment : BaseFragment() {
     fun newInstance() = PagerMainFragment()
   }
 
-  class VideoPagerAdapter(fm: FragmentManager?) : FragmentStatePagerAdapter(fm) {
+  class VideoPagerAdapter(
+    fm: FragmentManager?,
+    private val videos: List<Video>
+  ) : FragmentStatePagerAdapter(fm) {
 
     override fun getItem(position: Int): Fragment {
-      return ScrollViewFragment.newInstance("Page: $position")
+      return PageFragment.newInstance(position, videos[position % videos.size])
     }
 
     override fun getCount() = Int.MAX_VALUE
+  }
+
+  private var items: List<Video>? = null
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    val asset = requireActivity().assets
+    val type = Types.newParameterizedType(List::class.java, Video::class.java)
+    val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+    val adapter: JsonAdapter<List<Video>> = moshi.adapter(type)
+    items = adapter.fromJson(Okio.buffer(Okio.source(asset.open("caminandes.json"))))
   }
 
   override fun onCreateView(
@@ -56,9 +79,19 @@ class PagerMainFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    this.viewPager.let {
-      it.adapter = VideoPagerAdapter(childFragmentManager)
-      it.pageMargin = resources.getDimensionPixelOffset(R.dimen.pager_horizontal_space)
+    this.viewPager.adapter = VideoPagerAdapter(childFragmentManager, items!!)
+
+    if (requireActivity().isLandscape()) {
+      this.viewPager.let {
+        it.pageMargin = resources.getDimensionPixelOffset(R.dimen.pager_horizontal_space)
+        val space = resources.getDimensionPixelOffset(R.dimen.pager_horizontal_space_x3)
+        it.updatePadding(left = space, right = space)
+        /* it.setPageTransformer(false) { page, position ->
+          Log.e("Kohii:Pager", "Transform: $position")
+          page.scaleX = 0.85f - Math.abs(position) * 0.15f
+          page.scaleY = 0.85f - Math.abs(position) * 0.15f
+        } */
+      }
     }
   }
 }
