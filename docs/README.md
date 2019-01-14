@@ -1,6 +1,6 @@
 # kohii (コーヒー、[[ko̞ːçiː]](https://en.wiktionary.org/wiki/%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC))
 
-<img src="art/kohii.png?raw=true" alt="Kohii" width="384">
+<img src="kohii.png?raw=true" alt="Kohii" width="384">
 
 Video playback for Android made easy.
 
