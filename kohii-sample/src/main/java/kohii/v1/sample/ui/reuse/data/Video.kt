@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.reuse.data
 
-/**
- * @author eneim (2018/07/06).
- */
-data class ItemIcon(
-  val url: String,
-  val width: Int,
-  val height: Int
-)
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-data class Item(
-  val type: Int,
-  val content: String,
-  val format: String,
-  val background: String,
-  val width: Int,
-  val height: Int,
-  val icon: ItemIcon?
-)
+@Parcelize
+data class Video(
+  val feed_instance_id: String,
+  val title: String,
+  val kind: String,
+  val playlist: List<Playlist>,
+  val description: String
+) : Parcelable

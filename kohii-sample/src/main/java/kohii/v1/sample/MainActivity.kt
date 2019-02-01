@@ -17,12 +17,13 @@
 package kohii.v1.sample
 
 import android.os.Bundle
+import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseActivity
-import kohii.v1.sample.ui.pager.PagerMainFragment
+import kohii.v1.sample.ui.MainFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
-import kohii.v1.sample.ui.sview.ScrollViewFragment
+import kotlinx.android.synthetic.main.main_activity.toolbar
 
 class MainActivity : BaseActivity(), PlayerInfoHolder {
 
@@ -37,13 +38,21 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main_activity)
+    setSupportActionBar(this.toolbar)
     if (savedInstanceState == null) {
       supportFragmentManager.beginTransaction()
           .replace(
               R.id.fragmentContainer,
-              PagerMainFragment.newInstance(), RecyclerViewFragment::class.java.simpleName
+              MainFragment.newInstance(), RecyclerViewFragment::class.java.simpleName
           )
           .commit()
+    }
+  }
+
+  override fun onBackPressed() {
+    val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+    if (currentFragment !is BackPressConsumer || !currentFragment.consumeBackPress()) {
+      super.onBackPressed()
     }
   }
 }

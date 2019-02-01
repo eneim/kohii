@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.Keep
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.postDelayed
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,11 +35,14 @@ import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.doOnNextLayoutAs
 import kohii.v1.sample.common.toPixel
-import okio.Okio
+import kohii.v1.sample.ui.rview.data.Item
+import okio.buffer
+import okio.source
 
 /**
  * @author eneim (2018/07/06).
  */
+@Keep
 class RecyclerViewFragment : BaseFragment() {
 
   companion object {
@@ -50,7 +54,7 @@ class RecyclerViewFragment : BaseFragment() {
     val viewTop: Int
   )
 
-  // implemented by host (Activity) to manage shared elements transition information.
+  // Implemented by host (Activity) to manage shared elements transition information.
   interface PlayerInfoHolder {
 
     fun recordPlayerInfo(info: PlayerInfo?)
@@ -58,17 +62,14 @@ class RecyclerViewFragment : BaseFragment() {
     fun fetchPlayerInfo(): PlayerInfo?
   }
 
-  private var items: List<Item>? = null
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    val asset = requireActivity().assets
+  private val items: List<Item> by lazy {
+    val asset = requireActivity().application.assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
-    items = adapter.fromJson(Okio.buffer(Okio.source(asset.open("theme.json"))))
+    return@lazy adapter.fromJson(asset.open("theme.json").source().buffer())!!
   }
 
   override fun onCreateView(
@@ -80,7 +81,6 @@ class RecyclerViewFragment : BaseFragment() {
   }
 
   private var container: RecyclerView? = null
-
   // Should be implemented by Activity, to keep information of latest clicked item position.
   private var playerInfoHolder: PlayerInfoHolder? = null
 
@@ -99,16 +99,13 @@ class RecyclerViewFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    if (items == null) return
-
     prepareTransitions()
     postponeEnterTransition()
 
-    val data = ArrayList(items!!).apply { this.addAll(items!!) }
+    val data = ArrayList(items).apply { this.addAll(items) } // To double the list.
     container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)
       it.layoutManager = LinearLayoutManager(requireContext())
-          .apply { this.isItemPrefetchEnabled = true }
       it.adapter = ItemsAdapter(this, data) { dp -> dp.toPixel(resources) }
     }
 

@@ -18,6 +18,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.getkeepsafe.dexcount'
 
 androidExtensions {
   experimental = true
@@ -25,6 +26,22 @@ androidExtensions {
 
 android {
   compileSdkVersion buildConfig.compileSdk
+
+  signingConfigs {
+    release {
+      keyAlias kohii_prodKeyAlias
+      keyPassword prodKeyPassword
+      storeFile file(prodStoreFile)
+      storePassword prodStorePassword
+    }
+
+    debug {
+      keyAlias "debug"
+      keyPassword "android"
+      storeFile file("debug.jks")
+      storePassword "android"
+    }
+  }
 
   defaultConfig {
     applicationId "kohii.v1.sample"
@@ -38,9 +55,21 @@ android {
   }
 
   buildTypes {
+
     release {
-      minifyEnabled false
-      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      signingConfig signingConfigs.release
+      minifyEnabled true
+      shrinkResources true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+
+    debug {
+      applicationIdSuffix ".dev"
+      signingConfig signingConfigs.debug
+      // multiDexEnabled true
+      minifyEnabled true
+      shrinkResources true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules-debug.pro'
     }
   }
 
@@ -61,7 +90,7 @@ dependencies {
   implementation libraries.kotlin.stdlib
   implementation libraries.androidx.appcompat
   implementation libraries.androidx.recyclerview
-  // implementation libraries.androidx.rvSelection
+  implementation libraries.androidx.rvSelection
   implementation libraries.androidx.material
   implementation libraries.androidx.constraintlayout
   implementation libraries.androidx.lifecycle
@@ -83,5 +112,5 @@ dependencies {
   // Optional, if you use support library fragments:
   debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.3'
 
-  // implementation 'com.squareup.picasso3:picasso:3.0.0-SNAPSHOT'
+  implementation 'com.squareup.picasso3:picasso:3.0.0-SNAPSHOT'
 }

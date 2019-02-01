@@ -26,6 +26,7 @@ import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.PlayerFragment
 import kohii.v1.sample.ui.rview.BaseViewHolder.OnClickListener
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
+import kohii.v1.sample.ui.rview.data.Item
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -53,7 +54,9 @@ class ItemsAdapter(
 
     return when (viewType) {
       R.layout.holder_text_view -> TextViewHolder(inflater!!, parent, this.dp2Px)
-      R.layout.holder_player_view -> VideoViewHolder(inflater!!, parent, VideoClickImpl(fragment))
+      R.layout.holder_player_view -> VideoViewHolder(
+          inflater!!, parent, fragment.viewLifecycleOwner, VideoClickImpl(fragment)
+      )
       else -> throw RuntimeException("Unknown type: $viewType")
     }
   }
@@ -122,7 +125,7 @@ class ItemsAdapter(
       adapterPos: Int
     ) {
       val playerInfo = fragment.fetchPlayerInfo()
-      if (playerInfo == null || adapterPos != playerInfo.adapterPos) return
+      if (playerInfo != null && adapterPos != playerInfo.adapterPos) return
       if (enterTransitionStarted.getAndSet(true)) return
       fragment.recordPlayerInfo(null)
       fragment.startPostponedEnterTransition()

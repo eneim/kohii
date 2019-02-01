@@ -29,7 +29,9 @@ annotation class Draft
 annotation class Experiment
 
 @Retention(SOURCE)
-annotation class Beta
+annotation class Beta(
+  val message: String = ""
+)
 
 @Retention(SOURCE)
 annotation class Release

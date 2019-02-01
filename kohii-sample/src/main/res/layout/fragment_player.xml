@@ -15,16 +15,23 @@
   ~ limitations under the License.
   -->
 
-<com.google.android.exoplayer2.ui.PlayerView
+<com.google.android.exoplayer2.ui.AspectRatioFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@id/playerView"
+    android:id="@+id/playerContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    app:keep_content_on_player_reset="true"
-    app:resize_mode="fixed_width"
-    app:show_buffering="when_playing"
-    app:surface_type="texture_view"
-    app:use_controller="true"
-    />
+    >
+
+  <com.google.android.exoplayer2.ui.PlayerView
+      android:id="@id/playerView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:keep_content_on_player_reset="true"
+      app:resize_mode="fixed_width"
+      app:show_buffering="when_playing"
+      app:surface_type="texture_view"
+      app:use_controller="false"
+      />
+</com.google.android.exoplayer2.ui.AspectRatioFrameLayout>

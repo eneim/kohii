@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.Keep
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -27,11 +28,14 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import okio.Okio
+import okio.buffer
+import okio.source
 
 /**
  * @author eneim (2018/10/30).
  */
+@Suppress("unused")
+@Keep
 class MixMediaFragment : BaseFragment() {
 
   companion object {
@@ -48,7 +52,7 @@ class MixMediaFragment : BaseFragment() {
         .add(KotlinJsonAdapterFactory())
         .build()
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
-    items = adapter.fromJson(Okio.buffer(Okio.source(asset.open("medias.json"))))!!
+    items = adapter.fromJson(asset.open("medias.json").source().buffer())!!
   }
 
   override fun onCreateView(
@@ -66,7 +70,7 @@ class MixMediaFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)
-      it.adapter = ItemsAdapter(items)
+      it.adapter = ItemsAdapter(items, viewLifecycleOwner)
     }
   }
 }
