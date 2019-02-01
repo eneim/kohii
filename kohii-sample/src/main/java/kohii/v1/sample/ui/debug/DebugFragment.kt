@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * @author eneim (2018/07/13).
  */
+@Suppress("unused")
 class DebugFragment : BaseFragment() {
 
   companion object {
@@ -56,7 +57,7 @@ class DebugFragment : BaseFragment() {
   private val playable: Playable by lazy {
     Kohii[this].setUp(Uri.parse(videoUrl))
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
-        .copy(tag = videoUrl)
+        .copy(tag = "${javaClass.canonicalName}::$videoUrl")
         .asPlayable()
   }
 
@@ -74,6 +75,7 @@ class DebugFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     playable.bind(playerView)
+        .observe(viewLifecycleOwner)
 
     val views = arrayOf(playerView, playerView2)
     val current = AtomicInteger(0)
@@ -83,7 +85,7 @@ class DebugFragment : BaseFragment() {
       startActivity(
           PlayerActivity.createIntent(
               requireContext(), InitData(
-              tag = videoUrl,
+              tag = "${javaClass.canonicalName}::$videoUrl",
               aspectRatio = 1920 / 1080.toFloat()
           )
           )
@@ -99,7 +101,7 @@ class DebugFragment : BaseFragment() {
       fragmentManager!!.beginTransaction()
           .replace(
               R.id.fragmentContainer, RecyclerViewFragment.newInstance(),
-              RecyclerViewFragment::class.java.simpleName
+              RecyclerViewFragment::class.java.canonicalName
           )
           .addToBackStack(null)
           .commit()
@@ -110,7 +112,7 @@ class DebugFragment : BaseFragment() {
       fragmentManager!!.beginTransaction()
           .replace(
               R.id.fragmentContainer, ScrollViewFragment.newInstance(),
-              ScrollViewFragment::class.java.simpleName
+              ScrollViewFragment::class.java.canonicalName
           )
           .addToBackStack(null)
           .commit()
@@ -121,7 +123,7 @@ class DebugFragment : BaseFragment() {
       fragmentManager!!.beginTransaction()
           .replace(
               R.id.fragmentContainer, MotionFragment.newInstance(),
-              MotionFragment::class.java.simpleName
+              MotionFragment::class.java.canonicalName
           )
           .addToBackStack(null)
           .commit()

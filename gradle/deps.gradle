@@ -25,7 +25,7 @@ ext {
             'major': 1,
             'minor': 0,
             'patch': 0,
-            'build': 2903, // ExoPlayer version number.
+            'build': 2904, // ExoPlayer version number.
            ], //
       ]
 
@@ -41,14 +41,14 @@ ext {
 
   versions = //
       [//
-       kotlin          : "1.3.11",
+       kotlin          : "1.3.20",
        supportLibrary  : "28.0.0",
-       gradlePlugin    : "3.4.0-alpha10",
+       gradlePlugin    : "3.4.0-beta02",
        jetpack         : "1.0.0",
        constraintLayout: "2.0.0-alpha3",
        xlifecycle      : "2.0.0",
        lifecycle       : "1.1.1",
-       exoplayer       : "2.9.3",
+       exoplayer       : "2.9.4",
        espresso        : "3.0.2", //
       ]
 

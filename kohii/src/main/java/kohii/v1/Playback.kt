@@ -18,11 +18,13 @@ package kohii.v1
 
 import android.os.Handler
 import androidx.annotation.CallSuper
+import androidx.annotation.IntDef
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import kohii.Beta
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
@@ -30,6 +32,7 @@ import kohii.v1.Playable.Companion.STATE_IDLE
 import kohii.v1.Playable.Companion.STATE_READY
 import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
  * Instance of this class will be tight to a Target. And that target is not reusable, so instance
@@ -43,13 +46,24 @@ abstract class Playback<T> internal constructor(
   internal val playable: Playable,
   internal val manager: Manager,
   internal val target: T?,
+  @Priority
+  internal val priority: Int = PRIORITY_NORMAL,
   internal val delay: () -> Long = NO_DELAY
 ) : LifecycleObserver {
 
   companion object {
     const val DELAY_INFINITE = -1L
     val NO_DELAY = { 0L }
+
+    // Priority
+    const val PRIORITY_HIGH = 1
+    const val PRIORITY_NORMAL = 2
+    const val PRIORITY_LOW = 3
   }
+
+  @Retention(SOURCE)
+  @IntDef(PRIORITY_HIGH, PRIORITY_NORMAL, PRIORITY_LOW)
+  annotation class Priority
 
   open class Token : Comparable<Token> {
     override fun compareTo(other: Token) = 0
@@ -69,19 +83,21 @@ abstract class Playback<T> internal constructor(
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
+  internal var internalCallback: InternalCallback? = null
 
   // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
   private val callbacks = CopyOnWriteArraySet<Callback>()
 
   internal var lifecycle: Lifecycle? = null
-  internal var internalCallback: InternalCallback? = null
+
   // Token is comparable.
-  // Returning null --> there is nothing to play. A bound Playable should be unbound and released.
+  // Returning null --> there is nothing to play. A bound Playable should be unbound.
   internal open val token: Token?
     get() = null
 
   // [BEGIN] Public API
+
   fun addPlaybackEventListener(listener: PlaybackEventListener) {
     this.listeners.add(listener)
   }
@@ -114,6 +130,7 @@ abstract class Playback<T> internal constructor(
     this.playerListeners.remove(listener)
   }
 
+  @Beta("To use in Fragment.")
   fun observe(lifecycleOwner: LifecycleOwner) {
     this.lifecycle = lifecycleOwner.lifecycle.also { it.addObserver(this) }
   }
@@ -128,16 +145,26 @@ abstract class Playback<T> internal constructor(
 
   val tag = playable.tag
 
+  fun unbind() {
+    this.unbindInternal()
+    manager.performDestroyPlayback(this)
+  }
+
   // [END] Public API
 
   /// Internal APIs
 
   // Lifecycle
 
+  internal open fun unbindInternal() {
+    if (this.target != null) manager.onTargetInActive(this.target)
+  }
+
   @OnLifecycleEvent(ON_DESTROY)
-  fun onLifecycleDestroyed() {
+  internal fun onLifecycleDestroyed() {
     (this.target as? Any)?.let { manager.onTargetInActive(it) }
     manager.performDestroyPlayback(this)
+    // This thing no need to survive config change.
     lifecycle?.removeObserver(this)
     lifecycle = null
   }
@@ -157,11 +184,13 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun play() {
+    listeners.forEach { it.beforePlay() }
     playable.play()
   }
 
   internal fun pause() {
     playable.pause()
+    listeners.forEach { it.afterPause() }
   }
 
   internal fun release() {
@@ -227,28 +256,28 @@ abstract class Playback<T> internal constructor(
   }
 
   override fun toString(): String {
-    val playableStr = "${playable.javaClass.simpleName}@${Integer.toHexString(playable.hashCode())}"
-    return "${javaClass.simpleName}@${Integer.toHexString(hashCode())}::$playableStr"
+    val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
+    return "$firstPart::$$playable"
   }
 
   // For internal flow only.
   internal interface InternalCallback {
     // Called when the playback is added to Manager
-    fun onAdded(playback: Playback<*>)
+    fun onAdded(playback: Playback<*>) {}
 
     // Called when the playback is removed from Manager
-    fun onRemoved(playback: Playback<*>)
+    fun onRemoved(playback: Playback<*>) {}
   }
 
   interface Callback {
     fun onActive(
       playback: Playback<*>,
       target: Any?
-    )
+    ) {}
 
     fun onInActive(
       playback: Playback<*>,
       target: Any?
-    )
+    ) {}
   }
 }

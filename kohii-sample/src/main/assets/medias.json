@@ -361,14 +361,6 @@
     "uri": "https://storage.googleapis.com/exoplayer-test-media-1/gen-3/screens/dash-vod-single-segment/audio-141.mp4"
   },
   {
-    "name": "Google Play (MP3 Audio)",
-    "uri": "https://storage.googleapis.com/exoplayer-test-media-0/play.mp3"
-  },
-  {
-    "name": "Google Play (Ogg/Vorbis Audio)",
-    "uri": "https://storage.googleapis.com/exoplayer-test-media-1/ogg/play.ogg"
-  },
-  {
     "name": "Big Buck Bunny (FLV Video)",
     "uri": "https://vod.leasewebcdn.com/bbb.flv?ri=1024&rs=150&start=0"
   }

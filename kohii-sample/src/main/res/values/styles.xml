@@ -17,11 +17,13 @@
 <resources>
 
   <!-- Base application theme. -->
-  <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+  <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
   </style>
 
-  <style name="AppTheme.Light">
-    <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+  <style name="AppTheme.Light" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <!--<item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
   </style>
 
   <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">

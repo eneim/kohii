@@ -15,7 +15,7 @@
   -->
 
 <resources>
-  <string name="app_name">Kohii</string>
+  <string name="app_name">Kohii in Action</string>
 
   <string name="large_text">
     "Material is the metaphor.\n\n"
@@ -104,6 +104,45 @@
     "user picks up a card, or it can move if a snackbar appears.\n"
     "On the layout level, design your app layout to minimize opportunities for interference. "
     "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
-    "when a user tries to pick up one of cards.\n"
+    "when a user tries to pick up one of cards."
+  </string>
+
+  <string name="demo_desc_recycler_view_1">
+    RecyclerView (1) parse content from: https://material.io/tools/theme-editor/
+    \n\nClicking to an item will open Single player for it with \'Shared Element Transition\'
+    learnt from \"Continuous Shared Element Transitions: RecyclerView to ViewPager\".
+  </string>
+
+  <string name="demo_desc_recycler_view_2">
+    RecyclerView (2) uses sample Videos from ExoPlayer demo application.\n\nIn this demo, both DRM
+    Video and non-DRM Video are presented and the PlayerView will be created on demand.
+  </string>
+
+  <string name="demo_desc_recycler_view_3">
+    RecyclerView (3) replicates YouTube UX using MotionLayout and BottomSheetBehavior.\n\nClicking to
+    an item will open the bottom sheet that will be scaled down to mini Player while the Video keeps
+    playing smoothly.\n\nVideos from Caminandes (CC 3.0 open movie).
+  </string>
+
+  <string name="demo_desc_recycler_view_4">
+    RecyclerView (4) presents the scenario of reusing a single PlayerView instance across multiple
+    Playbacks/ViewHolders.\n\nVideos are from Caminandes (CC 3.0 open movie).
+  </string>
+
+  <string name="demo_desc_pager_1">
+    Pager (1) shows how Kohii could work in ViewPager. Each page will start the Playback with 500ms
+    delay.\n\nThis demo also shows different layout in landscape and portrait orientation,
+    while the Playback keeps playing smoothly.\n\nVideos are from Caminandes (CC 3.0 open movie).
+  </string>
+
+  <string name="demo_desc_nested_scrollview_1">
+    (Nested) ScrollView (1) uses content from https://design.google/library/making-motion-meaningful/
+    where sub Videos are taken from another Material Design documentation.\n\nClicking to an item will
+    open Single player in new Activity. The Playback keeps playing smoothly.
+  </string>
+
+  <string name="demo_desc_nested_scrollview_2">
+    (Nested) ScrollView (2) uses default long text with the movie \'Big Buck Bunny\'.\n\nClicking to an item will
+    open Single player in a DialogFragment. The Playback keeps playing smoothly.
   </string>
 </resources>

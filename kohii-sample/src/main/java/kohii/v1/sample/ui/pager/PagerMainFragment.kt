@@ -20,7 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.updatePadding
+import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -30,15 +30,19 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.common.isLandscape
-import kohii.v1.sample.ui.pager.data.Video
+import kohii.v1.sample.common.getDisplayPoint
+import kohii.v1.sample.ui.overlay.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
-import okio.Okio
+import okio.buffer
+import okio.source
 
+@Suppress("unused")
+@Keep
 class PagerMainFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = PagerMainFragment()
+    const val TAG = "kohii:Pager"
   }
 
   class VideoPagerAdapter(
@@ -58,12 +62,12 @@ class PagerMainFragment : BaseFragment() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val asset = requireActivity().assets
-    val type = Types.newParameterizedType(List::class.java, Video::class.java)
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
-    val adapter: JsonAdapter<List<Video>> = moshi.adapter(type)
-    items = adapter.fromJson(Okio.buffer(Okio.source(asset.open("caminandes.json"))))
+    val adapter: JsonAdapter<List<Video>> =
+      moshi.adapter(Types.newParameterizedType(List::class.java, Video::class.java))
+    items = adapter.fromJson(asset.open("caminandes.json").source().buffer())
   }
 
   override fun onCreateView(
@@ -81,16 +85,15 @@ class PagerMainFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     this.viewPager.adapter = VideoPagerAdapter(childFragmentManager, items!!)
 
-    if (requireActivity().isLandscape()) {
-      this.viewPager.let {
-        it.pageMargin = resources.getDimensionPixelOffset(R.dimen.pager_horizontal_space)
-        val space = resources.getDimensionPixelOffset(R.dimen.pager_horizontal_space_x3)
-        it.updatePadding(left = space, right = space)
-        /* it.setPageTransformer(false) { page, position ->
-          Log.e("Kohii:Pager", "Transform: $position")
-          page.scaleX = 0.85f - Math.abs(position) * 0.15f
-          page.scaleY = 0.85f - Math.abs(position) * 0.15f
-        } */
+    this.viewPager.let {
+      it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
+      val clientWidth =
+        (requireActivity().getDisplayPoint().x - it.paddingStart - it.paddingEnd).toFloat()
+      val offset = it.paddingStart / clientWidth
+      it.setPageTransformer(false) { page, position ->
+        val scale = (1f - Math.abs(position - offset) * 0.15f).coerceAtLeast(0.5f)
+        page.scaleX = scale
+        page.scaleY = scale
       }
     }
   }

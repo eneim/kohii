@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.common
+package kohii.v1.sample.ui.overlay
 
-/**
- * @author eneim (2018/07/15).
- */
-data class Video(
-  val url: String,
-  val thumb: String?,
-  val width: Float,
-  val height: Float
-)
+import android.view.MotionEvent
+import androidx.recyclerview.selection.ItemDetailsLookup
+import androidx.recyclerview.widget.RecyclerView
+
+class VideoItemLookup(val parent: RecyclerView) : ItemDetailsLookup<String>() {
+  override fun getItemDetails(event: MotionEvent): ItemDetails<String>? {
+    val view = parent.findChildViewUnder(event.x, event.y)
+    if (view != null) {
+      return (parent.getChildViewHolder(view) as VideoItemHolder).getItemDetails()
+    }
+    return null
+  }
+}

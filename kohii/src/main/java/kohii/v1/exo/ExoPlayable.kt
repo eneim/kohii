@@ -28,6 +28,7 @@ import kohii.v1.Playable.Builder
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.InternalCallback
+import kohii.v1.Playback.Priority
 import kohii.v1.PlayerEventListener
 import kohii.v1.ViewPlayback
 
@@ -42,7 +43,6 @@ class ExoPlayable internal constructor(
 ) : Playable, Callback, InternalCallback {
 
   companion object {
-    @Suppress("unused")
     private const val TAG = "Kohii:Playable"
   }
 
@@ -132,7 +132,7 @@ class ExoPlayable internal constructor(
 
   // When binding to a PlayerView, any old Playback for the same PlayerView should be destroyed.
   // Relationship: [Playable] --> [Playback [Target]]
-  override fun bind(target: PlayerView): Playback<PlayerView> {
+  override fun bind(target: PlayerView, @Priority priority: Int): Playback<PlayerView> {
     // Find the manager for this Playable, or create new.
     val manager = kohii.requireManager(target.context)
 
@@ -170,20 +170,21 @@ class ExoPlayable internal constructor(
         } else {
           // Scenario: Switch Target in the same Manager (Eg: Open Single Player in Fragment)
           manager.performDestroyPlayback(it) // Destroy old Playback (of old Target)
-          return@let ViewPlayback(kohii, this, manager, target)
+          return@let ViewPlayback(kohii, this, manager, target, priority) { builder.delay }
         }
       } else {
         // Old Playback in different Managers
         // Scenario: Switching target in different Managers (Eg: Open Single Player in Dialog)
         it.manager.performDestroyPlayback(it)
-        return@let ViewPlayback(kohii, this, manager, target)
+        return@let ViewPlayback(kohii, this, manager, target, priority) { builder.delay }
       }
     } ?: ViewPlayback(
         kohii,
         this,
         manager,
-        target
-    ) /* No old Playback, Scenario: First time binding */
+        target,
+        priority
+    ) { builder.delay } /* No old Playback, Scenario: First time binding */
 
     if (candidate != this.playback) {
       candidate.also {
@@ -226,6 +227,8 @@ class ExoPlayable internal constructor(
     get() = this.bridge.volumeInfo
 
   override fun toString(): String {
-    return "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
+    val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
+    val secondPart = "${bridge.javaClass.simpleName}@${Integer.toHexString(hashCode())}"
+    return "$firstPart::$secondPart"
   }
 }

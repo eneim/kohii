@@ -19,8 +19,9 @@ package kohii.v1
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.ContextWrapper
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -30,18 +31,23 @@ import android.os.Message
 import android.view.View
 import android.view.ViewTreeObserver.OnScrollChangedListener
 import android.view.Window
+import android.view.Window.Callback
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo.VERSION_SLASHY
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
+import kohii.common.WindowCallbackWrapper
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultBridgeProvider
+import kohii.v1.dummy.DummyBridgeProvider
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
 import kohii.v1.exo.DefaultMediaSourceFactoryProvider
 import kohii.v1.exo.DefaultPlayerProvider
@@ -55,7 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
-class Kohii(context: Context) {
+class Kohii(context: Context) : LifecycleObserver {
 
   internal val app = context.applicationContext as Application
 
@@ -121,6 +127,9 @@ class Kohii(context: Context) {
       }
     })
 
+    // TODO [20190201] Use this to check screen on/off state.
+    // ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
     // Shared dependencies.
     val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
     val bandwidthMeter = DefaultBandwidthMeter()
@@ -144,6 +153,7 @@ class Kohii(context: Context) {
     mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
 
     bridgeProvider = DefaultBridgeProvider(playerProvider, mediaSourceFactoryProvider)
+    // bridgeProvider = DummyBridgeProvider()
   }
 
   internal class ManagerAttachStateListener(
@@ -200,6 +210,24 @@ class Kohii(context: Context) {
     }
   }
 
+  class ScreenOnOffReceiver : BroadcastReceiver() {
+    override fun onReceive(
+      context: Context?,
+      intent: Intent?
+    ) {
+      if (intent?.action.equals(Intent.ACTION_SCREEN_OFF)) {
+        // TODO pause all
+      } else if (intent?.action.equals(Intent.ACTION_SCREEN_ON)) {
+        // TODO restart all.
+      }
+    }
+  }
+
+  // Prepare.
+  @Suppress("unused")
+  internal class WindowCallback(origin: Callback) : WindowCallbackWrapper(origin)
+
+  @Suppress("unused")
   companion object {
     private const val TAG = "Kohii:X"
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
@@ -238,23 +266,6 @@ class Kohii(context: Context) {
 
       return "$appName/$versionName (Linux;Android ${Build.VERSION.RELEASE}) $VERSION_SLASHY"
     }
-
-    internal fun checkContext(
-      first: ContextWrapper,
-      second: ContextWrapper
-    ): Boolean {
-      val firstApp = first.applicationContext
-      val secondApp = second.applicationContext
-      if (firstApp !== secondApp) return false
-
-      var temp = first as ContextWrapper?
-      while (temp != null && temp !== firstApp) {
-        if (temp.baseContext === second) return true
-        temp = temp.baseContext as? ContextWrapper
-      }
-
-      return false
-    }
   }
 
   //// instance methods
@@ -288,7 +299,7 @@ class Kohii(context: Context) {
   }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
-  // Always get called after playable.release()
+  // Always get called after playback.release()
   internal fun releasePlayable(
     tag: Any?,
     playable: Playable
@@ -298,57 +309,6 @@ class Kohii(context: Context) {
         throw IllegalArgumentException("Illegal playable removal: $playable")
       }
     } ?: playable.release()
-  }
-
-  /**
-   * Called when a Manager becomes active to a Playback that it already manages.
-   *
-   * @param manager The [Manager] whose Activity is stopped.
-   * @param playback The [Playback] that is managed by the manager, and in 'attached' playback cache.
-   */
-  internal fun onManagerActiveForPlayback(
-    manager: Manager,
-    playback: Playback<*>
-  ) {
-    if (mapWeakPlayableToManager[playback.playable] == null) {
-      mapWeakPlayableToManager[playback.playable] = manager
-      manager.tryRestorePlaybackInfo(playback)
-      // TODO [20180905] double check the usage of 'shouldPrepare()' here.
-      if (playback.token?.shouldPrepare() == true) playback.prepare()
-      playback.onActive()
-    }
-  }
-
-  /**
-   * Called when the Activity mapped to a Manager is stopped. When called, a [Playback]'s target is
-   * considered 'inactive' even if it is not detached yet (in case the target is a [View])
-   *
-   * @param manager The [Manager] whose Activity is stopped.
-   * @param playback The [Playback] that is managed by the manager, and in 'attached' playback cache.
-   * @param configChange If true, the Activity is being recreated by a config change, false otherwise.
-   */
-  internal fun onManagerInActiveForPlayback(
-    manager: Manager,
-    playback: Playback<*>,
-    configChange: Boolean
-  ) {
-    val playable = playback.playable
-    // Only pause this playback if
-    // - [1] config change is not happening and
-    // - [2] the playable is managed by this manager, or by no-one.
-    // FYI: The Playable instances holds the actual playback resource. It is not managed by anything
-    // else when the Activity is destroyed and to be recreated (config change).
-    if (!configChange) {
-      if (mapWeakPlayableToManager[playable] === manager) {
-        playback.pause()
-        manager.trySavePlaybackInfo(playback)
-      }
-    }
-    playback.onInActive()
-    // There is no recreation. If the manager is managing the playable, unload the Playable.
-    if (!configChange) {
-      if (mapWeakPlayableToManager[playable] === manager) mapWeakPlayableToManager[playable] = null
-    }
   }
 
   // Gat called when Kohii should free all resources.

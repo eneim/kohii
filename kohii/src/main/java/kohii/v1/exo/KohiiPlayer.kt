@@ -28,6 +28,7 @@ import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.upstream.BandwidthMeter
 import kohii.media.VolumeInfo
+import kohii.v1.BuildConfig
 import kohii.v1.VolumeChangedListener
 import kohii.v1.VolumeInfoController
 import java.util.concurrent.CopyOnWriteArraySet
@@ -61,7 +62,7 @@ open class KohiiPlayer(
   }
 
   init {
-    Log.w("Kohii:Player", "KohiiPlayer: ${instanceCount.incrementAndGet()}")
+    if (BuildConfig.DEBUG) Log.w("Kohii:Player", "player: ${instanceCount.incrementAndGet()}")
   }
 
   private val volumeChangedListeners by lazy { CopyOnWriteArraySet<VolumeChangedListener>() }

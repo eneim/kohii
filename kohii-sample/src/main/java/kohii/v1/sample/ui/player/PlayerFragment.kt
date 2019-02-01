@@ -95,6 +95,7 @@ class PlayerFragment : BaseFragment() {
         ?.bind(playerView)
         ?.also {
           it.addPlayerEventListener(listener!!)
+          it.observe(viewLifecycleOwner)
         }
   }
 

@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author eneim (2018/06/24).
  */
+// TODO [20190201] rename this class to 'ViewPlaybackHost' and create the abstraction 'PlaybackHost'.
 class Manager internal constructor(
   val kohii: Kohii,
   @Suppress("MemberVisibilityCanBePrivate")
@@ -95,17 +96,40 @@ class Manager internal constructor(
     Therefore, handling Manager activeness of Playable should take into account the order.
    */
   internal fun onHostStarted() {
-    mapAttachedPlaybackToTime.forEach {
-      kohii.onManagerActiveForPlayback(this, it.key)
-    }
+    mapAttachedPlaybackToTime.mapNotNull { it.key }
+        .forEach {
+          if (kohii.mapWeakPlayableToManager[it.playable] == null) {
+            kohii.mapWeakPlayableToManager[it.playable] = this
+            this.tryRestorePlaybackInfo(it)
+            // TODO [20180905] double check the usage of 'shouldPrepare()' here.
+            if (it.token?.shouldPrepare() == true) it.prepare()
+            it.onActive()
+          }
+        }
+
     this.dispatchRefreshAll()
   }
 
   // Called when the Activity bound to this Manager is stopped.
   internal fun onHostStopped(configChange: Boolean) {
-    mapAttachedPlaybackToTime.forEach {
-      kohii.onManagerInActiveForPlayback(this, it.key, configChange)
-    }
+    mapAttachedPlaybackToTime.mapNotNull { it.key }
+        .forEach {
+          it.onInActive()
+          val playable = it.playable
+          // Only pause this playback if
+          // - [1] config change is not happening and
+          // - [2] the playable is managed by this manager, or by no-one.
+          // FYI: The Playable instances holds the actual playback resource. It is not managed by
+          // anything else when the Activity is destroyed and to be recreated (config change).
+          if (!configChange) {
+            if (kohii.mapWeakPlayableToManager[playable] === this) {
+              it.pause()
+              this.trySavePlaybackInfo(it)
+              // There is no recreation. If this manager is managing the playable, unload the Playable.
+              kohii.mapWeakPlayableToManager[playable] = null
+            }
+          }
+        }
   }
 
   // Called when the Activity bound to this Manager is destroyed.
@@ -152,13 +176,13 @@ class Manager internal constructor(
     dispatcher = null
   }
 
-  internal fun trySavePlaybackInfo(playback: Playback<*>) {
+  private fun trySavePlaybackInfo(playback: Playback<*>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
     }
   }
 
-  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
+  private fun tryRestorePlaybackInfo(playback: Playback<*>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       val info = mapPlayableTagToInfo.remove(playback.playable.tag)
       if (info != null) playback.playable.playbackInfo = info
@@ -180,15 +204,11 @@ class Manager internal constructor(
     mapTargetToPlayback[target]?.let {
       mapAttachedPlaybackToTime[it] = System.nanoTime()
       mapDetachedPlaybackToTime.remove(it)
-      /* if (this@Manager.mapWeakPlayableToTarget[it.playable] === it.target) {
+      if (kohii.mapWeakPlayableToManager[it.playable] === this) { // added 20190115, check this.
         tryRestorePlaybackInfo(it)
-        // this.prepare() ⬇
         if (it.token?.shouldPrepare() == true) it.prepare()
-      } */
-      tryRestorePlaybackInfo(it) // FIXME Note: only do this for proper target. https://is.gd/CLHXK4
-      // this.prepare() ⬇
-      if (it.token?.shouldPrepare() == true) it.prepare()
-      it.onActive()
+        it.onActive()
+      }
       this@Manager.dispatchRefreshAll()
     } ?: throw IllegalStateException("Target is available but Playback is not found: $target")
   }
@@ -201,11 +221,11 @@ class Manager internal constructor(
       // Call before this@Manager.dispatchRefreshAll()
       mapAttachedPlaybackToTime.remove(it)
           ?.run { it.onInActive() }
-      this@Manager.dispatchRefreshAll()
+      this@Manager.dispatchRefreshAll() // To refresh latest playback status.
       if (kohii.mapWeakPlayableToManager[it.playable] === this) {
-        // Only release if this Manager manages the Playable.
+        // Only pause and release if this Manager manages the Playable.
         it.pause()
-        trySavePlaybackInfo(it) // FIXME Note: only do this for proper target. https://is.gd/CLHXK4
+        trySavePlaybackInfo(it)
         it.release()
       }
     }
