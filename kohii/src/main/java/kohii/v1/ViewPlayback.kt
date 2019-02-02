@@ -192,6 +192,10 @@ open class ViewPlayback<V : View>(
     override fun shouldRelease(): Boolean {
       return canRelease
     }
+
+    override fun toString(): String {
+      return "$viewRect::$areaOffset"
+    }
   }
 
   @Suppress("unused")

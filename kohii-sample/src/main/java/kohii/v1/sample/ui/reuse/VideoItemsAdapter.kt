@@ -24,13 +24,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import com.squareup.picasso3.Picasso
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.reuse.data.Video
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val picasso: Picasso,
   private val lifecycleOwner: LifecycleOwner
 ) : Adapter<BaseViewHolder>(), PlayerManager {
 
@@ -57,7 +55,6 @@ internal class VideoItemsAdapter(
         from(parent.context),
         R.layout.holder_video_text_reuse,
         parent,
-        picasso,
         lifecycleOwner
     )
   }

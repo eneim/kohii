@@ -26,12 +26,12 @@ import androidx.core.view.contains
 import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.PlayerView
-import com.squareup.picasso3.Picasso
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
+import kohii.v1.sample.svg.GlideApp
 import kohii.v1.sample.ui.reuse.data.Sources
 import kohii.v1.sample.ui.reuse.data.Video
 
@@ -40,7 +40,6 @@ internal class VideoItemHolder(
   inflater: LayoutInflater,
   layoutRes: Int,
   parent: ViewGroup,
-  private val picasso: Picasso,
   private val lifecycleOwner: LifecycleOwner
 ) : BaseViewHolder(inflater, layoutRes, parent),
     Playback.Callback,
@@ -64,7 +63,8 @@ internal class VideoItemHolder(
       videoInfo.text = it.description
       this.videoSources = it.playlist.first()
           .also { pl ->
-            picasso.load(pl.image)
+            GlideApp.with(itemView)
+                .load(pl.image)
                 .into(videoImage)
           }
           .sources.first()

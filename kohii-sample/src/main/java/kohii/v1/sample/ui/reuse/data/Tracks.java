@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package kohii.v1.sample.ui.overlay.data
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+package kohii.v1.sample.ui.reuse.data;
 
-@Parcelize
-data class Playlist(
-  @Suppress("SpellCheckingInspection") val mediaid: String,
-  val description: String,
-  @Suppress("SpellCheckingInspection") val pubdate: Int,
-  val tags: String,
-  val image: String,
-  val title: String,
-  val variations: Variations,
-  val sources: List<Sources>,
-  val tracks: List<Tracks>,
-  val link: String,
-  val duration: Int
-) : Parcelable
+@SuppressWarnings("WeakerAccess") //
+public class Tracks {
+  final String kind;
+  final String file;
+
+  public Tracks(String kind, String file) {
+    this.kind = kind;
+    this.file = file;
+  }
+
+  public String getKind() {
+    return kind;
+  }
+
+  public String getFile() {
+    return file;
+  }
+}

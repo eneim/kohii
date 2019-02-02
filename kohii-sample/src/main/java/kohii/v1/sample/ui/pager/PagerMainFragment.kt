@@ -31,7 +31,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getDisplayPoint
-import kohii.v1.sample.ui.overlay.data.Video
+import kohii.v1.sample.ui.pager.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import okio.buffer
 import okio.source
@@ -57,17 +57,14 @@ class PagerMainFragment : BaseFragment() {
     override fun getCount() = Int.MAX_VALUE
   }
 
-  private var items: List<Video>? = null
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    val asset = requireActivity().assets
+  private val videos by lazy {
+    val asset = requireActivity().application.assets
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     val adapter: JsonAdapter<List<Video>> =
       moshi.adapter(Types.newParameterizedType(List::class.java, Video::class.java))
-    items = adapter.fromJson(asset.open("caminandes.json").source().buffer())
+    adapter.fromJson(asset.open("caminandes.json").source().buffer()) ?: emptyList()
   }
 
   override fun onCreateView(
@@ -83,9 +80,8 @@ class PagerMainFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    this.viewPager.adapter = VideoPagerAdapter(childFragmentManager, items!!)
-
     this.viewPager.let {
+      it.adapter = VideoPagerAdapter(childFragmentManager, videos)
       it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
       val clientWidth =
         (requireActivity().getDisplayPoint().x - it.paddingStart - it.paddingEnd).toFloat()

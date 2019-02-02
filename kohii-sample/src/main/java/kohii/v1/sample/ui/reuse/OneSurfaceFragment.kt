@@ -26,7 +26,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.squareup.picasso3.Picasso
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.reuse.data.Video
@@ -67,9 +66,8 @@ class OneSurfaceFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val picasso = Picasso.Builder(requireContext())
-        .build() // TODO DI
-    val videoAdapter = VideoItemsAdapter(videos, picasso, viewLifecycleOwner)
+    val videoAdapter = VideoItemsAdapter(videos, viewLifecycleOwner)
+
     recyclerView.apply {
       setHasFixedSize(true)
       layoutManager = LinearLayoutManager(context)

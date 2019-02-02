@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.overlay.data
+package kohii.v1.sample.ui.reuse.data;
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import androidx.annotation.Nullable;
 
-@Parcelize
-data class Video(
-  val feed_instance_id: String,
-  val title: String,
-  val kind: String,
-  val playlist: List<Playlist>,
-  val description: String
-) : Parcelable
+@SuppressWarnings({ "WeakerAccess", "unused" }) //
+public class Variations {
+
+  @Nullable final String meta;
+
+  public Variations(@Nullable String meta) {
+    this.meta = meta;
+  }
+
+  @Nullable public String getMeta() {
+    return meta;
+  }
+}
