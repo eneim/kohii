@@ -19,8 +19,11 @@ package kohii.v1.sample.common
 import android.app.Activity
 import android.content.res.Resources
 import android.graphics.Point
+import android.os.Build
 import android.util.TypedValue
 import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.doOnNextLayout
 
 /**
  * @author eneim (2018/07/30).
@@ -53,9 +56,34 @@ inline fun <reified T : View> View.doOnNextLayoutAs(crossinline action: (view: T
   })
 }
 
-fun Activity.isLandscape(): Boolean {
-  return Point().let {
+inline fun <reified T : View> View.doOnLayoutAs(crossinline action: (view: T) -> Unit) {
+  if (ViewCompat.isLaidOut(this) && !isLayoutRequested) {
+    action(this as T)
+  } else {
+    doOnNextLayout {
+      action(it as T)
+    }
+  }
+}
+
+fun Activity.inMultiWindow(): Boolean {
+  return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
+}
+
+fun Activity.getDisplayPoint(): Point {
+  return Point().also {
     this.windowManager.defaultDisplay.getSize(it)
-    it.x >= it.y
+  }
+}
+
+fun Activity.isLandscape(): Boolean {
+  val display = this.windowManager.defaultDisplay
+  val realSize = Point().let {
+    display.getRealSize(it)
+    it
+  }
+  return Point().let {
+    display.getSize(it)
+    (inMultiWindow() && it.y <= realSize.y * 0.5) || it.x >= it.y
   }
 }

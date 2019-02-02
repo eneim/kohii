@@ -15,48 +15,65 @@
   ~ limitations under the License.
   -->
 
-<androidx.core.widget.NestedScrollView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@id/scrollView"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".ui.sview.ScrollViewFragment"
+    app:cardPreventCornerOverlap="true"
     >
-
-  <androidx.appcompat.widget.LinearLayoutCompat
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@id/scrollView"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_height="match_parent"
       android:orientation="vertical"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior"
+      tools:context=".ui.sview.ScrollViewFragment"
       >
 
-    <FrameLayout
+    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
         android:id="@id/playerContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="16:9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:resize_mode="fixed_width"
         >
+
       <com.google.android.exoplayer2.ui.PlayerView
           android:id="@id/playerView"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:minHeight="171.4dp"
+          android:layout_height="match_parent"
           app:keep_content_on_player_reset="true"
-          app:resize_mode="fixed_width"
+          app:resize_mode="fixed_height"
           app:show_buffering="when_playing"
+          app:shutter_background_color="@color/shutter_color"
           app:surface_type="texture_view"
-          app:use_controller="false"
+          app:use_controller="true"
           />
-    </FrameLayout>
+    </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
 
-    <TextView
-        android:id="@id/textContent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:text="@string/large_text"
-        />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playerContainer"
+        >
 
-  </androidx.appcompat.widget.LinearLayoutCompat>
-</androidx.core.widget.NestedScrollView>
+      <TextView
+          android:id="@id/textContent"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_margin="@dimen/text_margin"
+          android:text="@string/large_text"
+          />
+
+    </androidx.core.widget.NestedScrollView>
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

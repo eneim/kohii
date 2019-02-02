@@ -17,7 +17,7 @@
 package kohii.v1.sample.ui.motion
 
 import android.view.View
-import kohii.v1.sample.common.Video
+import androidx.lifecycle.LifecycleOwner
 
 /**
  *
@@ -31,4 +31,6 @@ interface Presenter {
     container: View,
     video: Video
   )
+
+  fun requireLifecycleOwner(): LifecycleOwner
 }

@@ -28,6 +28,7 @@ import androidx.core.view.isVisible
 import kohii.v1.sample.R
 import kohii.v1.sample.svg.GlideApp
 import kohii.v1.sample.svg.SvgSoftwareLayerSetter
+import kohii.v1.sample.ui.rview.data.Item
 
 /**
  * @author eneim (2018/07/06).

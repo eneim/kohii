@@ -16,8 +16,6 @@
 
 package kohii.v1.sample.ui.motion
 
-import kohii.v1.sample.common.Video
-
 /**
  * Data taken from https://design.google/library/making-motion-meaningful/
  * YouTube video URLs are parsed using https://you-link.herokuapp.com/

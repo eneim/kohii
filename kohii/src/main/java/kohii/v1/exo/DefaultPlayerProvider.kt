@@ -81,7 +81,9 @@ class DefaultPlayerProvider(
             bandwidthMeterFactory.createBandwidthMeter(), //
             null, //
             Util.getLooper() //
-        )
+        ).also {
+          it.setAudioAttributes(it.audioAttributes, true)
+        }
       }
     } else {
       // Need DRM support, we'd better use fresh Player instances.
@@ -93,7 +95,9 @@ class DefaultPlayerProvider(
           this.bandwidthMeterFactory.createBandwidthMeter(), //
           drmSessionManager, //
           Util.getLooper() //
-      )
+      ).also {
+        it.setAudioAttributes(it.audioAttributes, true)
+      }
       drmPlayerCache[player] = System.currentTimeMillis()
       return player
     }

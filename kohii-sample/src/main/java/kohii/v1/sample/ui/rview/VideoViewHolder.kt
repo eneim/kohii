@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
@@ -28,15 +29,16 @@ import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
+import kohii.v1.sample.ui.rview.data.Item
 
 /**
  * @author eneim (2018/07/06).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
   inflater: LayoutInflater,
   parent: ViewGroup,
-  val listener: OnClickListener
+  private val lifecycleOwner: LifecycleOwner,
+  private val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
     View.OnClickListener, PlaybackEventListener, Playback.Callback {
 
@@ -83,7 +85,7 @@ class VideoViewHolder(
   override fun bind(item: Item?) {
     itemView.setOnClickListener(this)
     if (item != null) {
-      itemTag = "${item.content}@$adapterPosition"
+      itemTag = "${javaClass.canonicalName}::${item.content}::$adapterPosition"
 
       playerContainer.setAspectRatio(item.width / item.height.toFloat())
       val playable = Kohii[itemView.context]
@@ -95,6 +97,7 @@ class VideoViewHolder(
           .also {
             it.addPlaybackEventListener(this@VideoViewHolder)
             it.addCallback(this@VideoViewHolder)
+            it.observe(lifecycleOwner)
           }
 
       ViewCompat.setTransitionName(transView, itemTag)

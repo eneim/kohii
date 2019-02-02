@@ -23,6 +23,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
+import kohii.v1.Playback.Priority
 import kohii.v1.exo.ExoPlayable
 import kotlin.annotation.AnnotationRetention.SOURCE
 
@@ -70,7 +71,9 @@ interface Playable {
 
   val tag: Any
 
-  fun bind(target: PlayerView): Playback<PlayerView>
+  fun bind(target: PlayerView): Playback<PlayerView> = this.bind(target, Playback.PRIORITY_NORMAL)
+
+  fun bind(target: PlayerView, @Priority priority: Int): Playback<PlayerView>
 
   /// Playback controller
 
@@ -100,6 +103,7 @@ interface Playable {
     val media: Media,
     val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
     val tag: Any? = null,
+    val delay: Long = 0,
     val prefetch: Boolean = false,
     @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF, // FIXME 190104 should be Playback's option?
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT

@@ -15,9 +15,11 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pagerContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/cardview_dark_background"
     >
 
   <androidx.viewpager.widget.ViewPager
@@ -25,5 +27,6 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:clipToPadding="false"
+      android:padding="@dimen/pager_padding"
       />
-</FrameLayout>
+</RelativeLayout>

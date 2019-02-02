@@ -15,23 +15,34 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@id/playerContainer"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
+    app:cardPreventCornerOverlap="true"
     >
-  <com.google.android.exoplayer2.ui.PlayerView
-      android:id="@id/playerView"
+
+  <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+      android:id="@id/playerContainer"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
+      android:layout_height="wrap_content"
       android:layout_gravity="center"
-      android:minHeight="200dp"
-      app:keep_content_on_player_reset="true"
-      app:resize_mode="fixed_height"
-      app:show_buffering="when_playing"
-      app:surface_type="texture_view"
-      app:use_controller="false"
-      />
-</FrameLayout>
+      app:resize_mode="fixed_width"
+      >
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@id/playerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:minHeight="200dp"
+        app:keep_content_on_player_reset="true"
+        app:resize_mode="fixed_height"
+        app:show_buffering="when_playing"
+        app:surface_type="texture_view"
+        app:use_controller="false"
+        />
+  </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
+</com.google.android.material.card.MaterialCardView>
