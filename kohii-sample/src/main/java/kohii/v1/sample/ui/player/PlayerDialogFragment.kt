@@ -101,7 +101,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     super.onStart()
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
     // Only here dialog's window will finally have the DecorView.
-    playback = Kohii[dialog.window!!].findPlayable(playableTag)
+    playback = Kohii[dialog!!.window!!].findPlayable(playableTag)
         ?.bind(playerView)
         ?.also {
           it.addCallback(this@PlayerDialogFragment)

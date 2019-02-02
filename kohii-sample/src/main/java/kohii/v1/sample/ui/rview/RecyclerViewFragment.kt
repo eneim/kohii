@@ -84,11 +84,11 @@ class RecyclerViewFragment : BaseFragment() {
   // Should be implemented by Activity, to keep information of latest clicked item position.
   private var playerInfoHolder: PlayerInfoHolder? = null
 
-  override fun onAttach(context: Context?) {
+  override fun onAttach(context: Context) {
     super.onAttach(context)
     playerInfoHolder = context as? PlayerInfoHolder?
   }
-
+  
   override fun onDetach() {
     super.onDetach()
     playerInfoHolder = null
