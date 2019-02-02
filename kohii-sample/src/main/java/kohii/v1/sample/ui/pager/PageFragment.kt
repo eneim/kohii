@@ -29,7 +29,8 @@ import kohii.v1.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.isLandscape
-import kohii.v1.sample.ui.overlay.data.Video
+import kohii.v1.sample.ui.pager.data.Sources
+import kohii.v1.sample.ui.pager.data.Video
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
 class PageFragment : BaseFragment() {
@@ -53,7 +54,7 @@ class PageFragment : BaseFragment() {
     }
   }
 
-  val video by lazy {
+  val video: Sources by lazy {
     val video = arguments?.getParcelable(pageVideoKey) as Video
     val item = video.playlist.first()
         .sources.first()
@@ -89,15 +90,15 @@ class PageFragment : BaseFragment() {
           ctn.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
         }
       }
-    }
 
-    val pagePos = arguments?.getInt(pageTagKey) ?: -1
-    val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
-    playback = Kohii[this].setUp(video.file)
-        .copy(repeatMode = Player.REPEAT_MODE_ONE, prefetch = true)
-        .copy(tag = videoTag, delay = 500)
-        .asPlayable()
-        .bind(playerView)
-        .also { it.observe(viewLifecycleOwner) }
+      val pagePos = arguments?.getInt(pageTagKey) ?: -1
+      val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
+      playback = Kohii[this].setUp(video.file)
+          .copy(repeatMode = Player.REPEAT_MODE_ONE, prefetch = true)
+          .copy(tag = videoTag, delay = 500)
+          .asPlayable()
+          .bind(playerView)
+          .also { pk -> pk.observe(viewLifecycleOwner) }
+    }
   }
 }

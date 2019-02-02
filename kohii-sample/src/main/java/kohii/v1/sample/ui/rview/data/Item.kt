@@ -16,11 +16,14 @@
 
 package kohii.v1.sample.ui.rview.data
 
+import androidx.annotation.Keep
+
+@Keep
 data class Item(
   val type: Int = -1,
   val content: String = "",
   val format: String = "",
-  val background: String = "",
+  val background: String = "#FFF",
   val width: Int = -1,
   val height: Int = -1,
   val icon: ItemIcon? = null

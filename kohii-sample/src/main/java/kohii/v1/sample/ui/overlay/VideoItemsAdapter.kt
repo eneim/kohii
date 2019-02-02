@@ -22,14 +22,12 @@ import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.squareup.picasso3.Picasso
 import kohii.v1.Playable
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.overlay.data.Video
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val picasso: Picasso,
   private val lifecycleOwner: LifecycleOwner
 ) : Adapter<BaseViewHolder>(), BaseViewHolder.OnClickListener {
 
@@ -60,7 +58,6 @@ internal class VideoItemsAdapter(
         R.layout.holder_video_text,
         parent,
         this,
-        picasso,
         lifecycleOwner,
         this
     )

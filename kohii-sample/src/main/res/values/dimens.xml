@@ -27,6 +27,8 @@
   <item name="textContent" type="id"/>
   <item name="videoThumb" type="id"/>
 
+  <dimen name="pager_padding">32dp</dimen>
+
   <dimen name="pager_horizontal_space_base">8dp</dimen>
   <dimen name="pager_horizontal_space">24dp</dimen>
   <dimen name="pager_horizontal_space_x2">48dp</dimen>

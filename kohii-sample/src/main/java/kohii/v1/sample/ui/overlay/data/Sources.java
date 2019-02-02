@@ -14,10 +14,31 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.reuse.data
+package kohii.v1.sample.ui.overlay.data;
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import java.util.List;
 
-@Parcelize
-data class Variations(val meta: String? = null) : Parcelable
+@SuppressWarnings({ "WeakerAccess", "unused" }) //
+public class Sources {
+  final String type;
+  final List<String> mediaTypes;
+  final String file;
+
+  public Sources(String type, List<String> mediaTypes, String file) {
+    this.type = type;
+    this.mediaTypes = mediaTypes;
+    this.file = file;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public List<String> getMediaTypes() {
+    return mediaTypes;
+  }
+
+  public String getFile() {
+    return file;
+  }
+}

@@ -17,4 +17,7 @@
 
 <resources>
   <integer name="column_number">2</integer>
+
+  <dimen name="pager_horizontal_space_x2">96dp</dimen>
+  <dimen name="pager_horizontal_space_x3">36dp</dimen>
 </resources>

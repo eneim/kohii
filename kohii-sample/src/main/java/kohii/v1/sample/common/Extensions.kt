@@ -66,7 +66,6 @@ inline fun <reified T : View> View.doOnLayoutAs(crossinline action: (view: T) ->
   }
 }
 
-
 fun Activity.inMultiWindow(): Boolean {
   return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
 }
@@ -78,8 +77,13 @@ fun Activity.getDisplayPoint(): Point {
 }
 
 fun Activity.isLandscape(): Boolean {
-  return this.inMultiWindow() || Point().let {
-    this.windowManager.defaultDisplay.getSize(it)
-    it.x >= it.y
+  val display = this.windowManager.defaultDisplay
+  val realSize = Point().let {
+    display.getRealSize(it)
+    it
+  }
+  return Point().let {
+    display.getSize(it)
+    (inMultiWindow() && it.y <= realSize.y * 0.5) || it.x >= it.y
   }
 }

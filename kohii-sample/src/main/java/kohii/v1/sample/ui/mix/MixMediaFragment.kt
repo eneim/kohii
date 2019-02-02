@@ -42,17 +42,14 @@ class MixMediaFragment : BaseFragment() {
     fun newInstance() = MixMediaFragment()
   }
 
-  lateinit var items: List<Item>
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    val asset = requireActivity().assets
+  private val videos: List<Item> by lazy {
+    val asset = requireActivity().application.assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
-    items = adapter.fromJson(asset.open("medias.json").source().buffer())!!
+    adapter.fromJson(asset.open("medias.json").source().buffer()) ?: emptyList()
   }
 
   override fun onCreateView(
@@ -70,7 +67,7 @@ class MixMediaFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)
-      it.adapter = ItemsAdapter(items, viewLifecycleOwner)
+      it.adapter = ItemsAdapter(videos, viewLifecycleOwner)
     }
   }
 }

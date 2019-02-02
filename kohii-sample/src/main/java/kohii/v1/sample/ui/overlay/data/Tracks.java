@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.pager.data
+package kohii.v1.sample.ui.overlay.data;
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+@SuppressWarnings("WeakerAccess") //
+public class Tracks {
+  final String kind;
+  final String file;
 
-@Parcelize
-data class Video(
-  val feed_instance_id: String,
-  val title: String,
-  val kind: String,
-  val playlist: List<Playlist>,
-  val description: String
-) : Parcelable
+  public Tracks(String kind, String file) {
+    this.kind = kind;
+    this.file = file;
+  }
+
+  public String getKind() {
+    return kind;
+  }
+
+  public String getFile() {
+    return file;
+  }
+}
