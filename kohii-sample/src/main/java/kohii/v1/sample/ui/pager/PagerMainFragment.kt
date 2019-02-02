@@ -46,7 +46,7 @@ class PagerMainFragment : BaseFragment() {
   }
 
   class VideoPagerAdapter(
-    fm: FragmentManager?,
+    fm: FragmentManager,
     private val videos: List<Video>
   ) : FragmentStatePagerAdapter(fm) {
 
