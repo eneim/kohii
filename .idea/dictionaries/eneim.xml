@@ -2,12 +2,16 @@
   <dictionary name="eneim">
     <words>
       <w>caminandes</w>
+      <w>crashlytics</w>
       <w>eneim</w>
       <w>exoplayer</w>
+      <w>firebase</w>
+      <w>kaigi</w>
       <w>kohii</w>
       <w>moshi</w>
       <w>playables</w>
       <w>playee</w>
+      <w>recyclerview</w>
       <w>renderers</w>
       <w>sview</w>
       <w>transcoder</w>

@@ -22,6 +22,7 @@ import com.squareup.leakcanary.LeakCanary
 /**
  * @author eneim (2018/06/26).
  */
+@Suppress("unused")
 class DemoApp : Application() {
 
   override fun onCreate() {

@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package kohii.v1.sample.ui.overlay
+
+import android.util.SparseArray
+import android.view.View
+import androidx.recyclerview.selection.ItemKeyProvider
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
+import java.util.HashMap
+
+class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
+    ItemKeyProvider<String>(SCOPE_CACHED) {
+
+  private val positionToKey = SparseArray<String>()
+  private val keyToPosition = HashMap<String, Int>()
+
+  init {
+    recyclerView.addOnChildAttachStateChangeListener(
+        object : OnChildAttachStateChangeListener {
+          override fun onChildViewAttachedToWindow(view: View) {
+            onAttached(view)
+          }
+
+          override fun onChildViewDetachedFromWindow(view: View) {
+            onDetached(view)
+          }
+        }
+    )
+  }
+
+  internal /* synthetic access */ fun onAttached(view: View) {
+    val holder = recyclerView.findContainingViewHolder(view)
+    if (holder is VideoItemHolder) {
+      val position = holder.adapterPosition
+      val key = holder.tagKey
+      if (position != RecyclerView.NO_POSITION && key != null) {
+        positionToKey.put(position, key)
+        keyToPosition[key] = position
+      }
+    }
+  }
+
+  internal /* synthetic access */ fun onDetached(view: View) {
+    val holder = recyclerView.findContainingViewHolder(view)
+    if (holder is VideoItemHolder) {
+      val position = holder.adapterPosition
+      val key = holder.tagKey
+      if (position != RecyclerView.NO_POSITION && key != null) {
+        positionToKey.delete(position)
+        keyToPosition.remove(key)
+      }
+    }
+  }
+
+  override fun getKey(position: Int): String? {
+    return positionToKey.get(position, null)
+  }
+
+  override fun getPosition(key: String): Int {
+    return keyToPosition[key] ?: RecyclerView.NO_POSITION
+  }
+}

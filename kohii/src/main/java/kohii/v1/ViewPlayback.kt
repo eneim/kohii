@@ -34,12 +34,14 @@ open class ViewPlayback<V : View>(
   playable: Playable,
   manager: Manager,
   target: V?,
+  priority: Int = PRIORITY_NORMAL,
   delay: () -> Long = Playback.NO_DELAY
 ) : Playback<V>(
     kohii,
     playable,
     manager,
     target,
+    priority,
     delay
 ), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
@@ -47,24 +49,33 @@ open class ViewPlayback<V : View>(
   private val debugListener: PlaybackEventListener by lazy {
     object : PlaybackEventListener {
       override fun onFirstFrameRendered() {
-        Log.d("Kohii:P", "first frame: ${this@ViewPlayback}")
+        Log.d("Kohii:PB", "first frame: ${this@ViewPlayback}")
       }
 
       override fun onBuffering(playWhenReady: Boolean) {
-        Log.d("Kohii:P", "buffering: ${this@ViewPlayback}")
+        Log.d("Kohii:PB", "buffering: ${this@ViewPlayback}")
       }
 
-      override fun onPlaying() {
-        Log.d("Kohii:P", "playing: ${this@ViewPlayback}")
+      override fun beforePlay() {
+        Log.e("Kohii:PB", "beforePlay: ${this@ViewPlayback}")
         target?.keepScreenOn = true
       }
 
+      override fun onPlaying() {
+        Log.d("Kohii:PB", "playing: ${this@ViewPlayback}")
+      }
+
       override fun onPaused() {
-        Log.w("Kohii:P", "paused: ${this@ViewPlayback}")
+        Log.w("Kohii:PB", "paused: ${this@ViewPlayback}")
+      }
+
+      override fun afterPause() {
+        Log.w("Kohii:PB", "afterPause: ${this@ViewPlayback}")
+        target?.keepScreenOn = false
       }
 
       override fun onCompleted() {
-        Log.d("Kohii:P", "ended: ${this@ViewPlayback}")
+        Log.d("Kohii:PB", "ended: ${this@ViewPlayback}")
         target?.keepScreenOn = false
       }
     }
@@ -79,7 +90,7 @@ open class ViewPlayback<V : View>(
 
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
-      if (!visible) return ViewToken(manager.viewRect, playerRect, -1F)
+      if (!visible) return ViewToken(manager.viewRect, this.priority, playerRect, -1F)
 
       val drawRect = Rect()
       target.getDrawingRect(drawRect)
@@ -90,7 +101,7 @@ open class ViewPlayback<V : View>(
         val visibleArea = playerRect.height() * playerRect.width()
         offset = visibleArea / drawArea.toFloat()
       }
-      return ViewToken(manager.viewRect, playerRect, offset)
+      return ViewToken(manager.viewRect, this.priority, playerRect, offset)
     }
 
   @CallSuper
@@ -136,6 +147,10 @@ open class ViewPlayback<V : View>(
     }
   }
 
+  open override fun unbindInternal() {
+    if (this.target != null && this.targetAttached.get()) this.manager.onTargetInActive(target)
+  }
+
   override fun onLayoutChange(
     v: View,
     left: Int,
@@ -155,13 +170,19 @@ open class ViewPlayback<V : View>(
   // Location on screen, with visible offset within target's parent.
   data class ViewToken internal constructor(
     internal val managerRect: Rect,
+    internal val priority: Int,
     internal val viewRect: Rect,
     internal val areaOffset: Float,
     internal val canRelease: Boolean = true
   ) : Token() {
     override fun compareTo(other: Token): Int {
       // TODO [20180813] may need better comparison regarding the orientations.
-      return if (other is ViewToken) CENTER_Y.compare(this, other) else super.compareTo(other)
+      return (other as? ViewToken)?.let {
+        var result = this.priority.compareTo(other.priority)
+        if (result == 0) result = CENTER_Y.compare(this, other)
+        if (result == 0) result = this.areaOffset.compareTo(other.areaOffset)
+        result
+      } ?: super.compareTo(other)
     }
 
     override fun shouldPlay(): Boolean {
@@ -170,6 +191,10 @@ open class ViewPlayback<V : View>(
 
     override fun shouldRelease(): Boolean {
       return canRelease
+    }
+
+    override fun toString(): String {
+      return "$viewRect::$areaOffset"
     }
   }
 

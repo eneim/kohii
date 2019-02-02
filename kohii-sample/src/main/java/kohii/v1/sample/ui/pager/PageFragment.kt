@@ -20,21 +20,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnLayout
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.isLandscape
+import kohii.v1.sample.ui.pager.data.Sources
 import kohii.v1.sample.ui.pager.data.Video
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
 class PageFragment : BaseFragment() {
 
   companion object {
-    private const val pageVideoKey = "kohii:demo:page:video"
-    private const val pageTagKey = "kohii:demo:page:tag"
+    private const val pageVideoKey = "kohii:demo:pager:video"
+    private const val pageTagKey = "kohii:demo:pager:tag"
 
     fun newInstance() = PageFragment().also {
       it.arguments = Bundle()
@@ -51,15 +54,15 @@ class PageFragment : BaseFragment() {
     }
   }
 
-  val video by lazy {
+  val video: Sources by lazy {
     val video = arguments?.getParcelable(pageVideoKey) as Video
     val item = video.playlist.first()
         .sources.first()
     item
   }
 
-  var landscape: Boolean = false
-  var playback: Playback<PlayerView>? = null
+  private var landscape: Boolean = false
+  private var playback: Playback<PlayerView>? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -77,13 +80,25 @@ class PageFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val pagePos = arguments?.getInt(pageTagKey) ?: -1
-    val videoTag = "${video.file}::$pagePos"
-    playback = Kohii[this].setUp(video.file)
-        .copy(repeatMode = Player.REPEAT_MODE_ONE, prefetch = landscape)
-        .copy(tag = videoTag)
-        .asPlayable()
-        .bind(playerView)
-        .also { it.observe(viewLifecycleOwner) }
+    view.doOnLayout {
+      val container = view.findViewById<View>(R.id.playerContainer)
+      // [1] Update resize mode based on Window size.
+      (container as? AspectRatioFrameLayout)?.let { ctn ->
+        if (it.width * 9 >= it.height * 16) {
+          ctn.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+        } else {
+          ctn.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+        }
+      }
+
+      val pagePos = arguments?.getInt(pageTagKey) ?: -1
+      val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
+      playback = Kohii[this].setUp(video.file)
+          .copy(repeatMode = Player.REPEAT_MODE_ONE, prefetch = true)
+          .copy(tag = videoTag, delay = 500)
+          .asPlayable()
+          .bind(playerView)
+          .also { pk -> pk.observe(viewLifecycleOwner) }
+    }
   }
 }

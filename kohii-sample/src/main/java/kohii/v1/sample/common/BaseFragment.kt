@@ -47,4 +47,5 @@ open class BaseFragment : Fragment() {
     super.onDestroy()
     Log.d(logTag, "onDestroy() called")
   }
+
 }

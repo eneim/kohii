@@ -21,8 +21,10 @@ import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.view.get
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
@@ -38,7 +40,8 @@ import kohii.v1.sample.R
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
   inflater: LayoutInflater,
-  parent: ViewGroup
+  parent: ViewGroup,
+  val lifecycleOwner: LifecycleOwner
 ) : BaseViewHolder(
     inflater,
     R.layout.holder_mix_view,
@@ -77,8 +80,8 @@ class VideoViewHolder(
     Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
   }
 
-  val mediaName = itemView.findViewById(R.id.mediaName) as TextView
-  val playerContainer = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
+  val mediaName = itemView.findViewById(R.id.videoTitle) as TextView
+  val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
 
   var itemTag: String? = null
   var playback: Playback<PlayerView>? = null
@@ -94,16 +97,12 @@ class VideoViewHolder(
         // Encrypted video must be played on SurfaceView.
         inflater.inflate(R.layout.playerview_surface, playerContainer, false)
       } ?: inflater.inflate(R.layout.playerview_texture, playerContainer, false)) as PlayerView
+      playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       playerContainer.addView(playerView, 0)
 
-      playerView.setAspectRatioListener { targetAspectRatio, _, _ ->
-        playerContainer.setAspectRatio(targetAspectRatio)
-        playerView.setAspectRatioListener(null)
-      }
-
       val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
-      itemTag = item.uri + "@" + adapterPosition
-      mediaName.text = "${item.name}・${playerView.videoSurfaceView}"
+      itemTag = "${javaClass.canonicalName}::${item.uri}::$adapterPosition"
+      mediaName.text = item.name
 
       val playable = Kohii[itemView.context]
           .setUp(mediaItem)
@@ -118,6 +117,7 @@ class VideoViewHolder(
           .also {
             it.addPlaybackEventListener(this@VideoViewHolder)
             it.addCallback(this@VideoViewHolder)
+            it.observe(lifecycleOwner)
           }
     }
   }

@@ -16,15 +16,18 @@
 
 package kohii.v1.sample.ui.player
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
-import kohii.v1.PlayerEventListener
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
@@ -46,10 +49,15 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
 
   companion object {
     private const val KEY_PLAYABLE_TAG = "kohii:player:dialog:tag"
+    private const val KEY_INIT_DATA = "kohii::player::init_data"
 
-    fun newInstance(tag: String): PlayerDialogFragment {
+    fun newInstance(
+      tag: String,
+      initData: InitData
+    ): PlayerDialogFragment {
       val bundle = Bundle().also {
         it.putString(KEY_PLAYABLE_TAG, tag)
+        it.putParcelable(KEY_INIT_DATA, initData)
       }
       return PlayerDialogFragment().also { it.arguments = bundle }
     }
@@ -63,22 +71,12 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     fun onDialogInActive(tag: Any)
   }
 
-  var listener: PlayerEventListener? = null
   var playback: Playback<*>? = null
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    listener = object : PlayerEventListener {
-      override fun onVideoSizeChanged(
-        width: Int,
-        height: Int,
-        unappliedRotationDegrees: Int,
-        pixelWidthHeightRatio: Float
-      ) {
-        startPostponedEnterTransition()
-        playback?.removePlayerEventListener(this)
-      }
-    }
+  override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    val dialog = super.onCreateDialog(savedInstanceState)
+    (dialog as? AppCompatDialog)?.supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
+    return dialog
   }
 
   override fun onCreateView(
@@ -89,6 +87,16 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     return inflater.inflate(R.layout.fragment_player, container, false)
   }
 
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    val initData = arguments?.getParcelable<InitData>(KEY_INIT_DATA)
+    (view.findViewById<AspectRatioFrameLayout>(R.id.playerContainer))
+        ?.setAspectRatio(initData!!.aspectRatio)
+  }
+
   override fun onStart() {
     super.onStart()
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
@@ -96,15 +104,14 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     playback = Kohii[dialog.window!!].findPlayable(playableTag)
         ?.bind(playerView)
         ?.also {
-          it.addPlayerEventListener(listener!!)
           it.addCallback(this@PlayerDialogFragment)
+          it.observe(viewLifecycleOwner)
         }
   }
 
   override fun onStop() {
     super.onStop()
     playback?.also {
-      it.removePlayerEventListener(listener)
       it.removeCallback(this@PlayerDialogFragment)
     }
   }

@@ -20,10 +20,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.Keep
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LifecycleOwner
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.common.Video
 import kohii.v1.sample.databinding.FragmentMotionBinding
 import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.player.PlayerActivity
@@ -31,13 +32,14 @@ import kohii.v1.sample.ui.player.PlayerActivity
 /**
  * @author eneim (2018/07/15).
  */
+@Keep
 class MotionFragment : BaseFragment(), Presenter {
 
   companion object {
     fun newInstance() = MotionFragment()
   }
 
-  var binding: FragmentMotionBinding? = null
+  private var binding: FragmentMotionBinding? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -49,7 +51,10 @@ class MotionFragment : BaseFragment(), Presenter {
         R.layout.fragment_motion,
         container,
         false
-    ) as FragmentMotionBinding).also { it.motion = Motion() }
+    ) as FragmentMotionBinding).also {
+      it.motion = Motion()
+      it.lifecycleOwner = this
+    }
     return binding!!.root
   }
 
@@ -72,5 +77,9 @@ class MotionFragment : BaseFragment(), Presenter {
             requireContext(), InitData(tag = video.url, aspectRatio = video.width / video.height)
         )
     )
+  }
+
+  override fun requireLifecycleOwner(): LifecycleOwner {
+    return this.viewLifecycleOwner
   }
 }

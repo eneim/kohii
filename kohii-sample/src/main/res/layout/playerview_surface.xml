@@ -25,7 +25,7 @@
     app:keep_content_on_player_reset="true"
     app:resize_mode="fixed_width"
     app:show_buffering="when_playing"
-    app:shutter_background_color="@android:color/black"
+    app:shutter_background_color="@color/shutter_color"
     app:surface_type="surface_view"
     app:use_controller="false"
     />
