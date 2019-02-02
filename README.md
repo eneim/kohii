@@ -4,7 +4,6 @@
 
 Video playback for Android made easy.
 
-![](https://img.shields.io/nexus/r/https/oss.sonatype.org/im.ene.kohii/kohii.svg)
 ![](https://img.shields.io/nexus/s/https/oss.sonatype.org/im.ene.kohii/kohii.svg)
 [![](https://yourdonation.rocks/images/badge.svg)](https://www.paypal.me/eneimlabs/500jpy)
 
@@ -14,13 +13,15 @@ Kohii is a high level Video playback library, built from the experience creating
 - **(2)** smooth playback experience on ~~list~~ any Views (RecyclerView, NestedScrollView, etc).
 - **(3)** smooth transition from local playback to fullscreen playback and vice versa, 
 
+*This library would not deprecate toro anytime soon.*
+
 ## Setup
 
 Add to your module's build.gradle dependencies
 
 ```groovy
-implementation "im.ene.kohii:kohii:1.0.0.2903-SNAPSHOT"
-implementation "com.google.android.exoplayer:exoplayer:2.9.3"
+implementation "im.ene.kohii:kohii:1.0.0.2904-SNAPSHOT"
+implementation "com.google.android.exoplayer:exoplayer:2.9.4"
 ```
 
 ## Start a playback
