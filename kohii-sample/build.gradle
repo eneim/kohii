@@ -55,7 +55,7 @@ android {
     applicationId "kohii.v1.sample"
     minSdkVersion 21 /* buildConfig.minSdk */
     targetSdkVersion buildConfig.targetSdk
-    versionCode buildConfig.version.code
+    versionCode rootProject.gitCommitCount /* buildConfig.version.code */
     versionName buildConfig.version.name
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
