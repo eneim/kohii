@@ -74,7 +74,11 @@ class MotionFragment : BaseFragment(), Presenter {
   ) {
     startActivity(
         PlayerActivity.createIntent(
-            requireContext(), InitData(tag = video.url, aspectRatio = video.width / video.height)
+            requireContext(),
+            InitData(
+                tag = "${video.javaClass.canonicalName}::${video.url}",
+                aspectRatio = video.width / video.height
+            )
         )
     )
   }

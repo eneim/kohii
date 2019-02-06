@@ -125,6 +125,7 @@ class Manager internal constructor(
             if (kohii.mapWeakPlayableToManager[playable] === this) {
               it.pause()
               this.trySavePlaybackInfo(it)
+              // TODO [20190206] also release?
               // There is no recreation. If this manager is managing the playable, unload the Playable.
               kohii.mapWeakPlayableToManager[playable] = null
             }

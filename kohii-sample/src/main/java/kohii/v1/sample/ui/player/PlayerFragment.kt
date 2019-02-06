@@ -91,7 +91,7 @@ class PlayerFragment : BaseFragment() {
     transView = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView!!, playableTag)
 
-    playback = Kohii[requireContext()].findPlayable(playableTag)
+    playback = Kohii[this].findPlayable(playableTag)
         ?.bind(playerView)
         ?.also {
           it.addPlayerEventListener(listener!!)
