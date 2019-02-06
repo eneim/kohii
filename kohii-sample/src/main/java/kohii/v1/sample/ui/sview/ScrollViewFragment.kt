@@ -34,9 +34,7 @@ import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
 @Keep
-class ScrollViewFragment : BaseFragment(),
-    Playback.Callback,
-    PlayerDialogFragment.Callback {
+class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   companion object {
     const val videoUrl =
@@ -49,6 +47,7 @@ class ScrollViewFragment : BaseFragment(),
   }
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
+
   private var playback: Playback<PlayerView>? = null
   private var dialogPlayer: DialogFragment? = null
 
@@ -72,18 +71,15 @@ class ScrollViewFragment : BaseFragment(),
         .asPlayable()
         .bind(playerView)
         .also {
-          it.addCallback(this@ScrollViewFragment)
           it.observe(viewLifecycleOwner)
         }
 
-    view?.run {
-      playerContainer.setOnClickListener {
-        dialogPlayer = PlayerDialogFragment.newInstance(
-            videoTag,
-            InitData(tag = videoTag, aspectRatio = 16 / 9f)
-        )
-        dialogPlayer!!.show(childFragmentManager, videoTag)
-      }
+    playerContainer.setOnClickListener {
+      dialogPlayer = PlayerDialogFragment.newInstance(
+          videoTag,
+          InitData(tag = videoTag, aspectRatio = 16 / 9f)
+      )
+          .also { it.show(childFragmentManager, videoTag) }
     }
   }
 
@@ -92,35 +88,15 @@ class ScrollViewFragment : BaseFragment(),
     playerContainer.setOnClickListener(null)
   }
 
-  override fun onDestroyView() {
-    super.onDestroyView()
-    playback?.removeCallback(this)
-  }
-
-  // BEGIN: Playback.Callback
-
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    startPostponedEnterTransition()
-  }
-
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) = Unit
-
-  // END: Playback.Callback
-
   // BEGIN: PlayerDialogFragment.Callback
 
   override fun onDialogActive(tag: Any) {
   }
 
   override fun onDialogInActive(tag: Any) {
-    Kohii[this].findPlayable(tag)
+    playback = Kohii[this].findPlayable(tag)
         ?.bind(playerView)
+    playback?.observe(viewLifecycleOwner)
   }
 
   // END: PlayerDialogFragment.Callback

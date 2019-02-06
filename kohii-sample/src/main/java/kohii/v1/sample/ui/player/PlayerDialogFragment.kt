@@ -29,6 +29,7 @@ import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
 import kohii.v1.sample.R
+import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
 class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
@@ -93,8 +94,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
   ) {
     super.onViewCreated(view, savedInstanceState)
     val initData = arguments?.getParcelable<InitData>(KEY_INIT_DATA)
-    (view.findViewById<AspectRatioFrameLayout>(R.id.playerContainer))
-        ?.setAspectRatio(initData!!.aspectRatio)
+    (playerContainer as AspectRatioFrameLayout).setAspectRatio(initData!!.aspectRatio)
   }
 
   override fun onStart() {
@@ -111,8 +111,6 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
 
   override fun onStop() {
     super.onStop()
-    playback?.also {
-      it.removeCallback(this@PlayerDialogFragment)
-    }
+    playback?.removeCallback(this@PlayerDialogFragment)
   }
 }
