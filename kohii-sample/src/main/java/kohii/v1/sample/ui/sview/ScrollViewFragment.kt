@@ -76,10 +76,20 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
     playerContainer.setOnClickListener {
       dialogPlayer = PlayerDialogFragment.newInstance(
-          videoTag,
-          InitData(tag = videoTag, aspectRatio = 16 / 9f)
+          videoTag, InitData(tag = videoTag, aspectRatio = 16 / 9f)
       )
           .also { it.show(childFragmentManager, videoTag) }
+
+      /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
+      @Suppress("ReplaceSingleLineLet")
+      fragmentManager?.let {
+        it.beginTransaction()
+            .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoTag), videoTag)
+            .setReorderingAllowed(true) // This is important.
+            .addToBackStack(null)
+            .commit()
+      }
+      */
     }
   }
 
