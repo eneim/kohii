@@ -251,8 +251,6 @@ abstract class Playback<T> internal constructor(
   @CallSuper
   internal open fun onDestroyed() {
     this.listenerHandler = null
-    lifecycle?.removeObserver(this)
-    lifecycle = null
   }
 
   override fun toString(): String {
@@ -273,11 +271,13 @@ abstract class Playback<T> internal constructor(
     fun onActive(
       playback: Playback<*>,
       target: Any?
-    ) {}
+    ) {
+    }
 
     fun onInActive(
       playback: Playback<*>,
       target: Any?
-    ) {}
+    ) {
+    }
   }
 }
