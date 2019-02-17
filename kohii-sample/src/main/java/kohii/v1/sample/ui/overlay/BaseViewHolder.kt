@@ -51,7 +51,7 @@ abstract class BaseViewHolder(
   }
 
   override fun toString(): String {
-    return javaClass.simpleName + " -- " + adapterPosition
+    return javaClass.simpleName + " ${hashCode()} -- " + adapterPosition
   }
 
   open fun onAttached() {}

@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.ui.pager
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,10 +25,13 @@ import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.lifecycle.LifecycleOwner
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kohii.v1.ContainerProvider
+import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getDisplayPoint
@@ -38,7 +42,7 @@ import okio.source
 
 @Suppress("unused")
 @Keep
-class PagerMainFragment : BaseFragment() {
+class PagerMainFragment : BaseFragment(), ContainerProvider {
 
   companion object {
     fun newInstance() = PagerMainFragment()
@@ -80,6 +84,7 @@ class PagerMainFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    Kohii[requireContext()].register(this) // Work around.
     this.viewPager.let {
       it.adapter = VideoPagerAdapter(childFragmentManager, videos)
       it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
@@ -93,4 +98,18 @@ class PagerMainFragment : BaseFragment() {
       }
     }
   }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(viewPager)
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
+  }
+
+  override fun provideContext(): Context {
+    return requireContext()
+  }
+
+  val kohii by lazy { Kohii[requireContext()] }
 }

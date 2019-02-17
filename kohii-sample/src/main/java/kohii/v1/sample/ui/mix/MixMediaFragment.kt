@@ -16,18 +16,23 @@
 
 package kohii.v1.sample.ui.mix
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kohii.v1.ContainerProvider
+import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 import okio.buffer
 import okio.source
 
@@ -36,11 +41,13 @@ import okio.source
  */
 @Suppress("unused")
 @Keep
-class MixMediaFragment : BaseFragment() {
+class MixMediaFragment : BaseFragment(), ContainerProvider {
 
   companion object {
     fun newInstance() = MixMediaFragment()
   }
+
+  val kohii: Kohii by lazy { Kohii[requireContext()] }
 
   private val videos: List<Item> by lazy {
     val asset = requireActivity().application.assets
@@ -67,7 +74,20 @@ class MixMediaFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)
-      it.adapter = ItemsAdapter(videos, viewLifecycleOwner)
+      @Suppress("USELESS_CAST")
+      it.adapter = ItemsAdapter(videos, kohii, this)
     }
+  }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(recyclerView)
+  }
+
+  override fun provideContext(): Context {
+    return requireContext()
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
   }
 }

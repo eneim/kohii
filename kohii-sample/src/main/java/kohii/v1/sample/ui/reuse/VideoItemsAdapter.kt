@@ -19,17 +19,19 @@ package kohii.v1.sample.ui.reuse
 import android.view.LayoutInflater
 import android.view.LayoutInflater.from
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
+import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.reuse.data.Video
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val lifecycleOwner: LifecycleOwner
+  private val kohii: Kohii,
+  val containerProvider: ContainerProvider
 ) : Adapter<BaseViewHolder>(), PlayerManager {
 
   var playerView: PlayerView? = null
@@ -55,7 +57,8 @@ internal class VideoItemsAdapter(
         from(parent.context),
         R.layout.holder_video_text_reuse,
         parent,
-        lifecycleOwner
+        kohii,
+        containerProvider
     )
   }
 

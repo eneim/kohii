@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
+import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.PlayerFragment
 import kohii.v1.sample.ui.rview.BaseViewHolder.OnClickListener
@@ -40,6 +41,8 @@ class ItemsAdapter(
 
   private var inflater: LayoutInflater? = null
 
+  val kohii: Kohii by lazy { Kohii[fragment.requireContext()] }
+
   init {
     setHasStableIds(true)
   }
@@ -55,7 +58,7 @@ class ItemsAdapter(
     return when (viewType) {
       R.layout.holder_text_view -> TextViewHolder(inflater!!, parent, this.dp2Px)
       R.layout.holder_player_view -> VideoViewHolder(
-          inflater!!, parent, fragment.viewLifecycleOwner, VideoClickImpl(fragment)
+          inflater!!, parent, kohii, fragment, VideoClickImpl(fragment)
       )
       else -> throw RuntimeException("Unknown type: $viewType")
     }

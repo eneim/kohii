@@ -23,6 +23,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
+import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Priority
 import kohii.v1.exo.ExoPlayable
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -32,9 +33,9 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * Playable lifecycle:
  *
- * - Created by calling [Kohii.setUp], will be managed by at least one [Manager].
+ * - Created by calling [Kohii], will be managed by at least one [PlaybackManager].
  * - Destroyed if:
- *  - All [Manager]s manage the Playable is destroyed/detached from its lifecycle.
+ *  - All [PlaybackManager]s manage the Playable is destroyed/detached from its lifecycle.
  *
  * - A [Playable] can be bound to a Target to produce a [Playback]. Due to the reusable nature of
  * [Playable], the call to bind it is not limited to one Target. Which means that, a [Playable] can
@@ -42,11 +43,15 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  * produced a [Playback] xRa, then the [Playable] X is rebound to a Target B, it will first produce
  * a produce a [Playback] xRb. But before that, the [Playback] xRa must also be destroyed.
  *
- * (Think about how a couple separates ... and then come back ...)
- *
  * @author eneim (2018/06/24).
  */
-interface Playable {
+
+/**
+ * 2019/02/16
+ *
+ * A Playable should accept only one type of Target.
+ */
+interface Playable<T> : Callback {
 
   companion object {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
@@ -71,9 +76,21 @@ interface Playable {
 
   val tag: Any
 
-  fun bind(target: PlayerView): Playback<PlayerView> = this.bind(target, Playback.PRIORITY_NORMAL)
+  // fun bind(target: T, @Priority priority: Int) = bind(target, priority, cb = null)
 
-  fun bind(target: PlayerView, @Priority priority: Int): Playback<PlayerView>
+  fun bind(
+    provider: ContainerProvider,
+    target: T
+  ) = this.bind(
+      provider,
+      target, Playback.PRIORITY_NORMAL
+  )
+
+  fun bind(
+    provider: ContainerProvider,
+    target: T,
+    @Priority priority: Int
+  ): Playback<T>
 
   /// Playback controller
 
@@ -97,6 +114,14 @@ interface Playable {
   // Setter/Getter
   var playbackInfo: PlaybackInfo
 
+  val delay: Long
+
+  // internal API
+
+  fun onPlaybackCreated(playback: Playback<T>)
+
+  fun onPlaybackDestroyed(playback: Playback<T>)
+
   // data class for copying convenience.
   data class Builder(
     val kohii: Kohii,
@@ -111,13 +136,31 @@ interface Playable {
     // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.
     // If the builder has no valid tag (a.k.a tag is null), then always return new one.
     // TODO [20181021] Consider to make this to use the Factory mechanism?
-    fun asPlayable(): Playable {
+    fun asPlayable(): Playable<PlayerView> {
+      @Suppress("UNCHECKED_CAST")
       return ((
           if (tag != null)
-            kohii.mapTagToPlayable.getOrPut(tag) { ExoPlayable(kohii, media, this) }
+            kohii.mapTagToPlayable.getOrPut(tag) { ExoPlayable(kohii, this) }
           else
-            ExoPlayable(kohii, media, this)
-          ).also { kohii.mapWeakPlayableToManager[it] = null })
+            ExoPlayable(kohii, this)
+          ) as Playable<PlayerView>).also {
+        kohii.mapPlayableToManager[it] = null
+      }
     }
+
+    fun <T> bind(
+      containerProvider: ContainerProvider,
+      target: T, @Priority priority: Int
+    ): Playback<T> {
+      return if (target is PlayerView) {
+        @Suppress("UNCHECKED_CAST")
+        asPlayable().bind(containerProvider, target, priority) as Playback<T>
+      } else throw IllegalArgumentException("Unsupported target: $target")
+    }
+
+    fun <T> bind(
+      containerProvider: ContainerProvider,
+      target: T
+    ) = this.bind(containerProvider, target, Playback.PRIORITY_NORMAL)
   }
 }

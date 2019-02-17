@@ -16,15 +16,17 @@
 
 package kohii.v1.sample.ui.pager
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
+import kohii.v1.ContainerProvider
 import kohii.v1.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -33,7 +35,7 @@ import kohii.v1.sample.ui.pager.data.Sources
 import kohii.v1.sample.ui.pager.data.Video
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
-class PageFragment : BaseFragment() {
+class PageFragment : BaseFragment(), ContainerProvider {
 
   companion object {
     private const val pageVideoKey = "kohii:demo:pager:video"
@@ -91,14 +93,25 @@ class PageFragment : BaseFragment() {
         }
       }
 
+      val kohii = (parentFragment as PagerMainFragment).kohii
       val pagePos = arguments?.getInt(pageTagKey) ?: -1
       val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
-      playback = Kohii[this].setUp(video.file)
+      playback = kohii.setUp(video.file)
           .copy(repeatMode = Player.REPEAT_MODE_ONE, prefetch = true)
           .copy(tag = videoTag, delay = 500)
-          .asPlayable()
-          .bind(playerView)
-          .also { pk -> pk.observe(viewLifecycleOwner) }
+          .bind(this, playerView)
     }
+  }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(view!!.findViewById(R.id.content))
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
+  }
+
+  override fun provideContext(): Context {
+    return requireContext()
   }
 }

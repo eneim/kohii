@@ -16,15 +16,19 @@
 
 package kohii.v1.sample.ui.sview
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -32,9 +36,12 @@ import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.player.PlayerDialogFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
+import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView
 
 @Keep
-class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
+class ScrollViewFragment : BaseFragment(),
+    PlayerDialogFragment.Callback,
+    ContainerProvider {
 
   companion object {
     const val videoUrl =
@@ -46,6 +53,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     }
   }
 
+  val kohii: Kohii by lazy { Kohii[requireContext()] }
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
   private var playback: Playback<PlayerView>? = null
@@ -65,14 +73,11 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     super.onActivityCreated(savedInstanceState)
     // ⬇︎ For demo of manual fullscreen.
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    playback = Kohii[this].setUp(videoUrl)
+    playback = kohii.setUp(videoUrl)
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = videoTag)
         .asPlayable()
-        .bind(playerView)
-        .also {
-          it.observe(viewLifecycleOwner)
-        }
+        .bind(this, playerView)
 
     playerContainer.setOnClickListener {
       dialogPlayer = PlayerDialogFragment.newInstance(
@@ -104,10 +109,22 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   }
 
   override fun onDialogInActive(tag: Any) {
-    playback = Kohii[this].findPlayable(tag)
-        ?.bind(playerView)
-    playback?.observe(viewLifecycleOwner)
+    @Suppress("UNCHECKED_CAST")
+    playback = (kohii.findPlayable(tag) as? Playable<PlayerView>)
+        ?.bind(this, playerView)
   }
 
   // END: PlayerDialogFragment.Callback
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(this.scrollView)
+  }
+
+  override fun provideContext(): Context {
+    return requireActivity()
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return this.viewLifecycleOwner
+  }
 }

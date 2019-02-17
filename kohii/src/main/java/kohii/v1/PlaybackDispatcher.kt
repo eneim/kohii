@@ -21,7 +21,9 @@ import android.os.Looper
 import android.os.Message
 
 /** @since 2018/12/26 */
-
+/**
+ * Support delayed playback.
+ */
 class PlaybackDispatcher : Handler.Callback {
   companion object {
     private const val MSG_PLAY = 1234

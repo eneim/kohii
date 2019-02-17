@@ -16,16 +16,20 @@
 
 package kohii.v1.sample.ui.reuse
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kohii.v1.ContainerProvider
+import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.reuse.data.Video
@@ -35,7 +39,7 @@ import okio.source
 
 @Suppress("unused")
 @Keep
-class OneSurfaceFragment : BaseFragment() {
+class OneSurfaceFragment : BaseFragment(), ContainerProvider {
 
   companion object {
     fun newInstance() = OneSurfaceFragment()
@@ -59,6 +63,7 @@ class OneSurfaceFragment : BaseFragment() {
     return inflater.inflate(R.layout.fragment_recycler_view, container, false)
   }
 
+  val kohii: Kohii by lazy { Kohii[requireContext()] }
   private var scrollChangeListener: KohiiDemoScrollChangeListener? = null
 
   override fun onViewCreated(
@@ -66,7 +71,7 @@ class OneSurfaceFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val videoAdapter = VideoItemsAdapter(videos, viewLifecycleOwner)
+    val videoAdapter = VideoItemsAdapter(videos, kohii, this)
 
     recyclerView.apply {
       setHasFixedSize(true)
@@ -83,5 +88,17 @@ class OneSurfaceFragment : BaseFragment() {
     super.onDestroyView()
     scrollChangeListener?.let { recyclerView.removeOnScrollListener(it) }
     recyclerView.adapter = null
+  }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(recyclerView)
+  }
+
+  override fun provideContext(): Context {
+    return requireContext()
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
   }
 }

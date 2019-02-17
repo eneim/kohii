@@ -21,10 +21,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
@@ -37,10 +37,15 @@ import kohii.v1.sample.ui.rview.data.Item
 class VideoViewHolder(
   inflater: LayoutInflater,
   parent: ViewGroup,
-  private val lifecycleOwner: LifecycleOwner,
+  private val kohii: Kohii,
+  private val containerProvider: ContainerProvider,
   private val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
     View.OnClickListener, PlaybackEventListener, Playback.Callback {
+
+  init {
+    itemView.setOnClickListener(this)
+  }
 
   override fun onActive(
     playback: Playback<*>,
@@ -83,22 +88,20 @@ class VideoViewHolder(
   var playback: Playback<PlayerView>? = null
 
   override fun bind(item: Item?) {
-    itemView.setOnClickListener(this)
     if (item != null) {
       itemTag = "${javaClass.canonicalName}::${item.content}::$adapterPosition"
 
       playerContainer.setAspectRatio(item.width / item.height.toFloat())
-      val playable = Kohii[itemView.context]
+      val playable = kohii
           .setUp(item.content)
           .copy(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
           .asPlayable()
 
-      playback = playable.bind(playerView)
-          .also {
-            it.addPlaybackEventListener(this@VideoViewHolder)
-            it.addCallback(this@VideoViewHolder)
-            it.observe(lifecycleOwner)
-          }
+      playback = playable.bind(containerProvider, playerView)
+      playback?.also {
+        it.addPlaybackEventListener(this)
+        it.addCallback(this)
+      } ?: listener.onItemLoadFailed(adapterPosition, RuntimeException("Failed!"))
 
       ViewCompat.setTransitionName(transView, itemTag)
     }

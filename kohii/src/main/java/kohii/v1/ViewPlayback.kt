@@ -31,8 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 open class ViewPlayback<V : View>(
   kohii: Kohii,
-  playable: Playable,
-  manager: Manager,
+  playable: Playable<V>,
+  manager: PlaybackManager,
   target: V?,
   priority: Int = PRIORITY_NORMAL,
   delay: () -> Long = Playback.NO_DELAY
@@ -90,7 +90,7 @@ open class ViewPlayback<V : View>(
 
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
-      if (!visible) return ViewToken(manager.viewRect, this.priority, playerRect, -1F)
+      if (!visible) return ViewToken(this.priority, playerRect, -1F)
 
       val drawRect = Rect()
       target.getDrawingRect(drawRect)
@@ -101,7 +101,8 @@ open class ViewPlayback<V : View>(
         val visibleArea = playerRect.height() * playerRect.width()
         offset = visibleArea / drawArea.toFloat()
       }
-      return ViewToken(manager.viewRect, this.priority, playerRect, offset)
+
+      return ViewToken(this.priority, playerRect, offset)
     }
 
   @CallSuper
@@ -125,13 +126,6 @@ open class ViewPlayback<V : View>(
   override fun onViewAttachedToWindow(v: View) {
     if (this.targetAttached.compareAndSet(false, true)) {
       super.target?.also {
-        // Find a ancestor of target whose parent is a CoordinatorLayout, or null.
-        // TODO [20180620] deal with CoordinatorLayout.
-        /* val corChild = findSuitableParent(manager.decorView, it)
-        val params = corChild?.layoutParams
-        if (params is CoordinatorLayout.LayoutParams) {
-        } */
-
         manager.onTargetActive(it)
         it.addOnLayoutChangeListener(this)
       }
@@ -147,7 +141,7 @@ open class ViewPlayback<V : View>(
     }
   }
 
-  open override fun unbindInternal() {
+  override fun unbindInternal() {
     if (this.target != null && this.targetAttached.get()) this.manager.onTargetInActive(target)
   }
 
@@ -162,14 +156,13 @@ open class ViewPlayback<V : View>(
     oldRight: Int,
     oldBottom: Int
   ) {
-    if (layoutDidChange(left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)) {
-      manager.onPlaybackInternalChanged(this)
+    if (target != null && changed(left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)) {
+      manager.onTargetUpdated(target)
     }
   }
 
   // Location on screen, with visible offset within target's parent.
   data class ViewToken internal constructor(
-    internal val managerRect: Rect,
     internal val priority: Int,
     internal val viewRect: Rect,
     internal val areaOffset: Float,
@@ -230,7 +223,7 @@ open class ViewPlayback<V : View>(
       return null
     }
 
-    private fun layoutDidChange(
+    private fun changed(
       left: Int,
       top: Int,
       right: Int,

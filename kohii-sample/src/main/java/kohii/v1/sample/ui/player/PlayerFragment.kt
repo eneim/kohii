@@ -16,18 +16,24 @@
 
 package kohii.v1.sample.ui.player
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.transition.TransitionInflater
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlayerEventListener
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
 /**
@@ -35,7 +41,7 @@ import kotlinx.android.synthetic.main.fragment_player.playerView
  *
  * @author eneim (2018/06/26).
  */
-class PlayerFragment : BaseFragment() {
+class PlayerFragment : BaseFragment(), ContainerProvider {
 
   companion object {
     private const val KEY_PLAYABLE_TAG = "kohii:fragment:player:tag"
@@ -48,6 +54,7 @@ class PlayerFragment : BaseFragment() {
     }
   }
 
+  val kohii: Kohii by lazy { Kohii[requireContext()] }
   private var listener: PlayerEventListener? = null
 
   var playback: Playback<*>? = null
@@ -91,12 +98,10 @@ class PlayerFragment : BaseFragment() {
     transView = playerView.findViewById(R.id.exo_content_frame)
     ViewCompat.setTransitionName(transView!!, playableTag)
 
-    playback = Kohii[this].findPlayable(playableTag)
-        ?.bind(playerView)
-        ?.also {
-          it.addPlayerEventListener(listener!!)
-          it.observe(viewLifecycleOwner)
-        }
+    @Suppress("UNCHECKED_CAST")
+    playback = (kohii.findPlayable(playableTag) as? Playable<PlayerView>)
+        ?.bind(this, playerView)
+    playback?.addPlayerEventListener(listener!!)
   }
 
   override fun onStop() {
@@ -125,5 +130,17 @@ class PlayerFragment : BaseFragment() {
         }
       }
     })
+  }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(playerContainer)
+  }
+
+  override fun provideContext(): Context {
+    return requireContext()
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
   }
 }

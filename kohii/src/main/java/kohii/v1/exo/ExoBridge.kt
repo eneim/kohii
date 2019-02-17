@@ -46,6 +46,7 @@ import kohii.setVolumeInfo
 import kohii.v1.Bridge
 import kohii.v1.ErrorListener
 import kohii.v1.ErrorListeners
+import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.PlayerEventListeners
@@ -60,7 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @Suppress("MemberVisibilityCanBePrivate")
 internal open class ExoBridge(
-  context: Context,
+  kohii: Kohii,
   private val media: Media,
   private val playerProvider: PlayerProvider,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
@@ -78,7 +79,7 @@ internal open class ExoBridge(
     }
   }
 
-  private val context = context.applicationContext
+  private val context = kohii.app
   private val mediaSourceFactory = mediaSourceFactoryProvider.provideMediaSourceFactory(media)
 
   protected val eventListeners by lazy { PlayerEventListeners() } // Set, so no duplicated

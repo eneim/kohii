@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.ui.overlay
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
@@ -23,7 +24,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
@@ -41,7 +41,7 @@ internal class VideoItemHolder(
   layoutRes: Int,
   parent: ViewGroup,
   private val clickListener: OnClickListener,
-  private val lifecycleOwner: LifecycleOwner,
+  private val kohii: Kohii,
   private val host: VideoItemsAdapter
 ) : BaseViewHolder(inflater, layoutRes, parent),
     Playback.Callback,
@@ -49,7 +49,7 @@ internal class VideoItemHolder(
     OnClickListener {
 
   override fun onClick(v: View?) {
-    clickListener.onItemClick(v!!, null, adapterPosition, itemId, playable)
+    clickListener.onItemClick(v!!, null, adapterPosition, itemId, playback)
   }
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
@@ -58,7 +58,7 @@ internal class VideoItemHolder(
   val playerView = itemView.findViewById(R.id.playerView) as PlayerView
   val playerContainer = itemView.findViewById(R.id.playerContainer) as View
 
-  var playable: Playable? = null
+  var playable: Playable<PlayerView>? = null
   var playback: Playback<PlayerView>? = null
   var videoSources: Sources? = null
 
@@ -82,20 +82,18 @@ internal class VideoItemHolder(
           }
           .sources.first()
 
-      playback = if (host.selectionTracker?.isSelected(tagKey) == true) {
+      if (host.selectionTracker?.isSelected(tagKey) == true) {
         this.playable = null
-        null
+        this.playback = null
       } else {
-        this.playable = Kohii[itemView.context].setUp(videoSources!!.file)
+        this.playable = kohii.setUp(videoSources!!.file)
             .copy(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
             .asPlayable()
 
-        this.playable!!
-            .bind(playerView)
+        this.playback = this.playable!!.bind(host.containerProvider, playerView)
             .also { pk ->
               pk.addPlaybackEventListener(this@VideoItemHolder)
               pk.addCallback(this@VideoItemHolder)
-              pk.observe(lifecycleOwner)
             }
       }
     }
@@ -103,8 +101,8 @@ internal class VideoItemHolder(
 
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
+    this.videoSources = null
     this.playback?.apply {
-      removePlaybackEventListener(this@VideoItemHolder)
       removeCallback(this@VideoItemHolder)
     }
     videoImage.isVisible = true
@@ -113,6 +111,7 @@ internal class VideoItemHolder(
   override fun beforePlay() {
     super.beforePlay()
     videoImage.isVisible = false
+    Log.e("Kohii:VH", "beforePlay: $playback, $adapterPosition")
   }
 
   override fun onPlaying() {
@@ -141,7 +140,7 @@ internal class VideoItemHolder(
 
   override fun getItemDetails(): ItemDetails<String> {
     return object : ItemDetails<String>() {
-      override fun getSelectionKey() = playable?.tag as String?
+      override fun getSelectionKey() = playback?.tag as String?
 
       override fun getPosition() = adapterPosition
     }

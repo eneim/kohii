@@ -46,8 +46,8 @@ class DefaultPlayerProvider(
   private val drmSessionManagerProvider: DrmSessionManagerProvider? = null,
   private val loadControl: LoadControl = DefaultLoadControl(),
   private val renderersFactory: RenderersFactory = DefaultRenderersFactory(
-      context.applicationContext, EXTENSION_RENDERER_MODE_OFF
-  ),
+      context.applicationContext
+  ).setExtensionRendererMode(EXTENSION_RENDERER_MODE_OFF),
   internal val trackSelector: TrackSelector = DefaultTrackSelector()
 ) : PlayerProvider {
 
