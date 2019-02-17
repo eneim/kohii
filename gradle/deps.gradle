@@ -43,7 +43,7 @@ ext {
       [//
        kotlin          : "1.3.20",
        supportLibrary  : "28.0.0",
-       gradlePlugin    : "3.4.0-beta03",
+       gradlePlugin    : "3.4.0-beta04",
        jetpack         : "1.0.0",
        constraintLayout: "2.0.0-alpha3",
        xlifecycle      : "2.1.0-alpha02",
