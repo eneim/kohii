@@ -19,12 +19,10 @@ package kohii.v1
 import android.os.Handler
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import kohii.Beta
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
@@ -43,12 +41,12 @@ import kotlin.annotation.AnnotationRetention.SOURCE
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Playback<T> internal constructor(
   internal val kohii: Kohii,
-  internal val playable: Playable,
-  internal val manager: Manager,
+  internal val playable: Playable<T>,
+  internal val manager: PlaybackManager,
   internal val target: T?,
   @Priority
   internal val priority: Int = PRIORITY_NORMAL,
-  internal val delay: () -> Long = NO_DELAY
+  internal val delay: () -> Long = NO_DELAY // Being a function so its result is dynamic.
 ) : LifecycleObserver {
 
   companion object {
@@ -86,10 +84,8 @@ abstract class Playback<T> internal constructor(
   internal var internalCallback: InternalCallback? = null
 
   // Internal callbacks
-  private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
-  private val callbacks = CopyOnWriteArraySet<Callback>()
-
-  internal var lifecycle: Lifecycle? = null
+  internal val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
+  internal val callbacks = CopyOnWriteArraySet<Callback>()
 
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound.
@@ -130,11 +126,6 @@ abstract class Playback<T> internal constructor(
     this.playerListeners.remove(listener)
   }
 
-  @Beta("To use in Fragment.")
-  fun observe(lifecycleOwner: LifecycleOwner) {
-    this.lifecycle = lifecycleOwner.lifecycle.also { it.addObserver(this) }
-  }
-
   var volumeInfo: VolumeInfo
     get() {
       return playable.volumeInfo
@@ -147,7 +138,7 @@ abstract class Playback<T> internal constructor(
 
   fun unbind() {
     this.unbindInternal()
-    manager.performDestroyPlayback(this)
+    manager.performRemovePlayback(this)
   }
 
   // [END] Public API
@@ -158,15 +149,6 @@ abstract class Playback<T> internal constructor(
 
   internal open fun unbindInternal() {
     if (this.target != null) manager.onTargetInActive(this.target)
-  }
-
-  @OnLifecycleEvent(ON_DESTROY)
-  internal fun onLifecycleDestroyed() {
-    (this.target as? Any)?.let { manager.onTargetInActive(it) }
-    manager.performDestroyPlayback(this)
-    // This thing no need to survive config change.
-    lifecycle?.removeObserver(this)
-    lifecycle = null
   }
 
   // Used by subclasses to dispatch internal event listeners
@@ -197,20 +179,31 @@ abstract class Playback<T> internal constructor(
     playable.release()
   }
 
+  internal fun observe(lifecycleOwner: LifecycleOwner) {
+    lifecycleOwner.lifecycle.addObserver(this)
+  }
+
+  @CallSuper
+  internal open fun onCreated() {
+    this.listenerHandler = Handler(Handler.Callback { message ->
+      val playWhenReady = message.obj as Boolean
+      when (message.what) {
+        STATE_IDLE -> {
+        }
+        STATE_BUFFERING -> listeners.forEach { it.onBuffering(playWhenReady) }
+        STATE_READY -> listeners.forEach { if (playWhenReady) it.onPlaying() else it.onPaused() }
+        STATE_END -> listeners.forEach { it.onCompleted() }
+      }
+      true
+    })
+    this.playable.onPlaybackCreated(this)
+  }
+
   // Being added to Manager
   // The target may not be attached to View/Window yet.
   @CallSuper
   internal open fun onAdded() {
     internalCallback?.onAdded(this)
-  }
-
-  // Being removed from Manager
-  @CallSuper
-  internal open fun onRemoved() {
-    internalCallback?.onRemoved(this)
-    listenerHandler?.removeCallbacksAndMessages(null)
-    this.callbacks.clear()
-    this.listeners.clear()
   }
 
   // ~ View is attached
@@ -233,24 +226,26 @@ abstract class Playback<T> internal constructor(
     }
   }
 
+  // Being removed from Manager
   @CallSuper
-  internal open fun onCreated() {
-    this.listenerHandler = Handler(Handler.Callback { message ->
-      val playWhenReady = message.obj as Boolean
-      when (message.what) {
-        STATE_IDLE -> {
-        }
-        STATE_BUFFERING -> listeners.forEach { it.onBuffering(playWhenReady) }
-        STATE_READY -> listeners.forEach { if (playWhenReady) it.onPlaying() else it.onPaused() }
-        STATE_END -> listeners.forEach { it.onCompleted() }
-      }
-      true
-    })
+  internal open fun onRemoved() {
+    internalCallback?.onRemoved(this)
+    listenerHandler?.removeCallbacksAndMessages(null)
+    this.callbacks.clear()
+    this.listeners.clear()
   }
 
   @CallSuper
   internal open fun onDestroyed() {
     this.listenerHandler = null
+    this.playable.onPlaybackDestroyed(this)
+  }
+
+  @OnLifecycleEvent(ON_DESTROY)
+  internal fun onLifecycleDestroyed(lifecycleOwner: LifecycleOwner) {
+    (this.target as? Any)?.let { manager.onTargetInActive(it) }
+    manager.performRemovePlayback(this)
+    lifecycleOwner.lifecycle.removeObserver(this)
   }
 
   override fun toString(): String {

@@ -18,8 +18,10 @@ package kohii.v1.sample.ui.mix
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView.Adapter
+import kohii.v1.ContainerProvider
+import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 
 /**
@@ -27,7 +29,8 @@ import kohii.v1.sample.R
  */
 class ItemsAdapter( //
   private val items: List<Item>, //
-  private val lifecycleOwner: LifecycleOwner
+  private val kohii: Kohii,
+  val containerProvider: ContainerProvider
 ) : Adapter<BaseViewHolder>() {
 
   private var inflater: LayoutInflater? = null
@@ -45,7 +48,7 @@ class ItemsAdapter( //
     }
 
     return when (viewType) {
-      R.layout.holder_mix_view -> VideoViewHolder(inflater!!, parent, lifecycleOwner)
+      R.layout.holder_mix_view -> VideoViewHolder(inflater!!, parent, kohii, containerProvider)
       else -> throw RuntimeException("Unknown type: $viewType")
     }
   }

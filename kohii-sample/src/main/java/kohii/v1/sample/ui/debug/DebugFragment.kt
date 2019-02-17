@@ -16,13 +16,17 @@
 
 package kohii.v1.sample.ui.debug
 
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.sample.R
@@ -39,6 +43,7 @@ import kotlinx.android.synthetic.main.fragment_debug.openScrollView2
 import kotlinx.android.synthetic.main.fragment_debug.playerContainer
 import kotlinx.android.synthetic.main.fragment_debug.playerView
 import kotlinx.android.synthetic.main.fragment_debug.playerView2
+import kotlinx.android.synthetic.main.fragment_debug.scrollView
 import kotlinx.android.synthetic.main.fragment_debug.switchView
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -46,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author eneim (2018/07/13).
  */
 @Suppress("unused")
-class DebugFragment : BaseFragment() {
+class DebugFragment : BaseFragment(), ContainerProvider {
 
   companion object {
     fun newInstance() = DebugFragment()
@@ -54,8 +59,11 @@ class DebugFragment : BaseFragment() {
     const val videoUrl = "https://storage.googleapis.com/wvmedia/clear/h264/tears/tears_hd.mpd"
   }
 
-  private val playable: Playable by lazy {
-    Kohii[this].setUp(Uri.parse(videoUrl))
+  val kohii: Kohii by lazy { Kohii[requireContext()] }
+
+  @Suppress("USELESS_CAST")
+  private val playable: Playable<PlayerView> by lazy {
+    kohii.setUp(Uri.parse(videoUrl))
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = "${javaClass.canonicalName}::$videoUrl")
         .asPlayable()
@@ -74,8 +82,7 @@ class DebugFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    playable.bind(playerView)
-        .observe(viewLifecycleOwner)
+    playable.bind(this, playerView)
 
     val views = arrayOf(playerView, playerView2)
     val current = AtomicInteger(0)
@@ -93,8 +100,13 @@ class DebugFragment : BaseFragment() {
     }
 
     // Debug some certain functions.
-    switchView.setOnClickListener { playable.bind(views[current.incrementAndGet() % views.size]) }
-    bindSameView.setOnClickListener { playable.bind(views[current.get() % views.size]) }
+    switchView.setOnClickListener {
+      playable.bind(this, views[current.incrementAndGet() % views.size])
+    }
+
+    bindSameView.setOnClickListener {
+      playable.bind(this, views[current.get() % views.size])
+    }
 
     // Open the demo for RecyclerView.
     openRecyclerView.setOnClickListener {
@@ -133,5 +145,17 @@ class DebugFragment : BaseFragment() {
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
     requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+  }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(scrollView)
+  }
+
+  override fun provideContext(): Context {
+    return requireContext()
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
   }
 }

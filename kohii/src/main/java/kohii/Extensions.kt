@@ -16,7 +16,11 @@
 
 package kohii
 
+import android.app.Activity
+import android.content.Context
 import androidx.core.util.Pools.Pool
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
@@ -79,4 +83,8 @@ fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
 fun <T> Pool<T>.acquireOrCreate(creator: () -> T): T {
   val value = acquire()
   return value ?: creator.invoke()
+}
+
+fun Context.isChangingConfig(): Boolean {
+  return if (this is Activity) this.isChangingConfigurations else return false
 }

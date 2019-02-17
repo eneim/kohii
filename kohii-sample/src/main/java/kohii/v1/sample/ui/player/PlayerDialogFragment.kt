@@ -17,6 +17,7 @@
 package kohii.v1.sample.ui.player
 
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,15 +25,19 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
-class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
+class PlayerDialogFragment : AppCompatDialogFragment(), Callback, ContainerProvider {
 
   override fun onActive(
     playback: Playback<*>,
@@ -72,6 +77,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     fun onDialogInActive(tag: Any)
   }
 
+  val kohii: Kohii by lazy { Kohii[requireContext()] }
   var playback: Playback<*>? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -101,16 +107,26 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     super.onStart()
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
     // Only here dialog's window will finally have the DecorView.
-    playback = Kohii[dialog!!.window!!].findPlayable(playableTag)
-        ?.bind(playerView)
-        ?.also {
-          it.addCallback(this@PlayerDialogFragment)
-          it.observe(viewLifecycleOwner)
-        }
+    @Suppress("UNCHECKED_CAST")
+    playback = (kohii.findPlayable(playableTag) as? Playable<PlayerView>)
+        ?.bind(this, playerView)
+    playback?.addCallback(this@PlayerDialogFragment)
   }
 
   override fun onStop() {
     super.onStop()
     playback?.removeCallback(this@PlayerDialogFragment)
+  }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(playerContainer)
+  }
+
+  override fun provideContext(): Context {
+    return this.requireContext()
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return this.viewLifecycleOwner
   }
 }

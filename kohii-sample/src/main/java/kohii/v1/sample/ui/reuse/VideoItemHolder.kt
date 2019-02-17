@@ -24,8 +24,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.contains
 import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
@@ -40,7 +40,8 @@ internal class VideoItemHolder(
   inflater: LayoutInflater,
   layoutRes: Int,
   parent: ViewGroup,
-  private val lifecycleOwner: LifecycleOwner
+  private val kohii: Kohii,
+  val containerProvider: ContainerProvider
 ) : BaseViewHolder(inflater, layoutRes, parent),
     Playback.Callback,
     PlaybackEventListener {
@@ -50,7 +51,7 @@ internal class VideoItemHolder(
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
   val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
 
-  var playable: Playable? = null
+  var playable: Playable<PlayerView>? = null
   var playback: Playback<PlayerView>? = null
   var videoSources: Sources? = null
 
@@ -69,7 +70,7 @@ internal class VideoItemHolder(
           }
           .sources.first()
 
-      this.playable = Kohii[itemView.context].setUp(videoSources!!.file)
+      this.playable = kohii.setUp(videoSources!!.file)
           .copy(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
           .asPlayable()
     }
@@ -115,12 +116,9 @@ internal class VideoItemHolder(
 
   fun bindView(playerView: PlayerView) {
     playerContainer.addView(playerView, 0)
-    this.playback = this.playable?.bind(playerView)
-        .also {
-          it?.addPlaybackEventListener(this@VideoItemHolder)
-          it?.addCallback(this@VideoItemHolder)
-          it?.observe(lifecycleOwner)
-        }
+    this.playback = this.playable?.bind(containerProvider, playerView)
+    this.playback?.addPlaybackEventListener(this)
+    this.playback?.addCallback(this)
   }
 
   // Also remove playerView

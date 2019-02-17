@@ -24,6 +24,7 @@ import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.postDelayed
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionInflater
@@ -31,11 +32,14 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kohii.v1.ContainerProvider
+import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.doOnNextLayoutAs
 import kohii.v1.sample.common.toPixel
 import kohii.v1.sample.ui.rview.data.Item
+import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 import okio.buffer
 import okio.source
 
@@ -43,7 +47,7 @@ import okio.source
  * @author eneim (2018/07/06).
  */
 @Keep
-class RecyclerViewFragment : BaseFragment() {
+class RecyclerViewFragment : BaseFragment(), ContainerProvider {
 
   companion object {
     fun newInstance() = RecyclerViewFragment()
@@ -159,4 +163,16 @@ class RecyclerViewFragment : BaseFragment() {
 
   // Called by Adapter
   fun fetchPlayerInfo() = this.playerInfoHolder?.fetchPlayerInfo()
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(recyclerView)
+  }
+
+  override fun provideContext(): Context {
+    return requireContext()
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
+  }
 }

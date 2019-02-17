@@ -1,0 +1,193 @@
+<!--
+  ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+  <Transition
+      android:id="@+id/transition_from_full_to_middle"
+      motion:constraintSetEnd="@+id/end"
+      motion:constraintSetStart="@+id/start"
+      motion:duration="250"
+      motion:interpolator="easeOut">
+
+    <KeyFrameSet>
+
+      <KeyPosition
+          motion:curveFit="linear"
+          motion:framePosition="90"
+          motion:percentWidth="0"
+          motion:percentX="0"
+          motion:target="@id/video_player_container"
+          />
+
+      <KeyPosition
+          motion:curveFit="linear"
+          motion:framePosition="90"
+          motion:percentWidth="0"
+          motion:target="@id/video_player_frame"
+          />
+
+      <KeyPosition
+          motion:curveFit="linear"
+          motion:framePosition="90"
+          motion:percentWidth="0"
+          motion:target="@id/dummy_frame"
+          />
+
+      <KeyPosition
+          motion:curveFit="linear"
+          motion:framePosition="90"
+          motion:percentWidth="0"
+          motion:target="@id/video_title_frame"
+          />
+
+      <KeyAttribute
+          android:alpha="0"
+          motion:framePosition="75"
+          motion:target="@id/video_overlay_title"/>
+
+      <!--<KeyAttribute-->
+      <!--android:alpha="0.10"-->
+      <!--motion:framePosition="90"-->
+      <!--motion:target="@id/image_clear"/>-->
+
+      <!--<KeyAttribute-->
+      <!--android:alpha="0.10"-->
+      <!--motion:framePosition="90"-->
+      <!--motion:target="@id/image_play"/>-->
+    </KeyFrameSet>
+  </Transition>
+
+  <ConstraintSet android:id="@id/start">
+
+    <Constraint
+        android:id="@+id/dummy_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        motion:layout_constraintBottom_toBottomOf="parent"
+        motion:layout_constraintEnd_toEndOf="parent"
+        motion:layout_constraintStart_toStartOf="parent"
+        motion:layout_constraintTop_toTopOf="parent"
+        />
+
+    <Constraint
+        android:id="@id/video_player_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        motion:layout_constraintDimensionRatio="16:9"
+        motion:layout_constraintEnd_toEndOf="parent"
+        motion:layout_constraintStart_toStartOf="parent"
+        motion:layout_constraintTop_toTopOf="parent"/>
+
+    <Constraint
+        android:id="@+id/video_player_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
+        motion:layout_constraintLeft_toLeftOf="@id/video_player_frame"
+        motion:layout_constraintRight_toRightOf="@id/video_player_frame"
+        motion:layout_constraintTop_toTopOf="@id/video_player_frame"
+        />
+
+    <Constraint
+        android:id="@id/video_title_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        motion:layout_constraintBottom_toBottomOf="parent"
+        motion:layout_constraintEnd_toEndOf="parent"
+        motion:layout_constraintStart_toStartOf="parent"
+        motion:layout_constraintTop_toBottomOf="@id/video_player_frame"/>
+
+    <Constraint
+        android:id="@id/video_overlay_title"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        motion:layout_constraintBottom_toBottomOf="parent"
+        motion:layout_constraintEnd_toEndOf="parent"
+        motion:layout_constraintStart_toStartOf="parent"
+        motion:layout_constraintTop_toBottomOf="@id/video_player_frame"/>
+
+  </ConstraintSet>
+
+  <ConstraintSet android:id="@id/end">
+
+    <Constraint
+        android:id="@+id/dummy_frame"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        motion:layout_constraintEnd_toEndOf="parent"
+        motion:layout_constraintStart_toStartOf="parent"
+        motion:layout_constraintTop_toTopOf="parent"
+        />
+
+    <Constraint
+        android:id="@id/video_player_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        motion:layout_constraintBottom_toBottomOf="@id/dummy_frame"
+        motion:layout_constraintEnd_toEndOf="@id/dummy_frame"
+        motion:layout_constraintStart_toStartOf="@id/dummy_frame"
+        motion:layout_constraintTop_toTopOf="@id/dummy_frame"/>
+
+    <Constraint
+        android:id="@id/video_player_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="2dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="2dp"
+        motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
+        motion:layout_constraintDimensionRatio="H,1:2.4"
+        motion:layout_constraintStart_toStartOf="@id/video_player_frame"
+        motion:layout_constraintTop_toTopOf="@id/video_player_frame"
+        />
+
+    <Constraint
+        android:id="@id/video_title_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        motion:layout_constraintEnd_toEndOf="@id/dummy_frame"
+        motion:layout_constraintStart_toStartOf="@id/dummy_frame"
+        motion:layout_constraintTop_toBottomOf="@id/video_player_frame"/>
+
+    <Constraint
+        android:id="@id/video_overlay_title"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0"
+        motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
+        motion:layout_constraintEnd_toEndOf="@id/video_player_frame"
+        motion:layout_constraintStart_toStartOf="@id/video_player_frame"
+        motion:layout_constraintTop_toBottomOf="@id/video_player_frame"
+        />
+
+    <!--<Constraint android:id="@id/image_play">-->
+    <!--<PropertySet motion:alpha="1"/>-->
+    <!--</Constraint>-->
+
+    <!--<Constraint android:id="@id/image_clear">-->
+    <!--<PropertySet motion:alpha="1"/>-->
+    <!--</Constraint>-->
+
+  </ConstraintSet>
+</MotionScene>

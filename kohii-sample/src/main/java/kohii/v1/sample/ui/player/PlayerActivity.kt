@@ -21,17 +21,22 @@ import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
 import kotlinx.android.parcel.Parcelize
+import kotlinx.android.synthetic.main.activity_player.playerContainer
 import kotlinx.android.synthetic.main.activity_player.playerView
 
 /**
  * @author eneim (2018/08/08).
  */
-class PlayerActivity : BaseActivity() {
+class PlayerActivity : BaseActivity(), ContainerProvider {
 
   companion object {
     private const val EXTRA_INIT_DATA = "kohii::player::init_data"
@@ -47,6 +52,8 @@ class PlayerActivity : BaseActivity() {
       }
     }
   }
+
+  val kohii: Kohii by lazy { Kohii[this] }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -64,8 +71,24 @@ class PlayerActivity : BaseActivity() {
         playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       }
 
-      Kohii[this].findPlayable(it.tag)?.bind(target = this.playerView) ?: finish()
+      @Suppress("UNCHECKED_CAST")
+      (kohii.findPlayable(it.tag) as? Playable<PlayerView>)?.bind(
+          this,
+          this.playerView
+      ) ?: finish()
     } ?: finish()
+  }
+
+  override fun provideContainers(): Array<Any>? {
+    return arrayOf(playerContainer)
+  }
+
+  override fun provideContext(): Context {
+    return this
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return this
   }
 }
 

@@ -21,11 +21,11 @@ import android.os.Message
 
 /**
  *
- * Used by [Manager] to dispatch various events.
+ * Used by [PlaybackManager] to dispatch various events.
  *
  * @author eneim (2018/06/23).
  */
-internal class Dispatcher(private val manager: Manager) : Handler() {
+internal class Dispatcher(private val manager: PlaybackManager) : Handler() {
 
   override fun handleMessage(msg: Message) {
     super.handleMessage(msg)

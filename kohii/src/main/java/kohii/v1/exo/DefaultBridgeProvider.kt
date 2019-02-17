@@ -30,10 +30,14 @@ class DefaultBridgeProvider(
 
   override fun provideBridge(builder: Playable.Builder): Bridge {
     return ExoBridge(
-        builder.kohii.app,
+        builder.kohii,
         builder.media,
         playerProvider,
         mediaSourceFactoryProvider
-    )
+    ).also {
+      it.repeatMode = builder.repeatMode
+      it.parameters = builder.playbackParameters
+      it.playbackInfo = builder.playbackInfo
+    }
   }
 }
