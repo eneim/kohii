@@ -4,6 +4,7 @@
 
 Video playback for Android made easy.
 
+![](https://img.shields.io/nexus/r/https/oss.sonatype.org/im.ene.kohii/kohii.svg)
 ![](https://img.shields.io/nexus/s/https/oss.sonatype.org/im.ene.kohii/kohii.svg)
 [![](https://yourdonation.rocks/images/badge.svg)](https://www.paypal.me/eneimlabs/500jpy)
 
