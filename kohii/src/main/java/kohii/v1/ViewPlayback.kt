@@ -178,6 +178,10 @@ open class ViewPlayback<V : View>(
       } ?: super.compareTo(other)
     }
 
+    override fun shouldPrepare(): Boolean {
+      return areaOffset >= 0f
+    }
+
     override fun shouldPlay(): Boolean {
       return areaOffset >= 0.65f  // TODO [20180714] make this configurable
     }

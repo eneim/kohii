@@ -129,10 +129,7 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
+  override fun onInActive(playback: Playback<*>) {
     videoImage.isVisible = true
   }
 

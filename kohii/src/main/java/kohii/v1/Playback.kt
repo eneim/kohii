@@ -20,6 +20,7 @@ import android.os.Handler
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
@@ -47,7 +48,7 @@ abstract class Playback<T> internal constructor(
   @Priority
   internal val priority: Int = PRIORITY_NORMAL,
   internal val delay: () -> Long = NO_DELAY // Being a function so its result is dynamic.
-) : LifecycleObserver {
+) : LifecycleObserver, Comparable<Playback<T>> {
 
   companion object {
     const val DELAY_INFINITE = -1L
@@ -81,7 +82,6 @@ abstract class Playback<T> internal constructor(
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
-  internal var internalCallback: InternalCallback? = null
 
   // Internal callbacks
   internal val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
@@ -147,6 +147,14 @@ abstract class Playback<T> internal constructor(
 
   // Lifecycle
 
+  override fun compareTo(other: Playback<T>): Int {
+    return if (other.token != null) {
+      this.token?.compareTo(other.token!!) ?: -1
+    } else {
+      if (this.token != null) 1 else 0
+    }
+  }
+
   internal open fun unbindInternal() {
     if (this.target != null) manager.onTargetInActive(this.target)
   }
@@ -196,21 +204,23 @@ abstract class Playback<T> internal constructor(
       }
       true
     })
-    this.playable.onPlaybackCreated(this)
+    this.addCallback(this.playable)
   }
 
   // Being added to Manager
   // The target may not be attached to View/Window yet.
   @CallSuper
   internal open fun onAdded() {
-    internalCallback?.onAdded(this)
+    for (callback in this.callbacks) {
+      callback.onAdded(this)
+    }
   }
 
   // ~ View is attached
   @CallSuper
   internal open fun onActive() {
-    this.callbacks.forEach {
-      it.onActive(this, this.target)
+    for (callback in this.callbacks) {
+      callback.onActive(this)
     }
   }
 
@@ -221,16 +231,18 @@ abstract class Playback<T> internal constructor(
   // is no other Manager manages the internal Playable.
   @CallSuper
   internal open fun onInActive() {
-    this.callbacks.forEach {
-      it.onInActive(this, this.target)
+    for (callback in this.callbacks) {
+      callback.onInActive(this)
     }
   }
 
   // Being removed from Manager
   @CallSuper
   internal open fun onRemoved() {
-    internalCallback?.onRemoved(this)
     listenerHandler?.removeCallbacksAndMessages(null)
+    for (callback in this.callbacks) {
+      callback.onRemoved(this)
+    }
     this.callbacks.clear()
     this.listeners.clear()
   }
@@ -238,12 +250,17 @@ abstract class Playback<T> internal constructor(
   @CallSuper
   internal open fun onDestroyed() {
     this.listenerHandler = null
-    this.playable.onPlaybackDestroyed(this)
+    this.removeCallback(this.playable)
+  }
+
+  @Suppress("UNUSED_PARAMETER")
+  @OnLifecycleEvent(ON_STOP)
+  internal fun onLifecycleStop(lifecycleOwner: LifecycleOwner) {
+    if (this.target != null) manager.onTargetInActive(this.target)
   }
 
   @OnLifecycleEvent(ON_DESTROY)
   internal fun onLifecycleDestroyed(lifecycleOwner: LifecycleOwner) {
-    (this.target as? Any)?.let { manager.onTargetInActive(it) }
     manager.performRemovePlayback(this)
     lifecycleOwner.lifecycle.removeObserver(this)
   }
@@ -253,26 +270,13 @@ abstract class Playback<T> internal constructor(
     return "$firstPart::$$playable"
   }
 
-  // For internal flow only.
-  internal interface InternalCallback {
-    // Called when the playback is added to Manager
+  interface Callback {
     fun onAdded(playback: Playback<*>) {}
 
-    // Called when the playback is removed from Manager
+    fun onActive(playback: Playback<*>) {}
+
+    fun onInActive(playback: Playback<*>) {}
+
     fun onRemoved(playback: Playback<*>) {}
-  }
-
-  interface Callback {
-    fun onActive(
-      playback: Playback<*>,
-      target: Any?
-    ) {
-    }
-
-    fun onInActive(
-      playback: Playback<*>,
-      target: Any?
-    ) {
-    }
   }
 }

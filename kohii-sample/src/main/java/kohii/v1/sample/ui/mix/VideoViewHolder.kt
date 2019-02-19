@@ -50,18 +50,6 @@ class VideoViewHolder(
     parent
 ), PlaybackEventListener, Playback.Callback {
 
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-  }
-
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-  }
-
   override fun onFirstFrameRendered() {
     Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
   }

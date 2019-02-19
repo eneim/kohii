@@ -92,6 +92,13 @@ interface Playable<T> : Callback {
     @Priority priority: Int
   ): Playback<T>
 
+  fun bind(
+    provider: ContainerProvider,
+    target: T,
+    @Priority priority: Int,
+    cb: ((Playback<T>) -> Unit)?
+  )
+
   /// Playback controller
 
   // Must be called by Playback
@@ -115,12 +122,6 @@ interface Playable<T> : Callback {
   var playbackInfo: PlaybackInfo
 
   val delay: Long
-
-  // internal API
-
-  fun onPlaybackCreated(playback: Playback<T>)
-
-  fun onPlaybackDestroyed(playback: Playback<T>)
 
   // data class for copying convenience.
   data class Builder(

@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
   <!-- Default screen margins, per the Android Design guidelines. -->
   <dimen name="activity_horizontal_margin">16dp</dimen>
   <dimen name="activity_vertical_margin">16dp</dimen>
@@ -34,6 +34,8 @@
   <dimen name="pager_horizontal_space_x2">48dp</dimen>
   <dimen name="pager_horizontal_space_x3">72dp</dimen>
   <dimen name="pager_horizontal_space_x4">96dp</dimen>
+
+  <dimen name="overlay_collapse_max_width">420dp</dimen>
 
   <integer name="column_number">1</integer>
 

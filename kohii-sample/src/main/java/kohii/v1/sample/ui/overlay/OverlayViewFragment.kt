@@ -49,7 +49,6 @@ import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.TransitionListenerAdapter
-import kohii.v1.sample.common.isLandscape
 import kohii.v1.sample.ui.overlay.data.Video
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.bottomSheet
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.recyclerView
@@ -65,9 +64,7 @@ import okio.source
 @Suppress("unused")
 @Keep
 class OverlayViewFragment : BaseFragment(),
-    TransitionListenerAdapter,
-    BackPressConsumer,
-    ContainerProvider {
+    TransitionListenerAdapter, BackPressConsumer, ContainerProvider {
 
   companion object {
     fun newInstance() = OverlayViewFragment()
@@ -114,6 +111,13 @@ class OverlayViewFragment : BaseFragment(),
             }
           })
         }
+
+    // Update overlay view's max width on collapse mode.
+    val constraintSet = (this.videoOverlay as MotionLayout).getConstraintSet(R.id.end)
+    constraintSet.constrainMaxWidth(
+        R.id.dummy_frame, resources.getDimensionPixelSize(R.dimen.overlay_collapse_max_width)
+    )
+    constraintSet.applyTo(this.videoOverlay as MotionLayout)
 
     val videoAdapter = VideoItemsAdapter(videos, kohii, this)
     val keyProvider = VideoTagKeyProvider(recyclerView)
@@ -162,17 +166,6 @@ class OverlayViewFragment : BaseFragment(),
                   if (vh == null) playback?.unbind()
                 }
                 playback = null
-              } else if (state == STATE_EXPANDED) {
-                // enter immersive mode
-                if (requireActivity().isLandscape()) {
-                  var uiOptions = view.systemUiVisibility
-                  uiOptions = uiOptions and View.SYSTEM_UI_FLAG_LOW_PROFILE.inv()
-                  uiOptions = uiOptions or View.SYSTEM_UI_FLAG_FULLSCREEN
-                  uiOptions = uiOptions or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                  uiOptions = uiOptions or View.SYSTEM_UI_FLAG_IMMERSIVE
-                  uiOptions = uiOptions and View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY.inv()
-                  view.systemUiVisibility = uiOptions
-                }
               }
             }
           })
