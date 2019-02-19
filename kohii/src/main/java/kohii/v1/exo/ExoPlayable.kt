@@ -17,6 +17,11 @@
 package kohii.v1.exo
 
 import android.util.Log
+import androidx.lifecycle.Lifecycle.Event.ON_CREATE
+import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
@@ -26,6 +31,8 @@ import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playable.Builder
 import kohii.v1.Playback
+import kohii.v1.Playback.Priority
+import kohii.v1.PlaybackManager
 import kohii.v1.PlayerEventListener
 import kohii.v1.ViewPlayback
 
@@ -52,33 +59,7 @@ class ExoPlayable internal constructor(
 
   override val delay = builder.delay
 
-  // Playback.Callback#onActive(Playback)
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    (target as? PlayerView)?.let { bridge.playerView = it }
-  }
-
-  // Playback.Callback#onInActive(Playback)
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    // Make sure that the current Manager of this Playable is the same with playback's one, or null.
-    if (kohii.mapPlayableToManager[this] === playback.manager || //
-        kohii.mapPlayableToManager[this] == null
-    ) {
-      // This will release current Video MediaCodec instances, which are expensive to retain.
-      if (this.bridge.playerView === target) this.bridge.playerView = null
-    }
-  }
-
-  override fun onPlaybackCreated(playback: Playback<PlayerView>) {
-    require(this.playback == null || this.playback === playback) {
-      "Playable $this is bound to a playback: ${this.playback}, but then be bound to another one: $playback."
-    }
-    this.playback = playback
+  override fun onAdded(playback: Playback<*>) {
     if (this.listener == null) {
       this.listener = object : PlayerEventListener {
         override fun onPlayerStateChanged(
@@ -102,7 +83,7 @@ class ExoPlayable internal constructor(
     this.bridge.addVolumeChangeListener(playback.volumeListeners)
   }
 
-  override fun onPlaybackDestroyed(playback: Playback<PlayerView>) {
+  override fun onRemoved(playback: Playback<*>) {
     this.bridge.removeVolumeChangeListener(playback.volumeListeners)
     this.bridge.removeEventListener(playback.playerListeners)
     this.bridge.removeErrorListener(playback.errorListeners)
@@ -116,9 +97,33 @@ class ExoPlayable internal constructor(
       // There is no other Manager to manage this Playable, and we are removing the last one, so ...
       kohii.releasePlayable(builderTag, this)
     }
-    if (this.playback === playback) this.playback = null
-    playback.internalCallback = null
     playback.removeCallback(this)
+  }
+
+  // Playback.Callback#onActive(Playback)
+  /* Expected:
+   * - Instance of this class will have member 'playback' set to the method parameter.
+   * - Bridge instance will be set with correct target (PlayerView).
+   */
+  override fun onActive(playback: Playback<*>) {
+    require(this.playback == null || this.playback === playback) {
+      "Playable $this is bound to a playback: ${this.playback}, but then be bound to another one: $playback."
+    }
+    @Suppress("UNCHECKED_CAST")
+    this.playback = playback as Playback<PlayerView>
+    playback.target?.let { bridge.playerView = it }
+  }
+
+  // Playback.Callback#onInActive(Playback)
+  override fun onInActive(playback: Playback<*>) {
+    // Make sure that the current Manager of this Playable is the same with playback's one, or null.
+    if (kohii.mapPlayableToManager[this] === playback.manager || //
+        kohii.mapPlayableToManager[this] == null
+    ) {
+      // This will release current Video MediaCodec instances, which are expensive to retain.
+      if (this.bridge.playerView === playback.target) this.bridge.playerView = null
+    }
+    if (this.playback === playback) this.playback = null
   }
 
   ////
@@ -134,75 +139,33 @@ class ExoPlayable internal constructor(
     priority: Int
   ): Playback<PlayerView> {
     val manager = kohii.requireManager(provider)
-    manager.findSuitableContainer(target)
-        ?: throw IllegalStateException(
-            "This provider $provider has no Container that " +
-                "accepts this target: $target. Kohii requires at least one."
-        )
-
-    // Find Playbacks those are bound to this Target. If found, deactivate them.
-    kohii.playbackManagerCache.mapNotNull { it.value.findPlaybackForTarget(target) }
-        .filter { it.playable !== this@ExoPlayable || it.manager !== manager }
-        // These Playbacks were results of other Playables bound to the same Target.
-        // TODO consider to destroy instead of deactivating. Use Playback.unbind() maybe.
-        .forEach { it.manager.onTargetInActive(target) }
-
-    // Put this Playable to the cache with the Manager, make sure only one Manager will manage it.
-    val oldMan = kohii.mapPlayableToManager.put(this, manager)
-    if (oldMan !== manager) { // Old Manager is not the required one.
-      this.playback?.let { if (it.manager === oldMan) oldMan.performRemovePlayback(it) }
-    }
-
-    val candidate = this.playback?.let {
-      // There is old Playback
-      if (it.manager === manager) {
-        // Old Playback is in the same Manager.
-        if (it.target === target) {
-          // State: Old Playback is for the same Target in same Manager.
-          // Scenario: Rebind to same Target in same Manager. (Eg: RecyclerView VH detach then re-attach)
-          // Action: Reuse the Playback.
-
-          // If there is other Playback for this Target in same Manager, it will be destroyed
-          // by the Manager when it perform adding this Playback.
-
-          return@let it // Reuse
-        } else {
-          // State: Switch/Rebind to another Target in the same Manager.
-          // Scenario: Switch Target in the same Manager.
-          // Action: destroy current Playback for old Target, then create new one for new Target.
-          manager.performRemovePlayback(it)
-          return@let ViewPlayback(kohii, this, manager, target, priority) { delay }
-        }
-      } else {
-        // State: Old Playback in different Manager
-        // Scenario: Switching Target in different Manager (Eg: Open Single Player in Dialog)
-        // Action: Destroy current Playback then create new one for new Target in new Manager.
-        it.manager.performRemovePlayback(it)
-        return@let ViewPlayback(kohii, this, manager, target, priority) { delay }
-      }
-    } ?:
-    // State: no current Playback.
-    // Scenario: first time binding.
-    // Action: just create a new Playback.
-    ViewPlayback(
-        kohii,
-        this,
-        manager,
-        target,
-        priority
-    ) { delay }
-
-    if (candidate !== this.playback) {
-      candidate.also {
-        it.onCreated()
-        it.addCallback(this)
-      }
-    }
-
+    val candidate = buildCandidate(provider, manager, target, priority)
     return manager.performAddPlayback(candidate)
-        .also {
-          it.observe(provider.provideLifecycleOwner())
-        }
+  }
+
+  @Suppress("unused")
+  override fun bind(
+    provider: ContainerProvider,
+    target: PlayerView,
+    priority: Int,
+    cb: ((Playback<PlayerView>) -> Unit)?
+  ) {
+    provider.provideLifecycleOwner()
+        .lifecycle.addObserver(object : LifecycleObserver {
+      @OnLifecycleEvent(ON_CREATE)
+      fun onCreate(lifecycleOwner: LifecycleOwner) {
+        val manager = kohii.requireManager(provider)
+        val candidate = buildCandidate(provider, manager, target, priority)
+        val result = manager.performAddPlayback(candidate)
+        cb?.invoke(result)
+        lifecycleOwner.lifecycle.removeObserver(this)
+      }
+
+      @OnLifecycleEvent(ON_DESTROY)
+      fun onDestroy(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycle.removeObserver(this)
+      }
+    })
   }
 
   override fun prepare() {
@@ -238,5 +201,79 @@ class ExoPlayable internal constructor(
     val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
     val secondPart = "${bridge.javaClass.simpleName}@${Integer.toHexString(bridge.hashCode())}"
     return "$firstPart::$secondPart"
+  }
+
+  private fun buildCandidate(
+    provider: ContainerProvider,
+    manager: PlaybackManager,
+    target: PlayerView,
+    @Priority priority: Int
+  ): Playback<PlayerView> {
+    manager.findSuitableContainer(target)
+        ?: throw IllegalStateException(
+            "This provider $provider has no Container that " +
+                "accepts this target: $target. Kohii requires at least one."
+        )
+
+    // Find Playbacks those are bound to this Target. If found, deactivate them.
+    kohii.playbackManagerCache.mapNotNull { it.value.findPlaybackForTarget(target) }
+        .filter { it.playable !== this@ExoPlayable || it.manager !== manager }
+        // These Playbacks were results of other Playables bound to the same Target.
+        // TODO consider to destroy instead of deactivating. Use Playback.unbind() maybe.
+        .forEach { it.manager.performRemovePlayback(it) }
+
+    // Put this Playable to the cache with the Manager, make sure only one Manager will manage it.
+    val oldMan = kohii.mapPlayableToManager.put(this, manager)
+    if (oldMan !== manager) { // Old Manager is not the required one.
+      this.playback?.let { if (it.manager === oldMan) oldMan.performRemovePlayback(it) }
+    }
+
+    val candidate = this.playback?.let {
+      // There is old Playback
+      if (it.manager === manager) {
+        // Old Playback is in the same Manager.
+        if (it.target === target) {
+          // State: Old Playback is for the same Target in same Manager.
+          // Scenario: Rebind to same Target in same Manager. (Eg: RecyclerView VH detach then re-attach)
+          // Action: Reuse the Playback.
+
+          // If there is other Playback for this Target in same Manager, it will be destroyed
+          // by the Manager when it perform adding this Playback.
+
+          return@let it // Reuse
+        } else {
+          // State: Switch/Rebind to another Target in the same Manager.
+          // Scenario: Switch Target in the same Manager.
+          // Action: destroy current Playback for old Target, then create new one for new Target.
+          it.manager.performRemovePlayback(it)
+          return@let ViewPlayback(kohii, this, manager, target, priority) { delay }
+        }
+      } else {
+        // State: Old Playback in different Manager
+        // Scenario: Switching Target in different Manager (Eg: Open Single Player in Dialog)
+        // Action: Destroy current Playback then create new one for new Target in new Manager.
+        it.manager.performRemovePlayback(it)
+        return@let ViewPlayback(kohii, this, manager, target, priority) { delay }
+      }
+    } ?:
+    // State: no current Playback.
+    // Scenario: first time binding.
+    // Action: just create a new Playback.
+    ViewPlayback(
+        kohii,
+        this,
+        manager,
+        target,
+        priority
+    ) { delay }
+
+    if (candidate !== this.playback) {
+      candidate.also {
+        it.onCreated()
+        it.observe(provider.provideLifecycleOwner())
+      }
+    }
+
+    return candidate
   }
 }

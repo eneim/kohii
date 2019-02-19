@@ -68,16 +68,17 @@ class ScrollViewFragment : BaseFragment(),
     return inflater.inflate(viewRes, container, false)
   }
 
-  @Suppress("RedundantOverride")
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
     // ⬇︎ For demo of manual fullscreen.
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    playback = kohii.setUp(videoUrl)
+    kohii.setUp(videoUrl)
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = videoTag)
         .asPlayable()
-        .bind(this, playerView)
+        .bind(this, playerView, Playback.PRIORITY_NORMAL) {
+          playback = it
+        }
 
     playerContainer.setOnClickListener {
       dialogPlayer = PlayerDialogFragment.newInstance(
@@ -98,8 +99,8 @@ class ScrollViewFragment : BaseFragment(),
     }
   }
 
-  override fun onStop() {
-    super.onStop()
+  override fun onDestroyView() {
+    super.onDestroyView()
     playerContainer.setOnClickListener(null)
   }
 
@@ -110,8 +111,10 @@ class ScrollViewFragment : BaseFragment(),
 
   override fun onDialogInActive(tag: Any) {
     @Suppress("UNCHECKED_CAST")
-    playback = (kohii.findPlayable(tag) as? Playable<PlayerView>)
-        ?.bind(this, playerView)
+    (kohii.findPlayable(tag) as? Playable<PlayerView>)
+        ?.bind(this, playerView, Playback.PRIORITY_NORMAL) {
+          playback = it
+        }
   }
 
   // END: PlayerDialogFragment.Callback

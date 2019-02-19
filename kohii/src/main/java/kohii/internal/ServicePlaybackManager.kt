@@ -16,6 +16,7 @@
 
 package kohii.internal
 
+import android.app.Activity
 import kohii.Draft
 import kohii.Experiment
 import kohii.v1.ContainerProvider
@@ -29,5 +30,6 @@ import kohii.v1.RootManager
 internal class ServicePlaybackManager(
   kohii: Kohii,
   parent: RootManager,
+  activity: Activity,
   containerProvider: ContainerProvider
-) : PlaybackManager(kohii, parent, containerProvider)
+) : PlaybackManager(kohii, parent, activity, containerProvider)

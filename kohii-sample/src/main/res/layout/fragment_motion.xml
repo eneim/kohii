@@ -60,6 +60,7 @@
             app:surface_type="texture_view"
             app:use_controller="false"
             app:video="@{motion.video0}"
+            app:provider="@{presenter.requireContainerProvider()}"
             />
       </FrameLayout>
 
@@ -110,6 +111,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
+            app:provider="@{presenter.requireContainerProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"
@@ -137,6 +139,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
+            app:provider="@{presenter.requireContainerProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"
@@ -164,6 +167,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
+            app:provider="@{presenter.requireContainerProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"
@@ -191,6 +195,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
+            app:provider="@{presenter.requireContainerProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"

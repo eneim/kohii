@@ -47,17 +47,8 @@ class VideoViewHolder(
     itemView.setOnClickListener(this)
   }
 
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
+  override fun onActive(playback: Playback<*>) {
     listener.onItemLoaded(itemView, adapterPosition)
-  }
-
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
   }
 
   override fun onFirstFrameRendered() {

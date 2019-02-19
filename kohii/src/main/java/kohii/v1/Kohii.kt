@@ -68,7 +68,7 @@ class Kohii(context: Context) : LifecycleObserver {
   internal val mediaSourceFactoryProvider: MediaSourceFactoryProvider
 
   internal val screenStateReceiver by lazy {
-    ScreenStateReceiver(this)
+    ScreenStateReceiver()
   }
 
   companion object {
@@ -147,11 +147,11 @@ class Kohii(context: Context) : LifecycleObserver {
             "Service is not supported yet."
         )
       } else {
-        val temp = ViewPlaybackManager(this, parent, provider)
+        val result = ViewPlaybackManager(this, parent, activity, provider)
         provider.provideContainers()
-            ?.mapNotNull { Container.createContainer(this, it, temp) }
-            ?.forEach { container -> temp.registerContainer(container) }
-        return@getOrPut temp
+            ?.mapNotNull { Container.createContainer(this, it, result) }
+            ?.forEach { container -> result.containers.add(container) }
+        return@getOrPut result
       }
     }
 

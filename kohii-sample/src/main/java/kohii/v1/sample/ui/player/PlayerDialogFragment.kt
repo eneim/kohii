@@ -37,21 +37,7 @@ import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
-class PlayerDialogFragment : AppCompatDialogFragment(), Callback, ContainerProvider {
-
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    (parentFragment as? Callback)?.onDialogActive(playback.tag)
-  }
-
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    (parentFragment as? Callback)?.onDialogInActive(playback.tag)
-  }
+class PlayerDialogFragment : AppCompatDialogFragment(), ContainerProvider, Callback {
 
   companion object {
     private const val KEY_PLAYABLE_TAG = "kohii:player:dialog:tag"
@@ -106,16 +92,31 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback, ContainerProvi
   override fun onStart() {
     super.onStart()
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
-    // Only here dialog's window will finally have the DecorView.
     @Suppress("UNCHECKED_CAST")
-    playback = (kohii.findPlayable(playableTag) as? Playable<PlayerView>)
-        ?.bind(this, playerView)
-    playback?.addCallback(this@PlayerDialogFragment)
+    (kohii.findPlayable(playableTag) as? Playable<PlayerView>)
+        ?.bind(this, playerView, Playback.PRIORITY_NORMAL) {
+          it.addCallback(this)
+          playback = it
+        }
+  }
+
+  override fun onActive(playback: Playback<*>) {
+    (parentFragment as? Callback)?.onDialogActive(playback.tag)
+  }
+
+  // Would be called after onStop()
+  override fun onInActive(playback: Playback<*>) {
+    (parentFragment as? Callback)?.onDialogInActive(playback.tag)
   }
 
   override fun onStop() {
     super.onStop()
     playback?.removeCallback(this@PlayerDialogFragment)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    playback = null
   }
 
   override fun provideContainers(): Array<Any>? {

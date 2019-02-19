@@ -20,7 +20,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-class ScreenStateReceiver(val kohii: Kohii) : BroadcastReceiver() {
+class ScreenStateReceiver : BroadcastReceiver() {
   override fun onReceive(
     context: Context?,
     intent: Intent?
