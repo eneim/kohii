@@ -16,7 +16,6 @@
 
 package kohii.v1.exo
 
-import android.content.Context
 import android.util.Pair
 import android.widget.Toast
 import com.google.android.exoplayer2.C
@@ -257,7 +256,7 @@ internal open class ExoBridge(
       if (it.playbackState == Player.STATE_IDLE) return
       _playbackInfo.resumeWindow = it.currentWindowIndex
       _playbackInfo.resumePosition =
-          if (it.isCurrentWindowSeekable) Math.max(0, it.currentPosition) else TIME_UNSET
+        if (it.isCurrentWindowSeekable) Math.max(0, it.currentPosition) else TIME_UNSET
       _playbackInfo.volumeInfo = it.getVolumeInfo()
     }
   }
