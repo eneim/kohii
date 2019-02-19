@@ -63,10 +63,10 @@ class DefaultDrmSessionManagerProvider(
         } catch (e: UnsupportedDrmException) {
           e.printStackTrace()
           errorStringId =
-              if (e.reason == REASON_UNSUPPORTED_SCHEME)
-                R.string.error_drm_unsupported_scheme
-              else
-                R.string.error_drm_unknown
+            if (e.reason == REASON_UNSUPPORTED_SCHEME)
+              R.string.error_drm_unsupported_scheme
+            else
+              R.string.error_drm_unknown
           if (e.reason == REASON_UNSUPPORTED_SCHEME) {
             subString = mediaDrm.type
           }

@@ -18,7 +18,7 @@ package kohii.v1
 
 import androidx.lifecycle.LifecycleOwner
 
-interface LifecycleOwnerProvider: ContextProvider {
+interface LifecycleOwnerProvider : ContextProvider {
 
   fun provideLifecycleOwner(): LifecycleOwner
 }
