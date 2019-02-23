@@ -83,10 +83,6 @@ class MixMediaFragment : BaseFragment(), ContainerProvider {
     return arrayOf(recyclerView)
   }
 
-  override fun provideContext(): Context {
-    return requireContext()
-  }
-
   override fun provideLifecycleOwner(): LifecycleOwner {
     return viewLifecycleOwner
   }

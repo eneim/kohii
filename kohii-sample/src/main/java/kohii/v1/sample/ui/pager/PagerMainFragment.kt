@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.pager
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -105,10 +104,6 @@ class PagerMainFragment : BaseFragment(), ContainerProvider {
 
   override fun provideLifecycleOwner(): LifecycleOwner {
     return viewLifecycleOwner
-  }
-
-  override fun provideContext(): Context {
-    return requireContext()
   }
 
   val kohii by lazy { Kohii[requireContext()] }

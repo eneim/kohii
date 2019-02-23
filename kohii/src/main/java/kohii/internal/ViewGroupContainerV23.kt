@@ -24,7 +24,7 @@ import kohii.v1.PlaybackManager
 
 @RequiresApi(23)
 internal open class ViewGroupContainerV23(
-  private val container: ViewGroup,
+  override val container: ViewGroup,
   private val manager: PlaybackManager
 ) : ViewGroupContainerBase(container, manager), OnScrollChangeListener {
 

@@ -123,10 +123,6 @@ class PlayerDialogFragment : AppCompatDialogFragment(), ContainerProvider, Callb
     return arrayOf(playerContainer)
   }
 
-  override fun provideContext(): Context {
-    return this.requireContext()
-  }
-
   override fun provideLifecycleOwner(): LifecycleOwner {
     return this.viewLifecycleOwner
   }

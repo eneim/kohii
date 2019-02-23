@@ -16,19 +16,15 @@
 
 package kohii.internal
 
-import android.util.Log
 import android.view.View
-import androidx.core.view.children
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener
 import kohii.v1.Container
-import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 
 class ViewPagerContainer(
-  private val kohii: Kohii,
-  private val container: ViewPager,
+  override val container: ViewPager,
   private val manager: PlaybackManager
 ) : Container, SimpleOnPageChangeListener() {
 
@@ -47,7 +43,6 @@ class ViewPagerContainer(
 
   override fun onPageSelected(position: Int) {
     manager.dispatchRefreshAll()
-    Log.i("Kohii::C", "page selected, views: ${container.children.toList()}")
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {

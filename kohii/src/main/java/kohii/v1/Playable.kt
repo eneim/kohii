@@ -99,6 +99,17 @@ interface Playable<T> : Callback {
     cb: ((Playback<T>) -> Unit)?
   )
 
+  fun bind(
+    provider: ContainerProvider,
+    target: T,
+    cb: ((Playback<T>) -> Unit)?
+  ) = this.bind(
+      provider,
+      target,
+      Playback.PRIORITY_NORMAL,
+      cb
+  )
+
   /// Playback controller
 
   // Must be called by Playback
@@ -112,6 +123,8 @@ interface Playable<T> : Callback {
 
   // Must be called by Playback
   fun release()
+
+  val isPlaying: Boolean
 
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 

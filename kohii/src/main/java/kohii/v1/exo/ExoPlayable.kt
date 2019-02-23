@@ -131,6 +131,9 @@ class ExoPlayable internal constructor(
   override val tag: Any
     get() = builderTag ?: Playable.NO_TAG
 
+  override val isPlaying: Boolean
+    get() = bridge.isPlaying
+
   // When binding to a PlayerView, any old Playback for the same PlayerView should be destroyed.
   // Relationship: [Playable] --> [Playback [Target]]
   override fun bind(
@@ -154,11 +157,11 @@ class ExoPlayable internal constructor(
         .lifecycle.addObserver(object : LifecycleObserver {
       @OnLifecycleEvent(ON_CREATE)
       fun onCreate(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycle.removeObserver(this)
         val manager = kohii.requireManager(provider)
         val candidate = buildCandidate(provider, manager, target, priority)
         val result = manager.performAddPlayback(candidate)
         cb?.invoke(result)
-        lifecycleOwner.lifecycle.removeObserver(this)
       }
 
       @OnLifecycleEvent(ON_DESTROY)
@@ -209,7 +212,7 @@ class ExoPlayable internal constructor(
     target: PlayerView,
     @Priority priority: Int
   ): Playback<PlayerView> {
-    manager.findSuitableContainer(target)
+    val container = manager.findSuitableContainer(target)
         ?: throw IllegalStateException(
             "This provider $provider has no Container that " +
                 "accepts this target: $target. Kohii requires at least one."
@@ -246,14 +249,14 @@ class ExoPlayable internal constructor(
           // Scenario: Switch Target in the same Manager.
           // Action: destroy current Playback for old Target, then create new one for new Target.
           it.manager.performRemovePlayback(it)
-          return@let ViewPlayback(kohii, this, manager, target, priority) { delay }
+          return@let ViewPlayback(kohii, this, manager, container, target, priority) { delay }
         }
       } else {
         // State: Old Playback in different Manager
         // Scenario: Switching Target in different Manager (Eg: Open Single Player in Dialog)
         // Action: Destroy current Playback then create new one for new Target in new Manager.
         it.manager.performRemovePlayback(it)
-        return@let ViewPlayback(kohii, this, manager, target, priority) { delay }
+        return@let ViewPlayback(kohii, this, manager, container, target, priority) { delay }
       }
     } ?:
     // State: no current Playback.
@@ -263,6 +266,7 @@ class ExoPlayable internal constructor(
         kohii,
         this,
         manager,
+        container,
         target,
         priority
     ) { delay }
@@ -270,7 +274,6 @@ class ExoPlayable internal constructor(
     if (candidate !== this.playback) {
       candidate.also {
         it.onCreated()
-        it.observe(provider.provideLifecycleOwner())
       }
     }
 

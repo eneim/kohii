@@ -83,10 +83,6 @@ class PlayerActivity : BaseActivity(), ContainerProvider {
     return arrayOf(playerContainer)
   }
 
-  override fun provideContext(): Context {
-    return this
-  }
-
   override fun provideLifecycleOwner(): LifecycleOwner {
     return this
   }

@@ -123,10 +123,6 @@ class ScrollViewFragment : BaseFragment(),
     return arrayOf(this.scrollView)
   }
 
-  override fun provideContext(): Context {
-    return requireActivity()
-  }
-
   override fun provideLifecycleOwner(): LifecycleOwner {
     return this.viewLifecycleOwner
   }

@@ -136,10 +136,6 @@ class PlayerFragment : BaseFragment(), ContainerProvider {
     return arrayOf(playerContainer)
   }
 
-  override fun provideContext(): Context {
-    return requireContext()
-  }
-
   override fun provideLifecycleOwner(): LifecycleOwner {
     return viewLifecycleOwner
   }
