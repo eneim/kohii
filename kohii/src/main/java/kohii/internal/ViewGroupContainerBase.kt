@@ -23,7 +23,7 @@ import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 
 internal open class ViewGroupContainerBase(
-  private val container: ViewGroup,
+  override val container: ViewGroup,
   private val manager: PlaybackManager
 ) : Container {
 

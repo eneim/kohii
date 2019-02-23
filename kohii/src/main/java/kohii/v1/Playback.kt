@@ -19,11 +19,7 @@ package kohii.v1
 import android.os.Handler
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
@@ -44,6 +40,7 @@ abstract class Playback<T> internal constructor(
   internal val kohii: Kohii,
   internal val playable: Playable<T>,
   internal val manager: PlaybackManager,
+  internal val container: Container,
   internal val target: T?,
   @Priority
   internal val priority: Int = PRIORITY_NORMAL,
@@ -51,6 +48,7 @@ abstract class Playback<T> internal constructor(
 ) : LifecycleObserver, Comparable<Playback<T>> {
 
   companion object {
+    const val TAG = "Kohii::PB"
     const val DELAY_INFINITE = -1L
     val NO_DELAY = { 0L }
 
@@ -174,21 +172,21 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun play() {
-    listeners.forEach { it.beforePlay() }
-    playable.play()
+    if (!playable.isPlaying) {
+      listeners.forEach { it.beforePlay() }
+      playable.play()
+    }
   }
 
   internal fun pause() {
-    playable.pause()
-    listeners.forEach { it.afterPause() }
+    if (playable.isPlaying) {
+      playable.pause()
+      listeners.forEach { it.afterPause() }
+    }
   }
 
   internal fun release() {
     playable.release()
-  }
-
-  internal fun observe(lifecycleOwner: LifecycleOwner) {
-    lifecycleOwner.lifecycle.addObserver(this)
   }
 
   @CallSuper
@@ -253,21 +251,9 @@ abstract class Playback<T> internal constructor(
     this.removeCallback(this.playable)
   }
 
-  @Suppress("UNUSED_PARAMETER")
-  @OnLifecycleEvent(ON_STOP)
-  internal fun onLifecycleStop(lifecycleOwner: LifecycleOwner) {
-    if (this.target != null) manager.onTargetInActive(this.target)
-  }
-
-  @OnLifecycleEvent(ON_DESTROY)
-  internal fun onLifecycleDestroyed(lifecycleOwner: LifecycleOwner) {
-    manager.performRemovePlayback(this)
-    lifecycleOwner.lifecycle.removeObserver(this)
-  }
-
   override fun toString(): String {
     val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
-    return "$firstPart::$$playable"
+    return "$firstPart::$playable::$manager"
   }
 
   interface Callback {

@@ -29,7 +29,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.v1.Playback.Token
 import java.util.TreeMap
-import java.util.TreeSet
 import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -40,8 +39,8 @@ abstract class PlaybackManager(
   protected val kohii: Kohii,
   protected val parent: RootManager,
   protected val activity: Activity,
-  protected val containerProvider: ContainerProvider
-) : LifecycleObserver {
+  internal val containerProvider: ContainerProvider
+) : LifecycleObserver, Comparable<PlaybackManager> {
 
   companion object {
     val TOKEN_COMPARATOR: Comparator<Token> = Comparator { o1, o2 -> o1.compareTo(o2) }
@@ -50,6 +49,21 @@ abstract class PlaybackManager(
         return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
       }
     } */
+
+    fun checkComparison(
+      left: Prioritized,
+      right: Prioritized
+    ): Int {
+      val ltr = left.compareTo(right)
+      val rtl = right.compareTo(left)
+      if (ltr + rtl != 0) {
+        throw IllegalStateException(
+            "Illegal comparison result. $left to $right: $ltr, while $right to $left: $rtl."
+        )
+      }
+
+      return ltr
+    }
   }
 
   internal val containers by lazy {
@@ -58,7 +72,6 @@ abstract class PlaybackManager(
 
   private val attachFlag = AtomicBoolean(false)
   private val playbackDispatcher = PlaybackDispatcher()
-  private var dispatcher: Dispatcher? = null
 
   private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Long>()
   // Weak map, so detached Playback can be cleared if not referred anymore.
@@ -74,12 +87,19 @@ abstract class PlaybackManager(
 
   /// [BEGIN] Internal API
 
+  override fun compareTo(other: PlaybackManager): Int {
+    return if (other.containerProvider !is Prioritized) {
+      if (this.containerProvider is Prioritized) 1 else 0
+    } else {
+      if (this.containerProvider is Prioritized) {
+        checkComparison(this.containerProvider, other.containerProvider)
+      } else -1
+    }
+  }
+
   @CallSuper
   @OnLifecycleEvent(ON_CREATE)
   protected open fun onOwnerCreate(owner: LifecycleOwner) {
-    if (kohii.playbackManagerCache.size == 1) {
-      kohii.onFirstManagerOnline()
-    }
     this.onAttached()
   }
 
@@ -127,7 +147,7 @@ abstract class PlaybackManager(
 
   @CallSuper
   @OnLifecycleEvent(ON_DESTROY)
-  internal open fun onOwnerDestroy(owner: LifecycleOwner) {
+  protected open fun onOwnerDestroy(owner: LifecycleOwner) {
     // Wrap by an ArrayList because we also remove entry while iterating by performRemovePlayback
     (ArrayList(mapTargetToPlayback.values).apply {
       this.forEach {
@@ -151,13 +171,11 @@ abstract class PlaybackManager(
     val configChange = activity.isChangingConfigurations
     // If this is the last Manager, and it is not a config change, clean everything.
     if (kohii.playbackManagerCache.isEmpty()) {
-      kohii.onLastManagerOffline()
       if (!configChange) kohii.cleanUp()
     }
   }
 
   protected open fun onAttached() {
-    if (dispatcher == null) dispatcher = Dispatcher(this)
     if (attachFlag.compareAndSet(false, true)) {
       playbackDispatcher.onAttached()
       containers.forEach { it.onHostAttached() }
@@ -169,39 +187,14 @@ abstract class PlaybackManager(
       containers.forEach { it.onHostDetached() }
       playbackDispatcher.onDetached()
     }
-
-    dispatcher?.removeCallbacksAndMessages(null)
-    dispatcher = null
   }
 
   internal open fun dispatchRefreshAll() {
-    if (!this.parent.dispatchManagerRefresh()) this.dispatchRefreshAllInternal()
-  }
-
-  internal open fun dispatchRefreshAllInternal() {
-    dispatcher?.dispatchRefreshAll()
+    this.parent.dispatchManagerRefresh()
   }
 
   @UiThread
-  internal fun selectCandidates(): Map<Token, Playback<*>> {
-    return emptyMap()
-  }
-
-  // Important. Do the refresh stuff. Change the playback items, etc.
-  /**
-   * This method is triggered once there is scroll change in the UI Hierarchy, including changing from
-   * idle to scroll or vice versa.
-   *
-   * This method is also be called when there is update in the content, for example Target of a Playback
-   * is attached/detached or the Manager itself is attached to the Window.
-   *
-   * Design target:
-   *
-   * - [1] Update current attached/detached Playbacks.
-   * - [2] Pause the Playbacks those are out of interest (eg: not visible enough).
-   * - [3] Allow client to select Playback that is available for a playback.
-   */
-  internal fun performRefreshAll() {
+  internal fun fetchPlaybackCandidates(): Pair<Collection<Playback<*>> /* toPlay */, Collection<Playback<*>> /* toPause */> {
     candidates.clear()
 
     // Confirm if any invisible view is visible again.
@@ -218,34 +211,29 @@ abstract class PlaybackManager(
 
     val playbacks = ArrayList(mapAttachedPlaybackToTime.keys)
     playbacks.forEach { playback ->
-      playback.token?.let {
-        if (it.shouldPlay()) candidates[it] = playback
+      val token = playback.token
+      if (token != null && token.shouldPlay()) {
+        candidates[token] = playback
       }
     }
 
     // use Container to pick Playback for playing.
     val temp = candidates.values
-    val toPlay = TreeSet<Playback<*>>()
-    this.containers.flatMap { it.select(temp) }
-        .also { result ->
-          toPlay.addAll(result)
-          temp.removeAll(result)
+    val toPlay = HashSet<Playback<*>>()
+    temp.groupBy { it.container }
+        .map {
+          it.key.select(it.value)
         }
-
-    // TODO further filter toPlay list, pick only one.
+        .forEach {
+          toPlay.addAll(it)
+          temp.removeAll(it)
+        }
 
     playbacks.removeAll(toPlay)
     playbacks.addAll(mapDetachedPlaybackToTime.keys)
-    // Keep only non-play-candidate ones, and pause them.
-    for (playback in playbacks) {
-      playbackDispatcher.pause(playback)
-    }
-    // Now start the play-candidate
-    for (playback in toPlay) {
-      playbackDispatcher.play(playback)
-    }
     // Clean up cache
     candidates.clear()
+    return Pair(toPlay, playbacks)
   }
 
   /**
@@ -264,6 +252,7 @@ abstract class PlaybackManager(
     }
 
     if (shouldAdd) {
+      playback.addCallback(parent)
       // State: there is another Playback of the same Target in the same Manager.
       // Scenario: RecyclerView recycle VH so one Target can be rebound to other Playback.
       // Action: destroy the other Playback, then add the new one.
@@ -309,6 +298,7 @@ abstract class PlaybackManager(
             playbackDispatcher.onPlaybackRemoved(it)
             it.onRemoved()
             it.onDestroyed()
+            it.removeCallback(parent)
             containerProvider.provideLifecycleOwner()
                 .lifecycle.removeObserver(it)
           }

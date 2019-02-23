@@ -26,7 +26,7 @@ import kohii.v1.PlaybackManager
 
 @Draft
 internal data class NestedScrollViewContainer(
-  private val container: NestedScrollView,
+  override val container: NestedScrollView,
   private val manager: PlaybackManager
 ) : Container, OnScrollChangeListener {
 

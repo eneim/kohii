@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.overlay
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -190,11 +189,13 @@ class OverlayViewFragment : BaseFragment(),
           // viewModel!!.liveData.value = Triple(key, selected, playback?.tag as String?)
           overlaySheet?.state = STATE_EXPANDED
           @Suppress("UNCHECKED_CAST")
-          playback = (kohii.findPlayable(key) as? Playable<PlayerView>)?.bind(
+          (kohii.findPlayable(key) as? Playable<PlayerView>)?.bind(
               this@OverlayViewFragment,
               overlayPlayerView,
               Playback.PRIORITY_HIGH
-          )
+          ) {
+            playback = it
+          }
         }
       }
     })
@@ -217,15 +218,17 @@ class OverlayViewFragment : BaseFragment(),
       (videoOverlay as? MotionLayout)?.progress = 0F
     }
 
-    selectionTracker?.selection?.firstOrNull()
-        ?.also {
-          @Suppress("UNCHECKED_CAST")
-          playback = (kohii.findPlayable(it) as? Playable<PlayerView>)?.bind(
-              this@OverlayViewFragment,
-              overlayPlayerView,
-              Playback.PRIORITY_HIGH
-          )
-        }
+    val selected = selectionTracker?.selection?.firstOrNull()
+    if (selected != null) {
+      @Suppress("UNCHECKED_CAST")
+      (kohii.findPlayable(selected) as? Playable<PlayerView>)?.bind(
+          this@OverlayViewFragment,
+          overlayPlayerView,
+          Playback.PRIORITY_HIGH
+      ) { pk ->
+        playback = pk
+      }
+    }
   }
 
   // MotionLayout.TransitionListener
@@ -261,9 +264,5 @@ class OverlayViewFragment : BaseFragment(),
 
   override fun provideLifecycleOwner(): LifecycleOwner {
     return this.viewLifecycleOwner
-  }
-
-  override fun provideContext(): Context {
-    return requireContext()
   }
 }

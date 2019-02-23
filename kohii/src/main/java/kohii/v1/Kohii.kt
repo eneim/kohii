@@ -63,6 +63,7 @@ class Kohii(context: Context) : LifecycleObserver {
   // Store playable whose tag is available. Non tagged playable are always ignored.
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Playable<*>>()
 
+  // For ExoPlayer resource management.
   internal val bridgeProvider: BridgeProvider
   internal val playerProvider: PlayerProvider
   internal val mediaSourceFactoryProvider: MediaSourceFactoryProvider
@@ -80,6 +81,8 @@ class Kohii(context: Context) : LifecycleObserver {
     operator fun get(context: Context) = kohii ?: synchronized(Kohii::class.java) {
       kohii ?: Kohii(context).also { kohii = it }
     }
+
+    operator fun get(fragment: Fragment) = get(fragment.requireContext())
 
     // ExoPlayer's doesn't catch a RuntimeException and crash if Device has too many App installed.
     internal fun getUserAgent(
@@ -127,9 +130,15 @@ class Kohii(context: Context) : LifecycleObserver {
 
   //// instance methods
 
-  // Find one or create new.
+  /**
+   * Return a [PlaybackManager] so that a [Playable] can use to create new [Playback].
+   * This method should always return a valid [PlaybackManager]: return an existing one or create new.
+   * This method should also create new [RootManager] on demand.
+   *
+   * The hierarchy is as below:
+   * [RootManager] --> [PlaybackManager] --> [Container]
+   */
   internal fun requireManager(provider: ContainerProvider): PlaybackManager {
-    val lifecycleOwner = provider.provideLifecycleOwner()
     val activity =
       when (provider) {
         is Fragment -> provider.requireActivity()
@@ -138,7 +147,12 @@ class Kohii(context: Context) : LifecycleObserver {
             "Unsupported provider: $provider. Kohii only supports Fragment, FragmentActivity."
         )
       }
-    val parent = parents.getOrPut(activity) { RootManager(this, activity) }
+    val parent = parents.getOrPut(activity) {
+      val result = RootManager(this)
+      activity.lifecycle.addObserver(result)
+      return@getOrPut result
+    }
+    val lifecycleOwner = provider.provideLifecycleOwner()
     val manager = playbackManagerCache.getOrPut(lifecycleOwner) {
       // Create new in case of no cache found.
       if (lifecycleOwner is LifecycleService) {

@@ -94,10 +94,6 @@ class MotionFragment : BaseFragment(), Presenter, ContainerProvider {
     return arrayOf(scrollView)
   }
 
-  override fun provideContext(): Context {
-    return requireContext()
-  }
-
   override fun provideLifecycleOwner(): LifecycleOwner {
     return viewLifecycleOwner
   }

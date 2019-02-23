@@ -16,9 +16,8 @@
 
 package kohii.v1
 
-import android.content.Context
-
-interface ContextProvider {
-
-  fun provideContext(): Context
+interface Prioritized : Comparable<Prioritized> {
+  override fun compareTo(other: Prioritized): Int {
+    return 0
+  }
 }

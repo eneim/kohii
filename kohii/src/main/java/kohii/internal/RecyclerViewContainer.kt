@@ -27,7 +27,7 @@ import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 
 internal data class RecyclerViewContainer(
-  private val container: RecyclerView,
+  override val container: RecyclerView,
   private val manager: PlaybackManager
 ) : Container, OnScrollListener() {
 
@@ -35,7 +35,7 @@ internal data class RecyclerViewContainer(
     val params = container.layoutParams
     @Suppress("UNUSED_VARIABLE")
     val behavior = (params as? CoordinatorLayout.LayoutParams)?.behavior
-    // TODO
+    // TODO deal with CoordinatorLayout?
     container.addOnScrollListener(this)
     if (container.scrollState == SCROLL_STATE_IDLE) manager.dispatchRefreshAll()
   }

@@ -33,6 +33,7 @@ open class ViewPlayback<V : View>(
   kohii: Kohii,
   playable: Playable<V>,
   manager: PlaybackManager,
+  container: Container,
   target: V?,
   priority: Int = PRIORITY_NORMAL,
   delay: () -> Long = Playback.NO_DELAY
@@ -40,6 +41,7 @@ open class ViewPlayback<V : View>(
     kohii,
     playable,
     manager,
+    container,
     target,
     priority,
     delay
@@ -49,28 +51,28 @@ open class ViewPlayback<V : View>(
   private val debugListener: PlaybackEventListener by lazy {
     object : PlaybackEventListener {
       override fun onFirstFrameRendered() {
-        Log.d("Kohii:PB", "first frame: ${this@ViewPlayback}")
+        Log.d(TAG, "first frame: ${this@ViewPlayback}")
       }
 
       override fun onBuffering(playWhenReady: Boolean) {
-        Log.d("Kohii:PB", "buffering: ${this@ViewPlayback}")
+        Log.d(TAG, "buffering: ${this@ViewPlayback}")
       }
 
       override fun beforePlay() {
-        Log.e("Kohii:PB", "beforePlay: ${this@ViewPlayback}")
+        Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
         target?.keepScreenOn = true
       }
 
       override fun onPlaying() {
-        Log.d("Kohii:PB", "playing: ${this@ViewPlayback}")
+        Log.d(TAG, "playing: ${this@ViewPlayback}")
       }
 
       override fun onPaused() {
-        Log.w("Kohii:PB", "paused: ${this@ViewPlayback}")
+        Log.w(TAG, "paused: ${this@ViewPlayback}")
       }
 
       override fun afterPause() {
-        Log.w("Kohii:PB", "afterPause: ${this@ViewPlayback}")
+        Log.w(TAG, "afterPause: ${this@ViewPlayback}")
         target?.keepScreenOn = false
       }
 

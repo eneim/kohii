@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.reuse
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -92,10 +91,6 @@ class OneSurfaceFragment : BaseFragment(), ContainerProvider {
 
   override fun provideContainers(): Array<Any>? {
     return arrayOf(recyclerView)
-  }
-
-  override fun provideContext(): Context {
-    return requireContext()
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

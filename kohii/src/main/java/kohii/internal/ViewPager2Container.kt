@@ -23,7 +23,7 @@ import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 
 class ViewPager2Container(
-  private val container: ViewPager2,
+  override val container: ViewPager2,
   private val manager: PlaybackManager
 ) : Container, OnPageChangeCallback() {
 

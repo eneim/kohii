@@ -44,7 +44,7 @@ interface Container {
         is NestedScrollView ->
           NestedScrollViewContainer(view, manager)
         is ViewPager ->
-          ViewPagerContainer(kohii, view, manager)
+          ViewPagerContainer(view, manager)
         is ViewPager2 ->
           ViewPager2Container(view, manager)
         is ViewGroup ->
@@ -55,6 +55,8 @@ interface Container {
       }
     }
   }
+
+  val container: Any
 
   // Call when the PlaybackManager is attached.
   fun onHostAttached() {
@@ -71,7 +73,6 @@ interface Container {
   fun accepts(target: Any): Boolean
 
   fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    Log.d("Kohii::C:$this", "select: $candidates")
     return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
   }
 
