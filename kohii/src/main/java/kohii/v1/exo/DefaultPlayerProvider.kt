@@ -87,19 +87,18 @@ class DefaultPlayerProvider(
       }
     } else {
       // Need DRM support, we'd better use fresh Player instances.
-      val player = KohiiPlayer( //
-          this.context, //
-          this.renderersFactory, //
-          this.trackSelector, //
-          this.loadControl, //
-          this.bandwidthMeterFactory.createBandwidthMeter(), //
+      return KohiiPlayer( //
+          context, //
+          renderersFactory, //
+          trackSelector, //
+          loadControl, //
+          bandwidthMeterFactory.createBandwidthMeter(), //
           drmSessionManager, //
           Util.getLooper() //
       ).also {
         it.setAudioAttributes(it.audioAttributes, true)
+        drmPlayerCache[it] = System.currentTimeMillis()
       }
-      drmPlayerCache[player] = System.currentTimeMillis()
-      return player
     }
   }
 
