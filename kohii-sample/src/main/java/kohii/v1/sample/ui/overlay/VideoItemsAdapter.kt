@@ -21,7 +21,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.sample.R
@@ -29,8 +28,7 @@ import kohii.v1.sample.ui.overlay.data.Video
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val kohii: Kohii,
-  val containerProvider: ContainerProvider
+  private val kohii: Kohii
 ) : Adapter<BaseViewHolder>(), BaseViewHolder.OnClickListener {
 
   var selectionTracker: SelectionTracker<String>? = null

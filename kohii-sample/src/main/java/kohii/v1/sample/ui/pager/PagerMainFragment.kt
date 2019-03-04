@@ -29,8 +29,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getDisplayPoint
@@ -41,7 +41,7 @@ import okio.source
 
 @Suppress("unused")
 @Keep
-class PagerMainFragment : BaseFragment(), ContainerProvider {
+class PagerMainFragment : BaseFragment(), LifecycleOwnerProvider {
 
   companion object {
     fun newInstance() = PagerMainFragment()
@@ -83,7 +83,8 @@ class PagerMainFragment : BaseFragment(), ContainerProvider {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Kohii[requireContext()].register(this) // Work around.
+    Kohii[this].register(this, arrayOf(viewPager))
+
     this.viewPager.let {
       it.adapter = VideoPagerAdapter(childFragmentManager, videos)
       it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
@@ -96,10 +97,6 @@ class PagerMainFragment : BaseFragment(), ContainerProvider {
         page.scaleY = scale
       }
     }
-  }
-
-  override fun provideContainers(): Array<Any>? {
-    return arrayOf(viewPager)
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

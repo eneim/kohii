@@ -18,14 +18,18 @@ package kohii.internal
 
 import android.view.View
 import android.view.ViewGroup
-import kohii.v1.Container
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 
 internal open class ViewGroupContainerBase(
   override val container: ViewGroup,
-  private val manager: PlaybackManager
-) : Container {
+  manager: PlaybackManager
+) : ViewContainer<ViewGroup>(container, manager) {
+
+  override fun onManagerAttached() {
+    super.onManagerAttached()
+    manager.dispatchRefreshAll()
+  }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
     return playback.token?.shouldPlay() == true
@@ -47,21 +51,12 @@ internal open class ViewGroupContainerBase(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is ViewGroupContainerBase) return false
-
     if (container != other.container) return false
-    if (manager != other.manager) return false
-
     return true
   }
 
   override fun hashCode(): Int {
-    var result = container.hashCode()
-    result = 31 * result + manager.hashCode()
-    return result
-  }
-
-  override fun toString(): String {
-    return "${container.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
+    return container.hashCode()
   }
 
 }

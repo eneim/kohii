@@ -18,38 +18,58 @@ package kohii.internal
 
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecycleViewUtils
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
-import kohii.v1.Container
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import kohii.v1.Container.Companion.BOTH_AXIS
+import kohii.v1.Container.Companion.HORIZONTAL
+import kohii.v1.Container.Companion.NONE_AXIS
+import kohii.v1.Container.Companion.VERTICAL
+import kohii.v1.Container.Companion.comparators
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
+import java.lang.ref.WeakReference
 
-internal data class RecyclerViewContainer(
+internal class RecyclerViewContainer(
   override val container: RecyclerView,
-  private val manager: PlaybackManager
-) : Container, OnScrollListener() {
+  manager: PlaybackManager
+) : ViewContainer<RecyclerView>(container, manager) {
 
-  override fun onHostAttached() {
+  companion object {
+    fun RecyclerView.fetchOrientation(): Int {
+      val layout = this.layoutManager ?: return NONE_AXIS
+      return when (layout) {
+        is LinearLayoutManager -> layout.orientation
+        is StaggeredGridLayoutManager -> layout.orientation
+        else -> {
+          return if (layout.canScrollVertically()) {
+            if (layout.canScrollHorizontally()) BOTH_AXIS
+            else VERTICAL
+          } else {
+            if (layout.canScrollHorizontally()) HORIZONTAL
+            else NONE_AXIS
+          }
+        }
+      }
+    }
+  }
+
+  private val scrollListener by lazy { SimpleOnScrollListener(manager) }
+
+  override fun onManagerAttached() {
+    // TODO deal with CoordinatorLayout?
     val params = container.layoutParams
     @Suppress("UNUSED_VARIABLE")
     val behavior = (params as? CoordinatorLayout.LayoutParams)?.behavior
-    // TODO deal with CoordinatorLayout?
-    container.addOnScrollListener(this)
+    container.addOnScrollListener(scrollListener)
     if (container.scrollState == SCROLL_STATE_IDLE) manager.dispatchRefreshAll()
   }
 
-  override fun onHostDetached() {
-    container.removeOnScrollListener(this)
-  }
-
-  override fun onScrolled(
-    recyclerView: RecyclerView,
-    dx: Int,
-    dy: Int
-  ) {
-    manager.dispatchRefreshAll()
+  override fun onManagerDetached() {
+    container.removeOnScrollListener(scrollListener)
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
@@ -64,8 +84,35 @@ internal data class RecyclerViewContainer(
     return RecycleViewUtils.checkParams(container, params)
   }
 
-  override fun toString(): String {
-    return "${container.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
+  override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    val orientation = container.fetchOrientation()
+    return candidates.sortedWith(comparators.getValue(orientation))
+        .let {
+          if (it.isEmpty()) emptyList() else listOf(it.first())
+        }
   }
 
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is RecyclerViewContainer) return false
+    if (container !== other.container) return false
+    return true
+  }
+
+  override fun hashCode(): Int {
+    return container.hashCode()
+  }
+
+  private class SimpleOnScrollListener(manager: PlaybackManager) : OnScrollListener() {
+    val weakManager = WeakReference(manager)
+
+    override fun onScrolled(
+      recyclerView: RecyclerView,
+      dx: Int,
+      dy: Int
+    ) {
+      weakManager.get()
+          ?.dispatchRefreshAll()
+    }
+  }
 }

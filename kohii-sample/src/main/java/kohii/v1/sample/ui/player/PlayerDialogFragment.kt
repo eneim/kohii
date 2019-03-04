@@ -17,7 +17,6 @@
 package kohii.v1.sample.ui.player
 
 import android.app.Dialog
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,8 +27,8 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
@@ -37,7 +36,7 @@ import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
-class PlayerDialogFragment : AppCompatDialogFragment(), ContainerProvider, Callback {
+class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, Callback {
 
   companion object {
     private const val KEY_PLAYABLE_TAG = "kohii:player:dialog:tag"
@@ -63,7 +62,6 @@ class PlayerDialogFragment : AppCompatDialogFragment(), ContainerProvider, Callb
     fun onDialogInActive(tag: Any)
   }
 
-  val kohii: Kohii by lazy { Kohii[requireContext()] }
   var playback: Playback<*>? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -92,9 +90,10 @@ class PlayerDialogFragment : AppCompatDialogFragment(), ContainerProvider, Callb
   override fun onStart() {
     super.onStart()
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
+    val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
     @Suppress("UNCHECKED_CAST")
     (kohii.findPlayable(playableTag) as? Playable<PlayerView>)
-        ?.bind(this, playerView, Playback.PRIORITY_NORMAL) {
+        ?.bind(playerView, Playback.PRIORITY_NORMAL) {
           it.addCallback(this)
           playback = it
         }
@@ -117,10 +116,6 @@ class PlayerDialogFragment : AppCompatDialogFragment(), ContainerProvider, Callb
   override fun onDestroyView() {
     super.onDestroyView()
     playback = null
-  }
-
-  override fun provideContainers(): Array<Any>? {
-    return arrayOf(playerContainer)
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

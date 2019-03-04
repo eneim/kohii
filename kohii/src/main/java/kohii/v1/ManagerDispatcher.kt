@@ -20,12 +20,12 @@ import android.os.Handler
 import android.os.Message
 import java.lang.ref.WeakReference
 
-internal class RootDispatcher(val manager: RootManager) {
+internal class ManagerDispatcher(manager: ActivityContainer) {
 
   private val handler = RootHandler(manager)
 
   companion object {
-    const val DELAY = 2 * 1000L / 60
+    const val DELAY = 2 * 1000L / 60 /* about 2 frames */
     const val MSG_REFRESH = 1
   }
 
@@ -34,17 +34,18 @@ internal class RootDispatcher(val manager: RootManager) {
     handler.sendEmptyMessageDelayed(MSG_REFRESH, DELAY)
   }
 
-  class RootHandler(manager: RootManager) : Handler() {
+  class RootHandler(manager: ActivityContainer) : Handler() {
 
     private val weakManager = WeakReference(manager)
 
     override fun handleMessage(msg: Message?) {
-      super.handleMessage(msg)
-      val what = msg?.what
-      when (what) {
-        MSG_REFRESH -> {
-          weakManager.get()
-              ?.refreshPlaybacks()
+      val manager = weakManager.get()
+      if (manager != null) {
+        val what = msg?.what
+        when (what) {
+          MSG_REFRESH -> {
+            manager.refreshPlaybacks()
+          }
         }
       }
     }

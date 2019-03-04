@@ -19,22 +19,19 @@ package kohii.internal
 import android.view.View
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.NestedScrollView.OnScrollChangeListener
-import kohii.Draft
-import kohii.v1.Container
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 
-@Draft
-internal data class NestedScrollViewContainer(
+internal class NestedScrollViewContainer(
   override val container: NestedScrollView,
-  private val manager: PlaybackManager
-) : Container, OnScrollChangeListener {
+  manager: PlaybackManager
+) : ViewContainer<NestedScrollView>(container, manager), OnScrollChangeListener {
 
-  override fun onHostAttached() {
+  override fun onManagerAttached() {
     container.setOnScrollChangeListener(this)
   }
 
-  override fun onHostDetached() {
+  override fun onManagerDetached() {
     container.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
@@ -53,20 +50,26 @@ internal data class NestedScrollViewContainer(
   }
 
   override fun accepts(target: Any): Boolean {
-    return if (target is View) {
-      var view = target
-      var parent = view.parent
-      while (parent != null && parent !== this.container && parent is View) {
-        @Suppress("USELESS_CAST")
-        view = parent as View
-        parent = view.parent
-      }
-      parent === this.container
-    } else false
+    if (target !is View) return false
+    var view = target
+    var parent = view.parent
+    while (parent != null && parent !== this.container && parent is View) {
+      @Suppress("USELESS_CAST")
+      view = parent as View
+      parent = view.parent
+    }
+    return parent === this.container
   }
 
-  override fun toString(): String {
-    return "${container.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is NestedScrollViewContainer) return false
+    if (container !== other.container) return false
+    return true
+  }
+
+  override fun hashCode(): Int {
+    return container.hashCode()
   }
 
 }

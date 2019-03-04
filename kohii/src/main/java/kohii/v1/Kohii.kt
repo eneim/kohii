@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleObserver
@@ -36,6 +37,7 @@ import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.internal.ViewPlaybackManager
 import kohii.media.Media
 import kohii.media.MediaItem
+import kohii.takeFirstOrNull
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultBridgeProvider
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
@@ -54,11 +56,11 @@ class Kohii(context: Context) : LifecycleObserver {
 
   internal val app = context.applicationContext as Application
 
-  internal val parents = HashMap<LifecycleOwner, RootManager>()
-  // FIXME [20190208] New mechanism
-  internal val playbackManagerCache = HashMap<LifecycleOwner, PlaybackManager>()
+  internal val owners = HashMap<LifecycleOwner, ActivityContainer>(2)
+  internal val managers = HashMap<LifecycleOwner, PlaybackManager>()
+
   // Which Playable is managed by which Manager
-  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlaybackManager?>()
+  internal val mapPlayableToManager = DebugWeakHashMap<Playable<*>, PlaybackManager?>()
 
   // Store playable whose tag is available. Non tagged playable are always ignored.
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Playable<*>>()
@@ -130,48 +132,8 @@ class Kohii(context: Context) : LifecycleObserver {
 
   //// instance methods
 
-  /**
-   * Return a [PlaybackManager] so that a [Playable] can use to create new [Playback].
-   * This method should always return a valid [PlaybackManager]: return an existing one or create new.
-   * This method should also create new [RootManager] on demand.
-   *
-   * The hierarchy is as below:
-   * [RootManager] --> [PlaybackManager] --> [Container]
-   */
-  internal fun requireManager(provider: ContainerProvider): PlaybackManager {
-    val activity =
-      when (provider) {
-        is Fragment -> provider.requireActivity()
-        is FragmentActivity -> provider
-        else -> throw IllegalArgumentException(
-            "Unsupported provider: $provider. Kohii only supports Fragment, FragmentActivity."
-        )
-      }
-    val parent = parents.getOrPut(activity) {
-      val result = RootManager(this)
-      activity.lifecycle.addObserver(result)
-      return@getOrPut result
-    }
-    val lifecycleOwner = provider.provideLifecycleOwner()
-    val manager = playbackManagerCache.getOrPut(lifecycleOwner) {
-      // Create new in case of no cache found.
-      if (lifecycleOwner is LifecycleService) {
-        // ServicePlaybackManager(this, provider)
-        throw IllegalArgumentException(
-            "Service is not supported yet."
-        )
-      } else {
-        val result = ViewPlaybackManager(this, parent, activity, provider)
-        provider.provideContainers()
-            ?.mapNotNull { Container.createContainer(this, it, result) }
-            ?.forEach { container -> result.containers.add(container) }
-        return@getOrPut result
-      }
-    }
-
-    lifecycleOwner.lifecycle.addObserver(manager)
-    parent.attachPlaybackManager(lifecycleOwner, manager)
-    return manager
+  internal fun findSuitableManager(target: Any): PlaybackManager? {
+    return owners.values.takeFirstOrNull({ it.findSuitableManger(target) }, { it != null })
   }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
@@ -190,7 +152,7 @@ class Kohii(context: Context) : LifecycleObserver {
     } ?: playable.release()
   }
 
-  fun onFirstManagerOnline() {
+  internal fun onFirstManagerOnline() {
     val intentFilter = IntentFilter().apply {
       addAction(Intent.ACTION_SCREEN_ON)
       addAction(Intent.ACTION_SCREEN_OFF)
@@ -198,7 +160,7 @@ class Kohii(context: Context) : LifecycleObserver {
     app.registerReceiver(screenStateReceiver, intentFilter)
   }
 
-  fun onLastManagerOffline() {
+  internal fun onLastManagerOffline() {
     app.unregisterReceiver(screenStateReceiver)
   }
 
@@ -209,24 +171,55 @@ class Kohii(context: Context) : LifecycleObserver {
 
   //// [BEGIN] Public API
 
-  fun register(provider: ContainerProvider) {
-    this.requireManager(provider)
+  // Expose to client.
+  fun register(provider: LifecycleOwnerProvider) {
+    return this.register(provider, null)
   }
 
-  fun setUp(uri: Uri): Playable.Builder {
-    return this.setUp(MediaItem(uri))
+  fun register(
+    provider: LifecycleOwnerProvider,
+    containers: Array<Any>?
+  ) {
+    val activity =
+      when (provider) {
+        is Fragment -> provider.requireActivity()
+        is FragmentActivity -> provider
+        else -> throw IllegalArgumentException(
+            "Unsupported provider: $provider. Kohii only supports Fragment, FragmentActivity."
+        )
+      }
+    val parent = owners.getOrPut(activity) {
+      val result = ActivityContainer(this, activity)
+      activity.lifecycle.addObserver(result)
+      return@getOrPut result
+    }
+    val lifecycleOwner = provider.provideLifecycleOwner()
+    val manager = managers.getOrPut(lifecycleOwner) {
+      // Create new in case of no cache found.
+      if (lifecycleOwner is LifecycleService) {
+        // ServicePlaybackManager(this, provider)
+        throw IllegalArgumentException(
+            "Service is not supported yet."
+        )
+      } else {
+        val result = ViewPlaybackManager(this, parent, provider)
+        containers?.mapNotNull { Container.createContainer(it, result) }
+            ?.forEach { result.registerContainer(it, false) }
+        return@getOrPut result
+      }
+    }
+
+    lifecycleOwner.lifecycle.addObserver(manager)
+    parent.attachPlaybackManager(manager)
   }
 
-  fun setUp(url: String): Playable.Builder {
-    return this.setUp(MediaItem(Uri.parse(url)))
-  }
+  fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
 
-  fun setUp(media: Media): Playable.Builder {
-    return Playable.Builder(this, media = media)
-  }
+  fun setUp(url: String) = this.setUp(MediaItem(Uri.parse(url)))
+
+  fun setUp(media: Media) = Playable.Builder(this, media = media)
 
   // Find a Playable for a tag. Single player may use this for full-screen playback.
-  // TODO [20180719] returned Playable may still be managed by a Manager. Need to know why.
   fun findPlayable(tag: Any?): Playable<*>? {
     return this.mapTagToPlayable[tag].also {
       mapPlayableToManager[it] = null // once found, it will be detached from the last Manager.
@@ -234,4 +227,25 @@ class Kohii(context: Context) : LifecycleObserver {
   }
 
   //// [END] Public API
+
+  class DebugWeakHashMap<K, V> : WeakHashMap<K, V>() {
+
+    override fun put(
+      key: K,
+      value: V
+    ): V? {
+      Log.d("Kohii::X", "put: $key, $value")
+      if (value == null) {
+        Log.i("Kohii::X", "put null: $key")
+      }
+      return super.put(key, value)
+    }
+
+    override fun remove(key: K): V? {
+      val value = super.remove(key)
+      Log.d("Kohii::X", "remove: $key, $value")
+      Log.w("Kohii::X", "remain: ${this.entries}")
+      return value
+    }
+  }
 }

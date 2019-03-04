@@ -17,7 +17,6 @@
 package kohii.v1
 
 import android.os.Build
-import android.util.Log
 import android.view.ViewGroup
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
@@ -30,11 +29,30 @@ import kohii.internal.ViewGroupContainerV23
 import kohii.internal.ViewPager2Container
 import kohii.internal.ViewPagerContainer
 
+/**
+ * A Container is the representation of a View in Kohii. A Container wraps a View and provides it
+ * internal support such as listening to Scroll event, wrapping it with special LayoutParam to provide more control, etc.
+ *
+ * Implementation of a Container must correctly override required methods, such as [select], [accepts], ...
+ * The [PlaybackManager] will talk to Container to ask for necessary information to update the overall behavior.
+ */
 interface Container {
 
   companion object {
+    internal const val VERTICAL = RecyclerView.VERTICAL
+    internal const val HORIZONTAL = RecyclerView.HORIZONTAL
+    internal const val BOTH_AXIS = -1
+    internal const val NONE_AXIS = -2
+
+    // read-only map
+    val comparators = listOf(
+        Pair(HORIZONTAL, Playback.HORIZONTAL_COMPARATOR),
+        Pair(VERTICAL, Playback.VERTICAL_COMPARATOR),
+        Pair(BOTH_AXIS, Playback.BOTH_AXIS_COMPARATOR),
+        Pair(NONE_AXIS, Playback.BOTH_AXIS_COMPARATOR)
+    ).toMap()
+
     internal fun createContainer(
-      kohii: Kohii,
       view: Any,
       manager: PlaybackManager
     ): Container? {
@@ -54,26 +72,43 @@ interface Container {
         else -> null
       }
     }
+
+    val PRESENT = Any()
+
+    internal fun changed(
+      left: Int,
+      top: Int,
+      right: Int,
+      bottom: Int,
+      oldLeft: Int,
+      oldTop: Int,
+      oldRight: Int,
+      oldBottom: Int
+    ): Boolean {
+      return top != oldTop || bottom != oldBottom || left != oldLeft || right != oldRight
+    }
   }
 
+  // The ViewGroup
   val container: Any
 
   // Call when the PlaybackManager is attached.
-  fun onHostAttached() {
+  fun onManagerAttached() {}
 
-  }
+  // Call when the PlaybackManager is detached.
+  fun onManagerDetached() {}
 
-  fun onHostDetached() {
+  fun <T> attachTarget(target: T)
 
-  }
+  fun <T> detachTarget(target: T)
+
+  // Called by Manager when creating Playback object for the Target.
+  fun accepts(target: Any): Boolean
 
   // Must contain and allow it to play.
   fun allowsToPlay(playback: Playback<*>): Boolean
 
-  fun accepts(target: Any): Boolean
-
   fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
     return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
   }
-
 }

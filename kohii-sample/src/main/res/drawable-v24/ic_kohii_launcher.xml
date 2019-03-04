@@ -19,7 +19,8 @@
     android:height="108dp"
     android:viewportWidth="3200"
     android:viewportHeight="3200.1003">
-  <group android:translateX="960"
+  <group
+      android:translateX="960"
       android:translateY="1245.5502">
     <path
         android:fillColor="#d93831"
