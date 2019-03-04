@@ -58,6 +58,7 @@ dependencies {
 
   implementation libraries.kotlin.stdlib
   implementation libraries.androidx.core
+  implementation libraries.androidx.fragmentktx
   implementation libraries.androidx.viewpager2
   // implementation libraries.androidx.appcompat
   // implementation libraries.androidx.recyclerview
