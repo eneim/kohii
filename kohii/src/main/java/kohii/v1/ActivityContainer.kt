@@ -16,6 +16,8 @@
 
 package kohii.v1
 
+import android.app.Activity
+import android.util.Log
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
@@ -31,79 +33,84 @@ import kohii.media.PlaybackInfo
  * call this class's [dispatchManagerRefresh] so that all other [PlaybackManager] in the same host
  * will also be notified.
  */
-class RootManager(
-  val kohii: Kohii
+class ActivityContainer(
+  internal val kohii: Kohii,
+  internal val activity: Activity
 ) : LifecycleObserver, Playback.Callback {
 
-  private val mapOwnerToManager = HashMap<LifecycleOwner, PlaybackManager>()
-  private val prioritizedManager = HashSet<PlaybackManager>()
-  private val originalManager = HashSet<PlaybackManager>()
-
+  private val prioritizedManagers = HashSet<PlaybackManager>()
+  private val standardManagers = HashSet<PlaybackManager>()
   private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
-  private val dispatcher by lazy { RootDispatcher(this) }
+
+  private val dispatcher by lazy { ManagerDispatcher(this) }
 
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
   }
 
-  internal fun attachPlaybackManager(
-    lifecycleOwner: LifecycleOwner,
-    playbackManager: PlaybackManager
-  ) {
-    if (kohii.playbackManagerCache.size == 1) {
+  internal fun attachPlaybackManager(playbackManager: PlaybackManager) {
+    if (kohii.managers.size == 1) {
       kohii.onFirstManagerOnline()
     }
-    if (!this.mapOwnerToManager.containsKey(lifecycleOwner)) {
-      this.mapOwnerToManager[lifecycleOwner] = playbackManager
-    }
-    if (playbackManager.containerProvider is Prioritized) {
-      prioritizedManager.add(playbackManager)
+    if (playbackManager.provider is Prioritized) {
+      prioritizedManagers.add(playbackManager)
     } else {
-      originalManager.add(playbackManager)
+      standardManagers.add(playbackManager)
     }
   }
 
+  // Called by PlaybackManager
   internal fun detachPlaybackManager(playbackManager: PlaybackManager) {
-    val cache = this.mapOwnerToManager.filterValues { it === playbackManager }
-    for (item in cache) this.mapOwnerToManager.remove(item.key)
-    if (playbackManager.containerProvider is Prioritized) prioritizedManager.remove(playbackManager)
-    else originalManager.remove(playbackManager)
+    if (playbackManager.provider is Prioritized) {
+      prioritizedManagers.remove(playbackManager)
+    } else standardManagers.remove(playbackManager)
 
-    if (kohii.playbackManagerCache.isEmpty()) {
+    if (kohii.managers.isEmpty()) {
       kohii.onLastManagerOffline()
     }
   }
 
-  internal fun dispatchManagerRefresh(): Boolean {
-    // this.mapOwnerToManager.forEach { it.value.dispatchRefreshAllInternal() }
+  internal fun findSuitableManger(target: Any): PlaybackManager? {
+    return (this.prioritizedManagers + this.standardManagers)
+        .firstOrNull { it.findSuitableContainer(target) != null }
+  }
+
+  internal fun dispatchManagerRefresh() {
+    // Will dispatch with a small delay, to prevent aggressive pushing.
     dispatcher.dispatchRefresh()
-    return true
   }
 
   internal fun trySavePlaybackInfo(playback: Playback<*>) {
-    if (playback.tag != Playable.NO_TAG) {
-      mapPlayableTagToInfo[playback.tag] = playback.playable.playbackInfo
+    if (playback.playable.tag != Playable.NO_TAG) {
+      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
     }
   }
 
   internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
-    if (playback.tag != Playable.NO_TAG) {
-      val info = mapPlayableTagToInfo.remove(playback.tag)
+    if (playback.playable.tag != Playable.NO_TAG) {
+      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
       if (info != null) playback.playable.playbackInfo = info
     }
   }
 
   @Suppress("UNUSED_PARAMETER")
   @OnLifecycleEvent(ON_CREATE)
-  fun onOwnerCreate(lifecycleOwner: LifecycleOwner) {
+  fun onOwnerCreate(owner: LifecycleOwner) {
     playbackDispatcher.onAttached()
+    Log.e("Kohii::X", "create: $this, owner: $owner")
   }
 
   @OnLifecycleEvent(ON_DESTROY)
-  fun onOwnerDestroy(lifecycleOwner: LifecycleOwner) {
+  fun onOwnerDestroy(owner: LifecycleOwner) {
+    Log.e("Kohii::X", "destroy: $this, owner: $owner")
     playbackDispatcher.onDetached()
-    lifecycleOwner.lifecycle.removeObserver(this)
-    kohii.parents.remove(lifecycleOwner)
+    // Eagerly detach all PlaybackManager if there is any.
+    ((standardManagers + prioritizedManagers) as MutableSet) // Kotlin sdk should not change this.
+        .onEach { detachPlaybackManager(it) }
+        .clear()
+
+    owner.lifecycle.removeObserver(this)
+    kohii.owners.remove(owner)
   }
 
   override fun onRemoved(playback: Playback<*>) {
@@ -121,17 +128,17 @@ class RootManager(
 
     // 1. Collect candidates from children PlaybackManagers
     // candidates.clear()
-    val toPlay = HashSet<Playback<*>>()
+    val toPlay = LinkedHashSet<Playback<*>>()
     val toPause = HashSet<Playback<*>>()
 
     var picked = false
     var prioritized = false
 
-    if (prioritizedManager.isNotEmpty()) {
+    if (prioritizedManagers.isNotEmpty()) {
       prioritized = true
-      prioritizedManager.sortedWith(managerComparator)
-          .forEach { manager ->
-            val candidates = manager.fetchPlaybackCandidates()
+      prioritizedManagers.sortedWith(managerComparator)
+          .forEach {
+            val candidates = it.partitionPlaybacks()
             toPause.addAll(candidates.second)
             if (!picked) {
               if (candidates.first.isNotEmpty()) {
@@ -144,26 +151,21 @@ class RootManager(
           }
     }
 
-    // There is no 'prioritized' Manager.
-    if (!prioritized) {
-      originalManager.map { it.fetchPlaybackCandidates() }
+    if (!prioritized) { // There is no 'prioritized' Manager.
+      standardManagers.map { it.partitionPlaybacks() }
           .forEach {
             toPlay.addAll(it.first)
             toPause.addAll(it.second)
           }
-    } else {
-      originalManager.map { it.fetchPlaybackCandidates() }
+    } else { // Other Manager is prioritized, here we just collect Playback to pause.
+      standardManagers.map { it.partitionPlaybacks() }
           .flatMap { it.first + it.second }
-          .also {
-            toPause.addAll(it)
-          }
+          .also { toPause.addAll(it) }
     }
 
     val selected = toPlay.firstOrNull() // TODO better selection.
-
-    (if (selected == null) (toPause + toPlay) else ((toPause + toPlay - selected))).forEach {
-      playbackDispatcher.pause(it)
-    }
+    (if (selected == null) (toPause + toPlay) else ((toPause + toPlay - selected)))
+        .forEach { playbackDispatcher.pause(it) }
     if (selected != null) playbackDispatcher.play(selected)
   }
 

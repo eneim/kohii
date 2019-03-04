@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
 import kohii.v1.Kohii
 import kohii.v1.sample.R
+import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.player.PlayerFragment
 import kohii.v1.sample.ui.rview.BaseViewHolder.OnClickListener
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
@@ -34,14 +35,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author eneim (2018/07/06).
  */
 class ItemsAdapter(
+  private val kohii: Kohii,
   private val fragment: RecyclerViewFragment,
   private val items: List<Item>,
   private val dp2Px: (Int) -> Int
 ) : Adapter<BaseViewHolder>() {
 
   private var inflater: LayoutInflater? = null
-
-  val kohii: Kohii by lazy { Kohii[fragment.requireContext()] }
 
   init {
     setHasStableIds(true)
@@ -58,7 +58,7 @@ class ItemsAdapter(
     return when (viewType) {
       R.layout.holder_text_view -> TextViewHolder(inflater!!, parent, this.dp2Px)
       R.layout.holder_player_view -> VideoViewHolder(
-          inflater!!, parent, kohii, fragment, VideoClickImpl(fragment)
+          inflater!!, parent, kohii, VideoClickImpl(fragment)
       )
       else -> throw RuntimeException("Unknown type: $viewType")
     }
@@ -109,7 +109,7 @@ class ItemsAdapter(
     ) {
       if (transView == null) return
       val transName = ViewCompat.getTransitionName(transView) ?: return
-      val tag = payload as? String ?: return
+      val initData = payload as? InitData ?: return
 
       fragment.recordPlayerInfo(PlayerInfo(adapterPos, itemView.top))
       // Exclude the clicked card from the exit transition (e.g. the card will disappear immediately
@@ -118,7 +118,7 @@ class ItemsAdapter(
       fragment.fragmentManager!!.beginTransaction()
           .setReorderingAllowed(true) // Optimize for shared element transition
           .addSharedElement(transView, transName)
-          .replace(R.id.fragmentContainer, PlayerFragment.newInstance(tag), tag)
+          .replace(R.id.fragmentContainer, PlayerFragment.newInstance(initData), initData.tag)
           .addToBackStack(null)
           .commit()
     }

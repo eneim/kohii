@@ -90,11 +90,11 @@ internal class VideoItemHolder(
             .copy(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
             .asPlayable()
 
-        this.playback = this.playable!!.bind(host.containerProvider, playerView)
-            .also { pk ->
-              pk.addPlaybackEventListener(this@VideoItemHolder)
-              pk.addCallback(this@VideoItemHolder)
-            }
+        this.playable!!.bind(playerView) { pk ->
+          pk.addPlaybackEventListener(this@VideoItemHolder)
+          pk.addCallback(this@VideoItemHolder)
+          this.playback = pk
+        }
       }
     }
   }

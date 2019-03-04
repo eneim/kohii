@@ -40,8 +40,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.sample.R
@@ -63,15 +63,12 @@ import okio.source
 @Suppress("unused")
 @Keep
 class OverlayViewFragment : BaseFragment(),
-    TransitionListenerAdapter, BackPressConsumer, ContainerProvider {
+    TransitionListenerAdapter, BackPressConsumer, LifecycleOwnerProvider {
 
   companion object {
     fun newInstance() = OverlayViewFragment()
     const val TAG = "Kohii@Overlay"
   }
-
-  // TODO use dependency injection in production
-  val kohii: Kohii by lazy { Kohii[requireContext()] }
 
   private val videos by lazy {
     val asset = requireActivity().application.assets
@@ -88,6 +85,7 @@ class OverlayViewFragment : BaseFragment(),
   private var playback: Playback<*>? = null
 
   private var viewModel: SelectionViewModel? = null
+  private var kohii: Kohii? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -102,6 +100,8 @@ class OverlayViewFragment : BaseFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    kohii = Kohii[this].also { it.register(this, arrayOf(video_player_container, recyclerView)) }
+
     viewModel = ViewModelProviders.of(this)
         .get(SelectionViewModel::class.java)
         .apply {
@@ -118,7 +118,7 @@ class OverlayViewFragment : BaseFragment(),
     )
     constraintSet.applyTo(this.videoOverlay as MotionLayout)
 
-    val videoAdapter = VideoItemsAdapter(videos, kohii, this)
+    val videoAdapter = VideoItemsAdapter(videos, kohii!!)
     val keyProvider = VideoTagKeyProvider(recyclerView)
 
     recyclerView.apply {
@@ -189,8 +189,7 @@ class OverlayViewFragment : BaseFragment(),
           // viewModel!!.liveData.value = Triple(key, selected, playback?.tag as String?)
           overlaySheet?.state = STATE_EXPANDED
           @Suppress("UNCHECKED_CAST")
-          (kohii.findPlayable(key) as? Playable<PlayerView>)?.bind(
-              this@OverlayViewFragment,
+          (kohii?.findPlayable(key) as? Playable<PlayerView>)?.bind(
               overlayPlayerView,
               Playback.PRIORITY_HIGH
           ) {
@@ -221,8 +220,7 @@ class OverlayViewFragment : BaseFragment(),
     val selected = selectionTracker?.selection?.firstOrNull()
     if (selected != null) {
       @Suppress("UNCHECKED_CAST")
-      (kohii.findPlayable(selected) as? Playable<PlayerView>)?.bind(
-          this@OverlayViewFragment,
+      (kohii?.findPlayable(selected) as? Playable<PlayerView>)?.bind(
           overlayPlayerView,
           Playback.PRIORITY_HIGH
       ) { pk ->
@@ -256,10 +254,6 @@ class OverlayViewFragment : BaseFragment(),
         else -> false
       }
     } ?: false
-  }
-
-  override fun provideContainers(): Array<Any>? {
-    return arrayOf(recyclerView, video_player_container)
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

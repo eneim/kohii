@@ -17,7 +17,9 @@
 package kohii.v1.sample
 
 import android.app.Application
+import com.crashlytics.android.Crashlytics
 import com.squareup.leakcanary.LeakCanary
+import io.fabric.sdk.android.Fabric
 
 /**
  * @author eneim (2018/06/26).
@@ -33,5 +35,6 @@ class DemoApp : Application() {
       return
     }
     LeakCanary.install(this)
+    Fabric.with(this, Crashlytics())
   }
 }

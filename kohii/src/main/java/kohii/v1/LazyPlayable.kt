@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package androidx.constraintlayout.motion.widget
+package kohii.v1
 
-import android.content.Context
-import android.util.AttributeSet
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.Draft
 
-class MyMotionLayout(
-  context: Context?,
-  attrs: AttributeSet?,
-  defStyleAttr: Int
-) : MotionLayout(context, attrs, defStyleAttr) {
-
-}
+@Suppress("unused")
+@Draft("2019/02/27")
+abstract class LazyPlayable<F : () -> PlayerView> : Playable<F>

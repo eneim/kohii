@@ -18,22 +18,21 @@ package kohii.internal
 
 import android.view.View
 import androidx.viewpager.widget.ViewPager
-import androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener
-import kohii.v1.Container
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 
 class ViewPagerContainer(
   override val container: ViewPager,
-  private val manager: PlaybackManager
-) : Container, SimpleOnPageChangeListener() {
+  manager: PlaybackManager
+) : ViewContainer<ViewPager>(container, manager), OnPageChangeListener {
 
-  override fun onHostAttached() {
+  override fun onManagerAttached() {
     container.addOnPageChangeListener(this)
     manager.dispatchRefreshAll()
   }
 
-  override fun onHostDetached() {
+  override fun onManagerDetached() {
     container.removeOnPageChangeListener(this)
   }
 
@@ -43,6 +42,14 @@ class ViewPagerContainer(
 
   override fun onPageSelected(position: Int) {
     manager.dispatchRefreshAll()
+  }
+
+  override fun onPageScrolled(
+    position: Int,
+    positionOffset: Float,
+    positionOffsetPixels: Int
+  ) {
+    // no-op
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
@@ -62,8 +69,15 @@ class ViewPagerContainer(
     } else false
   }
 
-  override fun toString(): String {
-    return "${container.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is ViewPagerContainer) return false
+    if (container != other.container) return false
+    return true
+  }
+
+  override fun hashCode(): Int {
+    return container.hashCode()
   }
 
 }

@@ -32,8 +32,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.doOnNextLayoutAs
@@ -47,7 +47,7 @@ import okio.source
  * @author eneim (2018/07/06).
  */
 @Keep
-class RecyclerViewFragment : BaseFragment(), ContainerProvider {
+class RecyclerViewFragment : BaseFragment(), LifecycleOwnerProvider {
 
   companion object {
     fun newInstance() = RecyclerViewFragment()
@@ -84,7 +84,6 @@ class RecyclerViewFragment : BaseFragment(), ContainerProvider {
     return inflater.inflate(R.layout.fragment_recycler_view, parent, false)
   }
 
-  private var container: RecyclerView? = null
   // Should be implemented by Activity, to keep information of latest clicked item position.
   private var playerInfoHolder: PlayerInfoHolder? = null
 
@@ -92,7 +91,7 @@ class RecyclerViewFragment : BaseFragment(), ContainerProvider {
     super.onAttach(context)
     playerInfoHolder = context as? PlayerInfoHolder?
   }
-  
+
   override fun onDetach() {
     super.onDetach()
     playerInfoHolder = null
@@ -103,19 +102,21 @@ class RecyclerViewFragment : BaseFragment(), ContainerProvider {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    prepareTransitions()
-    postponeEnterTransition()
+    val kohii = Kohii[this].also { it.register(this, arrayOf(recyclerView)) }
 
     val data = ArrayList(items).apply { this.addAll(items) } // To double the list.
-    container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {
+    val container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {
       it.setHasFixedSize(true)
       it.layoutManager = LinearLayoutManager(requireContext())
-      it.adapter = ItemsAdapter(this, data) { dp -> dp.toPixel(resources) }
+      it.adapter = ItemsAdapter(kohii, this, data) { dp -> dp.toPixel(resources) }
     }
+
+    prepareTransitions(container)
+    postponeEnterTransition()
 
     this.playerInfoHolder?.fetchPlayerInfo()
         ?.run {
-          container?.doOnNextLayoutAs<RecyclerView> {
+          container.doOnNextLayoutAs<RecyclerView> {
             val layout = it.layoutManager as LinearLayoutManager
             val viewAtPosition = layout.findViewByPosition(this.adapterPos)
             // Scroll to position if the view for the current position is null (not currently part of
@@ -131,7 +132,7 @@ class RecyclerViewFragment : BaseFragment(), ContainerProvider {
         }
   }
 
-  private fun prepareTransitions() {
+  private fun prepareTransitions(container: RecyclerView) {
     // Hmm Google https://stackoverflow.com/questions/49461738/transitionset-arraylist-size-on-a-null-object-reference
     val transition = TransitionInflater.from(requireContext())
         .inflateTransition(R.transition.player_exit_transition)
@@ -145,7 +146,7 @@ class RecyclerViewFragment : BaseFragment(), ContainerProvider {
         elements: MutableMap<String, View>?
       ) {
         // Locate the ViewHolder for the clicked position.
-        val holder = container?.findViewHolderForAdapterPosition(playerInfo.adapterPos)
+        val holder = container.findViewHolderForAdapterPosition(playerInfo.adapterPos)
         if (holder is VideoViewHolder) {
           // Map the first shared element name to the child ImageView.
           elements?.put(names?.get(0)!!, holder.transView)
@@ -163,10 +164,6 @@ class RecyclerViewFragment : BaseFragment(), ContainerProvider {
 
   // Called by Adapter
   fun fetchPlayerInfo() = this.playerInfoHolder?.fetchPlayerInfo()
-
-  override fun provideContainers(): Array<Any>? {
-    return arrayOf(recyclerView)
-  }
 
   override fun provideLifecycleOwner(): LifecycleOwner {
     return viewLifecycleOwner

@@ -25,7 +25,6 @@ import android.widget.TextView
 import androidx.core.view.contains
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
@@ -40,8 +39,7 @@ internal class VideoItemHolder(
   inflater: LayoutInflater,
   layoutRes: Int,
   parent: ViewGroup,
-  private val kohii: Kohii,
-  val containerProvider: ContainerProvider
+  private val kohii: Kohii
 ) : BaseViewHolder(inflater, layoutRes, parent),
     Playback.Callback,
     PlaybackEventListener {
@@ -105,13 +103,13 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  /// Selection
-
   fun bindView(playerView: PlayerView) {
     playerContainer.addView(playerView, 0)
-    this.playback = this.playable?.bind(containerProvider, playerView)
-    this.playback?.addPlaybackEventListener(this)
-    this.playback?.addCallback(this)
+    this.playable?.bind(playerView) {
+      it.addPlaybackEventListener(this)
+      it.addCallback(this)
+      this.playback = it
+    }
   }
 
   // Also remove playerView

@@ -16,14 +16,14 @@
 
 package kohii.v1.sample.ui.debug
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.Keep
 import androidx.lifecycle.LifecycleOwner
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_debug.container
@@ -32,11 +32,11 @@ import kotlinx.android.synthetic.main.fragment_debug.container
  * @author eneim (2018/07/13).
  */
 @Suppress("unused")
-class DebugFragment : BaseFragment(), ContainerProvider {
+@Keep
+class DebugFragment : BaseFragment(), LifecycleOwnerProvider {
 
   companion object {
     fun newInstance() = DebugFragment()
-    // const val videoUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     const val videoUrl = "https://storage.googleapis.com/wvmedia/clear/h264/tears/tears_hd.mpd"
   }
 
@@ -51,11 +51,7 @@ class DebugFragment : BaseFragment(), ContainerProvider {
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    Kohii[requireContext()].register(this)
-  }
-
-  override fun provideContainers(): Array<Any>? {
-    return arrayOf(container)
+    Kohii[this].register(this, arrayOf(container))
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

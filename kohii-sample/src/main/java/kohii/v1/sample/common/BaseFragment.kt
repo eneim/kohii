@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.common
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -25,12 +26,16 @@ import androidx.fragment.app.Fragment
  */
 open class BaseFragment : Fragment() {
 
-  private var logTag = ""
+  private val logTag by lazy { "Kohii::App:${javaClass.simpleName}" }
+
+  override fun onAttach(context: Context) {
+    super.onAttach(context)
+    Log.d(logTag, "onAttach() called: $context")
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    logTag = "Kohii::App:${javaClass.simpleName}"
-    Log.d(logTag, "onCreate() called")
+    Log.d(logTag, "onCreate() called: $savedInstanceState")
   }
 
   override fun onStart() {
@@ -48,4 +53,8 @@ open class BaseFragment : Fragment() {
     Log.d(logTag, "onDestroy() called")
   }
 
+  override fun onDetach() {
+    super.onDetach()
+    Log.d(logTag, "onDetach() called")
+  }
 }

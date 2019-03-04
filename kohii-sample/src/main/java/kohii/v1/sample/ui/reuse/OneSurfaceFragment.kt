@@ -27,8 +27,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.v1.ContainerProvider
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.reuse.data.Video
@@ -38,7 +38,7 @@ import okio.source
 
 @Suppress("unused")
 @Keep
-class OneSurfaceFragment : BaseFragment(), ContainerProvider {
+class OneSurfaceFragment : BaseFragment(), LifecycleOwnerProvider {
 
   companion object {
     fun newInstance() = OneSurfaceFragment()
@@ -62,7 +62,6 @@ class OneSurfaceFragment : BaseFragment(), ContainerProvider {
     return inflater.inflate(R.layout.fragment_recycler_view, container, false)
   }
 
-  val kohii: Kohii by lazy { Kohii[requireContext()] }
   private var scrollChangeListener: KohiiDemoScrollChangeListener? = null
 
   override fun onViewCreated(
@@ -70,7 +69,8 @@ class OneSurfaceFragment : BaseFragment(), ContainerProvider {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val videoAdapter = VideoItemsAdapter(videos, kohii, this)
+    val kohii = Kohii[this].also { it.register(this, arrayOf(recyclerView)) }
+    val videoAdapter = VideoItemsAdapter(videos, kohii)
 
     recyclerView.apply {
       setHasFixedSize(true)
@@ -87,10 +87,6 @@ class OneSurfaceFragment : BaseFragment(), ContainerProvider {
     super.onDestroyView()
     scrollChangeListener?.let { recyclerView.removeOnScrollListener(it) }
     recyclerView.adapter = null
-  }
-
-  override fun provideContainers(): Array<Any>? {
-    return arrayOf(recyclerView)
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

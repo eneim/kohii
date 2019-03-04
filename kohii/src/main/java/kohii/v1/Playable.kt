@@ -76,55 +76,33 @@ interface Playable<T> : Callback {
 
   val tag: Any
 
-  // fun bind(target: T, @Priority priority: Int) = bind(target, priority, cb = null)
+  fun bind(target: T) = this.bind(target, Playback.PRIORITY_NORMAL)
 
   fun bind(
-    provider: ContainerProvider,
-    target: T
-  ) = this.bind(
-      provider,
-      target, Playback.PRIORITY_NORMAL
-  )
+    target: T,
+    cb: ((Playback<T>) -> Unit)?
+  ) = this.bind(target, Playback.PRIORITY_NORMAL, cb)
 
   fun bind(
-    provider: ContainerProvider,
     target: T,
     @Priority priority: Int
-  ): Playback<T>
+  ) = this.bind(target, priority, cb = null)
 
   fun bind(
-    provider: ContainerProvider,
     target: T,
     @Priority priority: Int,
     cb: ((Playback<T>) -> Unit)?
   )
 
-  fun bind(
-    provider: ContainerProvider,
-    target: T,
-    cb: ((Playback<T>) -> Unit)?
-  ) = this.bind(
-      provider,
-      target,
-      Playback.PRIORITY_NORMAL,
-      cb
-  )
-
   /// Playback controller
 
-  // Must be called by Playback
   fun prepare()
 
-  // Must be called by Playback
   fun play()
 
-  // Must be called by Playback
   fun pause()
 
-  // Must be called by Playback
   fun release()
-
-  val isPlaying: Boolean
 
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 
@@ -133,8 +111,6 @@ interface Playable<T> : Callback {
 
   // Setter/Getter
   var playbackInfo: PlaybackInfo
-
-  val delay: Long
 
   // data class for copying convenience.
   data class Builder(
@@ -161,20 +137,5 @@ interface Playable<T> : Callback {
         kohii.mapPlayableToManager[it] = null
       }
     }
-
-    fun <T> bind(
-      containerProvider: ContainerProvider,
-      target: T, @Priority priority: Int
-    ): Playback<T> {
-      return if (target is PlayerView) {
-        @Suppress("UNCHECKED_CAST")
-        asPlayable().bind(containerProvider, target, priority) as Playback<T>
-      } else throw IllegalArgumentException("Unsupported target: $target")
-    }
-
-    fun <T> bind(
-      containerProvider: ContainerProvider,
-      target: T
-    ) = this.bind(containerProvider, target, Playback.PRIORITY_NORMAL)
   }
 }

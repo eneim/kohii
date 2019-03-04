@@ -19,14 +19,18 @@ package androidx.recyclerview.widget
 import android.view.View
 
 internal object RecycleViewUtils {
+
   fun checkParams(
     recyclerView: RecyclerView,
     params: RecyclerView.LayoutParams?
   ): Boolean {
-    // Must be
-    // Either not bound (so params == null or its ViewHolder is null)
-    // Or bound to the same RecyclerView with the Container
-    return params?.mViewHolder == null || params.mViewHolder.mOwnerRecyclerView === recyclerView
+    // Client must be careful when creating View for ViewHolder.
+    // It is suggested to use 'LayoutInflater.inflate(int, ViewGroup, boolean)' with notnull ViewGroup.
+    if (params == null) return false
+    // Must be one of the following:
+    // - Not yet bound by Adapter (its ViewHolder is null)
+    // - Or bound, and its owner RecyclerView is the same with the Container
+    return params.mViewHolder == null || params.mViewHolder.mOwnerRecyclerView === recyclerView
   }
 
   fun fetchItemViewParams(target: View): RecyclerView.LayoutParams? {

@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.engine
+package kohii.v1
 
-import kohii.v1.Playable
+import kohii.v1.Playback.Options
 
-interface Creator<T> {
+interface PlaybackCreator<T> {
 
-  fun createPlayable(
+  fun createPlayback(
     target: T,
-    builder: Playable.Builder
-  ): Playable<T>
+    options: Options
+  ): Playback<T>
+
 }

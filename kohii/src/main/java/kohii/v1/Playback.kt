@@ -17,6 +17,7 @@
 package kohii.v1
 
 import android.os.Handler
+import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
 import androidx.lifecycle.LifecycleObserver
@@ -35,17 +36,14 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 abstract class Playback<T> internal constructor(
   internal val kohii: Kohii,
   internal val playable: Playable<T>,
   internal val manager: PlaybackManager,
   internal val container: Container,
-  internal val target: T?,
-  @Priority
-  internal val priority: Int = PRIORITY_NORMAL,
-  internal val delay: () -> Long = NO_DELAY // Being a function so its result is dynamic.
-) : LifecycleObserver, Comparable<Playback<T>> {
+  internal val target: T,
+  internal val options: Playback.Options
+) : LifecycleObserver {
 
   companion object {
     const val TAG = "Kohii::PB"
@@ -56,23 +54,40 @@ abstract class Playback<T> internal constructor(
     const val PRIORITY_HIGH = 1
     const val PRIORITY_NORMAL = 2
     const val PRIORITY_LOW = 3
+
+    val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, Container.VERTICAL)
+    }
+
+    val HORIZONTAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, Container.HORIZONTAL)
+    }
+
+    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, Container.BOTH_AXIS)
+    }
   }
 
   @Retention(SOURCE)
   @IntDef(PRIORITY_HIGH, PRIORITY_NORMAL, PRIORITY_LOW)
   annotation class Priority
 
-  open class Token : Comparable<Token> {
-    override fun compareTo(other: Token) = 0
+  open class Token {
+    open fun compareTo(other: Token) = 0
 
     open fun shouldPlay() = false
 
     // Called by Manager, to know if a Playback should start preparing or not. True by default.
-    open fun shouldPrepare() = true
-
-    // Called by Manager, to know if a Playback should release or not. True by default.
-    open fun shouldRelease() = true
+    open fun shouldPrepare() = false
   }
+
+  class Options(
+    val priority: Int = PRIORITY_NORMAL,
+    val delay: () -> Long = NO_DELAY
+  )
+
+  internal val priority = options.priority
+  internal val delay = options.delay
 
   private var listenerHandler: Handler? = null
 
@@ -82,8 +97,8 @@ abstract class Playback<T> internal constructor(
   internal val errorListeners by lazy { ErrorListeners() }
 
   // Internal callbacks
-  internal val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
-  internal val callbacks = CopyOnWriteArraySet<Callback>()
+  private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
+  private val callbacks = CopyOnWriteArraySet<Callback>()
 
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound.
@@ -145,7 +160,10 @@ abstract class Playback<T> internal constructor(
 
   // Lifecycle
 
-  override fun compareTo(other: Playback<T>): Int {
+  open fun compareWidth(
+    other: Playback<*>,
+    orientation: Int
+  ): Int {
     return if (other.token != null) {
       this.token?.compareTo(other.token!!) ?: -1
     } else {
@@ -154,7 +172,7 @@ abstract class Playback<T> internal constructor(
   }
 
   internal open fun unbindInternal() {
-    if (this.target != null) manager.onTargetInActive(this.target)
+    manager.onTargetInActive(this.target)
   }
 
   // Used by subclasses to dispatch internal event listeners
@@ -172,20 +190,17 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun play() {
-    if (!playable.isPlaying) {
-      listeners.forEach { it.beforePlay() }
-      playable.play()
-    }
+    listeners.forEach { it.beforePlay() }
+    playable.play()
   }
 
   internal fun pause() {
-    if (playable.isPlaying) {
-      playable.pause()
-      listeners.forEach { it.afterPause() }
-    }
+    playable.pause()
+    listeners.forEach { it.afterPause() }
   }
 
   internal fun release() {
+    Log.i("Kohii::X", "release: $this, $manager")
     playable.release()
   }
 
@@ -212,6 +227,7 @@ abstract class Playback<T> internal constructor(
     for (callback in this.callbacks) {
       callback.onAdded(this)
     }
+    container.attachTarget(target)
   }
 
   // ~ View is attached
@@ -241,6 +257,7 @@ abstract class Playback<T> internal constructor(
     for (callback in this.callbacks) {
       callback.onRemoved(this)
     }
+    container.detachTarget(target)
     this.callbacks.clear()
     this.listeners.clear()
   }
@@ -253,7 +270,7 @@ abstract class Playback<T> internal constructor(
 
   override fun toString(): String {
     val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
-    return "$firstPart::$playable::$manager"
+    return "$firstPart::$playable::$container"
   }
 
   interface Callback {

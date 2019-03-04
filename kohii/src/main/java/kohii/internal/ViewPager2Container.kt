@@ -18,30 +18,24 @@ package kohii.internal
 
 import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
-import kohii.v1.Container
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
+import java.lang.ref.WeakReference
 
 class ViewPager2Container(
   override val container: ViewPager2,
-  private val manager: PlaybackManager
-) : Container, OnPageChangeCallback() {
+  manager: PlaybackManager
+) : ViewContainer<ViewPager2>(container, manager) {
 
-  override fun onHostAttached() {
-    container.registerOnPageChangeCallback(this)
+  private val pageChangeCallback by lazy { SimpleOnPageChangeCallback(manager) }
+
+  override fun onManagerAttached() {
+    container.registerOnPageChangeCallback(pageChangeCallback)
     manager.dispatchRefreshAll()
   }
 
-  override fun onHostDetached() {
-    container.unregisterOnPageChangeCallback(this)
-  }
-
-  override fun onPageScrollStateChanged(state: Int) {
-    manager.dispatchRefreshAll()
-  }
-
-  override fun onPageSelected(position: Int) {
-    manager.dispatchRefreshAll()
+  override fun onManagerDetached() {
+    container.unregisterOnPageChangeCallback(pageChangeCallback)
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
@@ -52,8 +46,28 @@ class ViewPager2Container(
     return false
   }
 
-  override fun toString(): String {
-    return "${container.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is ViewPager2Container) return false
+    if (container != other.container) return false
+    return true
   }
 
+  override fun hashCode(): Int {
+    return container.hashCode()
+  }
+
+  private class SimpleOnPageChangeCallback(manager: PlaybackManager) : OnPageChangeCallback() {
+    val weakManager = WeakReference(manager)
+
+    override fun onPageSelected(position: Int) {
+      weakManager.get()
+          ?.dispatchRefreshAll()
+    }
+
+    override fun onPageScrollStateChanged(state: Int) {
+      weakManager.get()
+          ?.dispatchRefreshAll()
+    }
+  }
 }

@@ -21,10 +21,7 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.ViewCompat
-import java.util.Comparator
-import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.max
 
 /**
  * @author eneim (2018/06/24).
@@ -34,18 +31,16 @@ open class ViewPlayback<V : View>(
   playable: Playable<V>,
   manager: PlaybackManager,
   container: Container,
-  target: V?,
-  priority: Int = PRIORITY_NORMAL,
-  delay: () -> Long = Playback.NO_DELAY
+  target: V,
+  options: Options
 ) : Playback<V>(
     kohii,
     playable,
     manager,
     container,
     target,
-    priority,
-    delay
-), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
+    options
+) {
 
   // For debugging purpose only.
   private val debugListener: PlaybackEventListener by lazy {
@@ -60,7 +55,7 @@ open class ViewPlayback<V : View>(
 
       override fun beforePlay() {
         Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
-        target?.keepScreenOn = true
+        target.keepScreenOn = true
       }
 
       override fun onPlaying() {
@@ -73,23 +68,19 @@ open class ViewPlayback<V : View>(
 
       override fun afterPause() {
         Log.w(TAG, "afterPause: ${this@ViewPlayback}")
-        target?.keepScreenOn = false
+        target.keepScreenOn = false
       }
 
       override fun onCompleted() {
         Log.d("Kohii:PB", "ended: ${this@ViewPlayback}")
-        target?.keepScreenOn = false
+        target.keepScreenOn = false
       }
     }
   }
 
-  private val targetAttached = AtomicBoolean(false)
-
   // TODO [20190112] deal with scaled/transformed View and/or its Parent.
   override val token: ViewToken?
     get() {
-      if (target == null || !this.targetAttached.get()) return null
-
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
       if (!visible) return ViewToken(this.priority, playerRect, -1F)
@@ -110,57 +101,42 @@ open class ViewPlayback<V : View>(
   @CallSuper
   override fun onAdded() {
     super.onAdded()
-    target?.run {
-      if (ViewCompat.isAttachedToWindow(this)) {
-        this@ViewPlayback.onViewAttachedToWindow(this)
-      }
-      this.addOnAttachStateChangeListener(this@ViewPlayback)
-    }
     if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
   override fun onRemoved() {
     if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
-    target?.removeOnAttachStateChangeListener(this)
     super.onRemoved()
   }
 
-  override fun onViewAttachedToWindow(v: View) {
-    if (this.targetAttached.compareAndSet(false, true)) {
-      super.target?.also {
-        manager.onTargetActive(it)
-        it.addOnLayoutChangeListener(this)
+  override fun compareWidth(
+    other: Playback<*>,
+    orientation: Int
+  ): Int {
+    if (other !is ViewPlayback) return 1 // Always win.
+    val thisToken = this.token
+    val otherToken = other.token
+
+    if (thisToken == null && otherToken == null) return 0
+    if (thisToken == null) return -1
+    if (otherToken == null) return 1
+
+    val vertical by lazy { CENTER_Y.compare(thisToken, otherToken) }
+    val horizontal by lazy { CENTER_X.compare(thisToken, otherToken) }
+
+    var result = this.priority.compareTo(other.priority)
+    if (result == 0) {
+      result = when (orientation) {
+        Container.VERTICAL -> vertical
+        Container.HORIZONTAL -> horizontal
+        Container.BOTH_AXIS -> max(vertical, horizontal) // FIXME or closer to center?
+        Container.NONE_AXIS -> max(vertical, horizontal) // FIXME or closer to center?
+        else -> 0
       }
     }
-  }
 
-  override fun onViewDetachedFromWindow(v: View) {
-    if (this.targetAttached.compareAndSet(true, false)) {
-      super.target?.run {
-        this.removeOnLayoutChangeListener(this@ViewPlayback)
-        manager.onTargetInActive(this)
-      }
-    }
-  }
-
-  override fun unbindInternal() {
-    if (this.target != null && this.targetAttached.get()) this.manager.onTargetInActive(target)
-  }
-
-  override fun onLayoutChange(
-    v: View,
-    left: Int,
-    top: Int,
-    right: Int,
-    bottom: Int,
-    oldLeft: Int,
-    oldTop: Int,
-    oldRight: Int,
-    oldBottom: Int
-  ) {
-    if (target != null && changed(left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)) {
-      manager.onTargetUpdated(target)
-    }
+    if (result == 0) result = compareValues(thisToken.areaOffset, otherToken.areaOffset)
+    return result
   }
 
   // Location on screen, with visible offset within target's parent.
@@ -171,7 +147,6 @@ open class ViewPlayback<V : View>(
     internal val canRelease: Boolean = true
   ) : Token() {
     override fun compareTo(other: Token): Int {
-      // TODO [20180813] may need better comparison regarding the orientations.
       return (other as? ViewToken)?.let {
         var result = this.priority.compareTo(other.priority)
         if (result == 0) result = CENTER_Y.compare(this, other)
@@ -188,16 +163,11 @@ open class ViewPlayback<V : View>(
       return areaOffset >= 0.65f  // TODO [20180714] make this configurable
     }
 
-    override fun shouldRelease(): Boolean {
-      return canRelease
-    }
-
     override fun toString(): String {
       return "$viewRect::$areaOffset"
     }
   }
 
-  @Suppress("unused")
   companion object {
     val CENTER_Y: Comparator<ViewToken> = Comparator { o1, o2 ->
       compareValues(o1.viewRect.centerY(), o2.viewRect.centerY())
@@ -205,41 +175,6 @@ open class ViewPlayback<V : View>(
 
     val CENTER_X: Comparator<ViewToken> = Comparator { o1, o2 ->
       compareValues(o1.viewRect.centerX(), o2.viewRect.centerX())
-    }
-
-    // Find a CoordinatorLayout parent of View, which doesn't reach 'root' View.
-    private fun findSuitableParent(
-      root: View,
-      target: View?
-    ): View? {
-      var view = target
-      do {
-        if (view != null && view.parent is CoordinatorLayout) {
-          return view
-        } else if (view === root) {
-          return null
-        }
-
-        if (view != null) {
-          // Else, we will loop and crawl up the view hierarchy and try to find a parent
-          val parent = view.parent
-          view = if (parent is View) parent else null
-        }
-      } while (view != null)
-      return null
-    }
-
-    private fun changed(
-      left: Int,
-      top: Int,
-      right: Int,
-      bottom: Int,
-      oldLeft: Int,
-      oldTop: Int,
-      oldRight: Int,
-      oldBottom: Int
-    ): Boolean {
-      return top != oldTop || bottom != oldBottom || left != oldLeft || right != oldRight
     }
   }
 }
