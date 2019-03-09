@@ -107,6 +107,24 @@
     "when a user tries to pick up one of cards."
   </string>
 
+  <string name="title_home">Home</string>
+  <string name="title_dashboard">Dashboard</string>
+  <string name="title_notifications">Notifications</string>
+  <string name="title_trending">Trending</string>
+  <string name="title_subscriptions">Subscriptions</string>
+  <string name="title_inbox">Inbox</string>
+  <string name="title_library">Library</string>
+
+  <string name="lib_intro">
+    <![CDATA[
+    <strong>Kohii</strong> is a media player library. Backed by ExoPlayer, it provides easy to use Video playback, and the ability to
+    automatically start/pause on user reaction to the application.
+    <br><br>Not like many others, <strong>Kohii</strong>\'s mission is to keep the <i>Playback Continuity</i> across various complicated transition,
+    including configuration change and fullscreen playback.
+    <br><br>Demos below are part of what Kohii can do to help developers to integrate powerful playback UX with ease.
+    ]]>
+  </string>
+
   <string name="demo_desc_recycler_view_1">
     RecyclerView (1) parse content from: https://material.io/tools/theme-editor/
     \n\nClicking to an item will open Single player for it with \'Shared Element Transition\'
@@ -144,5 +162,10 @@
   <string name="demo_desc_nested_scrollview_2">
     (Nested) ScrollView (2) uses default long text with the movie \'Big Buck Bunny\'.\n\nClicking to an item will
     open Single player in a DialogFragment. The Playback keeps playing smoothly.
+  </string>
+
+  <string name="demo_desc_master_detail">
+    2 Fragments (Master Fragment and Detail Fragment) in one main Fragment.
+    \n\nThis demo shows how Kohii could work in complicated scenario. It doesn\'t really focus on the "Master" and "Detail" aspect (so their content are just randomly picked from other demo).
   </string>
 </resources>

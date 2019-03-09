@@ -17,19 +17,15 @@
 package kohii.v1
 
 import android.os.Handler
+import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
-import kohii.Beta
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
 import kohii.v1.Playable.Companion.STATE_IDLE
 import kohii.v1.Playable.Companion.STATE_READY
+import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -40,18 +36,17 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 abstract class Playback<T> internal constructor(
   internal val kohii: Kohii,
-  internal val playable: Playable,
-  internal val manager: Manager,
-  internal val target: T?,
-  @Priority
-  internal val priority: Int = PRIORITY_NORMAL,
-  internal val delay: () -> Long = NO_DELAY
-) : LifecycleObserver {
+  internal val playable: Playable<T>,
+  internal val manager: PlaybackManager,
+  internal val container: Container,
+  val target: T,
+  internal val options: Playback.Options
+) {
 
   companion object {
+    const val TAG = "Kohii::PB"
     const val DELAY_INFINITE = -1L
     val NO_DELAY = { 0L }
 
@@ -59,6 +54,18 @@ abstract class Playback<T> internal constructor(
     const val PRIORITY_HIGH = 1
     const val PRIORITY_NORMAL = 2
     const val PRIORITY_LOW = 3
+
+    val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, Container.VERTICAL)
+    }
+
+    val HORIZONTAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, Container.HORIZONTAL)
+    }
+
+    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, Container.BOTH_AXIS)
+    }
   }
 
   @Retention(SOURCE)
@@ -68,33 +75,39 @@ abstract class Playback<T> internal constructor(
   open class Token : Comparable<Token> {
     override fun compareTo(other: Token) = 0
 
+    // = wantsToPlay()
     open fun shouldPlay() = false
 
     // Called by Manager, to know if a Playback should start preparing or not. True by default.
-    open fun shouldPrepare() = true
-
-    // Called by Manager, to know if a Playback should release or not. True by default.
-    open fun shouldRelease() = true
+    // = allowsToPlay(player)
+    open fun shouldPrepare() = false
   }
 
-  private var listenerHandler: Handler? = null
+  class Options(
+    @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
+    val priority: Int = PRIORITY_NORMAL,
+    val delay: Long = 0L,
+      // Indicator to used to judge of a Playback should be played or not.
+      // This doesn't warranty that it will be played, it just to make the Playback be a candidate
+      // to start a playback.
+      // In ViewPlayback, this is equal to visible area offset of the video container View.
+    val threshold: Float = 0.65F
+  )
 
   // Listeners for Playable. Playable will access these filed on demand.
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
-  internal var internalCallback: InternalCallback? = null
+
+  private var listenerHandler: Handler? = null
 
   // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
   private val callbacks = CopyOnWriteArraySet<Callback>()
 
-  internal var lifecycle: Lifecycle? = null
-
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound.
-  internal open val token: Token?
-    get() = null
+  internal abstract val token: Token
 
   // [BEGIN] Public API
 
@@ -130,11 +143,6 @@ abstract class Playback<T> internal constructor(
     this.playerListeners.remove(listener)
   }
 
-  @Beta("To use in Fragment.")
-  fun observe(lifecycleOwner: LifecycleOwner) {
-    this.lifecycle = lifecycleOwner.lifecycle.also { it.addObserver(this) }
-  }
-
   var volumeInfo: VolumeInfo
     get() {
       return playable.volumeInfo
@@ -147,7 +155,7 @@ abstract class Playback<T> internal constructor(
 
   fun unbind() {
     this.unbindInternal()
-    manager.performDestroyPlayback(this)
+    manager.performRemovePlayback(this)
   }
 
   // [END] Public API
@@ -156,17 +164,15 @@ abstract class Playback<T> internal constructor(
 
   // Lifecycle
 
-  internal open fun unbindInternal() {
-    if (this.target != null) manager.onTargetInActive(this.target)
+  open fun compareWidth(
+    other: Playback<*>,
+    orientation: Int
+  ): Int {
+    return this.token.compareTo(other.token)
   }
 
-  @OnLifecycleEvent(ON_DESTROY)
-  internal fun onLifecycleDestroyed() {
-    (this.target as? Any)?.let { manager.onTargetInActive(it) }
-    manager.performDestroyPlayback(this)
-    // This thing no need to survive config change.
-    lifecycle?.removeObserver(this)
-    lifecycle = null
+  internal open fun unbindInternal() {
+    manager.onTargetInActive(this.target)
   }
 
   // Used by subclasses to dispatch internal event listeners
@@ -194,43 +200,8 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun release() {
+    Log.i("Kohii::X", "release: $this, $manager")
     playable.release()
-  }
-
-  // Being added to Manager
-  // The target may not be attached to View/Window yet.
-  @CallSuper
-  internal open fun onAdded() {
-    internalCallback?.onAdded(this)
-  }
-
-  // Being removed from Manager
-  @CallSuper
-  internal open fun onRemoved() {
-    internalCallback?.onRemoved(this)
-    listenerHandler?.removeCallbacksAndMessages(null)
-    this.callbacks.clear()
-    this.listeners.clear()
-  }
-
-  // ~ View is attached
-  @CallSuper
-  internal open fun onActive() {
-    this.callbacks.forEach {
-      it.onActive(this, this.target)
-    }
-  }
-
-  // Playback's onInActive is equal to View's detach event or Activity stops.
-  // Once it is inactive, its resource is considered freed and can be cleanup anytime.
-  // Proper handling of in-active state must consider to: [1] Save any previous state (PlaybackInfo)
-  // to cache, ready to reuse once coming back, [2] Consider to release allocated resource if there
-  // is no other Manager manages the internal Playable.
-  @CallSuper
-  internal open fun onInActive() {
-    this.callbacks.forEach {
-      it.onInActive(this, this.target)
-    }
   }
 
   @CallSuper
@@ -246,38 +217,69 @@ abstract class Playback<T> internal constructor(
       }
       true
     })
+    this.addCallback(this.playable)
+  }
+
+  // Being added to Manager
+  // The target may not be attached to View/Window yet.
+  @CallSuper
+  internal open fun onAdded() {
+    for (callback in this.callbacks) {
+      callback.onAdded(this)
+    }
+    container.attachTarget(target)
+  }
+
+  // ~ View is attached
+  @CallSuper
+  internal open fun onActive() {
+    for (callback in this.callbacks) {
+      callback.onActive(this)
+    }
+  }
+
+  // Playback's onInActive is equal to View's detach event or Activity stops.
+  // Once it is inactive, its resource is considered freed and can be cleanup anytime.
+  // Proper handling of in-active state must consider to: [1] Save any previous state (PlaybackInfo)
+  // to cache, ready to reuse once coming back, [2] Consider to release allocated resource if there
+  // is no other Manager manages the internal Playable.
+  @CallSuper
+  internal open fun onInActive() {
+    for (callback in this.callbacks) {
+      callback.onInActive(this)
+    }
+  }
+
+  // Being removed from Manager
+  @CallSuper
+  internal open fun onRemoved() {
+    listenerHandler?.removeCallbacksAndMessages(null)
+    for (callback in this.callbacks) {
+      callback.onRemoved(this)
+    }
+    container.detachTarget(target)
+    this.callbacks.clear()
+    this.listeners.clear()
   }
 
   @CallSuper
   internal open fun onDestroyed() {
     this.listenerHandler = null
+    this.removeCallback(this.playable)
   }
 
   override fun toString(): String {
     val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
-    return "$firstPart::$$playable"
-  }
-
-  // For internal flow only.
-  internal interface InternalCallback {
-    // Called when the playback is added to Manager
-    fun onAdded(playback: Playback<*>) {}
-
-    // Called when the playback is removed from Manager
-    fun onRemoved(playback: Playback<*>) {}
+    return "$firstPart::$playable::$container"
   }
 
   interface Callback {
-    fun onActive(
-      playback: Playback<*>,
-      target: Any?
-    ) {
-    }
+    fun onAdded(playback: Playback<*>) {}
 
-    fun onInActive(
-      playback: Playback<*>,
-      target: Any?
-    ) {
-    }
+    fun onActive(playback: Playback<*>) {}
+
+    fun onInActive(playback: Playback<*>) {}
+
+    fun onRemoved(playback: Playback<*>) {}
   }
 }

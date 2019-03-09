@@ -22,9 +22,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -32,9 +35,10 @@ import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.player.PlayerDialogFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
+import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView
 
 @Keep
-class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
+class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, LifecycleOwnerProvider {
 
   companion object {
     const val videoUrl =
@@ -48,6 +52,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
+  private var kohii: Kohii? = null
   private var playback: Playback<PlayerView>? = null
   private var dialogPlayer: DialogFragment? = null
 
@@ -60,25 +65,26 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     return inflater.inflate(viewRes, container, false)
   }
 
-  @Suppress("RedundantOverride")
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
     // ⬇︎ For demo of manual fullscreen.
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    playback = Kohii[this].setUp(videoUrl)
+    kohii = Kohii[this].also { it.register(this, arrayOf(this.scrollView)) }
+    kohii!!.setUp(videoUrl)
         .copy(repeatMode = Player.REPEAT_MODE_ONE)
         .copy(tag = videoTag)
         .asPlayable()
-        .bind(playerView)
-        .also {
-          it.observe(viewLifecycleOwner)
+        .bind(playerView, Playback.PRIORITY_NORMAL) {
+          playback = it
         }
 
     playerContainer.setOnClickListener {
       dialogPlayer = PlayerDialogFragment.newInstance(
           videoTag, InitData(tag = videoTag, aspectRatio = 16 / 9f)
       )
-          .also { it.show(childFragmentManager, videoTag) }
+          .also {
+            it.show(childFragmentManager, videoTag)
+          }
 
       /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
       @Suppress("ReplaceSingleLineLet")
@@ -93,8 +99,8 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     }
   }
 
-  override fun onStop() {
-    super.onStop()
+  override fun onDestroyView() {
+    super.onDestroyView()
     playerContainer.setOnClickListener(null)
   }
 
@@ -104,10 +110,16 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   }
 
   override fun onDialogInActive(tag: Any) {
-    playback = Kohii[this].findPlayable(tag)
-        ?.bind(playerView)
-    playback?.observe(viewLifecycleOwner)
+    @Suppress("UNCHECKED_CAST")
+    (kohii?.findPlayable(tag) as? Playable<PlayerView>)
+        ?.bind(playerView, Playback.PRIORITY_NORMAL) {
+          playback = it
+        }
   }
 
   // END: PlayerDialogFragment.Callback
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return this.viewLifecycleOwner
+  }
 }

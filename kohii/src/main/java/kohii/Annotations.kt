@@ -23,15 +23,13 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  */
 
 @Retention(SOURCE)
-annotation class Draft
+annotation class Draft(val message: String = "")
 
 @Retention(SOURCE)
 annotation class Experiment
 
 @Retention(SOURCE)
-annotation class Beta(
-  val message: String = ""
-)
+annotation class Beta(val message: String = "")
 
 @Retention(SOURCE)
 annotation class Release

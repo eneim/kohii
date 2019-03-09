@@ -15,150 +15,45 @@
   ~ limitations under the License.
   -->
 
-<androidx.appcompat.widget.LinearLayoutCompat
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
 
-  <androidx.core.widget.NestedScrollView
-      android:id="@id/scrollView"
-      android:layout_width="match_parent"
+  <fragment
+      android:id="@+id/topContainer"
+      android:name="kohii.v1.sample.ui.pager.PagerMainFragment"
+      android:layout_width="0dp"
       android:layout_height="0dp"
-      android:layout_weight="1"
-      app:layout_behavior="@string/appbar_scrolling_view_behavior"
-      >
+      app:layout_constraintDimensionRatio="16:10"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+  <Space
+      android:id="@+id/space"
+      android:layout_width="0dp"
+      android:layout_height="4dp"
+      android:background="@color/red"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/topContainer"
+      />
 
-      <FrameLayout
-          android:id="@id/playerContainer"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:clickable="true"
-          android:focusable="true"
-          >
-        <com.google.android.exoplayer2.ui.PlayerView
-            android:id="@id/playerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="171.4dp"
-            app:keep_content_on_player_reset="true"
-            app:resize_mode="fixed_width"
-            app:show_buffering="when_playing"
-            app:surface_type="texture_view"
-            app:use_controller="false"
-            />
-      </FrameLayout>
+  <fragment
+      android:id="@+id/bottomContainer"
+      android:name="kohii.v1.sample.ui.reuse.OneSurfaceFragment"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/space"
+      />
 
-      <Space
-          android:layout_width="match_parent"
-          android:layout_height="@dimen/activity_vertical_margin"
-          android:background="?attr/colorPrimary"
-          />
-
-      <FrameLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:clickable="true"
-          android:focusable="true"
-          >
-        <com.google.android.exoplayer2.ui.PlayerView
-            android:id="@+id/playerView2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="171.4dp"
-            app:keep_content_on_player_reset="true"
-            app:resize_mode="fixed_width"
-            app:show_buffering="when_playing"
-            app:surface_type="texture_view"
-            app:use_controller="false"
-            />
-      </FrameLayout>
-
-      <TextView
-          android:id="@id/textContent"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_margin="@dimen/text_margin"
-          android:text="@string/large_text"
-          />
-
-    </androidx.appcompat.widget.LinearLayoutCompat>
-  </androidx.core.widget.NestedScrollView>
-
-  <androidx.cardview.widget.CardView
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      app:cardElevation="2dp"
-      >
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/buttonsContainer"
-        android:layout_width="match_parent"
-        android:layout_height="232dp"
-        >
-      <androidx.appcompat.widget.LinearLayoutCompat
-          android:id="@+id/buttonsContainer2"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:gravity="bottom"
-          android:orientation="vertical"
-          android:padding="4dp"
-          >
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/bindSameView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="Bind same PlayerView"
-            tools:ignore="HardcodedText"
-            />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/switchView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="Switch View"
-            tools:ignore="HardcodedText"
-            />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/openScrollView1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="Open ScrollView demo (1)"
-            tools:ignore="HardcodedText"
-            />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/openRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="Open RecyclerView demo"
-            tools:ignore="HardcodedText"
-            />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/openScrollView2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:text="Open ScrollView demo (2)"
-            tools:ignore="HardcodedText"
-            />
-
-      </androidx.appcompat.widget.LinearLayoutCompat>
-    </androidx.core.widget.NestedScrollView>
-  </androidx.cardview.widget.CardView>
-</androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -29,7 +29,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    logTag = "KohiiApp: ${javaClass.simpleName}"
+    logTag = "Kohii::App:${javaClass.simpleName}"
     Log.d(logTag, "onCreate() called, state: $savedInstanceState")
   }
 

@@ -44,6 +44,11 @@
     <activity
         android:name=".ui.player.PlayerActivity"
         android:theme="@style/AppTheme.Dark"/>
+
+    <meta-data
+        android:name="io.fabric.ApiKey"
+        android:value="${fabric_api_key}"
+        />
   </application>
 
 </manifest>

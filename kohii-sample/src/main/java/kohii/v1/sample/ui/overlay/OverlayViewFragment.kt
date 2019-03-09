@@ -22,24 +22,27 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.SelectionTracker.SelectionObserver
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import com.google.android.material.bottomsheet.BottomSheetBehavior.from
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
@@ -50,16 +53,17 @@ import kotlinx.android.synthetic.main.fragment_recycler_view_motion.bottomSheet
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.recyclerView
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.videoOverlay
 import kotlinx.android.synthetic.main.video_overlay_fullscreen.overlayPlayerView
+import kotlinx.android.synthetic.main.video_overlay_fullscreen.video_player_container
 import okio.buffer
 import okio.source
-import androidx.lifecycle.ViewModelProviders.of as providerOf
 
 /**
  * @author eneim (2018/07/06).
  */
 @Suppress("unused")
 @Keep
-class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPressConsumer {
+class OverlayViewFragment : BaseFragment(),
+    TransitionListenerAdapter, BackPressConsumer, LifecycleOwnerProvider {
 
   companion object {
     fun newInstance() = OverlayViewFragment()
@@ -81,6 +85,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   private var playback: Playback<*>? = null
 
   private var viewModel: SelectionViewModel? = null
+  private var kohii: Kohii? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -95,19 +100,25 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    viewModel = providerOf(this).get(SelectionViewModel::class.java)
+    kohii = Kohii[this].also { it.register(this, arrayOf(video_player_container, recyclerView)) }
+
+    viewModel = ViewModelProviders.of(this)
+        .get(SelectionViewModel::class.java)
         .apply {
           liveData.observe(viewLifecycleOwner, Observer {
             if (it.second) { // selected
-              overlaySheet?.state = STATE_EXPANDED
-              playback = Kohii[requireContext()].findPlayable(it.first)
-                  ?.bind(overlayPlayerView, Playback.PRIORITY_HIGH)
-                  .also { pk -> pk?.observe(viewLifecycleOwner) }
             }
           })
         }
 
-    val videoAdapter = VideoItemsAdapter(videos, viewLifecycleOwner)
+    // Update overlay view's max width on collapse mode.
+    val constraintSet = (this.videoOverlay as MotionLayout).getConstraintSet(R.id.end)
+    constraintSet.constrainMaxWidth(
+        R.id.dummy_frame, resources.getDimensionPixelSize(R.dimen.overlay_collapse_max_width)
+    )
+    constraintSet.applyTo(this.videoOverlay as MotionLayout)
+
+    val videoAdapter = VideoItemsAdapter(videos, kohii!!)
     val keyProvider = VideoTagKeyProvider(recyclerView)
 
     recyclerView.apply {
@@ -131,40 +142,40 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
           videoAdapter.selectionTracker = it
         }
 
-    overlaySheet = from(bottomSheet).also { sheet ->
-      if (savedInstanceState == null) sheet.state = STATE_HIDDEN
-      sheet.setBottomSheetCallback(object : BottomSheetCallback() {
-        override fun onSlide(
-          bottomSheet: View,
-          slideOffset: Float
-        ) {
-          (videoOverlay as? MotionLayout)?.progress = 1 - slideOffset.coerceIn(0F, 1F)
-        }
+    overlaySheet = BottomSheetBehavior.from(bottomSheet)
+        .also { sheet ->
+          if (savedInstanceState == null) sheet.state = STATE_HIDDEN
+          sheet.setBottomSheetCallback(object : BottomSheetCallback() {
+            override fun onSlide(
+              bottomSheet: View,
+              slideOffset: Float
+            ) {
+              (videoOverlay as MotionLayout).progress = 1 - slideOffset.coerceIn(0F, 1F)
+            }
 
-        override fun onStateChanged(
-          bottomSheet: View,
-          state: Int
-        ) {
-          if (state == STATE_HIDDEN) {
-            selectionTracker?.clearSelection()
-            // Trick: we unbind a Playback if the ViewHolder of the same tag is detached.
-            // TODO [20190127] Tests:
-            // [1] No scroll --> continue playing
-            // [2] Scroll to detach but not recycled <-- FIXME need to handle this case.
-            // [3] Scroll to detach and also recycled --> need to be rebound by Adapter
-            playback?.also {
-              (it.tag as? String)?.let { tag ->
-                val pos = keyProvider.getPosition(tag)
-                if (pos == RecyclerView.NO_POSITION) it.unbind() // <-- that pos is detached.
+            override fun onStateChanged(
+              bottomSheet: View,
+              state: Int
+            ) {
+              if (state == STATE_HIDDEN) {
+                selectionTracker?.clearSelection()
+                (playback?.tag as? String)?.let {
+                  val pos = keyProvider.getPosition(it)
+                  val vh = recyclerView.findViewHolderForAdapterPosition(pos)
+                  if (vh == null) playback?.unbind()
+                }
+                playback = null
               }
             }
-            playback = null
-          }
+          })
         }
-      })
-    }
 
-    (this.videoOverlay as? MotionLayout)?.setTransitionListener(this)
+    (this.videoOverlay as MotionLayout).setTransitionListener(this)
+  }
+
+  override fun onViewStateRestored(savedInstanceState: Bundle?) {
+    super.onViewStateRestored(savedInstanceState)
+    if (savedInstanceState != null) restoreState()
   }
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -174,15 +185,19 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         key: String,
         selected: Boolean
       ) {
-        viewModel!!.liveData.value = Pair(key, selected)
+        if (selected) {
+          // viewModel!!.liveData.value = Triple(key, selected, playback?.tag as String?)
+          overlaySheet?.state = STATE_EXPANDED
+          @Suppress("UNCHECKED_CAST")
+          (kohii?.findPlayable(key) as? Playable<PlayerView>)?.bind(
+              overlayPlayerView,
+              Playback.PRIORITY_HIGH
+          ) {
+            playback = it
+          }
+        }
       }
     })
-
-    // Restore selection.
-    selectionTracker?.selection?.firstOrNull()
-        ?.let {
-          viewModel!!.liveData.value = Pair(it, true)
-        }
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -193,6 +208,25 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   override fun onDestroyView() {
     super.onDestroyView()
     recyclerView.adapter = null
+  }
+
+  private fun restoreState() {
+    if (overlaySheet?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+      (videoOverlay as? MotionLayout)?.progress = 1F
+    } else if (overlaySheet?.state == BottomSheetBehavior.STATE_EXPANDED) {
+      (videoOverlay as? MotionLayout)?.progress = 0F
+    }
+
+    val selected = selectionTracker?.selection?.firstOrNull()
+    if (selected != null) {
+      @Suppress("UNCHECKED_CAST")
+      (kohii?.findPlayable(selected) as? Playable<PlayerView>)?.bind(
+          overlayPlayerView,
+          Playback.PRIORITY_HIGH
+      ) { pk ->
+        playback = pk
+      }
+    }
   }
 
   // MotionLayout.TransitionListener
@@ -220,5 +254,9 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         else -> false
       }
     } ?: false
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return this.viewLifecycleOwner
   }
 }

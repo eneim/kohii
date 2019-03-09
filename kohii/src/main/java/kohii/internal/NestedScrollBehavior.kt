@@ -14,30 +14,23 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.overlay
+package kohii.internal
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.MotionEvent
 import android.view.View
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import com.google.android.material.bottomsheet.BottomSheetBehavior
+import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
+import kohii.Draft
 
-// This Behaviour is to prevent touch-through when the Bottom Sheet is expanded.
 @Suppress("unused")
-class KohiiDemoBottomSheetBehavior<V : View> : BottomSheetBehavior<V> {
+@Draft("2019/02/16")
+class NestedScrollBehavior<V : View> : Behavior<V> {
 
   constructor() : super()
+
   constructor(
-    context: Context,
-    attrs: AttributeSet
+    context: Context?,
+    attrs: AttributeSet?
   ) : super(context, attrs)
 
-  override fun onInterceptTouchEvent(
-    parent: CoordinatorLayout,
-    child: V,
-    event: MotionEvent
-  ): Boolean {
-    return super.onInterceptTouchEvent(parent, child, event) || super.getState() == STATE_EXPANDED
-  }
 }

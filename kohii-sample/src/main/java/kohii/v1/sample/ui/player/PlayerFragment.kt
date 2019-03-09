@@ -22,12 +22,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.transition.TransitionInflater
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
-import kohii.v1.Playback
-import kohii.v1.PlayerEventListener
+import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.Playable
+import kohii.v1.Prioritized
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
 /**
@@ -35,10 +40,11 @@ import kotlinx.android.synthetic.main.fragment_player.playerView
  *
  * @author eneim (2018/06/26).
  */
-class PlayerFragment : BaseFragment() {
+class PlayerFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
 
   companion object {
     private const val KEY_PLAYABLE_TAG = "kohii:fragment:player:tag"
+    private const val KEY_INIT_DATA = "kohii:fragment:player:init_data"
 
     fun newInstance(tag: String): PlayerFragment {
       val bundle = Bundle().also {
@@ -46,27 +52,16 @@ class PlayerFragment : BaseFragment() {
       }
       return PlayerFragment().also { it.arguments = bundle }
     }
-  }
 
-  private var listener: PlayerEventListener? = null
-
-  var playback: Playback<*>? = null
-  var transView: View? = null
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    listener = object : PlayerEventListener {
-      override fun onVideoSizeChanged(
-        width: Int,
-        height: Int,
-        unappliedRotationDegrees: Int,
-        pixelWidthHeightRatio: Float
-      ) {
-        startPostponedEnterTransition()
-        playback?.removePlayerEventListener(this)
+    fun newInstance(data: InitData): PlayerFragment {
+      val bundle = Bundle().also {
+        it.putParcelable(KEY_INIT_DATA, data)
       }
+      return PlayerFragment().also { it.arguments = bundle }
     }
   }
+
+  var transView: View? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -87,21 +82,24 @@ class PlayerFragment : BaseFragment() {
     }
     prepareSharedElementTransition()
 
-    val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
-    transView = playerView.findViewById(R.id.exo_content_frame)
-    ViewCompat.setTransitionName(transView!!, playableTag)
+    val initData = arguments?.getParcelable(KEY_INIT_DATA) as InitData
+    val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
+    transView = container
+    ViewCompat.setTransitionName(transView!!, initData.tag)
 
-    playback = Kohii[this].findPlayable(playableTag)
-        ?.bind(playerView)
-        ?.also {
-          it.addPlayerEventListener(listener!!)
-          it.observe(viewLifecycleOwner)
+    container.setAspectRatio(initData.aspectRatio)
+    val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
+    @Suppress("UNCHECKED_CAST")
+    (kohii.findPlayable(initData.tag) as? Playable<PlayerView>)
+        ?.bind(playerView) {
+          startPostponedEnterTransition()
         }
+
   }
 
-  override fun onStop() {
-    super.onStop()
-    playback?.removePlayerEventListener(listener)
+  override fun onDestroyView() {
+    super.onDestroyView()
+    transView?.also { ViewCompat.setTransitionName(it, null) }
   }
 
   /**
@@ -125,5 +123,9 @@ class PlayerFragment : BaseFragment() {
         }
       }
     })
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
   }
 }

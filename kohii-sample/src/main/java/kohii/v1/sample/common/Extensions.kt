@@ -84,6 +84,6 @@ fun Activity.isLandscape(): Boolean {
   }
   return Point().let {
     display.getSize(it)
-    (inMultiWindow() && it.y <= realSize.y * 0.5) || it.x >= it.y
+    it.x >= it.y || (inMultiWindow() && it.y <= realSize.y * 0.5)
   }
 }

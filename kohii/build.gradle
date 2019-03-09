@@ -16,6 +16,7 @@
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 androidExtensions {
@@ -43,22 +44,41 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
+
+  testOptions {
+    unitTests.includeAndroidResources = true
+  }
 }
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation libraries.exoplayer.all
-  implementation libraries.exoplayer.mediasession
+  // implementation libraries.exoplayer.snapshot
+  // implementation libraries.exoplayer.mediasession
 
   implementation libraries.kotlin.stdlib
+  implementation libraries.androidx.core
+  implementation libraries.androidx.fragmentktx
+  implementation libraries.androidx.viewpager2
   // implementation libraries.androidx.appcompat
   // implementation libraries.androidx.recyclerview
   implementation libraries.androidx.material
   implementation libraries.androidx.lifecycle
+  implementation libraries.androidx.lifecycleService
+  kapt libraries.androidx.lifecycleCompiler
 
-  testImplementation libraries.junit
+  // implementation "androidx.leanback:leanback:1.1.0-alpha01"
+
+  // testImplementation libraries.junit
   androidTestImplementation libraries.supporttest.runner
   androidTestImplementation libraries.espresso.core
+
+  // Required -- JUnit 4 framework
+  testImplementation 'junit:junit:4.12'
+  // Optional -- Robolectric environment
+  testImplementation 'androidx.test:core:1.1.0'
+  // Optional -- Mockito framework
+  testImplementation 'org.mockito:mockito-core:2.23.0'
 }
 
 // Doesn't work well with Kotlin

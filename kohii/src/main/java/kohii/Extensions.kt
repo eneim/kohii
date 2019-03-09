@@ -16,6 +16,8 @@
 
 package kohii
 
+import android.view.View
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.Pools.Pool
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
@@ -67,7 +69,7 @@ fun Player.removeEventListener(listener: PlayerEventListener?) {
   this.metadataComponent?.removeMetadataOutput(listener)
 }
 
-fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
+inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   var item: T?
   do {
     item = this.acquire()
@@ -76,7 +78,41 @@ fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   } while (true)
 }
 
-fun <T> Pool<T>.acquireOrCreate(creator: () -> T): T {
+inline fun <T> Pool<T>.acquireOrCreate(creator: () -> T): T {
   val value = acquire()
   return value ?: creator.invoke()
+}
+
+// Apply a transformer on each item, return the first result that suffices the predicate.
+inline fun <T, R> Iterable<T>.takeFirstOrNull(
+  transformer: (T) -> R,
+  predicate: (R) -> Boolean
+): R? {
+  for (element in this) {
+    val result = transformer.invoke(element)
+    if (predicate(result)) return result
+  }
+  return null
+}
+
+// Find a CoordinatorLayout parent
+fun findSuitableParent(
+  root: View,
+  target: View?
+): View? {
+  var view = target
+  do {
+    if (view != null && view.parent is CoordinatorLayout) {
+      return view
+    } else if (view === root) {
+      return null
+    }
+
+    if (view != null) {
+      // Else, we will loop and crawl up the view hierarchy and try to find a parent
+      val parent = view.parent
+      view = if (parent is View) parent else null
+    }
+  } while (view != null)
+  return null
 }

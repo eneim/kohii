@@ -20,7 +20,6 @@ import android.net.Uri
 import android.widget.ImageView
 import androidx.core.view.ViewCompat
 import androidx.databinding.BindingAdapter
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
@@ -45,16 +44,16 @@ fun setBackdrop(
       .into(view)
 }
 
-@BindingAdapter("video", "lifecycle")
+@BindingAdapter("video", "provider")
 fun setVideo(
   view: PlayerView,
   video: Video,
-  lifecycle: LifecycleOwner
+  kohii: Kohii
 ) {
   (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)
       ?.setAspectRatio(video.width / video.height)
 
-  Kohii[view.context].setUp(MediaItem(video.url, "mp4"))
+  kohii.setUp(MediaItem(video.url, "mp4"))
       .copy(
           tag = "${video.javaClass.canonicalName}::${video.url}",
           prefetch = true,
@@ -62,6 +61,5 @@ fun setVideo(
       )
       .asPlayable()
       .bind(view)
-      .observe(lifecycle)
   ViewCompat.setTransitionName(view, video.url)
 }

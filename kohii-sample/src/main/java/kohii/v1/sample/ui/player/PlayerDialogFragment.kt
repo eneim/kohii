@@ -24,29 +24,19 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
-class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
-
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    (parentFragment as? Callback)?.onDialogActive(playback.tag)
-  }
-
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    (parentFragment as? Callback)?.onDialogInActive(playback.tag)
-  }
+class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, Callback {
 
   companion object {
     private const val KEY_PLAYABLE_TAG = "kohii:player:dialog:tag"
@@ -100,17 +90,35 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
   override fun onStart() {
     super.onStart()
     val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
-    // Only here dialog's window will finally have the DecorView.
-    playback = Kohii[dialog!!.window!!].findPlayable(playableTag)
-        ?.bind(playerView)
-        ?.also {
-          it.addCallback(this@PlayerDialogFragment)
-          it.observe(viewLifecycleOwner)
+    val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
+    @Suppress("UNCHECKED_CAST")
+    (kohii.findPlayable(playableTag) as? Playable<PlayerView>)
+        ?.bind(playerView, Playback.PRIORITY_NORMAL) {
+          it.addCallback(this)
+          playback = it
         }
+  }
+
+  override fun onActive(playback: Playback<*>) {
+    (parentFragment as? Callback)?.onDialogActive(playback.tag)
+  }
+
+  // Would be called after onStop()
+  override fun onInActive(playback: Playback<*>) {
+    (parentFragment as? Callback)?.onDialogInActive(playback.tag)
   }
 
   override fun onStop() {
     super.onStop()
     playback?.removeCallback(this@PlayerDialogFragment)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    playback = null
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return this.viewLifecycleOwner
   }
 }

@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.view.get
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
@@ -41,24 +40,12 @@ import kohii.v1.sample.R
 class VideoViewHolder(
   inflater: LayoutInflater,
   parent: ViewGroup,
-  val lifecycleOwner: LifecycleOwner
+  val kohii: Kohii
 ) : BaseViewHolder(
     inflater,
     R.layout.holder_mix_view,
     parent
 ), PlaybackEventListener, Playback.Callback {
-
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-  }
-
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-  }
 
   override fun onFirstFrameRendered() {
     Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
@@ -104,7 +91,7 @@ class VideoViewHolder(
       itemTag = "${javaClass.canonicalName}::${item.uri}::$adapterPosition"
       mediaName.text = item.name
 
-      val playable = Kohii[itemView.context]
+      val playable = kohii
           .setUp(mediaItem)
           .copy(
               tag = itemTag,
@@ -113,12 +100,11 @@ class VideoViewHolder(
           )
           .asPlayable()
 
-      playback = playable.bind(playerView)
-          .also {
-            it.addPlaybackEventListener(this@VideoViewHolder)
-            it.addCallback(this@VideoViewHolder)
-            it.observe(lifecycleOwner)
-          }
+      playable.bind(playerView) {
+        it.addPlaybackEventListener(this@VideoViewHolder)
+        it.addCallback(this@VideoViewHolder)
+        playback = it
+      }
     }
   }
 
