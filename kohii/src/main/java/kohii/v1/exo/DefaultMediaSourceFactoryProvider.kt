@@ -41,24 +41,34 @@ import kohii.media.Media
 /**
  * @author eneim (2018/10/27).
  */
-class DefaultMediaSourceFactoryProvider(
-  private val upstreamFactory: DataSource.Factory,
-  private val mediaCache: Cache?
+class DefaultMediaSourceFactoryProvider private constructor(
+  private val offlineSourceHelper: OfflineSourceHelper? = null,
+  upstreamFactory: DataSource.Factory,
+  mediaCache: Cache? = null
 ) : MediaSourceFactoryProvider {
 
-  private val dataSourceFactory: DataSource.Factory
+  constructor(
+    upstreamFactory: DataSource.Factory,
+    mediaCache: Cache? = null
+  ) : this(null, upstreamFactory, mediaCache)
 
-  init {
-    if (this.mediaCache != null) {
-      this.dataSourceFactory = CacheDataSourceFactory( //
-          this.mediaCache, this.upstreamFactory, //
+  @Suppress("unused") //
+  constructor(
+    upstreamFactory: DataSource.Factory,
+    offlineSourceHelper: OfflineSourceHelper
+  ) : this(offlineSourceHelper, upstreamFactory, offlineSourceHelper.downloadCache)
+
+  private val dataSourceFactory: DataSource.Factory = //
+    if (mediaCache != null) {
+      CacheDataSourceFactory( //
+          mediaCache, //
+          upstreamFactory, //
           FileDataSourceFactory(), null, //
           CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
       )
     } else {
-      this.dataSourceFactory = this.upstreamFactory
+      upstreamFactory
     }
-  }
 
   override fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory {
     @C.ContentType val type = Util.inferContentType(media.uri, media.type)
@@ -92,6 +102,6 @@ class DefaultMediaSourceFactoryProvider(
 
   @Suppress("UNUSED_PARAMETER")
   private fun getOfflineStreamKeys(uri: Uri): List<StreamKey> {
-    return emptyList()
+    return offlineSourceHelper?.offlineStreamKeys(uri) ?: emptyList()
   }
 }

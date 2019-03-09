@@ -73,9 +73,9 @@ internal class RecyclerViewContainer(
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
-    return playback.target is View &&
-        this.container.findContainingViewHolder(playback.target) != null
-        && playback.token?.shouldPlay() == true
+    return playback.target is View
+        && this.container.findContainingViewHolder(playback.target) != null
+        && playback.token.shouldPlay()
   }
 
   override fun accepts(target: Any): Boolean {

@@ -76,22 +76,10 @@ interface Playable<T> : Callback {
 
   val tag: Any
 
-  fun bind(target: T) = this.bind(target, Playback.PRIORITY_NORMAL)
-
   fun bind(
     target: T,
-    cb: ((Playback<T>) -> Unit)?
-  ) = this.bind(target, Playback.PRIORITY_NORMAL, cb)
-
-  fun bind(
-    target: T,
-    @Priority priority: Int
-  ) = this.bind(target, priority, cb = null)
-
-  fun bind(
-    target: T,
-    @Priority priority: Int,
-    cb: ((Playback<T>) -> Unit)?
+    @Priority priority: Int = Playback.PRIORITY_NORMAL,
+    cb: ((Playback<T>) -> Unit)? = null
   )
 
   /// Playback controller
@@ -116,11 +104,11 @@ interface Playable<T> : Callback {
   data class Builder(
     val kohii: Kohii,
     val media: Media,
-    val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
     val tag: Any? = null,
+    val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
     val delay: Long = 0,
     val prefetch: Boolean = false,
-    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF, // FIXME 190104 should be Playback's option?
+    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
   ) {
     // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.

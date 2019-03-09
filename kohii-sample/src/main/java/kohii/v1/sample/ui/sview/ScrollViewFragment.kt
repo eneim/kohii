@@ -82,7 +82,9 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
       dialogPlayer = PlayerDialogFragment.newInstance(
           videoTag, InitData(tag = videoTag, aspectRatio = 16 / 9f)
       )
-          .also { it.show(childFragmentManager, videoTag) }
+          .also {
+            it.show(childFragmentManager, videoTag)
+          }
 
       /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
       @Suppress("ReplaceSingleLineLet")

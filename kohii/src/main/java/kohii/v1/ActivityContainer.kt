@@ -17,7 +17,6 @@
 package kohii.v1
 
 import android.app.Activity
-import android.util.Log
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
@@ -35,7 +34,8 @@ import kohii.media.PlaybackInfo
  */
 class ActivityContainer(
   internal val kohii: Kohii,
-  internal val activity: Activity
+  internal val activity: Activity,
+  internal val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
   private val prioritizedManagers = HashSet<PlaybackManager>()
@@ -46,6 +46,8 @@ class ActivityContainer(
 
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
+    val defaultSelector: (Collection<Playback<*>>) -> Collection<Playback<*>> =
+      { listOfNotNull(it.firstOrNull()) }
   }
 
   internal fun attachPlaybackManager(playbackManager: PlaybackManager) {
@@ -71,7 +73,7 @@ class ActivityContainer(
   }
 
   internal fun findSuitableManger(target: Any): PlaybackManager? {
-    return (this.prioritizedManagers + this.standardManagers)
+    return (this.prioritizedManagers + this.standardManagers) // Order is important.
         .firstOrNull { it.findSuitableContainer(target) != null }
   }
 
@@ -97,12 +99,10 @@ class ActivityContainer(
   @OnLifecycleEvent(ON_CREATE)
   fun onOwnerCreate(owner: LifecycleOwner) {
     playbackDispatcher.onAttached()
-    Log.e("Kohii::X", "create: $this, owner: $owner")
   }
 
   @OnLifecycleEvent(ON_DESTROY)
   fun onOwnerDestroy(owner: LifecycleOwner) {
-    Log.e("Kohii::X", "destroy: $this, owner: $owner")
     playbackDispatcher.onDetached()
     // Eagerly detach all PlaybackManager if there is any.
     ((standardManagers + prioritizedManagers) as MutableSet) // Kotlin sdk should not change this.
@@ -163,10 +163,9 @@ class ActivityContainer(
           .also { toPause.addAll(it) }
     }
 
-    val selected = toPlay.firstOrNull() // TODO better selection.
-    (if (selected == null) (toPause + toPlay) else ((toPause + toPlay - selected)))
-        .forEach { playbackDispatcher.pause(it) }
-    if (selected != null) playbackDispatcher.play(selected)
+    val selected = selector.invoke(toPlay)
+    (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
+    selected.forEach { playbackDispatcher.play(it) }
   }
 
   override fun toString(): String {
