@@ -30,7 +30,7 @@ ext {
       ]
 
   buildConfig.version['name'] = //
-      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A05"
+      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A06"
 
   buildConfig.version['code'] = //
       /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2802 --> 109,092,802 */
