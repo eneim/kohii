@@ -20,11 +20,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.text.HtmlCompat
+import androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.databinding.FragmentMainBinding
+import kotlinx.android.synthetic.main.fragment_main.intro
 
 interface Presenter {
 
@@ -51,6 +54,14 @@ class MainFragment : BaseFragment(), Presenter {
         false
     ) as FragmentMainBinding)
     return binding!!.root
+  }
+
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    intro.text = HtmlCompat.fromHtml(getString(R.string.lib_intro), FROM_HTML_MODE_COMPACT)
   }
 
   override fun onStart() {

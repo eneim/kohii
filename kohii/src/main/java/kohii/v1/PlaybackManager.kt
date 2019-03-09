@@ -18,7 +18,6 @@ package kohii.v1
 
 import android.util.Log
 import androidx.annotation.CallSuper
-import androidx.annotation.UiThread
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.Lifecycle.Event.ON_START
@@ -43,7 +42,7 @@ abstract class PlaybackManager(
   companion object {
     val PRESENT = Any() // Use for mapping.
     val priorityComparator =
-      Comparator<Playback<*>> { o1, o2 -> o1.priority.compareTo(o2.priority) }
+      Comparator<Playback<*>> { o1, o2 -> o1.options.priority.compareTo(o2.options.priority) }
 
     fun compareAndCheck(
       left: Prioritized,
@@ -94,7 +93,7 @@ abstract class PlaybackManager(
             kohii.mapPlayableToManager[it.playable] = this
             parent.tryRestorePlaybackInfo(it)
             it.onActive()
-            if (it.token?.shouldPrepare() == true) it.prepare()
+            if (it.token.shouldPrepare()) it.prepare()
           }
         }
 
@@ -199,9 +198,9 @@ abstract class PlaybackManager(
   internal fun partitionPlaybacks(): Pair<Collection<Playback<*>> /* toPlay */, Collection<Playback<*>> /* toPause */> {
     // Confirm if any invisible view is visible again.
     // This is the case of NestedScrollView.
-    val toActive = mapDetachedPlaybackToTime.filter { it.key.token?.shouldPrepare() == true }
+    val toActive = mapDetachedPlaybackToTime.filter { it.key.token.shouldPrepare() }
         .keys
-    val toInActive = mapAttachedPlaybackToTime.filter { it.key.token?.shouldPrepare() == false }
+    val toInActive = mapAttachedPlaybackToTime.filter { !it.key.token.shouldPrepare() }
         .keys
 
     toActive.forEach { this.onTargetActive(it.target) }
@@ -328,8 +327,6 @@ abstract class PlaybackManager(
             it.onRemoved()
             it.onDestroyed()
             it.removeCallback(parent)
-            provider.provideLifecycleOwner()
-                .lifecycle.removeObserver(it)
           }
     }
   }
@@ -341,7 +338,7 @@ abstract class PlaybackManager(
       mapDetachedPlaybackToTime.remove(it)
       if (kohii.mapPlayableToManager[it.playable] === this) { // added 20190115, check this.
         parent.tryRestorePlaybackInfo(it)
-        if (it.token?.shouldPrepare() == true) it.prepare()
+        if (it.token.shouldPrepare()) it.prepare()
         it.onActive()
       }
       this@PlaybackManager.dispatchRefreshAll()

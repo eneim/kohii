@@ -131,7 +131,7 @@ class ExoPlayable internal constructor(
     )
 
     Log.w("Kohii::X", "bind: $target, $manager")
-    val options = Playback.Options(priority) { delay }
+    val options = Playback.Options(priority = priority, delay = delay)
     val result = manager.performBindPlayable(this, target, options,
         object : PlaybackCreator<PlayerView> {
           override fun createPlayback(

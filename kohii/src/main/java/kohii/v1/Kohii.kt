@@ -22,10 +22,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleService
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo.VERSION_SLASHY
@@ -52,7 +50,7 @@ import java.util.WeakHashMap
  * @author eneim (2018/06/24).
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class Kohii(context: Context) : LifecycleObserver {
+class Kohii(context: Context) {
 
   internal val app = context.applicationContext as Application
 
@@ -60,7 +58,7 @@ class Kohii(context: Context) : LifecycleObserver {
   internal val managers = HashMap<LifecycleOwner, PlaybackManager>()
 
   // Which Playable is managed by which Manager
-  internal val mapPlayableToManager = DebugWeakHashMap<Playable<*>, PlaybackManager?>()
+  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlaybackManager?>()
 
   // Store playable whose tag is available. Non tagged playable are always ignored.
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Playable<*>>()
@@ -228,24 +226,5 @@ class Kohii(context: Context) : LifecycleObserver {
 
   //// [END] Public API
 
-  class DebugWeakHashMap<K, V> : WeakHashMap<K, V>() {
-
-    override fun put(
-      key: K,
-      value: V
-    ): V? {
-      Log.d("Kohii::X", "put: $key, $value")
-      if (value == null) {
-        Log.i("Kohii::X", "put null: $key")
-      }
-      return super.put(key, value)
-    }
-
-    override fun remove(key: K): V? {
-      val value = super.remove(key)
-      Log.d("Kohii::X", "remove: $key, $value")
-      Log.w("Kohii::X", "remain: ${this.entries}")
-      return value
-    }
-  }
+  //// Interface definitions
 }

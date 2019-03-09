@@ -46,7 +46,7 @@ internal class NestedScrollViewContainer(
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
-    return playback.token?.shouldPlay() == true
+    return playback.token.shouldPlay()
   }
 
   override fun accepts(target: Any): Boolean {

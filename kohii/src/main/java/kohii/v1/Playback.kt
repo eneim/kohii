@@ -20,12 +20,12 @@ import android.os.Handler
 import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
-import androidx.lifecycle.LifecycleObserver
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
 import kohii.v1.Playable.Companion.STATE_IDLE
 import kohii.v1.Playable.Companion.STATE_READY
+import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -41,9 +41,9 @@ abstract class Playback<T> internal constructor(
   internal val playable: Playable<T>,
   internal val manager: PlaybackManager,
   internal val container: Container,
-  internal val target: T,
+  val target: T,
   internal val options: Playback.Options
-) : LifecycleObserver {
+) {
 
   companion object {
     const val TAG = "Kohii::PB"
@@ -72,29 +72,34 @@ abstract class Playback<T> internal constructor(
   @IntDef(PRIORITY_HIGH, PRIORITY_NORMAL, PRIORITY_LOW)
   annotation class Priority
 
-  open class Token {
-    open fun compareTo(other: Token) = 0
+  open class Token : Comparable<Token> {
+    override fun compareTo(other: Token) = 0
 
+    // = wantsToPlay()
     open fun shouldPlay() = false
 
     // Called by Manager, to know if a Playback should start preparing or not. True by default.
+    // = allowsToPlay(player)
     open fun shouldPrepare() = false
   }
 
   class Options(
+    @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
     val priority: Int = PRIORITY_NORMAL,
-    val delay: () -> Long = NO_DELAY
+    val delay: Long = 0L,
+      // Indicator to used to judge of a Playback should be played or not.
+      // This doesn't warranty that it will be played, it just to make the Playback be a candidate
+      // to start a playback.
+      // In ViewPlayback, this is equal to visible area offset of the video container View.
+    val threshold: Float = 0.65F
   )
-
-  internal val priority = options.priority
-  internal val delay = options.delay
-
-  private var listenerHandler: Handler? = null
 
   // Listeners for Playable. Playable will access these filed on demand.
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
+
+  private var listenerHandler: Handler? = null
 
   // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
@@ -102,8 +107,7 @@ abstract class Playback<T> internal constructor(
 
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound.
-  internal open val token: Token?
-    get() = null
+  internal abstract val token: Token
 
   // [BEGIN] Public API
 
@@ -164,11 +168,7 @@ abstract class Playback<T> internal constructor(
     other: Playback<*>,
     orientation: Int
   ): Int {
-    return if (other.token != null) {
-      this.token?.compareTo(other.token!!) ?: -1
-    } else {
-      if (this.token != null) 1 else 0
-    }
+    return this.token.compareTo(other.token)
   }
 
   internal open fun unbindInternal() {

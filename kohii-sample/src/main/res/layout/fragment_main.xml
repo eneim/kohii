@@ -41,6 +41,17 @@
         android:padding="@dimen/activity_horizontal_margin"
         >
 
+      <androidx.appcompat.widget.AppCompatTextView
+          android:id="@+id/intro"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="@dimen/pager_horizontal_space"
+          android:lineSpacingMultiplier="1.15"
+          android:padding="@dimen/pager_horizontal_space"
+          android:text="@string/lib_intro"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+
       <androidx.cardview.widget.CardView
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
@@ -65,7 +76,7 @@
           <androidx.appcompat.widget.AppCompatTextView
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:text="Kohii + Debug (1)"
+              android:text="Kohii + Master/Detail (1)"
               android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
               tools:ignore="HardcodedText"
               />
@@ -79,53 +90,7 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:lineSpacingMultiplier="1.15"
-              android:maxLines="6"
-              android:text="@string/large_text"
-              android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle"
-              />
-        </androidx.appcompat.widget.LinearLayoutCompat>
-
-      </androidx.cardview.widget.CardView>
-
-      <androidx.cardview.widget.CardView
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginBottom="@dimen/pager_horizontal_space"
-          android:clickable="true"
-          android:focusable="true"
-          android:foreground="?attr/selectableItemBackground"
-          android:minHeight="@dimen/pager_horizontal_space_x3"
-          android:onClick='@{(view) -> presenter.onItemClick("kohii.v1.sample.ui.reuse.OneSurfaceFragment")}'
-          android:padding="@dimen/pager_horizontal_space"
-          >
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="start"
-            android:orientation="vertical"
-            android:padding="@dimen/pager_horizontal_space"
-            >
-
-          <androidx.appcompat.widget.AppCompatTextView
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:text="Kohii + RecyclerView (4)"
-              android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
-              tools:ignore="HardcodedText"
-              />
-
-          <Space
-              android:layout_width="match_parent"
-              android:layout_height="@dimen/pager_horizontal_space_base"
-              />
-
-          <androidx.appcompat.widget.AppCompatTextView
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:lineSpacingMultiplier="1.15"
-              android:text="@string/demo_desc_recycler_view_4"
+              android:text="@string/demo_desc_master_detail"
               android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle"
               />
         </androidx.appcompat.widget.LinearLayoutCompat>
@@ -306,6 +271,51 @@
               android:layout_height="wrap_content"
               android:lineSpacingMultiplier="1.15"
               android:text="@string/demo_desc_recycler_view_3"
+              android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle"
+              />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+      </androidx.cardview.widget.CardView>
+
+      <androidx.cardview.widget.CardView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="@dimen/pager_horizontal_space"
+          android:clickable="true"
+          android:focusable="true"
+          android:foreground="?attr/selectableItemBackground"
+          android:minHeight="@dimen/pager_horizontal_space_x3"
+          android:onClick='@{(view) -> presenter.onItemClick("kohii.v1.sample.ui.reuse.OneSurfaceFragment")}'
+          android:padding="@dimen/pager_horizontal_space"
+          >
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="start"
+            android:orientation="vertical"
+            android:padding="@dimen/pager_horizontal_space"
+            >
+
+          <androidx.appcompat.widget.AppCompatTextView
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:text="Kohii + RecyclerView (4)"
+              android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+              tools:ignore="HardcodedText"
+              />
+
+          <Space
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/pager_horizontal_space_base"
+              />
+
+          <androidx.appcompat.widget.AppCompatTextView
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:lineSpacingMultiplier="1.15"
+              android:text="@string/demo_desc_recycler_view_4"
               android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle"
               />
         </androidx.appcompat.widget.LinearLayoutCompat>

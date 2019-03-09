@@ -79,11 +79,11 @@ open class ViewPlayback<V : View>(
   }
 
   // TODO [20190112] deal with scaled/transformed View and/or its Parent.
-  override val token: ViewToken?
+  override val token: ViewToken
     get() {
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
-      if (!visible) return ViewToken(this.priority, playerRect, -1F)
+      if (!visible) return ViewToken(this, playerRect, -1F)
 
       val drawRect = Rect()
       target.getDrawingRect(drawRect)
@@ -95,7 +95,7 @@ open class ViewPlayback<V : View>(
         offset = visibleArea / drawArea.toFloat()
       }
 
-      return ViewToken(this.priority, playerRect, offset)
+      return ViewToken(this, playerRect, offset)
     }
 
   @CallSuper
@@ -113,18 +113,18 @@ open class ViewPlayback<V : View>(
     other: Playback<*>,
     orientation: Int
   ): Int {
-    if (other !is ViewPlayback) return 1 // Always win.
+    if (other !is ViewPlayback) {
+      // Either 1 or -1.
+      return 1 or this.options.priority.compareTo(other.options.priority)
+    }
+
     val thisToken = this.token
-    val otherToken = other.token
+    val thatToken = other.token
 
-    if (thisToken == null && otherToken == null) return 0
-    if (thisToken == null) return -1
-    if (otherToken == null) return 1
+    val vertical by lazy { CENTER_Y.compare(thisToken, thatToken) }
+    val horizontal by lazy { CENTER_X.compare(thisToken, thatToken) }
 
-    val vertical by lazy { CENTER_Y.compare(thisToken, otherToken) }
-    val horizontal by lazy { CENTER_X.compare(thisToken, otherToken) }
-
-    var result = this.priority.compareTo(other.priority)
+    var result = this.options.priority.compareTo(other.options.priority)
     if (result == 0) {
       result = when (orientation) {
         Container.VERTICAL -> vertical
@@ -135,20 +135,20 @@ open class ViewPlayback<V : View>(
       }
     }
 
-    if (result == 0) result = compareValues(thisToken.areaOffset, otherToken.areaOffset)
+    if (result == 0) result = compareValues(thisToken.areaOffset, thatToken.areaOffset)
     return result
   }
 
   // Location on screen, with visible offset within target's parent.
   data class ViewToken internal constructor(
-    internal val priority: Int,
+    internal val owner: Playback<*>,
     internal val viewRect: Rect,
     internal val areaOffset: Float,
     internal val canRelease: Boolean = true
   ) : Token() {
     override fun compareTo(other: Token): Int {
       return (other as? ViewToken)?.let {
-        var result = this.priority.compareTo(other.priority)
+        var result = this.owner.options.priority.compareTo(other.owner.options.priority)
         if (result == 0) result = CENTER_Y.compare(this, other)
         if (result == 0) result = this.areaOffset.compareTo(other.areaOffset)
         result
@@ -160,11 +160,11 @@ open class ViewPlayback<V : View>(
     }
 
     override fun shouldPlay(): Boolean {
-      return areaOffset >= 0.65f  // TODO [20180714] make this configurable
+      return areaOffset >= owner.options.threshold
     }
 
     override fun toString(): String {
-      return "$viewRect::$areaOffset"
+      return "Token::$viewRect::$areaOffset"
     }
   }
 
