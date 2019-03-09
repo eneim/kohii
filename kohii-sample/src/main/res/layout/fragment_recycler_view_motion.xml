@@ -39,7 +39,7 @@
       android:layout_height="match_parent"
       app:behavior_hideable="true"
       app:behavior_peekHeight="80dp"
-      app:layout_behavior="kohii.v1.sample.ui.overlay.KohiiDemoBottomSheetBehavior"
+      app:layout_behavior="@string/bottom_sheet_behavior"
       >
     <include
         layout="@layout/video_overlay_fullscreen"

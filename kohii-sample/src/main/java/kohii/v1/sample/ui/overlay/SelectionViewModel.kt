@@ -21,5 +21,12 @@ import androidx.lifecycle.ViewModel
 
 class SelectionViewModel : ViewModel() {
 
-  val liveData = MutableLiveData<Pair<String, Boolean>>()
+  val liveData =
+    MutableLiveData<
+        Triple<
+            String /* selected key */,
+            Boolean /* selected flag */,
+            String? /* previously selected key*/
+            >
+        >()
 }

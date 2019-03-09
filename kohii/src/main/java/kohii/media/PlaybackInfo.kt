@@ -22,7 +22,6 @@ import kotlinx.android.parcel.Parcelize
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate", "unused")
 @Parcelize
 data class PlaybackInfo(
   var resumeWindow: Int,

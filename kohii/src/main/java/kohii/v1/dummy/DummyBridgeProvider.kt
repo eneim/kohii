@@ -20,7 +20,7 @@ import kohii.v1.Bridge
 import kohii.v1.BridgeProvider
 import kohii.v1.Playable.Builder
 
-class DummyBridgeProvider: BridgeProvider {
+class DummyBridgeProvider : BridgeProvider {
   override fun provideBridge(builder: Builder): Bridge {
     return DummyBridge(builder.kohii.app)
   }

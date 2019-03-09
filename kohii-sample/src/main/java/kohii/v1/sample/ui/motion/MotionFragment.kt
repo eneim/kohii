@@ -23,17 +23,20 @@ import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
+import kohii.v1.Kohii
+import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.databinding.FragmentMotionBinding
 import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.player.PlayerActivity
+import kotlinx.android.synthetic.main.fragment_motion.scrollView
 
 /**
  * @author eneim (2018/07/15).
  */
 @Keep
-class MotionFragment : BaseFragment(), Presenter {
+class MotionFragment : BaseFragment(), Presenter, LifecycleOwnerProvider {
 
   companion object {
     fun newInstance() = MotionFragment()
@@ -56,6 +59,14 @@ class MotionFragment : BaseFragment(), Presenter {
       it.lifecycleOwner = this
     }
     return binding!!.root
+  }
+
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    Kohii[this].register(this, arrayOf(scrollView))
   }
 
   override fun onStart() {
@@ -83,7 +94,11 @@ class MotionFragment : BaseFragment(), Presenter {
     )
   }
 
-  override fun requireLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
+  override fun requireProvider(): Kohii {
+    return Kohii[this]
+  }
+
+  override fun provideLifecycleOwner(): LifecycleOwner {
+    return viewLifecycleOwner
   }
 }

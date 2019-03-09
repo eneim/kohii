@@ -20,5 +20,6 @@
   <color name="colorPrimaryDark">#040926</color>
   <color name="colorAccent">#A85751</color>
 
-  <color name="shutter_color">#a0a0a0</color>
+  <color name="shutter_color">#0a0a0a</color>
+  <color name="red">#d50000</color>
 </resources>

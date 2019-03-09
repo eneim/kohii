@@ -19,16 +19,16 @@ package kohii.v1.sample.ui.overlay
 import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.Playable
+import kohii.v1.Kohii
+import kohii.v1.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.overlay.data.Video
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val lifecycleOwner: LifecycleOwner
+  private val kohii: Kohii
 ) : Adapter<BaseViewHolder>(), BaseViewHolder.OnClickListener {
 
   var selectionTracker: SelectionTracker<String>? = null
@@ -44,8 +44,10 @@ internal class VideoItemsAdapter(
     itemId: Long,
     payload: Any?
   ) {
-    (payload as? Playable)?.tag?.let {
-      if (it is String) selectionTracker?.select(it)
+    val itemTag = (payload as? Playback<*>)?.tag as String?
+    itemTag?.let {
+      if (selectionTracker?.isSelected(it) == true) return
+      selectionTracker?.select(it)
     }
   }
 
@@ -55,10 +57,10 @@ internal class VideoItemsAdapter(
   ): BaseViewHolder {
     return VideoItemHolder(
         from(parent.context),
-        R.layout.holder_video_text,
+        R.layout.holder_video_text_overlay,
         parent,
         this,
-        lifecycleOwner,
+        kohii,
         this
     )
   }

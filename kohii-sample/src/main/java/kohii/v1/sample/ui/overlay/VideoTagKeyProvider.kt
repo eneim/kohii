@@ -20,9 +20,12 @@ import android.util.SparseArray
 import android.view.View
 import androidx.recyclerview.selection.ItemKeyProvider
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.NO_ID
+import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
 import java.util.HashMap
 
+// This KeyProvider allow a detached View still in key/position map.
 class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
     ItemKeyProvider<String>(SCOPE_CACHED) {
 
@@ -47,10 +50,13 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
     val holder = recyclerView.findContainingViewHolder(view)
     if (holder is VideoItemHolder) {
       val position = holder.adapterPosition
-      val key = holder.tagKey
-      if (position != RecyclerView.NO_POSITION && key != null) {
-        positionToKey.put(position, key)
-        keyToPosition[key] = position
+      val id = holder.getItemId()
+      if (id != NO_ID) {
+        val key = holder.tagKey
+        if (position != NO_POSITION && id != NO_ID && key != null) {
+          positionToKey.put(position, key)
+          keyToPosition[key] = position
+        }
       }
     }
   }
@@ -59,10 +65,15 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
     val holder = recyclerView.findContainingViewHolder(view)
     if (holder is VideoItemHolder) {
       val position = holder.adapterPosition
-      val key = holder.tagKey
-      if (position != RecyclerView.NO_POSITION && key != null) {
-        positionToKey.delete(position)
-        keyToPosition.remove(key)
+      val id = holder.getItemId()
+      // only if id == NO_ID, we remove this View from cache.
+      // when id != NO_ID, it means that this View is still bound to an Item.
+      if (id == NO_ID) {
+        val key = holder.tagKey
+        if (position != NO_POSITION && key != null) {
+          positionToKey.delete(position)
+          keyToPosition.remove(key)
+        }
       }
     }
   }
@@ -72,6 +83,6 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
   }
 
   override fun getPosition(key: String): Int {
-    return keyToPosition[key] ?: RecyclerView.NO_POSITION
+    return keyToPosition[key] ?: NO_POSITION
   }
 }

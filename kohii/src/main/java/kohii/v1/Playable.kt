@@ -23,6 +23,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
+import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Priority
 import kohii.v1.exo.ExoPlayable
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -32,9 +33,9 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * Playable lifecycle:
  *
- * - Created by calling [Kohii.setUp], will be managed by at least one [Manager].
+ * - Created by calling [Kohii], will be managed by at least one [PlaybackManager].
  * - Destroyed if:
- *  - All [Manager]s manage the Playable is destroyed/detached from its lifecycle.
+ *  - All [PlaybackManager]s manage the Playable is destroyed/detached from its lifecycle.
  *
  * - A [Playable] can be bound to a Target to produce a [Playback]. Due to the reusable nature of
  * [Playable], the call to bind it is not limited to one Target. Which means that, a [Playable] can
@@ -42,11 +43,15 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  * produced a [Playback] xRa, then the [Playable] X is rebound to a Target B, it will first produce
  * a produce a [Playback] xRb. But before that, the [Playback] xRa must also be destroyed.
  *
- * (Think about how a couple separates ... and then come back ...)
- *
  * @author eneim (2018/06/24).
  */
-interface Playable {
+
+/**
+ * 2019/02/16
+ *
+ * A Playable should accept only one type of Target.
+ */
+interface Playable<T> : Callback {
 
   companion object {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
@@ -71,22 +76,20 @@ interface Playable {
 
   val tag: Any
 
-  fun bind(target: PlayerView): Playback<PlayerView> = this.bind(target, Playback.PRIORITY_NORMAL)
-
-  fun bind(target: PlayerView, @Priority priority: Int): Playback<PlayerView>
+  fun bind(
+    target: T,
+    @Priority priority: Int = Playback.PRIORITY_NORMAL,
+    cb: ((Playback<T>) -> Unit)? = null
+  )
 
   /// Playback controller
 
-  // Must be called by Playback
   fun prepare()
 
-  // Must be called by Playback
   fun play()
 
-  // Must be called by Playback
   fun pause()
 
-  // Must be called by Playback
   fun release()
 
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
@@ -101,23 +104,26 @@ interface Playable {
   data class Builder(
     val kohii: Kohii,
     val media: Media,
-    val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
     val tag: Any? = null,
+    val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
     val delay: Long = 0,
     val prefetch: Boolean = false,
-    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF, // FIXME 190104 should be Playback's option?
+    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
   ) {
     // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.
     // If the builder has no valid tag (a.k.a tag is null), then always return new one.
     // TODO [20181021] Consider to make this to use the Factory mechanism?
-    fun asPlayable(): Playable {
+    fun asPlayable(): Playable<PlayerView> {
+      @Suppress("UNCHECKED_CAST")
       return ((
           if (tag != null)
-            kohii.mapTagToPlayable.getOrPut(tag) { ExoPlayable(kohii, media, this) }
+            kohii.mapTagToPlayable.getOrPut(tag) { ExoPlayable(kohii, this) }
           else
-            ExoPlayable(kohii, media, this)
-          ).also { kohii.mapWeakPlayableToManager[it] = null })
+            ExoPlayable(kohii, this)
+          ) as Playable<PlayerView>).also {
+        kohii.mapPlayableToManager[it] = null
+      }
     }
   }
 }

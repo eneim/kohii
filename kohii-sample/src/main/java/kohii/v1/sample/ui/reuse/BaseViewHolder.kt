@@ -19,7 +19,6 @@ package kohii.v1.sample.ui.reuse
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 /**

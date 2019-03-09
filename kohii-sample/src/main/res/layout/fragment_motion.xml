@@ -32,11 +32,13 @@
   </data>
 
   <androidx.core.widget.NestedScrollView
+      android:id="@+id/scrollView"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       app:layout_behavior="@string/appbar_scrolling_view_behavior"
       >
     <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -53,12 +55,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
-            app:lifecycle='@{presenter.requireLifecycleOwner()}'
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"
             app:use_controller="false"
             app:video="@{motion.video0}"
+            app:provider="@{presenter.requireProvider()}"
             />
       </FrameLayout>
 
@@ -109,7 +111,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
-            app:lifecycle='@{presenter.requireLifecycleOwner()}'
+            app:provider="@{presenter.requireProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"
@@ -137,7 +139,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
-            app:lifecycle='@{presenter.requireLifecycleOwner()}'
+            app:provider="@{presenter.requireProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"
@@ -165,7 +167,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
-            app:lifecycle='@{presenter.requireLifecycleOwner()}'
+            app:provider="@{presenter.requireProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"
@@ -193,7 +195,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="120dp"
-            app:lifecycle='@{presenter.requireLifecycleOwner()}'
+            app:provider="@{presenter.requireProvider()}"
             app:resize_mode="fixed_width"
             app:show_buffering="when_playing"
             app:surface_type="texture_view"

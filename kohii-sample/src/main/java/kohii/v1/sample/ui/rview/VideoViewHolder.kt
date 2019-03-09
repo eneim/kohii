@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
@@ -29,6 +28,7 @@ import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
+import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.rview.data.Item
 
 /**
@@ -37,22 +37,13 @@ import kohii.v1.sample.ui.rview.data.Item
 class VideoViewHolder(
   inflater: LayoutInflater,
   parent: ViewGroup,
-  private val lifecycleOwner: LifecycleOwner,
+  private val kohii: Kohii,
   private val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
     View.OnClickListener, PlaybackEventListener, Playback.Callback {
 
-  override fun onActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
-    listener.onItemLoaded(itemView, adapterPosition)
-  }
-
-  override fun onInActive(
-    playback: Playback<*>,
-    target: Any?
-  ) {
+  init {
+    itemView.setOnClickListener(this)
   }
 
   override fun onFirstFrameRendered() {
@@ -79,41 +70,44 @@ class VideoViewHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
-  var itemTag: String? = null
   var playback: Playback<PlayerView>? = null
+  var payload: InitData? = null
 
   override fun bind(item: Item?) {
-    itemView.setOnClickListener(this)
     if (item != null) {
-      itemTag = "${javaClass.canonicalName}::${item.content}::$adapterPosition"
-
-      playerContainer.setAspectRatio(item.width / item.height.toFloat())
-      val playable = Kohii[itemView.context]
+      val itemTag = "${javaClass.canonicalName}::${item.content}::$adapterPosition"
+      payload = InitData(tag = itemTag, aspectRatio = item.width / item.height.toFloat())
+      playerContainer.setAspectRatio(payload!!.aspectRatio)
+      val playable = kohii
           .setUp(item.content)
           .copy(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
           .asPlayable()
 
-      playback = playable.bind(playerView)
-          .also {
-            it.addPlaybackEventListener(this@VideoViewHolder)
-            it.addCallback(this@VideoViewHolder)
-            it.observe(lifecycleOwner)
-          }
+      playable.bind(playerView) {
+        it.addPlaybackEventListener(this)
+        it.addCallback(this)
+        playback = it
+        listener.onItemLoaded(itemView, adapterPosition)
+      }
 
       ViewCompat.setTransitionName(transView, itemTag)
     }
+  }
+
+  override fun onRemoved(playback: Playback<*>) {
+    playback.removePlaybackEventListener(this)
+    playback.removeCallback(this)
   }
 
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
     playback?.removePlaybackEventListener(this)
     playback?.removeCallback(this)
-    itemView.setOnClickListener(null)
   }
 
   override fun onClick(v: View?) {
-    if (v != null && itemTag != null) {
-      listener.onItemClick(v, transView, adapterPosition, itemTag!!)
+    if (v != null && payload != null) {
+      listener.onItemClick(v, transView, adapterPosition, payload!!)
     }
   }
 }
