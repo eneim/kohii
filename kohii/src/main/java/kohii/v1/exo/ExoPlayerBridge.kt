@@ -59,12 +59,12 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author eneim (2018/06/24).
  */
 @Suppress("MemberVisibilityCanBePrivate")
-internal open class ExoBridge(
+internal open class ExoPlayerBridge(
   kohii: Kohii,
   private val media: Media,
   private val playerProvider: PlayerProvider,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
-) : PlayerEventListener, Bridge, ErrorMessageProvider<ExoPlaybackException> {
+) : PlayerEventListener, Bridge<PlayerView>, ErrorMessageProvider<ExoPlaybackException> {
 
   companion object {
     internal fun isBehindLiveWindow(error: ExoPlaybackException?): Boolean {

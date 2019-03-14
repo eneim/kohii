@@ -25,6 +25,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.databinding.FragmentMotionBinding
@@ -83,15 +84,19 @@ class MotionFragment : BaseFragment(), Presenter, LifecycleOwnerProvider {
     container: View,
     video: Video
   ) {
-    startActivity(
-        PlayerActivity.createIntent(
-            requireContext(),
-            InitData(
-                tag = "${video.javaClass.canonicalName}::${video.url}",
-                aspectRatio = video.width / video.height
-            )
-        )
-    )
+    val rebinder = container.getTag(R.id.motion_view_tag)
+    (rebinder as? Rebinder)?.let {
+      startActivity(
+          PlayerActivity.createIntent(
+              requireContext(),
+              InitData(
+                  tag = "${video.javaClass.canonicalName}::${video.url}",
+                  aspectRatio = video.width / video.height
+              ),
+              it
+          )
+      )
+    }
   }
 
   override fun requireProvider(): Kohii {

@@ -19,13 +19,15 @@ package kohii.v1.exo
 import android.util.Log
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
+import kohii.v1.Bridge
 import kohii.v1.Kohii
 import kohii.v1.Playable
-import kohii.v1.Playable.Builder
+import kohii.v1.PlayableBinder
 import kohii.v1.Playback
-import kohii.v1.Playback.Options
+import kohii.v1.Playback.Config
 import kohii.v1.PlaybackCreator
 import kohii.v1.PlayerEventListener
 import kohii.v1.ViewPlayback
@@ -33,22 +35,31 @@ import kohii.v1.ViewPlayback
 /**
  * @author eneim (2018/06/24).
  */
-class ExoPlayable internal constructor(
+class PlayerViewPlayable internal constructor(
   val kohii: Kohii,
-  builder: Builder
+  val media: Media,
+  val config: Playable.Config,
+  private val bridge: Bridge<PlayerView>
 ) : Playable<PlayerView> {
+
+  internal constructor(
+    kohii: Kohii,
+    media: Media,
+    config: Playable.Config
+  ) : this(kohii, media, config, kohii.bridgeProvider.provideBridge(kohii, media, config))
 
   companion object {
     private const val TAG = "Kohii::PL"
   }
 
-  private val bridge by lazy { kohii.bridgeProvider.provideBridge(builder) }
-
-  private val builderTag = builder.tag
-  private val prefetch = builder.prefetch
-  private val delay = builder.delay
+  private val builderTag = config.tag
+  private val prefetch = config.prefetch
 
   private var listener: PlayerEventListener? = null
+
+  override fun newBinder(): PlayableBinder {
+    return PlayableBinder(kohii, media).also { it.config { config } }
+  }
 
   override fun onAdded(playback: Playback<*>) {
     if (this.listener == null) {
@@ -116,14 +127,13 @@ class ExoPlayable internal constructor(
 
   ////
 
-  override val tag: Any
-    get() = builderTag ?: Playable.NO_TAG
+  override val tag: Any = builderTag ?: Playable.NO_TAG
 
   // When binding to a PlayerView, any old Playback for the same PlayerView should be destroyed.
   // Relationship: [Playable] --> [Playback [Target]]
   override fun bind(
     target: PlayerView,
-    priority: Int,
+    config: Playback.Config,
     cb: ((Playback<PlayerView>) -> Unit)?
   ) {
     val manager = kohii.findSuitableManager(target) ?: throw IllegalStateException(
@@ -131,19 +141,18 @@ class ExoPlayable internal constructor(
     )
 
     Log.w("Kohii::X", "bind: $target, $manager")
-    val options = Playback.Options(priority = priority, delay = delay)
-    val result = manager.performBindPlayable(this, target, options,
+    val result = manager.performBindPlayable(this, target, config,
         object : PlaybackCreator<PlayerView> {
           override fun createPlayback(
             target: PlayerView,
-            options: Options
+            config: Config
           ): Playback<PlayerView> {
             val container = manager.findSuitableContainer(target)
                 ?: throw IllegalStateException(
                     "This manager $this has no Container that " +
                         "accepts this target: $target. Kohii requires at least one."
                 )
-            return ViewPlayback(kohii, this@ExoPlayable, manager, container, target, options)
+            return ViewPlayback(kohii, this@PlayerViewPlayable, manager, container, target, config)
           }
         })
     cb?.invoke(result)
@@ -153,11 +162,11 @@ class ExoPlayable internal constructor(
     this.bridge.prepare(prefetch)
   }
 
-  override fun play() {
+  override fun play(playback: Playback<PlayerView>) {
     this.bridge.play()
   }
 
-  override fun pause() {
+  override fun pause(playback: Playback<PlayerView>) {
     this.bridge.pause()
   }
 

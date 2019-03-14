@@ -19,37 +19,17 @@ package kohii.v1
 import androidx.annotation.IntDef
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playback.Callback
-import kohii.v1.Playback.Priority
-import kohii.v1.exo.ExoPlayable
 import kotlin.annotation.AnnotationRetention.SOURCE
-
-/**
- * One Playable to at most one Playback.
- *
- * Playable lifecycle:
- *
- * - Created by calling [Kohii], will be managed by at least one [PlaybackManager].
- * - Destroyed if:
- *  - All [PlaybackManager]s manage the Playable is destroyed/detached from its lifecycle.
- *
- * - A [Playable] can be bound to a Target to produce a [Playback]. Due to the reusable nature of
- * [Playable], the call to bind it is not limited to one Target. Which means that, a [Playable] can
- * be rebound to any number of other Targets. If a [Playable] X is bound to a Target A, and this binding
- * produced a [Playback] xRa, then the [Playable] X is rebound to a Target B, it will first produce
- * a produce a [Playback] xRb. But before that, the [Playback] xRa must also be destroyed.
- *
- * @author eneim (2018/06/24).
- */
 
 /**
  * 2019/02/16
  *
  * A Playable should accept only one type of Target.
+ *
+ * @author eneim (2018/06/24).
  */
 interface Playable<T> : Callback {
 
@@ -76,9 +56,11 @@ interface Playable<T> : Callback {
 
   val tag: Any
 
+  fun newBinder(): PlayableBinder
+
   fun bind(
     target: T,
-    @Priority priority: Int = Playback.PRIORITY_NORMAL,
+    config: Playback.Config = Playback.Config(),
     cb: ((Playback<T>) -> Unit)? = null
   )
 
@@ -86,9 +68,9 @@ interface Playable<T> : Callback {
 
   fun prepare()
 
-  fun play()
+  fun play(playback: Playback<T>)
 
-  fun pause()
+  fun pause(playback: Playback<T>)
 
   fun release()
 
@@ -101,29 +83,24 @@ interface Playable<T> : Callback {
   var playbackInfo: PlaybackInfo
 
   // data class for copying convenience.
-  data class Builder(
-    val kohii: Kohii,
-    val media: Media,
-    val tag: Any? = null,
+  data class Config(
+    val tag: String? = null,
     val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
-    val delay: Long = 0,
+    val startDelay: Int = 0, // Delay on every "play" call.
     val prefetch: Boolean = false,
     @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
   ) {
-    // Acquire Playable from cache or build new one. The result must not be mapped to any Manager.
-    // If the builder has no valid tag (a.k.a tag is null), then always return new one.
-    // TODO [20181021] Consider to make this to use the Factory mechanism?
-    fun asPlayable(): Playable<PlayerView> {
-      @Suppress("UNCHECKED_CAST")
-      return ((
-          if (tag != null)
-            kohii.mapTagToPlayable.getOrPut(tag) { ExoPlayable(kohii, this) }
-          else
-            ExoPlayable(kohii, this)
-          ) as Playable<PlayerView>).also {
-        kohii.mapPlayableToManager[it] = null
-      }
+
+    fun copySelf(): Config {
+      return Config(
+          tag = this.tag,
+          playbackInfo = this.playbackInfo,
+          prefetch = this.prefetch,
+          repeatMode = this.repeatMode,
+          playbackParameters = this.playbackParameters,
+          startDelay = this.startDelay
+      )
     }
   }
 }

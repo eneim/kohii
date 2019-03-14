@@ -49,7 +49,6 @@ import java.util.WeakHashMap
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class Kohii(context: Context) {
 
   internal val app = context.applicationContext as Application
@@ -65,10 +64,10 @@ class Kohii(context: Context) {
 
   // For ExoPlayer resource management.
   internal val bridgeProvider: BridgeProvider
-  internal val playerProvider: PlayerProvider
-  internal val mediaSourceFactoryProvider: MediaSourceFactoryProvider
+  private val playerProvider: PlayerProvider
+  private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
 
-  internal val screenStateReceiver by lazy {
+  private val screenStateReceiver by lazy {
     ScreenStateReceiver()
   }
 
@@ -211,18 +210,13 @@ class Kohii(context: Context) {
     parent.attachPlaybackManager(manager)
   }
 
+  // Specify Engine by calling kohii.for(Type)
+
   fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
 
   fun setUp(url: String) = this.setUp(MediaItem(Uri.parse(url)))
 
-  fun setUp(media: Media) = Playable.Builder(this, media = media)
-
-  // Find a Playable for a tag. Single player may use this for full-screen playback.
-  fun findPlayable(tag: Any?): Playable<*>? {
-    return this.mapTagToPlayable[tag].also {
-      mapPlayableToManager[it] = null // once found, it will be detached from the last Manager.
-    }
-  }
+  fun setUp(media: Media) = PlayableBinder(this, media = media)
 
   //// [END] Public API
 

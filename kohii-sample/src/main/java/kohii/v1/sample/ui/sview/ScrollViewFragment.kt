@@ -27,8 +27,9 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
-import kohii.v1.Playable
+import kohii.v1.Playable.Config
 import kohii.v1.Playback
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.player.InitData
@@ -70,17 +71,17 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
     // ⬇︎ For demo of manual fullscreen.
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     kohii = Kohii[this].also { it.register(this, arrayOf(this.scrollView)) }
-    kohii!!.setUp(videoUrl)
-        .copy(repeatMode = Player.REPEAT_MODE_ONE)
-        .copy(tag = videoTag)
-        .asPlayable()
-        .bind(playerView, Playback.PRIORITY_NORMAL) {
+    val bindable = kohii!!.setUp(videoUrl)
+        .config {
+          Config(tag = videoTag, repeatMode = Player.REPEAT_MODE_ONE)
+        }
+        .bind(playerView, Playback.Config(priority = Playback.PRIORITY_NORMAL)) {
           playback = it
         }
 
     playerContainer.setOnClickListener {
       dialogPlayer = PlayerDialogFragment.newInstance(
-          videoTag, InitData(tag = videoTag, aspectRatio = 16 / 9f)
+          bindable, InitData(tag = videoTag, aspectRatio = 16 / 9f)
       )
           .also {
             it.show(childFragmentManager, videoTag)
@@ -106,15 +107,15 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
 
   // BEGIN: PlayerDialogFragment.Callback
 
-  override fun onDialogActive(tag: Any) {
+  override fun onDialogActive() {
   }
 
-  override fun onDialogInActive(tag: Any) {
-    @Suppress("UNCHECKED_CAST")
-    (kohii?.findPlayable(tag) as? Playable<PlayerView>)
-        ?.bind(playerView, Playback.PRIORITY_NORMAL) {
-          playback = it
-        }
+  override fun onDialogInActive(rebinder: Rebinder) {
+    kohii?.run {
+      rebinder.rebind(this, playerView, Playback.Config(priority = Playback.PRIORITY_NORMAL)) {
+        playback = it
+      }
+    }
   }
 
   // END: PlayerDialogFragment.Callback

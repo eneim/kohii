@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package kohii.v1.dummy
+package kohii.v1.exo
 
-import kohii.v1.Bridge
-import kohii.v1.BridgeProvider
-import kohii.v1.Playable.Builder
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.R.layout
+import kohii.v1.ViewPool
 
-class DummyBridgeProvider : BridgeProvider {
-  override fun provideBridge(builder: Builder): Bridge {
-    return DummyBridge(builder.kohii.app)
+class PlayerViewPool(size: Int) : ViewPool<PlayerView>(size) {
+
+  // TODO consider creating PlayerView to fit the Media object (eg: DRM, etc)
+  override fun createView(container: ViewGroup): PlayerView {
+    return LayoutInflater.from(container.context).inflate(
+        layout.default_playerview, container, false
+    ) as PlayerView
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,14 @@ package kohii.v1
 
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.RepeatMode
 
-/**
- * Bridge between a [Playable] and a Target. Currently this interface is designed based on ExoPlayer API.
- *
- * @author eneim (2018/06/24).
- */
-interface Bridge {
+interface Bridge<PV> {
 
   //  set/get
-  var playerView: PlayerView?
+  var playerView: PV?
 
   // set/get
   var playbackInfo: PlaybackInfo
@@ -108,5 +102,4 @@ interface Bridge {
    * @return `true` if current Volume info is updated, `false` otherwise.
    */
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
-
 }
