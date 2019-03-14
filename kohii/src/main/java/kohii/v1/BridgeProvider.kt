@@ -16,10 +16,17 @@
 
 package kohii.v1
 
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.Media
+
 /**
  * @author eneim (2018/10/28).
  */
 interface BridgeProvider {
 
-  fun provideBridge(builder: Playable.Builder): Bridge
+  fun provideBridge(
+    kohii: Kohii,
+    media: Media,
+    config: Playable.Config
+  ): Bridge<PlayerView>
 }

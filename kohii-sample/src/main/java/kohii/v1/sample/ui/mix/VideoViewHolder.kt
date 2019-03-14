@@ -29,6 +29,7 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.MediaItem
 import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
@@ -91,20 +92,19 @@ class VideoViewHolder(
       itemTag = "${javaClass.canonicalName}::${item.uri}::$adapterPosition"
       mediaName.text = item.name
 
-      val playable = kohii
-          .setUp(mediaItem)
-          .copy(
-              tag = itemTag,
-              prefetch = false,
-              repeatMode = Player.REPEAT_MODE_ONE
-          )
-          .asPlayable()
-
-      playable.bind(playerView) {
-        it.addPlaybackEventListener(this@VideoViewHolder)
-        it.addCallback(this@VideoViewHolder)
-        playback = it
-      }
+      kohii.setUp(mediaItem)
+          .config {
+            Playable.Config(
+                tag = itemTag,
+                prefetch = false,
+                repeatMode = Player.REPEAT_MODE_ONE
+            )
+          }
+          .bind(playerView) {
+            it.addPlaybackEventListener(this@VideoViewHolder)
+            it.addCallback(this@VideoViewHolder)
+            playback = it
+          }
     }
   }
 

@@ -23,6 +23,7 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
 import kohii.v1.Kohii
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.player.PlayerFragment
@@ -109,7 +110,9 @@ class ItemsAdapter(
     ) {
       if (transView == null) return
       val transName = ViewCompat.getTransitionName(transView) ?: return
-      val initData = payload as? InitData ?: return
+      @Suppress("UNCHECKED_CAST")
+      val data = payload as? Pair<Rebinder, InitData> ?: return
+      val initData = data.second
 
       fragment.recordPlayerInfo(PlayerInfo(adapterPos, itemView.top))
       // Exclude the clicked card from the exit transition (e.g. the card will disappear immediately
@@ -118,7 +121,9 @@ class ItemsAdapter(
       fragment.fragmentManager!!.beginTransaction()
           .setReorderingAllowed(true) // Optimize for shared element transition
           .addSharedElement(transView, transName)
-          .replace(R.id.fragmentContainer, PlayerFragment.newInstance(initData), initData.tag)
+          .replace(
+              R.id.fragmentContainer, PlayerFragment.newInstance(data.first, initData), initData.tag
+          )
           .addToBackStack(null)
           .commit()
     }

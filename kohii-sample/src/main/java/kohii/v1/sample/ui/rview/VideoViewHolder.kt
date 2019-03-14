@@ -25,8 +25,10 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.rview.data.Item
@@ -70,6 +72,7 @@ class VideoViewHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
+  var rebinder: Rebinder? = null
   var playback: Playback<PlayerView>? = null
   var payload: InitData? = null
 
@@ -78,17 +81,16 @@ class VideoViewHolder(
       val itemTag = "${javaClass.canonicalName}::${item.content}::$adapterPosition"
       payload = InitData(tag = itemTag, aspectRatio = item.width / item.height.toFloat())
       playerContainer.setAspectRatio(payload!!.aspectRatio)
-      val playable = kohii
-          .setUp(item.content)
-          .copy(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
-          .asPlayable()
-
-      playable.bind(playerView) {
-        it.addPlaybackEventListener(this)
-        it.addCallback(this)
-        playback = it
-        listener.onItemLoaded(itemView, adapterPosition)
-      }
+      rebinder = kohii.setUp(item.content)
+          .config {
+            Playable.Config(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
+          }
+          .bind(playerView) {
+            it.addPlaybackEventListener(this)
+            it.addCallback(this)
+            playback = it
+            listener.onItemLoaded(itemView, adapterPosition)
+          }
 
       ViewCompat.setTransitionName(transView, itemTag)
     }
@@ -106,8 +108,10 @@ class VideoViewHolder(
   }
 
   override fun onClick(v: View?) {
-    if (v != null && payload != null) {
-      listener.onItemClick(v, transView, adapterPosition, payload!!)
+    if (v != null && payload != null && rebinder != null) {
+      listener.onItemClick(
+          v, transView, adapterPosition, Pair<Rebinder, InitData>(rebinder!!, payload!!)
+      )
     }
   }
 }

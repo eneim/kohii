@@ -26,7 +26,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.takeFirstOrNull
-import kohii.v1.Playback.Options
+import kohii.v1.Playback.Config
 import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -35,14 +35,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 abstract class PlaybackManager(
   protected val kohii: Kohii,
-  protected val parent: ActivityContainer,
+  internal val parent: ActivityContainer,
   internal val provider: LifecycleOwnerProvider
 ) : LifecycleObserver, Comparable<PlaybackManager> {
 
   companion object {
     val PRESENT = Any() // Use for mapping.
     val priorityComparator =
-      Comparator<Playback<*>> { o1, o2 -> o1.options.priority.compareTo(o2.options.priority) }
+      Comparator<Playback<*>> { o1, o2 -> o1.config.priority.compareTo(o2.config.priority) }
 
     fun compareAndCheck(
       left: Prioritized,
@@ -232,7 +232,7 @@ abstract class PlaybackManager(
   internal inline fun <reified T> performBindPlayable(
     playable: Playable<T>,
     target: T,
-    options: Options,
+    config: Config,
     creator: PlaybackCreator<T>
   ): Playback<T> {
     // First, add to global cache.
@@ -258,7 +258,7 @@ abstract class PlaybackManager(
       if (ref != null && ref.manager === this && ref.target === target) {
         ref
       } else {
-        creator.createPlayback(target, options)
+        creator.createPlayback(target, config)
       }
 
     if (candidate !== ref) {

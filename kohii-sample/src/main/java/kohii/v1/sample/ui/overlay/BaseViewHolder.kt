@@ -19,7 +19,6 @@ package kohii.v1.sample.ui.overlay
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 /**
@@ -36,8 +35,6 @@ abstract class BaseViewHolder(
   open fun bind(item: Any?) {}
 
   open fun onRecycled(success: Boolean) {}
-
-  abstract fun getItemDetails(): ItemDetails<String>
 
   interface OnClickListener {
 

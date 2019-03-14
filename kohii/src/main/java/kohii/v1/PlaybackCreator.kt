@@ -16,13 +16,13 @@
 
 package kohii.v1
 
-import kohii.v1.Playback.Options
+import kohii.v1.Playback.Config
 
 interface PlaybackCreator<T> {
 
   fun createPlayback(
     target: T,
-    options: Options
+    config: Config
   ): Playback<T>
 
 }

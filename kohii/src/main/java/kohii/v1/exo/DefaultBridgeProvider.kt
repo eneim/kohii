@@ -16,8 +16,11 @@
 
 package kohii.v1.exo
 
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.Media
 import kohii.v1.Bridge
 import kohii.v1.BridgeProvider
+import kohii.v1.Kohii
 import kohii.v1.Playable
 
 /**
@@ -28,16 +31,20 @@ class DefaultBridgeProvider(
   private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
 ) : BridgeProvider {
 
-  override fun provideBridge(builder: Playable.Builder): Bridge {
-    return ExoBridge(
-        builder.kohii,
-        builder.media,
+  override fun provideBridge(
+    kohii: Kohii,
+    media: Media,
+    config: Playable.Config
+  ): Bridge<PlayerView> {
+    return ExoPlayerBridge(
+        kohii,
+        media,
         playerProvider,
         mediaSourceFactoryProvider
     ).also {
-      it.repeatMode = builder.repeatMode
-      it.parameters = builder.playbackParameters
-      it.playbackInfo = builder.playbackInfo
+      it.repeatMode = config.repeatMode
+      it.parameters = config.playbackParameters
+      it.playbackInfo = config.playbackInfo
     }
   }
 }

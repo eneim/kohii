@@ -23,6 +23,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.PlaybackInfo
+import kohii.v1.exo.PlayerViewPool
 
 /**
  * Bind to an Activity, to manage [PlaybackManager]s inside.
@@ -35,8 +36,11 @@ import kohii.media.PlaybackInfo
 class ActivityContainer(
   internal val kohii: Kohii,
   internal val activity: Activity,
+  @Suppress("MemberVisibilityCanBePrivate")
   internal val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
+
+  internal val playerViewPool = PlayerViewPool(2)
 
   private val prioritizedManagers = HashSet<PlaybackManager>()
   private val standardManagers = HashSet<PlaybackManager>()
@@ -109,6 +113,7 @@ class ActivityContainer(
         .onEach { detachPlaybackManager(it) }
         .clear()
 
+    playerViewPool.cleanUp()
     owner.lifecycle.removeObserver(this)
     kohii.owners.remove(owner)
   }

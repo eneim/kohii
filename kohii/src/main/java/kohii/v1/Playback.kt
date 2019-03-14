@@ -25,7 +25,6 @@ import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
 import kohii.v1.Playable.Companion.STATE_IDLE
 import kohii.v1.Playable.Companion.STATE_READY
-import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.annotation.AnnotationRetention.SOURCE
@@ -42,13 +41,12 @@ abstract class Playback<T> internal constructor(
   internal val manager: PlaybackManager,
   internal val container: Container,
   val target: T,
-  internal val options: Playback.Options
+  internal val config: Playback.Config
 ) {
 
   companion object {
     const val TAG = "Kohii::PB"
     const val DELAY_INFINITE = -1L
-    val NO_DELAY = { 0L }
 
     // Priority
     const val PRIORITY_HIGH = 1
@@ -83,10 +81,9 @@ abstract class Playback<T> internal constructor(
     open fun shouldPrepare() = false
   }
 
-  class Options(
-    @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
+  class Config(
     val priority: Int = PRIORITY_NORMAL,
-    val delay: Long = 0L,
+    val delay: Int = 0,
       // Indicator to used to judge of a Playback should be played or not.
       // This doesn't warranty that it will be played, it just to make the Playback be a candidate
       // to start a playback.
@@ -189,13 +186,13 @@ abstract class Playback<T> internal constructor(
     playable.prepare()
   }
 
-  internal fun play() {
+  internal open fun play() {
     listeners.forEach { it.beforePlay() }
-    playable.play()
+    playable.play(this)
   }
 
-  internal fun pause() {
-    playable.pause()
+  internal open fun pause() {
+    playable.pause(this)
     listeners.forEach { it.afterPause() }
   }
 

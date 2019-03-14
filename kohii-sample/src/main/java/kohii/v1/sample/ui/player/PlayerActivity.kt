@@ -23,10 +23,9 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
-import kohii.v1.Playable
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
 import kotlinx.android.parcel.Parcelize
@@ -40,12 +39,16 @@ class PlayerActivity : BaseActivity(), LifecycleOwnerProvider {
 
   companion object {
     private const val EXTRA_INIT_DATA = "kohii::player::init_data"
+    private const val EXTRA_REBINDER = "kohii::player::rebinder"
+
     fun createIntent(
       context: Context,
-      initData: InitData
+      initData: InitData,
+      rebinder: Rebinder
     ): Intent {
       val extras = Bundle().also {
         it.putParcelable(EXTRA_INIT_DATA, initData)
+        it.putParcelable(EXTRA_REBINDER, rebinder)
       }
       return Intent(context, PlayerActivity::class.java).also {
         it.putExtras(extras)
@@ -58,7 +61,8 @@ class PlayerActivity : BaseActivity(), LifecycleOwnerProvider {
     setContentView(R.layout.activity_player)
 
     val initData = intent?.extras?.getParcelable(EXTRA_INIT_DATA) as InitData?
-    initData?.let {
+    val rebinder = intent?.extras?.getParcelable(EXTRA_REBINDER) as Rebinder?
+    if (rebinder != null && initData != null) {
       val displaySize = Point().apply {
         this@PlayerActivity.windowManager.defaultDisplay.getSize(this)
       }
@@ -71,9 +75,8 @@ class PlayerActivity : BaseActivity(), LifecycleOwnerProvider {
 
       val kohii = Kohii[this]
       kohii.register(this, arrayOf(playerContainer))
-      @Suppress("UNCHECKED_CAST")
-      (kohii.findPlayable(it.tag) as? Playable<PlayerView>)?.bind(this.playerView)
-    } ?: finish()
+      rebinder.rebind(kohii, this.playerView)
+    } else finish()
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

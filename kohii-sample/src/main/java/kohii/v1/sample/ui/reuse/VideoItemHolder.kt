@@ -27,6 +27,8 @@ import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playable
+import kohii.v1.Playable.Config
+import kohii.v1.PlayableBinder
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
@@ -49,7 +51,7 @@ internal class VideoItemHolder(
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
   val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
 
-  var playable: Playable<PlayerView>? = null
+  var binder: PlayableBinder? = null
   var playback: Playback<PlayerView>? = null
   var videoSources: Sources? = null
 
@@ -68,9 +70,10 @@ internal class VideoItemHolder(
           }
           .sources.first()
 
-      this.playable = kohii.setUp(videoSources!!.file)
-          .copy(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
-          .asPlayable()
+      this.binder = kohii.setUp(videoSources!!.file)
+          .config {
+            Config(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
+          }
     }
   }
 
@@ -105,7 +108,7 @@ internal class VideoItemHolder(
 
   fun bindView(playerView: PlayerView) {
     playerContainer.addView(playerView, 0)
-    this.playable?.bind(playerView) {
+    this.binder?.bind(playerView) {
       it.addPlaybackEventListener(this)
       it.addCallback(this)
       this.playback = it

@@ -32,7 +32,7 @@ open class ViewPlayback<V : View>(
   manager: PlaybackManager,
   container: Container,
   target: V,
-  options: Options
+  options: Config
 ) : Playback<V>(
     kohii,
     playable,
@@ -115,7 +115,7 @@ open class ViewPlayback<V : View>(
   ): Int {
     if (other !is ViewPlayback) {
       // Either 1 or -1.
-      return 1 or this.options.priority.compareTo(other.options.priority)
+      return 1 or this.config.priority.compareTo(other.config.priority)
     }
 
     val thisToken = this.token
@@ -124,7 +124,7 @@ open class ViewPlayback<V : View>(
     val vertical by lazy { CENTER_Y.compare(thisToken, thatToken) }
     val horizontal by lazy { CENTER_X.compare(thisToken, thatToken) }
 
-    var result = this.options.priority.compareTo(other.options.priority)
+    var result = this.config.priority.compareTo(other.config.priority)
     if (result == 0) {
       result = when (orientation) {
         Container.VERTICAL -> vertical
@@ -148,7 +148,7 @@ open class ViewPlayback<V : View>(
   ) : Token() {
     override fun compareTo(other: Token): Int {
       return (other as? ViewToken)?.let {
-        var result = this.owner.options.priority.compareTo(other.owner.options.priority)
+        var result = this.owner.config.priority.compareTo(other.owner.config.priority)
         if (result == 0) result = CENTER_Y.compare(this, other)
         if (result == 0) result = this.areaOffset.compareTo(other.areaOffset)
         result
@@ -160,7 +160,7 @@ open class ViewPlayback<V : View>(
     }
 
     override fun shouldPlay(): Boolean {
-      return areaOffset >= owner.options.threshold
+      return areaOffset >= owner.config.threshold
     }
 
     override fun toString(): String {
