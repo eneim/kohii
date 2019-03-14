@@ -5,7 +5,6 @@
 Video playback for Android made easy.
 
 ![](https://img.shields.io/nexus/r/https/oss.sonatype.org/im.ene.kohii/kohii.svg)
-![](https://img.shields.io/nexus/s/https/oss.sonatype.org/im.ene.kohii/kohii.svg)
 [![](https://yourdonation.rocks/images/badge.svg)](https://www.paypal.me/eneimlabs/500jpy)
 
 Kohii is a high level Video playback library, built from the experience creating/maintaining [toro](https://github.com/eneim/toro) and [ExoPlayer](https://github.com/google/ExoPlayer). Kohii targets directly the Video playback on Android, giving developer powerful playback control, including 
