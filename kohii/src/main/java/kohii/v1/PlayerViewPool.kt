@@ -16,37 +16,46 @@
 
 package kohii.v1
 
-import android.view.View
-import android.view.ViewGroup
+import androidx.collection.SparseArrayCompat
 import androidx.core.util.Pools.SimplePool
-import androidx.core.view.contains
+import kohii.forEach
+import kohii.getOrPut
+import kohii.media.Media
 import kohii.onEachAcquired
 
-abstract class ViewPool<V : View>(size: Int) : SimplePool<V>(size) {
+class PlayerViewPool<CONTAINER, PLAYER>(
+  val size: Int,
+  val adapter: PlayerAdapter<CONTAINER, PLAYER>
+) {
 
-  abstract fun createView(container: ViewGroup): V
+  private val pools by lazy { SparseArrayCompat<SimplePool<PLAYER>>() }
 
-  fun acquireForContainer(
-    container: ViewGroup
-  ): V {
-    val result = super.acquire() ?: this.createView(container)
+  fun acquirePlayerView(
+    container: CONTAINER,
+    media: Media
+  ): PLAYER {
+    val type = adapter.getPlayerType(media)
+    val pool = pools.getOrPut(type) { SimplePool(size) }
+    val result = pool.acquire() ?: adapter.createPlayer(container, type)
     // adding result to container may throws exception if the result is added to other
     // container before. client must make sure it remove the result from old container first.
-    if (!container.contains(result)) container.addView(result)
+    adapter.attachPlayer(container, result)
     return result
   }
 
-  fun releaseFromContainer(
-    container: ViewGroup,
-    view: V
+  fun releasePlayerView(
+    container: CONTAINER,
+    playerView: PLAYER,
+    media: Media
   ) {
-    if (container.contains(view)) {
-      container.removeView(view)
-      super.release(view)
+    if (adapter.detachPlayer(container, playerView)) {
+      val type = adapter.getPlayerType(media)
+      val pool = pools.getOrPut(type) { SimplePool(size) }
+      pool.release(playerView)
     }
   }
 
   fun cleanUp() {
-    this.onEachAcquired { /* ignored */ }
+    pools.forEach { pool, _ -> pool.onEachAcquired { } }
   }
 }

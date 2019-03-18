@@ -218,6 +218,10 @@ class Kohii(context: Context) {
 
   fun setUp(media: Media) = PlayableBinder(this, media = media)
 
+  fun <T> `for`(clazz: Class<T>): PlayableBinder {
+    TODO("")
+  }
+
   //// [END] Public API
 
   //// Interface definitions

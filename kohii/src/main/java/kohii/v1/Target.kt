@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1
 
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.R.layout
-import kohii.v1.ViewPool
+// Player of a Target = the View that output the Video.
+// Container of a Target = where Player will be placed on.
+interface Target<CONTAINER, PLAYER> {
 
-class PlayerViewPool(size: Int) : ViewPool<PlayerView>(size) {
+  val container: CONTAINER
 
-  // TODO consider creating PlayerView to fit the Media object (eg: DRM, etc)
-  override fun createView(container: ViewGroup): PlayerView {
-    return LayoutInflater.from(container.context).inflate(
-        layout.default_playerview, container, false
-    ) as PlayerView
-  }
+  val playerType: Class<PLAYER>
 }

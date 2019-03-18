@@ -21,6 +21,7 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
+import kohii.media.Media
 import kotlin.math.max
 
 /**
@@ -28,6 +29,7 @@ import kotlin.math.max
  */
 open class ViewPlayback<V : View>(
   kohii: Kohii,
+  media: Media,
   playable: Playable<V>,
   manager: PlaybackManager,
   container: Container,
@@ -35,6 +37,7 @@ open class ViewPlayback<V : View>(
   options: Config
 ) : Playback<V>(
     kohii,
+    media,
     playable,
     manager,
     container,

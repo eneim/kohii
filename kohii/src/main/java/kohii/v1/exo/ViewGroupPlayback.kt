@@ -18,25 +18,27 @@ package kohii.v1.exo
 
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.Media
 import kohii.v1.Container
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlaybackManager
+import kohii.v1.PlayerViewPool
+import kohii.v1.PlayerViewProvider
 import kohii.v1.ViewPlayback
-import kohii.v1.ViewPool
-import kohii.v1.exo.ViewGroupPlayable.PlayerViewProvider
 
 // V: actual View to play on. Be a PlayerView or SurfaceView or something valid.
 class ViewGroupPlayback(
   kohii: Kohii,
+  media: Media,
   playable: Playable<ViewGroup>,
   manager: PlaybackManager,
   container: Container,
   target: ViewGroup,
   options: Config,
-  private val viewPool: ViewPool<PlayerView>
-) : ViewPlayback<ViewGroup>(kohii, playable, manager, container, target, options),
-    PlayerViewProvider {
+  private val playerViewPool: PlayerViewPool<ViewGroup, PlayerView>
+) : ViewPlayback<ViewGroup>(kohii, media, playable, manager, container, target, options),
+    PlayerViewProvider<PlayerView> {
 
   private var _playerView: PlayerView? = null
 
@@ -44,13 +46,15 @@ class ViewGroupPlayback(
     get() = this._playerView
 
   override fun play() {
-    if (_playerView == null) _playerView = viewPool.acquireForContainer(this.target)
+    if (_playerView == null) {
+      _playerView = playerViewPool.acquirePlayerView(this.target, this.media)
+    }
     super.play()
   }
 
   override fun pause() {
     _playerView?.let {
-      viewPool.releaseFromContainer(this.target, it)
+      playerViewPool.releasePlayerView(this.target, it, media)
       _playerView = null
     }
     super.pause()
@@ -58,7 +62,7 @@ class ViewGroupPlayback(
 
   override fun onRemoved() {
     _playerView?.let {
-      viewPool.releaseFromContainer(this.target, it)
+      playerViewPool.releasePlayerView(this.target, it, media)
       _playerView = null
     }
     super.onRemoved()

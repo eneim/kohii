@@ -17,6 +17,7 @@
 package kohii
 
 import android.view.View
+import androidx.collection.SparseArrayCompat
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.Pools.Pool
 import com.google.android.exoplayer2.Player
@@ -115,4 +116,27 @@ fun findSuitableParent(
     }
   } while (view != null)
   return null
+}
+
+inline fun <E> SparseArrayCompat<E>.getOrPut(
+  key: Int,
+  creator: () -> E
+): E {
+  var result = this[key]
+  if (result == null) {
+    result = creator.invoke()
+    this.put(key, result)
+  }
+  return result!!
+}
+
+inline fun <E> SparseArrayCompat<E>.forEach(actor: (E, Int) -> Unit) {
+  val size = this.size()
+  if (size > 0) {
+    for (index in 0 until size) {
+      val key = this.keyAt(index)
+      val value = this.valueAt(index)
+      actor.invoke(value, key)
+    }
+  }
 }

@@ -56,8 +56,6 @@ interface Playable<T> : Callback {
 
   val tag: Any
 
-  fun newBinder(): PlayableBinder
-
   fun bind(
     target: T,
     config: Playback.Config = Playback.Config(),
@@ -68,9 +66,9 @@ interface Playable<T> : Callback {
 
   fun prepare()
 
-  fun play(playback: Playback<T>)
+  fun play()
 
-  fun pause(playback: Playback<T>)
+  fun pause()
 
   fun release()
 
