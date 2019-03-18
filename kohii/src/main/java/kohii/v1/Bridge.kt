@@ -22,10 +22,10 @@ import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.RepeatMode
 
-interface Bridge<PV> {
+interface Bridge<PLAYER> {
 
   //  set/get
-  var playerView: PV?
+  var playerView: PLAYER?
 
   // set/get
   var playbackInfo: PlaybackInfo

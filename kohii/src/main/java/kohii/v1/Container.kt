@@ -106,9 +106,9 @@ interface Container {
   fun accepts(target: Any): Boolean
 
   // Must contain and allow it to play.
-  fun allowsToPlay(playback: Playback<*>): Boolean
+  fun allowsToPlay(playback: Playback<*, *>): Boolean
 
-  fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+  fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
     return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
   }
 }

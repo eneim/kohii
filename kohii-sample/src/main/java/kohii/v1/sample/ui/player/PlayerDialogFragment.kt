@@ -62,7 +62,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, 
   }
 
   var rebinder: Rebinder? = null
-  var playback: Playback<*>? = null
+  var playback: Playback<*, *>? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog = super.onCreateDialog(savedInstanceState)
@@ -97,12 +97,12 @@ class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, 
     }
   }
 
-  override fun onActive(playback: Playback<*>) {
+  override fun onActive(playback: Playback<*, *>) {
     (parentFragment as? Callback)?.onDialogActive()
   }
 
   // Would be called after onStop()
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback<*, *>) {
     this.rebinder?.let {
       (parentFragment as? Callback)?.onDialogInActive(it)
     }

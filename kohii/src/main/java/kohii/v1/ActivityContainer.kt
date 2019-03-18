@@ -37,7 +37,7 @@ class ActivityContainer(
   internal val kohii: Kohii,
   internal val activity: Activity,
   @Suppress("MemberVisibilityCanBePrivate")
-  internal val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
+  internal val selector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
   internal val playerViewPool by lazy { PlayerViewPool(2, PlayerViewAdapter()) }
@@ -50,7 +50,7 @@ class ActivityContainer(
 
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
-    val defaultSelector: (Collection<Playback<*>>) -> Collection<Playback<*>> =
+    val defaultSelector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> =
       { listOfNotNull(it.firstOrNull()) }
   }
 
@@ -86,13 +86,13 @@ class ActivityContainer(
     dispatcher.dispatchRefresh()
   }
 
-  internal fun trySavePlaybackInfo(playback: Playback<*>) {
+  internal fun trySavePlaybackInfo(playback: Playback<*, *>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
     }
   }
 
-  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
+  internal fun tryRestorePlaybackInfo(playback: Playback<*, *>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       val info = mapPlayableTagToInfo.remove(playback.playable.tag)
       if (info != null) playback.playable.playbackInfo = info
@@ -118,7 +118,7 @@ class ActivityContainer(
     kohii.owners.remove(owner)
   }
 
-  override fun onRemoved(playback: Playback<*>) {
+  override fun onRemoved(playback: Playback<*, *>) {
     playbackDispatcher.onPlaybackRemoved(playback)
   }
 
@@ -133,8 +133,8 @@ class ActivityContainer(
 
     // 1. Collect candidates from children PlaybackManagers
     // candidates.clear()
-    val toPlay = LinkedHashSet<Playback<*>>()
-    val toPause = HashSet<Playback<*>>()
+    val toPlay = LinkedHashSet<Playback<*, *>>()
+    val toPause = HashSet<Playback<*, *>>()
 
     var picked = false
     var prioritized = false

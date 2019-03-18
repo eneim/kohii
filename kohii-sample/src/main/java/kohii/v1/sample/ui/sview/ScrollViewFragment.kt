@@ -54,7 +54,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
   private var kohii: Kohii? = null
-  private var playback: Playback<PlayerView>? = null
+  private var playback: Playback<PlayerView, PlayerView>? = null
   private var dialogPlayer: DialogFragment? = null
 
   override fun onCreateView(
@@ -71,17 +71,15 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
     // ⬇︎ For demo of manual fullscreen.
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     kohii = Kohii[this].also { it.register(this, arrayOf(this.scrollView)) }
-    val bindable = kohii!!.setUp(videoUrl)
-        .config {
-          Config(tag = videoTag, repeatMode = Player.REPEAT_MODE_ONE)
-        }
+    val rebinder = kohii!!.setUp(videoUrl)
+        .config { Config(tag = videoTag, repeatMode = Player.REPEAT_MODE_ONE) }
         .bind(playerView, Playback.Config(priority = Playback.PRIORITY_NORMAL)) {
           playback = it
         }
 
     playerContainer.setOnClickListener {
       dialogPlayer = PlayerDialogFragment.newInstance(
-          bindable, InitData(tag = videoTag, aspectRatio = 16 / 9f)
+          rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f)
       )
           .also {
             it.show(childFragmentManager, videoTag)
@@ -112,7 +110,11 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
 
   override fun onDialogInActive(rebinder: Rebinder) {
     kohii?.run {
-      rebinder.rebind(this, playerView, Playback.Config(priority = Playback.PRIORITY_NORMAL)) {
+      rebinder.rebind(
+          this,
+          playerView,
+          Playback.Config(priority = Playback.PRIORITY_NORMAL)
+      ) {
         playback = it
       }
     }

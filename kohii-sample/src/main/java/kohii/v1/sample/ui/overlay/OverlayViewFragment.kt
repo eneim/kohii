@@ -79,7 +79,7 @@ class OverlayViewFragment : BaseFragment(),
 
   private var overlaySheet: BottomSheetBehavior<*>? = null
   private var rebinder: Rebinder? = null
-  private var playback: Playback<*>? = null
+  private var playback: Playback<*, *>? = null
   private var selectionTracker: SelectionTracker<Rebinder>? = null
   private var keyProvider: VideoTagKeyProvider? = null
 

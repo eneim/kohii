@@ -72,7 +72,7 @@ internal class RecyclerViewContainer(
     container.removeOnScrollListener(scrollListener)
   }
 
-  override fun allowsToPlay(playback: Playback<*>): Boolean {
+  override fun allowsToPlay(playback: Playback<*, *>): Boolean {
     return playback.target is View
         && this.container.findContainingViewHolder(playback.target) != null
         && playback.token.shouldPlay()
@@ -84,7 +84,7 @@ internal class RecyclerViewContainer(
     return RecycleViewUtils.checkParams(container, params)
   }
 
-  override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+  override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
     val orientation = container.fetchOrientation()
     return candidates.sortedWith(comparators.getValue(orientation))
         .let {
