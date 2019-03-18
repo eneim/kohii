@@ -23,7 +23,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.PlaybackInfo
-import kohii.v1.exo.PlayerViewPool
+import kohii.v1.exo.PlayerViewAdapter
 
 /**
  * Bind to an Activity, to manage [PlaybackManager]s inside.
@@ -40,7 +40,7 @@ class ActivityContainer(
   internal val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
-  internal val playerViewPool = PlayerViewPool(2)
+  internal val playerViewPool by lazy { PlayerViewPool(2, PlayerViewAdapter()) }
 
   private val prioritizedManagers = HashSet<PlaybackManager>()
   private val standardManagers = HashSet<PlaybackManager>()

@@ -53,6 +53,7 @@ class PlayableBinder(
     val targetType = target.javaClass
     val toCreate by lazy {
       when {
+        // The order is important
         PlayerView::class.java.isAssignableFrom(targetType) ->
           PlayerViewPlayable(kohii, media, playableConfig)
         ViewGroup::class.java.isAssignableFrom(targetType) ->
@@ -65,7 +66,7 @@ class PlayableBinder(
     val playable = (
         if (tag != null) {
           val cache = kohii.mapTagToPlayable[tag]
-          // cached Playable but of different type will be replaced.
+          // cached Playable of different type will be replaced.
           (cache as? Playable<T>) ?: toCreate.also {
             kohii.mapTagToPlayable[tag] = it
             cache?.release()

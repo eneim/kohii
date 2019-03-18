@@ -20,6 +20,7 @@ import android.os.Handler
 import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
+import kohii.media.Media
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
@@ -37,6 +38,7 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  */
 abstract class Playback<T> internal constructor(
   internal val kohii: Kohii,
+  internal val media: Media,
   internal val playable: Playable<T>,
   internal val manager: PlaybackManager,
   internal val container: Container,
@@ -82,6 +84,7 @@ abstract class Playback<T> internal constructor(
   }
 
   class Config(
+    @Priority
     val priority: Int = PRIORITY_NORMAL,
     val delay: Int = 0,
       // Indicator to used to judge of a Playback should be played or not.
@@ -188,11 +191,11 @@ abstract class Playback<T> internal constructor(
 
   internal open fun play() {
     listeners.forEach { it.beforePlay() }
-    playable.play(this)
+    playable.play()
   }
 
   internal open fun pause() {
-    playable.pause(this)
+    playable.pause()
     listeners.forEach { it.afterPause() }
   }
 
