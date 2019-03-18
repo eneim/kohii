@@ -30,8 +30,8 @@ class PlaybackDispatcher : Handler.Callback {
   }
 
   override fun handleMessage(msg: Message?): Boolean {
-    if (msg?.what == MSG_PLAY && msg.obj is Playback<*>) {
-      (msg.obj as Playback<*>).play()
+    if (msg?.what == MSG_PLAY && msg.obj is Playback<*, *>) {
+      (msg.obj as Playback<*, *>).play()
     }
     return true
   }
@@ -47,7 +47,7 @@ class PlaybackDispatcher : Handler.Callback {
     handler = null
   }
 
-  internal fun play(playback: Playback<*>) {
+  internal fun play(playback: Playback<*, *>) {
     handler?.let {
       val delay = playback.config.delay
       it.removeMessages(MSG_PLAY, playback)
@@ -61,12 +61,12 @@ class PlaybackDispatcher : Handler.Callback {
     }
   }
 
-  internal fun pause(playback: Playback<*>) {
+  internal fun pause(playback: Playback<*, *>) {
     handler?.removeMessages(MSG_PLAY, playback)
     playback.pause()
   }
 
-  internal fun onPlaybackRemoved(playback: Playback<*>) {
+  internal fun onPlaybackRemoved(playback: Playback<*, *>) {
     handler?.removeMessages(MSG_PLAY, playback)
   }
 }

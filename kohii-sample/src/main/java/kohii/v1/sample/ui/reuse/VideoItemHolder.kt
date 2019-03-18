@@ -52,7 +52,7 @@ internal class VideoItemHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
 
   var binder: PlayableBinder? = null
-  var playback: Playback<PlayerView>? = null
+  var playback: Playback<PlayerView, PlayerView>? = null
   var videoSources: Sources? = null
 
   val tagKey: String?
@@ -102,7 +102,7 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback<*, *>) {
     videoImage.isVisible = true
   }
 

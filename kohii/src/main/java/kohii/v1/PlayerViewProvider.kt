@@ -16,7 +16,7 @@
 
 package kohii.v1
 
-interface PlayerViewProvider<V> {
+interface PlayerViewProvider<PLAYER> {
 
-  val playerView: V?
+  val playerView: PLAYER?
 }

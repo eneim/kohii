@@ -27,15 +27,15 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
-open class ViewPlayback<V : View>(
+open class ViewPlayback<V : View, PLAYER>(
   kohii: Kohii,
   media: Media,
-  playable: Playable<V>,
+  playable: Playable<PLAYER>,
   manager: PlaybackManager,
   container: Container,
   target: V,
   options: Config
-) : Playback<V>(
+) : Playback<V, PLAYER>(
     kohii,
     media,
     playable,
@@ -113,7 +113,7 @@ open class ViewPlayback<V : View>(
   }
 
   override fun compareWidth(
-    other: Playback<*>,
+    other: Playback<*, *>,
     orientation: Int
   ): Int {
     if (other !is ViewPlayback) {
@@ -144,7 +144,7 @@ open class ViewPlayback<V : View>(
 
   // Location on screen, with visible offset within target's parent.
   data class ViewToken internal constructor(
-    internal val owner: Playback<*>,
+    internal val owner: Playback<*, *>,
     internal val viewRect: Rect,
     internal val areaOffset: Float,
     internal val canRelease: Boolean = true

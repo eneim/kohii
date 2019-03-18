@@ -73,7 +73,7 @@ class VideoViewHolder(
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
   var rebinder: Rebinder? = null
-  var playback: Playback<PlayerView>? = null
+  var playback: Playback<PlayerView, PlayerView>? = null
   var payload: InitData? = null
 
   override fun bind(item: Item?) {
@@ -96,7 +96,7 @@ class VideoViewHolder(
     }
   }
 
-  override fun onRemoved(playback: Playback<*>) {
+  override fun onRemoved(playback: Playback<*, *>) {
     playback.removePlaybackEventListener(this)
     playback.removeCallback(this)
   }
@@ -110,7 +110,7 @@ class VideoViewHolder(
   override fun onClick(v: View?) {
     if (v != null && payload != null && rebinder != null) {
       listener.onItemClick(
-          v, transView, adapterPosition, Pair<Rebinder, InitData>(rebinder!!, payload!!)
+          v, transView, adapterPosition, Pair(rebinder!!, payload!!)
       )
     }
   }

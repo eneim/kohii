@@ -31,7 +31,7 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-interface Playable<T> : Callback {
+interface Playable<PLAYER> : Callback {
 
   companion object {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
@@ -56,10 +56,10 @@ interface Playable<T> : Callback {
 
   val tag: Any
 
-  fun bind(
-    target: T,
+  fun <TARGET: Any> bind(
+    target: TARGET,
     config: Playback.Config = Playback.Config(),
-    cb: ((Playback<T>) -> Unit)? = null
+    cb: ((Playback<TARGET, PLAYER>) -> Unit)? = null
   )
 
   /// Playback controller

@@ -17,32 +17,30 @@
 package kohii.v1.exo
 
 import android.view.ViewGroup
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.Container
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlaybackManager
 import kohii.v1.PlayerViewPool
-import kohii.v1.PlayerViewProvider
 import kohii.v1.ViewPlayback
 
-// V: actual View to play on. Be a PlayerView or SurfaceView or something valid.
-class ViewGroupPlayback(
+class LazyViewPlayback<PLAYER>(
   kohii: Kohii,
   media: Media,
-  playable: Playable<ViewGroup>,
+  playable: Playable<PLAYER>,
   manager: PlaybackManager,
   container: Container,
   target: ViewGroup,
   options: Config,
-  private val playerViewPool: PlayerViewPool<ViewGroup, PlayerView>
-) : ViewPlayback<ViewGroup>(kohii, media, playable, manager, container, target, options),
-    PlayerViewProvider<PlayerView> {
+  private val playerViewPool: PlayerViewPool<ViewGroup, PLAYER>
+) : ViewPlayback<ViewGroup, PLAYER>(
+    kohii, media, playable, manager, container, target, options
+) {
 
-  private var _playerView: PlayerView? = null
+  private var _playerView: PLAYER? = null
 
-  override val playerView: PlayerView?
+  override val playerView: PLAYER?
     get() = this._playerView
 
   override fun play() {

@@ -45,7 +45,7 @@ internal class NestedScrollViewContainer(
     manager.dispatchRefreshAll()
   }
 
-  override fun allowsToPlay(playback: Playback<*>): Boolean {
+  override fun allowsToPlay(playback: Playback<*, *>): Boolean {
     return playback.token.shouldPlay()
   }
 

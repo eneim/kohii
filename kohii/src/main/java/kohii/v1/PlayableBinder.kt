@@ -21,7 +21,6 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.Playback.Config
 import kohii.v1.exo.PlayerViewPlayable
-import kohii.v1.exo.ViewGroupPlayable
 
 /**
  * @author eneim (2019/03/14)
@@ -44,20 +43,18 @@ class PlayableBinder(
     return this
   }
 
-  fun <T : Any> bind(
-    target: T,
+  fun <TARGET : Any> bind(
+    target: TARGET,
     config: Config = Config(), // default
-    cb: ((Playback<T>) -> Unit)? = null
+    cb: ((Playback<TARGET, PlayerView>) -> Unit)? = null
   ): Rebinder {
     val tag = playableConfig.tag
     val targetType = target.javaClass
     val toCreate by lazy {
       when {
         // The order is important
-        PlayerView::class.java.isAssignableFrom(targetType) ->
-          PlayerViewPlayable(kohii, media, playableConfig)
         ViewGroup::class.java.isAssignableFrom(targetType) ->
-          ViewGroupPlayable(kohii, media, playableConfig)
+          PlayerViewPlayable(kohii, media, playableConfig)
         else -> throw IllegalArgumentException("Unsupported target type: ${targetType.simpleName}")
       }
     }
@@ -67,13 +64,13 @@ class PlayableBinder(
         if (tag != null) {
           val cache = kohii.mapTagToPlayable[tag]
           // cached Playable of different type will be replaced.
-          (cache as? Playable<T>) ?: toCreate.also {
+          (cache as? Playable<PlayerView>) ?: toCreate.also {
             kohii.mapTagToPlayable[tag] = it
             cache?.release()
           }
         } else {
           toCreate
-        }) as Playable<T>
+        })
     kohii.mapPlayableToManager[playable] = null
     playable.bind(target, config, cb)
     return Rebinder(tag, targetType)

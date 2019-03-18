@@ -66,7 +66,7 @@ class PageFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
   }
 
   private var landscape: Boolean = false
-  private var playback: Playback<PlayerView>? = null
+  private var playback: Playback<PlayerView, *>? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,

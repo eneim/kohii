@@ -72,7 +72,7 @@ class VideoViewHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
 
   var itemTag: String? = null
-  var playback: Playback<PlayerView>? = null
+  var playback: Playback<PlayerView, PlayerView>? = null
 
   @SuppressLint("SetTextI18n")
   override fun bind(item: Item?) {

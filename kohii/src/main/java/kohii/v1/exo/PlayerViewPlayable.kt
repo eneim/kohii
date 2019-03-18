@@ -17,6 +17,7 @@
 package kohii.v1.exo
 
 import android.util.Log
+import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.BasePlayable
@@ -36,7 +37,7 @@ class PlayerViewPlayable internal constructor(
   media: Media,
   config: Playable.Config,
   bridge: Bridge<PlayerView>
-) : BasePlayable<PlayerView, PlayerView>(kohii, media, config, bridge) {
+) : BasePlayable<PlayerView>(kohii, media, config, bridge) {
 
   internal constructor(
     kohii: Kohii,
@@ -44,34 +45,60 @@ class PlayerViewPlayable internal constructor(
     config: Playable.Config
   ) : this(kohii, media, config, kohii.bridgeProvider.provideBridge(kohii, media, config))
 
-  // When binding to a PlayerView, any old Playback for the same PlayerView should be destroyed.
-  // Relationship: [Playable] --> [Playback [Target]]
-  override fun bind(
-    target: PlayerView,
-    config: Playback.Config,
-    cb: ((Playback<PlayerView>) -> Unit)?
+  override fun <TARGET : Any> bind(
+    target: TARGET,
+    config: Config,
+    cb: ((Playback<TARGET, PlayerView>) -> Unit)?
   ) {
     val manager = kohii.findSuitableManager(target) ?: throw IllegalStateException(
         "There is no manager for $target. Forget to register one?"
     )
 
+    val container by lazy {
+      manager.findSuitableContainer(target) ?: throw IllegalStateException(
+          "This manager $this has no Container that " +
+              "accepts this target: $target. Kohii requires at least one."
+      )
+    }
+
+    val creatorForPlayerView by lazy {
+      object : PlaybackCreator<PlayerView, PlayerView> {
+        override fun createPlayback(
+          target: PlayerView,
+          config: Config
+        ): Playback<PlayerView, PlayerView> {
+          return ViewPlayback(
+              kohii, media, this@PlayerViewPlayable, manager, container, target, config
+          )
+        }
+      }
+    }
+
+    val creatorForViewGroup by lazy {
+      object : PlaybackCreator<ViewGroup, PlayerView> {
+        override fun createPlayback(
+          target: ViewGroup,
+          config: Config
+        ): Playback<ViewGroup, PlayerView> {
+          return LazyViewPlayback(
+              kohii, media, this@PlayerViewPlayable, manager, container, target, config,
+              manager.parent.playerViewPool
+          )
+        }
+      }
+    }
+
+    val targetType = target.javaClass
+    @Suppress("UNCHECKED_CAST")
+    val creator =
+      (when {
+        PlayerView::class.java.isAssignableFrom(targetType) -> creatorForPlayerView
+        ViewGroup::class.java.isAssignableFrom(targetType) -> creatorForViewGroup
+        else -> throw IllegalArgumentException("Unsupported target type: ")
+      }) as PlaybackCreator<TARGET, PlayerView>
+
     Log.w("Kohii::X", "bind: $target, $manager")
-    val result = manager.performBindPlayable(this, target, config,
-        object : PlaybackCreator<PlayerView> {
-          override fun createPlayback(
-            target: PlayerView,
-            config: Config
-          ): Playback<PlayerView> {
-            val container = manager.findSuitableContainer(target)
-                ?: throw IllegalStateException(
-                    "This manager $this has no Container that " +
-                        "accepts this target: $target. Kohii requires at least one."
-                )
-            return ViewPlayback(
-                kohii, media, this@PlayerViewPlayable, manager, container, target, config
-            )
-          }
-        })
+    val result = manager.performBindPlayable(this, target, config, creator)
     cb?.invoke(result)
   }
 }

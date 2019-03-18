@@ -25,6 +25,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlayableBinder
@@ -59,7 +60,7 @@ internal class VideoItemHolder(
   val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
   val playerContainer = itemView.findViewById(R.id.playerContainer) as View
 
-  var playback: Playback<ViewGroup>? = null
+  var playback: Playback<ViewGroup, PlayerView>? = null
   var binder: PlayableBinder? = null
   var videoSources: Sources? = null
 
@@ -130,7 +131,7 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback<*, *>) {
     videoImage.isVisible = true
   }
 

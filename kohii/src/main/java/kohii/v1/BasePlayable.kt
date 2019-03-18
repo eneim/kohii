@@ -26,29 +26,22 @@ import kohii.v1.Playable.Companion.NO_TAG
 
 // PLAYER: the 'view' for Bridge
 // TODO: Playable of the same 'PLAYER' can be reused across different TARGET.
-abstract class BasePlayable<TARGET, PLAYER>(
+@Suppress("MemberVisibilityCanBePrivate")
+abstract class BasePlayable<PLAYER>(
   val kohii: Kohii,
   val media: Media,
-  config: Playable.Config,
+  val config: Playable.Config,
   val bridge: Bridge<PLAYER>
-) : Playable<TARGET> {
-
-  private val builderTag = config.tag
-  private val prefetch = config.prefetch
+) : Playable<PLAYER> {
 
   private var listener: PlayerEventListener? = null
   // Will be inferred from Playback instance.
   private var playerViewProvider: PlayerViewProvider<PLAYER>? = null
 
   // TODO how to obtain the PlayerViewProvider in friendly/flexible way?
-  override fun onAdded(playback: Playback<*>) {
+  override fun onAdded(playback: Playback<*, *>) {
     @Suppress("UNCHECKED_CAST")
-    playerViewProvider = (playback as? Playback<PLAYER>)?.let { pb ->
-      object : PlayerViewProvider<PLAYER> {
-        override val playerView: PLAYER?
-          get() = pb.target
-      }
-    } ?: playback as? PlayerViewProvider<PLAYER>
+    playerViewProvider = playback as? PlayerViewProvider<PLAYER>
 
     require(playerViewProvider != null) {
       "PlayerViewProvider is null, please double check your Playback implementation: $playback"
@@ -77,7 +70,7 @@ abstract class BasePlayable<TARGET, PLAYER>(
     this.bridge.addVolumeChangeListener(playback.volumeListeners)
   }
 
-  override fun onRemoved(playback: Playback<*>) {
+  override fun onRemoved(playback: Playback<*, *>) {
     playerViewProvider = null
     this.bridge.removeVolumeChangeListener(playback.volumeListeners)
     this.bridge.removeEventListener(playback.playerListeners)
@@ -90,7 +83,7 @@ abstract class BasePlayable<TARGET, PLAYER>(
     if (kohii.mapPlayableToManager[this] == null) {
       playback.release()
       // There is no other Manager to manage this Playable, and we are removing the last one, so ...
-      kohii.releasePlayable(builderTag, this)
+      kohii.releasePlayable(config.tag, this)
     }
     playback.removeCallback(this)
   }
@@ -100,14 +93,14 @@ abstract class BasePlayable<TARGET, PLAYER>(
    * - Instance of this class will have member 'playback' set to the method parameter.
    * - Bridge instance will be set with correct target (PlayerView).
    */
-  override fun onActive(playback: Playback<*>) {
+  override fun onActive(playback: Playback<*, *>) {
     require(playback.target is ViewGroup) {
       "${this.javaClass.simpleName} only works with target of type ViewGroup"
     }
   }
 
   // Playback.Callback#onInActive(Playback)
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback<*, *>) {
     // Make sure that the current Manager of this Playable is the same with playback's one, or null.
     if (kohii.mapPlayableToManager[this] === playback.manager || //
         kohii.mapPlayableToManager[this] == null
@@ -117,10 +110,10 @@ abstract class BasePlayable<TARGET, PLAYER>(
     }
   }
 
-  override val tag: Any = builderTag ?: NO_TAG
+  override val tag: Any = config.tag ?: NO_TAG
 
   override fun prepare() {
-    this.bridge.prepare(prefetch)
+    this.bridge.prepare(config.prefetch)
   }
 
   override fun play() {

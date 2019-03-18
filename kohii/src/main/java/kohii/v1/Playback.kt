@@ -36,15 +36,15 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-abstract class Playback<T> internal constructor(
+abstract class Playback<TARGET, PLAYER> internal constructor(
   internal val kohii: Kohii,
   internal val media: Media,
-  internal val playable: Playable<T>,
+  internal val playable: Playable<PLAYER>,
   internal val manager: PlaybackManager,
   internal val container: Container,
-  val target: T,
+  val target: TARGET,
   internal val config: Playback.Config
-) {
+) : PlayerViewProvider<PLAYER> {
 
   companion object {
     const val TAG = "Kohii::PB"
@@ -55,15 +55,15 @@ abstract class Playback<T> internal constructor(
     const val PRIORITY_NORMAL = 2
     const val PRIORITY_LOW = 3
 
-    val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+    val VERTICAL_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, Container.VERTICAL)
     }
 
-    val HORIZONTAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+    val HORIZONTAL_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, Container.HORIZONTAL)
     }
 
-    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
+    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, Container.BOTH_AXIS)
     }
   }
@@ -165,7 +165,7 @@ abstract class Playback<T> internal constructor(
   // Lifecycle
 
   open fun compareWidth(
-    other: Playback<*>,
+    other: Playback<*, *>,
     orientation: Int
   ): Int {
     return this.token.compareTo(other.token)
@@ -203,6 +203,11 @@ abstract class Playback<T> internal constructor(
     Log.i("Kohii::X", "release: $this, $manager")
     playable.release()
   }
+
+  // Client must override this method to provide correct implementation.
+  @Suppress("UNCHECKED_CAST")
+  override val playerView: PLAYER?
+    get() = this.target as? PLAYER
 
   @CallSuper
   internal open fun onCreated() {
@@ -274,12 +279,12 @@ abstract class Playback<T> internal constructor(
   }
 
   interface Callback {
-    fun onAdded(playback: Playback<*>) {}
+    fun onAdded(playback: Playback<*, *>) {}
 
-    fun onActive(playback: Playback<*>) {}
+    fun onActive(playback: Playback<*, *>) {}
 
-    fun onInActive(playback: Playback<*>) {}
+    fun onInActive(playback: Playback<*, *>) {}
 
-    fun onRemoved(playback: Playback<*>) {}
+    fun onRemoved(playback: Playback<*, *>) {}
   }
 }

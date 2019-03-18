@@ -27,6 +27,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleService
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo.VERSION_SLASHY
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
@@ -217,10 +218,6 @@ class Kohii(context: Context) {
   fun setUp(url: String) = this.setUp(MediaItem(Uri.parse(url)))
 
   fun setUp(media: Media) = PlayableBinder(this, media = media)
-
-  fun <T> `for`(clazz: Class<T>): PlayableBinder {
-    TODO("")
-  }
 
   //// [END] Public API
 
