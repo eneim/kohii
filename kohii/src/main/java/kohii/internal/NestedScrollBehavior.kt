@@ -32,5 +32,4 @@ class NestedScrollBehavior<V : View> : Behavior<V> {
     context: Context?,
     attrs: AttributeSet?
   ) : super(context, attrs)
-
 }
