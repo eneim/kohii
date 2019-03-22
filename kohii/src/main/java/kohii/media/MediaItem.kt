@@ -58,5 +58,4 @@ open class MediaItem(
   override fun toString(): String {
     return "K::Media(uri=$uri, type=$type, mediaDrm=$mediaDrm)"
   }
-
 }
