@@ -40,10 +40,10 @@ abstract class BaseViewHolder(
   interface OnClickListener {
 
     fun onItemClick(
-      itemView: View,   // The main View receives the click
+      itemView: View, // The main View receives the click
       transView: View?, // The view to use in SharedElement Transition.
-      adapterPos: Int,  // The adapter position.
-      payload: Any      // Payload, for Video it is the tag (String), used as Transition name.
+      adapterPos: Int, // The adapter position.
+      payload: Any // Payload, for Video it is the tag (String), used as Transition name.
     )
 
     fun onItemLoaded(
