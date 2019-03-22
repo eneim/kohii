@@ -318,7 +318,7 @@ internal open class ExoPlayerBridge(
     }
   }
 
-  /// ErrorMessageProvider<ExoPlaybackException> ⬇︎
+  // ErrorMessageProvider<ExoPlaybackException> ⬇︎
 
   override fun getErrorMessage(e: ExoPlaybackException?): Pair<Int, String> {
     var errorString = context.getString(R.string.error_generic)
@@ -343,7 +343,7 @@ internal open class ExoPlayerBridge(
     return Pair.create(0, errorString)
   }
 
-  /// DefaultEventListener ⬇︎
+  // DefaultEventListener ⬇︎
 
   override fun onPlayerError(error: ExoPlaybackException?) {
     if (playerView == null) {
