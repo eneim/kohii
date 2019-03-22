@@ -81,5 +81,4 @@ abstract class ViewContainer<V : View>(
   override fun toString(): String {
     return "${container.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
   }
-
 }
