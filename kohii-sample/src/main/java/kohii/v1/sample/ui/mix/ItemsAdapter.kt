@@ -25,8 +25,8 @@ import kohii.v1.sample.R
 /**
  * @author eneim (2018/07/06).
  */
-class ItemsAdapter( //
-  private val items: List<Item>, //
+class ItemsAdapter(
+  private val items: List<Item>,
   private val kohii: Kohii
 ) : Adapter<BaseViewHolder>() {
 
