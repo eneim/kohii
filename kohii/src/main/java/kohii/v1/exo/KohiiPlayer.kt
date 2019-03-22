@@ -47,7 +47,7 @@ open class KohiiPlayer(
   bandwidthMeter: BandwidthMeter,
   drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?,
   looper: Looper
-) : SimpleExoPlayer( //
+) : SimpleExoPlayer(
     context,
     renderersFactory,
     trackSelector,
