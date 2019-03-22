@@ -40,13 +40,13 @@ interface PlaybackEventListener {
 
   fun onFirstFrameRendered() {}
 
-  fun onBuffering(playWhenReady: Boolean) {}  // ExoPlayer state: 2
+  fun onBuffering(playWhenReady: Boolean) {} // ExoPlayer state: 2
 
-  fun onPlaying() {}  // ExoPlayer state: 3, play flag: true
+  fun onPlaying() {} // ExoPlayer state: 3, play flag: true
 
-  fun onPaused() {}   // ExoPlayer state: 3, play flag: false
+  fun onPaused() {} // ExoPlayer state: 3, play flag: false
 
-  fun onCompleted() {}  // ExoPlayer state: 4
+  fun onCompleted() {} // ExoPlayer state: 4
 
   // Called right before playback.play() is called.
   fun beforePlay() {}
