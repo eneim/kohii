@@ -24,6 +24,7 @@ buildscript {
     mavenCentral()
     jcenter()
     maven { url 'https://maven.fabric.io/public' }
+    maven { url "https://plugins.gradle.org/m2/" }
   }
 
   dependencies {
@@ -33,6 +34,7 @@ buildscript {
     classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.8.5'
     classpath 'io.fabric.tools:gradle:1.27.1'
     classpath 'com.google.gms:google-services:4.2.0'
+    classpath 'org.jlleitschuh.gradle:ktlint-gradle:7.2.1'
   }
 }
 
@@ -44,6 +46,8 @@ allprojects {
     maven { url 'https://jitpack.io' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
   }
+
+  apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
 }
 
 task clean(type: Delete) {
