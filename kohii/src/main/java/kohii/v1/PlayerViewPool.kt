@@ -26,7 +26,7 @@ import kohii.onEachAcquired
 class PlayerViewPool<CONTAINER, PLAYER>(
   val size: Int,
   val adapter: PlayerAdapter<CONTAINER, PLAYER>
-) {
+) : Cleanable {
 
   private val pools by lazy { SparseArrayCompat<SimplePool<PLAYER>>() }
 
@@ -55,7 +55,7 @@ class PlayerViewPool<CONTAINER, PLAYER>(
     }
   }
 
-  fun cleanUp() {
+  override fun cleanUp() {
     pools.forEach { pool, _ -> pool.onEachAcquired { } }
   }
 }
