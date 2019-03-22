@@ -73,28 +73,28 @@ class DefaultPlayerProvider(
     val drmSessionManager = drmSessionManagerProvider?.provideDrmSessionManager(media)
     if (drmSessionManager == null) { // No DRM support requires, use Pool to cache plain Player.
       return plainPlayerPool.acquireOrCreate {
-        KohiiPlayer( //
-            context, //
-            renderersFactory, //
-            trackSelector, //
-            loadControl, //
-            bandwidthMeterFactory.createBandwidthMeter(), //
-            null, //
-            Util.getLooper() //
+        KohiiPlayer(
+            context,
+            renderersFactory,
+            trackSelector,
+            loadControl,
+            bandwidthMeterFactory.createBandwidthMeter(),
+            null,
+            Util.getLooper()
         ).also {
           it.setAudioAttributes(it.audioAttributes, true)
         }
       }
     } else {
       // Need DRM support, we'd better use fresh Player instances.
-      return KohiiPlayer( //
-          context, //
-          renderersFactory, //
-          trackSelector, //
-          loadControl, //
-          bandwidthMeterFactory.createBandwidthMeter(), //
-          drmSessionManager, //
-          Util.getLooper() //
+      return KohiiPlayer(
+          context,
+          renderersFactory,
+          trackSelector,
+          loadControl,
+          bandwidthMeterFactory.createBandwidthMeter(),
+          drmSessionManager,
+          Util.getLooper()
       ).also {
         it.setAudioAttributes(it.audioAttributes, true)
         drmPlayerCache[it] = System.currentTimeMillis()
