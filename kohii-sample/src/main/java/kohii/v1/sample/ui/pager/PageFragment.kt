@@ -109,5 +109,4 @@ class PageFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
   override fun provideLifecycleOwner(): LifecycleOwner {
     return viewLifecycleOwner
   }
-
 }
