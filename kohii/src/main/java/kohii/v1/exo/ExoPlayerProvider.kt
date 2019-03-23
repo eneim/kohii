@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2018 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.exo
 
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.trackselection.TrackSelector
 import kohii.media.Media
+import kohii.v1.Cleanable
 
-interface BridgeProvider<PLAYER> : Cleanable {
+/**
+ * @author eneim (2018/10/27).
+ */
+interface ExoPlayerProvider : Cleanable {
 
-  fun provideBridge(
-    kohii: Kohii,
+  fun acquirePlayer(media: Media): Player
+
+  fun releasePlayer(
     media: Media,
-    config: Playable.Config
-  ): Bridge<PLAYER>
+    player: Player
+  )
+
+  val trackSelector: TrackSelector
 }

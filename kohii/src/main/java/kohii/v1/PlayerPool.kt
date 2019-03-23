@@ -23,35 +23,35 @@ import kohii.getOrPut
 import kohii.media.Media
 import kohii.onEachAcquired
 
-class PlayerViewPool<CONTAINER, PLAYER>(
+class PlayerPool<CONTAINER, PLAYER>(
   val size: Int,
-  val adapter: PlayerAdapter<CONTAINER, PLAYER>
+  val creator: PlayerCreator<CONTAINER, PLAYER>
 ) : Cleanable {
 
   private val pools by lazy { SparseArrayCompat<SimplePool<PLAYER>>() }
 
-  fun acquirePlayerView(
-    container: CONTAINER,
+  fun acquirePlayer(
+    target: Target<CONTAINER, PLAYER>,
     media: Media
   ): PLAYER {
-    val type = adapter.getPlayerType(media)
+    val type = creator.getPlayerType(media)
     val pool = pools.getOrPut(type) { SimplePool(size) }
-    val result = pool.acquire() ?: adapter.createPlayer(container, type)
+    val result = pool.acquire() ?: creator.createPlayer(target.requireContainer(), type)
     // adding result to container may throws exception if the result is added to other
     // container before. client must make sure it remove the result from old container first.
-    adapter.attachPlayer(container, result)
+    target.attachPlayer(result)
     return result
   }
 
-  fun releasePlayerView(
-    container: CONTAINER,
-    playerView: PLAYER,
+  fun releasePlayer(
+    target: Target<CONTAINER, PLAYER>,
+    player: PLAYER,
     media: Media
   ) {
-    if (adapter.detachPlayer(container, playerView)) {
-      val type = adapter.getPlayerType(media)
+    if (target.detachPlayer(player)) {
+      val type = creator.getPlayerType(media)
       val pool = pools.getOrPut(type) { SimplePool(size) }
-      pool.release(playerView)
+      pool.release(player)
     }
   }
 

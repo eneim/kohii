@@ -16,11 +16,15 @@
 
 package kohii.v1
 
-// Player of a Target = the View that output the Video.
-// Container of a Target = where Player will be placed on.
+// A Target definition for a specific Container type.
+// Useful when use with LazyViewPlayback.
 interface Target<CONTAINER, PLAYER> {
 
-  val container: CONTAINER
+  fun requireContainer(): CONTAINER
 
-  val playerType: Class<PLAYER>
+  fun attachPlayer(player: PLAYER)
+
+  // Returning true if the Player actually do anything,
+  // For example: ViewGroup remove the PlayerView.
+  fun detachPlayer(player: PLAYER): Boolean
 }

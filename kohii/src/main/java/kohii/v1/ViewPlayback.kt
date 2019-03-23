@@ -27,7 +27,7 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
-open class ViewPlayback<V : View, PLAYER>(
+internal open class ViewPlayback<V : View, PLAYER>(
   kohii: Kohii,
   media: Media,
   playable: Playable<PLAYER>,
@@ -107,6 +107,7 @@ open class ViewPlayback<V : View, PLAYER>(
     if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
+  @CallSuper
   override fun onRemoved() {
     if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
     super.onRemoved()
@@ -116,7 +117,7 @@ open class ViewPlayback<V : View, PLAYER>(
     other: Playback<*, *>,
     orientation: Int
   ): Int {
-    if (other !is ViewPlayback) {
+    if (other !is ViewPlayback<*, *>) {
       // Either 1 or -1.
       return 1 or this.config.priority.compareTo(other.config.priority)
     }
@@ -141,6 +142,10 @@ open class ViewPlayback<V : View, PLAYER>(
     if (result == 0) result = compareValues(thisToken.areaOffset, thatToken.areaOffset)
     return result
   }
+
+  @Suppress("UNCHECKED_CAST")
+  override val playerView: PLAYER?
+    get() = this.target as? PLAYER
 
   // Location on screen, with visible offset within target's parent.
   data class ViewToken internal constructor(

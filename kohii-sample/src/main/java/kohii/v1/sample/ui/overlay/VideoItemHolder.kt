@@ -61,7 +61,7 @@ internal class VideoItemHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as View
 
   var playback: Playback<ViewGroup, PlayerView>? = null
-  var binder: PlayableBinder? = null
+  var binder: PlayableBinder<PlayerView>? = null
   var videoSources: Sources? = null
 
   init {
@@ -74,7 +74,7 @@ internal class VideoItemHolder(
 
   // Trick
   val rebinder: Rebinder?
-    get() = this.videoSources?.let { Rebinder(tagKey, playerView::class.java) }
+    get() = this.videoSources?.let { Rebinder(tagKey, PlayerView::class.java) }
 
   override fun bind(item: Any?) {
     (item as? Video)?.let {
@@ -135,7 +135,7 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-/// Selection
+  // Selection
 
   fun getItemDetails(): ItemDetails<Rebinder> {
     return object : ItemDetails<Rebinder>() {

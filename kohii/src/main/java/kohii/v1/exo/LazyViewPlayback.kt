@@ -22,20 +22,21 @@ import kohii.v1.Container
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlaybackManager
-import kohii.v1.PlayerViewPool
+import kohii.v1.PlayerPool
+import kohii.v1.Target
 import kohii.v1.ViewPlayback
 
-class LazyViewPlayback<PLAYER>(
+internal class LazyViewPlayback<PLAYER>(
   kohii: Kohii,
   media: Media,
   playable: Playable<PLAYER>,
   manager: PlaybackManager,
   container: Container,
-  target: ViewGroup,
+  private val boxedTarget: Target<ViewGroup, PLAYER>,
   options: Config,
-  private val playerViewPool: PlayerViewPool<ViewGroup, PLAYER>
+  private val playerPool: PlayerPool<ViewGroup, PLAYER>
 ) : ViewPlayback<ViewGroup, PLAYER>(
-    kohii, media, playable, manager, container, target, options
+    kohii, media, playable, manager, container, boxedTarget.requireContainer(), options
 ) {
 
   private var _playerView: PLAYER? = null
@@ -45,14 +46,20 @@ class LazyViewPlayback<PLAYER>(
 
   override fun play() {
     if (_playerView == null) {
-      _playerView = playerViewPool.acquirePlayerView(this.target, this.media)
+      _playerView = playerPool.acquirePlayer(this.boxedTarget, this.media)
+      if (this.playerCallback != null && _playerView != null) {
+        this.playerCallback!!.onPlayerAcquired(_playerView!!)
+      }
     }
     super.play()
   }
 
   override fun pause() {
     _playerView?.let {
-      playerViewPool.releasePlayerView(this.target, it, media)
+      playerPool.releasePlayer(this.boxedTarget, it, media)
+      if (this.playerCallback != null) {
+        this.playerCallback!!.onPlayerReleased(_playerView)
+      }
       _playerView = null
     }
     super.pause()
@@ -60,7 +67,7 @@ class LazyViewPlayback<PLAYER>(
 
   override fun onRemoved() {
     _playerView?.let {
-      playerViewPool.releasePlayerView(this.target, it, media)
+      playerPool.releasePlayer(this.boxedTarget, it, media)
       _playerView = null
     }
     super.onRemoved()

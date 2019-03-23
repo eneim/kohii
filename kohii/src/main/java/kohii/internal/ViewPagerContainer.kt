@@ -27,12 +27,14 @@ class ViewPagerContainer(
   manager: PlaybackManager
 ) : ViewContainer<ViewPager>(container, manager), OnPageChangeListener {
 
-  override fun onManagerAttached() {
+  override fun onAdded() {
+    super.onAdded()
     container.addOnPageChangeListener(this)
     manager.dispatchRefreshAll()
   }
 
-  override fun onManagerDetached() {
+  override fun onRemoved() {
+    super.onRemoved()
     container.removeOnPageChangeListener(this)
   }
 
@@ -79,5 +81,4 @@ class ViewPagerContainer(
   override fun hashCode(): Int {
     return container.hashCode()
   }
-
 }

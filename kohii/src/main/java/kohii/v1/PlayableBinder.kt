@@ -16,28 +16,29 @@
 
 package kohii.v1
 
-import android.view.ViewGroup
-import com.google.android.exoplayer2.ui.PlayerView
+import android.net.Uri
 import kohii.media.Media
+import kohii.media.MediaItem
 import kohii.v1.Playback.Config
-import kohii.v1.exo.PlayerViewPlayable
 
-/**
- * @author eneim (2019/03/14)
- *
- * Need to give the Config more power. Because Playable lives at global scope, so is instance of this class.
- * Responsibilities:
- * - Allow binding to specific type of Target.
- * - Judge from the target type to build correct Playable.
- */
-class PlayableBinder(
-  val kohii: Kohii,
-  val media: Media
+abstract class PlayableBinder<PLAYER>(
+  protected val kohii: Kohii,
+  protected val playerType: Class<PLAYER>
 ) {
 
+  var media: Media? = null
   var playableConfig = Playable.Config()
 
-  inline fun config(config: () -> Playable.Config): PlayableBinder {
+  fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
+
+  fun setUp(url: String) = this.setUp(Uri.parse(url))
+
+  fun setUp(media: Media): PlayableBinder<PLAYER> {
+    this.media = media
+    return this
+  }
+
+  inline fun config(config: () -> Playable.Config): PlayableBinder<PLAYER> {
     this.playableConfig = config.invoke()
         .copySelf()
     return this
@@ -45,34 +46,31 @@ class PlayableBinder(
 
   fun <TARGET : Any> bind(
     target: TARGET,
-    config: Config = Config(), // default
-    cb: ((Playback<TARGET, PlayerView>) -> Unit)? = null
+    config: Config = Playback.Config(), // default
+    cb: ((Playback<TARGET, PLAYER>) -> Unit)? = null
   ): Rebinder {
+    val media = this.media ?: throw IllegalStateException("Media is not set.")
     val tag = playableConfig.tag
-    val targetType = target.javaClass
-    val toCreate by lazy {
-      when {
-        // The order is important
-        ViewGroup::class.java.isAssignableFrom(targetType) ->
-          PlayerViewPlayable(kohii, media, playableConfig)
-        else -> throw IllegalArgumentException("Unsupported target type: ${targetType.simpleName}")
-      }
+    val toCreate: Playable<PLAYER> by lazy { this.createPlayable(kohii, media, playableConfig) }
+    val playable = if (tag != null) {
+      val cache = kohii.mapTagToPlayable[tag]
+      // cached Playable of different type will be replaced.
+      @Suppress("UNCHECKED_CAST")
+      if (cache?.second !== playerType) toCreate.also {
+        kohii.mapTagToPlayable[tag] = Pair(it, playerType)
+        cache?.first?.release()
+      } else cache.first as Playable<PLAYER>
+    } else {
+      toCreate
     }
-
-    @Suppress("UNCHECKED_CAST")
-    val playable = (
-        if (tag != null) {
-          val cache = kohii.mapTagToPlayable[tag]
-          // cached Playable of different type will be replaced.
-          (cache as? Playable<PlayerView>) ?: toCreate.also {
-            kohii.mapTagToPlayable[tag] = it
-            cache?.release()
-          }
-        } else {
-          toCreate
-        })
     kohii.mapPlayableToManager[playable] = null
     playable.bind(target, config, cb)
-    return Rebinder(tag, targetType)
+    return Rebinder(tag, playerType)
   }
+
+  abstract fun createPlayable(
+    kohii: Kohii,
+    media: Media,
+    config: Playable.Config
+  ): Playable<PLAYER>
 }

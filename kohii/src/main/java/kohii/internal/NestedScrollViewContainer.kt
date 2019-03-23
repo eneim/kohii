@@ -27,11 +27,13 @@ internal class NestedScrollViewContainer(
   manager: PlaybackManager
 ) : ViewContainer<NestedScrollView>(container, manager), OnScrollChangeListener {
 
-  override fun onManagerAttached() {
+  override fun onAdded() {
+    super.onAdded()
     container.setOnScrollChangeListener(this)
   }
 
-  override fun onManagerDetached() {
+  override fun onRemoved() {
+    super.onRemoved()
     container.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
@@ -71,5 +73,4 @@ internal class NestedScrollViewContainer(
   override fun hashCode(): Int {
     return container.hashCode()
   }
-
 }

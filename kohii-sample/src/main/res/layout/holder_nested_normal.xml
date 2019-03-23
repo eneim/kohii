@@ -15,23 +15,18 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@id/playerContainer"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-  <com.google.android.exoplayer2.ui.PlayerView
-      android:id="@id/playerView"
+    android:layout_height="wrap_content">
+
+  <androidx.appcompat.widget.AppCompatTextView
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_gravity="center"
-      android:minHeight="200dp"
-      app:keep_content_on_player_reset="true"
-      app:resize_mode="fixed_height"
-      app:show_buffering="when_playing"
-      app:surface_type="texture_view"
-      app:use_controller="false"
+      android:layout_height="wrap_content"
+      android:layout_margin="16dp"
+      android:lineSpacingMultiplier="1.15"
+      android:maxLines="24"
+      android:text="@string/large_text"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body1"
       />
+
 </FrameLayout>

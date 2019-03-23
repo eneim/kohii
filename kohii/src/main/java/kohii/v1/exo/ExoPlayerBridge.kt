@@ -62,7 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 internal open class ExoPlayerBridge(
   kohii: Kohii,
   private val media: Media,
-  private val playerProvider: PlayerProvider,
+  private val playerProvider: ExoPlayerProvider,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
 ) : PlayerEventListener, Bridge<PlayerView>, ErrorMessageProvider<ExoPlaybackException> {
 
@@ -394,8 +394,7 @@ internal open class ExoPlayerBridge(
   ) {
     if (trackGroups === lastSeenTrackGroupArray) return
     lastSeenTrackGroupArray = trackGroups
-    val trackSelector = (playerProvider as? DefaultPlayerProvider)?.trackSelector
-        as? MappingTrackSelector ?: return
+    val trackSelector = playerProvider.trackSelector as? MappingTrackSelector ?: return
     val trackInfo = trackSelector.currentMappedTrackInfo
     if (trackInfo != null) {
       if (trackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {

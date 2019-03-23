@@ -18,41 +18,22 @@ package kohii.v1.exo
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.contains
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.PlayerAdapter
+import kohii.v1.PlayerCreator
 import kohii.v1.R
 
-class PlayerViewAdapter : PlayerAdapter<ViewGroup, PlayerView>() {
+class PlayerViewCreator : PlayerCreator<ViewGroup, PlayerView> {
 
   override fun createPlayer(
     container: ViewGroup,
     type: Int
   ): PlayerView {
     require(
-        type == R.layout.kohii_player_textureview
-            || type == R.layout.kohii_player_surface_view
-            || type == R.layout.kohii_player_spherical_view
+        type == R.layout.kohii_player_textureview ||
+            type == R.layout.kohii_player_surface_view ||
+            type == R.layout.kohii_player_spherical_view
     ) { "Unknown type: $type" }
 
     return LayoutInflater.from(container.context).inflate(type, container, false) as PlayerView
-  }
-
-  override fun attachPlayer(
-    container: ViewGroup,
-    player: PlayerView
-  ) {
-    if (!container.contains(player)) container.addView(player)
-  }
-
-  override fun detachPlayer(
-    container: ViewGroup,
-    player: PlayerView
-  ): Boolean {
-    if (container.contains(player)) {
-      container.removeView(player)
-      return true
-    }
-    return false
   }
 }

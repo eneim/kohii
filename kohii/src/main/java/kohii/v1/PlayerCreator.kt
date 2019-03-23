@@ -18,22 +18,12 @@ package kohii.v1
 
 import kohii.media.Media
 
-abstract class PlayerAdapter<CONTAINER, PLAYER> {
+interface PlayerCreator<CONTAINER, PLAYER> {
 
-  open fun getPlayerType(media: Media): Int = R.layout.kohii_player_surface_view
+  fun getPlayerType(media: Media): Int = R.layout.kohii_player_surface_view
 
-  abstract fun createPlayer(
+  fun createPlayer(
     container: CONTAINER,
     type: Int
   ): PLAYER
-
-  abstract fun attachPlayer(
-    container: CONTAINER,
-    player: PLAYER
-  )
-
-  abstract fun detachPlayer(
-    container: CONTAINER,
-    player: PLAYER
-  ): Boolean
 }

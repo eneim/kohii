@@ -17,7 +17,6 @@
 package kohii.v1
 
 import android.os.Parcelable
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Playback.Config
 import kotlinx.android.parcel.Parcelize
 
@@ -26,23 +25,24 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class Rebinder(
   val tag: String?,
-  val clazz: Class<*>
+  val playerType: Class<*>
 ) : Parcelable {
 
   fun <TARGET : Any> rebind(
     kohii: Kohii,
     target: TARGET,
     config: Config = Config(), // default
-    cb: ((Playback<TARGET, PlayerView>) -> Unit)? = null
+    cb: ((Playback<TARGET, *>) -> Unit)? = null
   ): Rebinder {
-    val targetType = target.javaClass
-    if (this.tag != null && clazz.isAssignableFrom(targetType)) {
-      @Suppress("UNCHECKED_CAST")
-      val playable = (kohii.mapTagToPlayable[this.tag] as? Playable<PlayerView>)
+    require(this.tag != null) { "Rebinder expects non-null tag." }
+    val tag = this.tag
+    val cache = kohii.mapTagToPlayable[tag]
+    if (cache != null) {
+      val playable = if (this.playerType.isAssignableFrom(cache.second)) cache.first else null
       check(playable != null) { "No Playable found. Tag is not correctly set." }
       playable.bind(target, config, cb)
-    } else {
-      throw IllegalArgumentException("Expect: ${clazz.simpleName}, found ${targetType.simpleName}")
+    } else if (BuildConfig.DEBUG) {
+      throw IllegalStateException("No Playable found for tag $tag.")
     }
     return this
   }

@@ -23,7 +23,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.PlaybackInfo
-import kohii.v1.exo.PlayerViewAdapter
+import kohii.v1.exo.PlayerViewCreator
 
 /**
  * Bind to an Activity, to manage [PlaybackManager]s inside.
@@ -36,11 +36,12 @@ import kohii.v1.exo.PlayerViewAdapter
 class ActivityContainer(
   internal val kohii: Kohii,
   internal val activity: Activity,
-  @Suppress("MemberVisibilityCanBePrivate")
-  internal val selector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> = defaultSelector
+    // TODO make this configurable
+  private val selector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
-  internal val playerViewPool by lazy { PlayerViewPool(2, PlayerViewAdapter()) }
+  // TODO make this configurable
+  internal val playerViewPool by lazy { PlayerPool(2, PlayerViewCreator()) }
 
   private val prioritizedManagers = HashSet<PlaybackManager>()
   private val standardManagers = HashSet<PlaybackManager>()
@@ -132,7 +133,6 @@ class ActivityContainer(
     // 4. Play the chosen one.
 
     // 1. Collect candidates from children PlaybackManagers
-    // candidates.clear()
     val toPlay = LinkedHashSet<Playback<*, *>>()
     val toPause = HashSet<Playback<*, *>>()
 
@@ -162,9 +162,8 @@ class ActivityContainer(
             toPlay.addAll(it.first)
             toPause.addAll(it.second)
           }
-    } else { // Other Manager is prioritized, here we just collect Playback to pause.
-      standardManagers.map { it.partitionPlaybacks() }
-          .flatMap { it.first + it.second }
+    } else { // Other managers are prioritized, here we just collect Playback to pause.
+      standardManagers.flatMap { it.refreshPlaybacks() }
           .also { toPause.addAll(it) }
     }
 

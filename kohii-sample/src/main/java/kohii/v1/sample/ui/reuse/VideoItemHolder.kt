@@ -51,7 +51,7 @@ internal class VideoItemHolder(
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
   val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
 
-  var binder: PlayableBinder? = null
+  var binder: PlayableBinder<PlayerView>? = null
   var playback: Playback<PlayerView, PlayerView>? = null
   var videoSources: Sources? = null
 

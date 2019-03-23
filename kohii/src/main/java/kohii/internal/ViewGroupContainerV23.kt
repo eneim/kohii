@@ -28,13 +28,13 @@ internal open class ViewGroupContainerV23(
   manager: PlaybackManager
 ) : ViewGroupContainerBase(container, manager), OnScrollChangeListener {
 
-  override fun onManagerAttached() {
-    super.onManagerAttached()
+  override fun onAdded() {
+    super.onAdded()
     container.setOnScrollChangeListener(this)
   }
 
-  override fun onManagerDetached() {
-    super.onManagerDetached()
+  override fun onRemoved() {
+    super.onRemoved()
     container.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
@@ -61,5 +61,4 @@ internal open class ViewGroupContainerV23(
     result = 31 * result + container.hashCode()
     return result
   }
-
 }

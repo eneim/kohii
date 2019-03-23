@@ -92,6 +92,10 @@ interface Container {
   // The ViewGroup
   val container: Any
 
+  fun onAdded() {}
+
+  fun onRemoved() {}
+
   // Call when the PlaybackManager is attached.
   fun onManagerAttached() {}
 

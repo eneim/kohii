@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.sample.ui.nested
 
-import kohii.media.Media
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import kohii.v1.Kohii
+import kohii.v1.sample.R
 
-interface BridgeProvider<PLAYER> : Cleanable {
+class NestRvViewHolder(
+  val kohii: Kohii,
+  itemView: View
+) : MainViewHolder(itemView) {
 
-  fun provideBridge(
-    kohii: Kohii,
-    media: Media,
-    config: Playable.Config
-  ): Bridge<PLAYER>
+  val container = itemView.findViewById(R.id.recyclerView) as RecyclerView
 }

@@ -54,7 +54,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
   private var kohii: Kohii? = null
-  private var playback: Playback<PlayerView, PlayerView>? = null
+  private var playback: Playback<*, *>? = null
   private var dialogPlayer: DialogFragment? = null
 
   override fun onCreateView(
