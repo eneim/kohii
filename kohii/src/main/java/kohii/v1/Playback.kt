@@ -41,10 +41,10 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   internal val media: Media,
   internal val playable: Playable<PLAYER>,
   internal val manager: PlaybackManager,
-  internal val container: Container,
+  internal var container: Container, // Manager will update this on demand.
   val target: TARGET,
   internal val config: Playback.Config
-) : PlayerViewProvider<PLAYER> {
+) {
 
   companion object {
     const val TAG = "Kohii::PB"
@@ -98,6 +98,7 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
+  internal var playerCallback: PlayerCallback<PLAYER>? = null
 
   private var listenerHandler: Handler? = null
 
@@ -108,6 +109,8 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   // Token is comparable.
   // Returning null --> there is nothing to play. A bound Playable should be unbound.
   internal abstract val token: Token
+
+  internal abstract val playerView: PLAYER?
 
   // [BEGIN] Public API
 
@@ -160,7 +163,7 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
 
   // [END] Public API
 
-  /// Internal APIs
+  // Internal APIs
 
   // Lifecycle
 
@@ -204,11 +207,6 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
     playable.release()
   }
 
-  // Client must override this method to provide correct implementation.
-  @Suppress("UNCHECKED_CAST")
-  override val playerView: PLAYER?
-    get() = this.target as? PLAYER
-
   @CallSuper
   internal open fun onCreated() {
     this.listenerHandler = Handler(Handler.Callback { message ->
@@ -241,6 +239,10 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
     for (callback in this.callbacks) {
       callback.onActive(this)
     }
+    val player = this.playerView
+    if (player != null && player === this.target && this.playerCallback != null) {
+      this.playerCallback!!.onPlayerAcquired(player)
+    }
   }
 
   // Playback's onInActive is equal to View's detach event or Activity stops.
@@ -252,6 +254,10 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   internal open fun onInActive() {
     for (callback in this.callbacks) {
       callback.onInActive(this)
+    }
+    val player = this.playerView
+    if (player === this.target && this.playerCallback != null) {
+      this.playerCallback!!.onPlayerReleased(player)
     }
   }
 
@@ -271,6 +277,7 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   internal open fun onDestroyed() {
     this.listenerHandler = null
     this.removeCallback(this.playable)
+    this.playerCallback = null
   }
 
   override fun toString(): String {
@@ -286,5 +293,13 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
     fun onInActive(playback: Playback<*, *>) {}
 
     fun onRemoved(playback: Playback<*, *>) {}
+  }
+
+  // To communicate with Playable only.
+  internal interface PlayerCallback<PLAYER> {
+
+    fun onPlayerAcquired(player: PLAYER)
+
+    fun onPlayerReleased(player: PLAYER?)
   }
 }

@@ -26,8 +26,8 @@ internal open class ViewGroupContainerBase(
   manager: PlaybackManager
 ) : ViewContainer<ViewGroup>(container, manager) {
 
-  override fun onManagerAttached() {
-    super.onManagerAttached()
+  override fun onAdded() {
+    super.onAdded()
     manager.dispatchRefreshAll()
   }
 
@@ -58,5 +58,4 @@ internal open class ViewGroupContainerBase(
   override fun hashCode(): Int {
     return container.hashCode()
   }
-
 }

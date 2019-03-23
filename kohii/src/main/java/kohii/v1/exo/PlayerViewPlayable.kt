@@ -27,12 +27,15 @@ import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Playback.Config
 import kohii.v1.PlaybackCreator
+import kohii.v1.Target
 import kohii.v1.ViewPlayback
 
 /**
  * @author eneim (2018/06/24).
+ *
+ * [Playable] that accepts a [PlayerView] as playback presenter.
  */
-class PlayerViewPlayable internal constructor(
+internal class PlayerViewPlayable internal constructor(
   kohii: Kohii,
   media: Media,
   config: Playable.Config,
@@ -45,6 +48,7 @@ class PlayerViewPlayable internal constructor(
     config: Playable.Config
   ) : this(kohii, media, config, kohii.bridgeProvider.provideBridge(kohii, media, config))
 
+  @Suppress("UNCHECKED_CAST")
   override fun <TARGET : Any> bind(
     target: TARGET,
     config: Config,
@@ -54,22 +58,26 @@ class PlayerViewPlayable internal constructor(
         "There is no manager for $target. Forget to register one?"
     )
 
-    val container by lazy {
-      manager.findSuitableContainer(target) ?: throw IllegalStateException(
-          "This manager $this has no Container that " +
-              "accepts this target: $target. Kohii requires at least one."
-      )
-    }
+    val container = manager.findSuitableContainer(target) ?: throw IllegalStateException(
+        "This manager $this has no Container that " +
+            "accepts this target: $target. Kohii requires at least one."
+    )
 
     val creatorForPlayerView by lazy {
       object : PlaybackCreator<PlayerView, PlayerView> {
         override fun createPlayback(
-          target: PlayerView,
+          target: Target<PlayerView, PlayerView>,
           config: Config
         ): Playback<PlayerView, PlayerView> {
           return ViewPlayback(
-              kohii, media, this@PlayerViewPlayable, manager, container, target, config
-          )
+              kohii,
+              media,
+              this@PlayerViewPlayable,
+              manager,
+              container,
+              target.requireContainer(),
+              config
+          ).also { it.playerCallback = this@PlayerViewPlayable }
         }
       }
     }
@@ -77,21 +85,97 @@ class PlayerViewPlayable internal constructor(
     val creatorForViewGroup by lazy {
       object : PlaybackCreator<ViewGroup, PlayerView> {
         override fun createPlayback(
-          target: ViewGroup,
+          target: Target<ViewGroup, PlayerView>,
           config: Config
         ): Playback<ViewGroup, PlayerView> {
           return LazyViewPlayback(
-              kohii, media, this@PlayerViewPlayable, manager, container, target, config,
+              kohii,
+              media,
+              this@PlayerViewPlayable,
+              manager,
+              container,
+              target,
+              config,
               manager.parent.playerViewPool
-          )
+          ).also { it.playerCallback = this@PlayerViewPlayable }
         }
       }
     }
 
     val targetType = target.javaClass
-    @Suppress("UNCHECKED_CAST")
+    val (boxed, creator) =
+      (when {
+        // order is important.
+        PlayerView::class.java.isAssignableFrom(targetType) ->
+          Pair(PlayerViewTarget(target as PlayerView), creatorForPlayerView)
+        ViewGroup::class.java.isAssignableFrom(targetType) ->
+          Pair(PlayerViewTarget(target as ViewGroup), creatorForViewGroup)
+        else -> throw IllegalArgumentException("Unsupported target type: $targetType")
+      }) as Pair<Target<TARGET, PlayerView>, PlaybackCreator<TARGET, PlayerView>>
+
+    val result = manager.performBindPlayable(this, boxed, config, creator)
+    cb?.invoke(result)
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  override fun <TARGET : Any> bind(
+    target: Target<TARGET, PlayerView>,
+    config: Config,
+    cb: ((Playback<TARGET, PlayerView>) -> Unit)?
+  ) {
+    val actualTarget = target.requireContainer()
+    val manager = kohii.findSuitableManager(target) ?: throw IllegalStateException(
+        "There is no manager for $target. Forget to register one?"
+    )
+
+    val container = manager.findSuitableContainer(actualTarget) ?: throw IllegalStateException(
+        "This manager $this has no Container that " +
+            "accepts this target: $target. Kohii requires at least one."
+    )
+
+    val creatorForPlayerView by lazy {
+      object : PlaybackCreator<PlayerView, PlayerView> {
+        override fun createPlayback(
+          target: Target<PlayerView, PlayerView>,
+          config: Config
+        ): Playback<PlayerView, PlayerView> {
+          return ViewPlayback(
+              kohii,
+              media,
+              this@PlayerViewPlayable,
+              manager,
+              container,
+              target.requireContainer(),
+              config
+          ).also { it.playerCallback = this@PlayerViewPlayable }
+        }
+      }
+    }
+
+    val creatorForViewGroup by lazy {
+      object : PlaybackCreator<ViewGroup, PlayerView> {
+        override fun createPlayback(
+          target: Target<ViewGroup, PlayerView>,
+          config: Config
+        ): Playback<ViewGroup, PlayerView> {
+          return LazyViewPlayback(
+              kohii,
+              media,
+              this@PlayerViewPlayable,
+              manager,
+              container,
+              target,
+              config,
+              manager.parent.playerViewPool
+          ).also { it.playerCallback = this@PlayerViewPlayable }
+        }
+      }
+    }
+
+    val targetType = actualTarget.javaClass
     val creator =
       (when {
+        // order is important.
         PlayerView::class.java.isAssignableFrom(targetType) -> creatorForPlayerView
         ViewGroup::class.java.isAssignableFrom(targetType) -> creatorForViewGroup
         else -> throw IllegalArgumentException("Unsupported target type: ")
@@ -100,5 +184,13 @@ class PlayerViewPlayable internal constructor(
     Log.w("Kohii::X", "bind: $target, $manager")
     val result = manager.performBindPlayable(this, target, config, creator)
     cb?.invoke(result)
+  }
+
+  override fun onPlayerAcquired(player: PlayerView) {
+    bridge.playerView = player
+  }
+
+  override fun onPlayerReleased(player: PlayerView?) {
+    if (bridge.playerView === player) bridge.playerView = null
   }
 }

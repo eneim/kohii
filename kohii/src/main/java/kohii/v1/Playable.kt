@@ -56,13 +56,19 @@ interface Playable<PLAYER> : Callback {
 
   val tag: Any
 
-  fun <TARGET: Any> bind(
+  fun <TARGET : Any> bind(
     target: TARGET,
     config: Playback.Config = Playback.Config(),
     cb: ((Playback<TARGET, PLAYER>) -> Unit)? = null
   )
 
-  /// Playback controller
+  fun <TARGET : Any> bind(
+    target: Target<TARGET, PLAYER>,
+    config: Playback.Config = Playback.Config(),
+    cb: ((Playback<TARGET, PLAYER>) -> Unit)? = null
+  )
+
+  // Playback controller
 
   fun prepare()
 

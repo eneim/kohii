@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.sample.ui.nested
 
-interface PlayerViewProvider<PLAYER> {
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
-  val playerView: PLAYER?
+open class MainViewHolder(itemView: View) : ViewHolder(itemView) {
+
+  open fun bind(item: Any?) {}
 }

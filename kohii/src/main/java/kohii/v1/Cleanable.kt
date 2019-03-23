@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,9 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1
 
-import com.google.android.exoplayer2.Player
-import kohii.media.Media
-
-/**
- * @author eneim (2018/10/27).
- */
-interface PlayerProvider {
-
-  fun acquirePlayer(media: Media): Player
-
-  fun releasePlayer(
-    media: Media,
-    player: Player
-  )
+interface Cleanable {
 
   fun cleanUp()
 }

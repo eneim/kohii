@@ -23,30 +23,19 @@ import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.NO_TAG
+import kohii.v1.Playback.PlayerCallback
 
 // PLAYER: the 'view' for Bridge
-// TODO: Playable of the same 'PLAYER' can be reused across different TARGET.
-@Suppress("MemberVisibilityCanBePrivate")
 abstract class BasePlayable<PLAYER>(
-  val kohii: Kohii,
-  val media: Media,
-  val config: Playable.Config,
-  val bridge: Bridge<PLAYER>
-) : Playable<PLAYER> {
+  protected val kohii: Kohii,
+  protected val media: Media,
+  protected val config: Playable.Config,
+  protected val bridge: Bridge<PLAYER>
+) : Playable<PLAYER>, PlayerCallback<PLAYER> {
 
   private var listener: PlayerEventListener? = null
-  // Will be inferred from Playback instance.
-  private var playerViewProvider: PlayerViewProvider<PLAYER>? = null
 
-  // TODO how to obtain the PlayerViewProvider in friendly/flexible way?
   override fun onAdded(playback: Playback<*, *>) {
-    @Suppress("UNCHECKED_CAST")
-    playerViewProvider = playback as? PlayerViewProvider<PLAYER>
-
-    require(playerViewProvider != null) {
-      "PlayerViewProvider is null, please double check your Playback implementation: $playback"
-    }
-
     if (this.listener == null) {
       this.listener = object : PlayerEventListener {
         override fun onPlayerStateChanged(
@@ -71,7 +60,6 @@ abstract class BasePlayable<PLAYER>(
   }
 
   override fun onRemoved(playback: Playback<*, *>) {
-    playerViewProvider = null
     this.bridge.removeVolumeChangeListener(playback.volumeListeners)
     this.bridge.removeEventListener(playback.playerListeners)
     this.bridge.removeErrorListener(playback.errorListeners)
@@ -106,7 +94,7 @@ abstract class BasePlayable<PLAYER>(
         kohii.mapPlayableToManager[this] == null
     ) {
       // This will release current Video MediaCodec instances, which are expensive to retain.
-      if (this.bridge.playerView === playerViewProvider?.playerView) this.bridge.playerView = null
+      this.bridge.playerView = null
     }
   }
 
@@ -117,12 +105,10 @@ abstract class BasePlayable<PLAYER>(
   }
 
   override fun play() {
-    bridge.playerView = playerViewProvider!!.playerView
     bridge.play()
   }
 
   override fun pause() {
-    bridge.playerView = null
     bridge.pause()
   }
 

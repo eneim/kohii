@@ -18,6 +18,7 @@ package kohii.internal
 
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecycleViewUtils
 import androidx.recyclerview.widget.RecyclerView
@@ -59,23 +60,27 @@ internal class RecyclerViewContainer(
 
   private val scrollListener by lazy { SimpleOnScrollListener(manager) }
 
-  override fun onManagerAttached() {
+  override fun onAdded() {
+    super.onAdded()
     // TODO deal with CoordinatorLayout?
     val params = container.layoutParams
     @Suppress("UNUSED_VARIABLE")
     val behavior = (params as? CoordinatorLayout.LayoutParams)?.behavior
     container.addOnScrollListener(scrollListener)
-    if (container.scrollState == SCROLL_STATE_IDLE) manager.dispatchRefreshAll()
+    container.doOnLayout {
+      if (container.scrollState == SCROLL_STATE_IDLE) manager.dispatchRefreshAll()
+    }
   }
 
-  override fun onManagerDetached() {
+  override fun onRemoved() {
+    super.onRemoved()
     container.removeOnScrollListener(scrollListener)
   }
 
   override fun allowsToPlay(playback: Playback<*, *>): Boolean {
-    return playback.target is View
-        && this.container.findContainingViewHolder(playback.target) != null
-        && playback.token.shouldPlay()
+    return playback.target is View &&
+        this.container.findContainingViewHolder(playback.target) != null &&
+        playback.token.shouldPlay()
   }
 
   override fun accepts(target: Any): Boolean {

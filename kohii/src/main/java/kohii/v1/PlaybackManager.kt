@@ -60,9 +60,10 @@ abstract class PlaybackManager(
     }
   }
 
-  private val stickyContainers by lazy { LinkedHashSet<Container>() }
   // Containers work in "first come first serve" model. Only one Container will be active at a time.
   private val containers by lazy { LinkedHashSet<Container>() }
+  // TODO in 1.0, we do not use sticky container yet. It is complicated to implement, yet not so much requirement.
+  private val stickyContainers by lazy { LinkedHashSet<Container>() }
 
   private val attachFlag = AtomicBoolean(false)
 
@@ -75,7 +76,7 @@ abstract class PlaybackManager(
   // So that when adding new link, it can effectively clean up old links.
   private val mapTargetToPlayback = HashMap<Any /* Target */, Playback<*, *>>()
 
-  /// [BEGIN] Internal API
+  // [BEGIN] Internal API
 
   @CallSuper
   @OnLifecycleEvent(ON_CREATE)
@@ -138,7 +139,10 @@ abstract class PlaybackManager(
     }).clear()
 
     this.onDetached()
-    this.containers.clear()
+    this.containers.onEach { it.onRemoved() }
+        .clear()
+    this.stickyContainers.onEach { it.onRemoved() }
+        .clear()
     this.parent.detachPlaybackManager(this)
 
     owner.lifecycle.removeObserver(this)
@@ -153,13 +157,13 @@ abstract class PlaybackManager(
 
   protected open fun onAttached() {
     if (attachFlag.compareAndSet(false, true)) {
-      containers.forEach { it.onManagerAttached() }
+      (this.stickyContainers + this.containers).forEach { it.onManagerAttached() }
     }
   }
 
   protected open fun onDetached() {
     if (attachFlag.compareAndSet(true, false)) {
-      containers.forEach { it.onManagerDetached() }
+      (this.stickyContainers + this.containers).forEach { it.onManagerDetached() }
     }
   }
 
@@ -177,7 +181,7 @@ abstract class PlaybackManager(
     container: Container,
     sticky: Boolean
   ): Boolean {
-    return if (sticky) {
+    val result = if (sticky) {
       val existing = this.containers.firstOrNull { it.container === container.container }
       if (existing != null) {
         // remove from standard ones, add to sticky.
@@ -189,13 +193,15 @@ abstract class PlaybackManager(
     } else {
       this.containers.add(container)
     }
+    if (result) container.onAdded()
+    return result
   }
 
   internal fun dispatchRefreshAll() {
     this.parent.dispatchManagerRefresh()
   }
 
-  internal fun partitionPlaybacks(): Pair<Collection<Playback<*, *>> /* toPlay */, Collection<Playback<*, *>> /* toPause */> {
+  internal fun refreshPlaybacks(): ArrayList<Playback<*, *>> {
     // Confirm if any invisible view is visible again.
     // This is the case of NestedScrollView.
     val toActive = mapDetachedPlaybackToTime.filter { it.key.token.shouldPrepare() }
@@ -205,15 +211,18 @@ abstract class PlaybackManager(
 
     toActive.forEach { this.onTargetActive(it.target) }
     toInActive.forEach { this.onTargetInActive(it.target) }
+    return ArrayList(mapAttachedPlaybackToTime.keys)
+  }
 
-    val playbacks = ArrayList(mapAttachedPlaybackToTime.keys)
+  internal fun partitionPlaybacks(): Pair<Collection<Playback<*, *>> /* toPlay */, Collection<Playback<*, *>> /* toPause */> {
+    val playbacks = refreshPlaybacks()
     val toPlay = HashSet<Playback<*, *>>()
 
     val grouped = playbacks.filter { it.container.allowsToPlay(it) }
         .groupBy { it.container }
 
     // Iterate by this Set to preserve the Containers' order.
-    containers.filter { grouped[it] != null }
+    (this.stickyContainers + this.containers).filter { grouped[it] != null }
         // First Container returns non empty will be picked
         // Use this customized extension fun so we don't need to call select for all Containers
         .takeFirstOrNull(
@@ -231,7 +240,7 @@ abstract class PlaybackManager(
 
   internal fun <TARGET, PLAYER> performBindPlayable(
     playable: Playable<PLAYER>,
-    target: TARGET,
+    target: Target<TARGET, PLAYER>,
     config: Config,
     creator: PlaybackCreator<TARGET, PLAYER>
   ): Playback<TARGET, PLAYER> {
@@ -275,6 +284,7 @@ abstract class PlaybackManager(
    * to manage the Target. [PlaybackManager] will then add that [Playback] to cache for management.
    * Old [Playback] will be cleaned up and removed.
    */
+  @Suppress("MemberVisibilityCanBePrivate")
   internal fun <TARGET, PLAYER> performAddPlayback(playback: Playback<TARGET, PLAYER>): Playback<TARGET, PLAYER> {
     val target = playback.target
     val cache = mapTargetToPlayback[target as Any]
@@ -371,6 +381,16 @@ abstract class PlaybackManager(
   internal fun <T> onTargetUpdated(target: T) {
     val playback = mapTargetToPlayback[target as Any]
     if (playback != null) {
+      // fixed = the Container that truly accept the target.
+      // Scenario: in first bind of RV, VH's itemView has null Parent, but might has LayoutParams
+      // of RV, we 'temporarily' ask any RV to accept it. When it is updated, we find the right one.
+      // This operation should not happen always, ideally up to 1 time.
+      val fixed = (this.stickyContainers + this.containers).firstOrNull { it.accepts(target) }
+      if (fixed != null && playback.container !== fixed) {
+        playback.container.detachTarget(target)
+        playback.container = fixed
+        playback.container.attachTarget(target)
+      }
       if (playback.container.allowsToPlay(playback)) this.dispatchRefreshAll()
     }
   }
@@ -378,16 +398,15 @@ abstract class PlaybackManager(
   @Suppress("UNCHECKED_CAST")
   internal fun <PLAYER> findPlaybackForPlayable(playable: Playable<PLAYER>): Playback<*, PLAYER>? =
     this.mapTargetToPlayback.values.firstOrNull {
-      it.playable === playable
+      it.playable === playable // this will also guaranty the type check.
     } as? Playback<*, PLAYER>?
 
   internal fun findSuitableContainer(target: Any) =
-    this.containers.firstOrNull { it.accepts(target) }
+    (this.stickyContainers + this.containers).firstOrNull { it.accepts(target) }
 
   override fun toString(): String {
     return "Manager:${Integer.toHexString(super.hashCode())}, Provider: $provider"
   }
 
-  /// [END] Internal API
-
+  // [END] Internal API
 }

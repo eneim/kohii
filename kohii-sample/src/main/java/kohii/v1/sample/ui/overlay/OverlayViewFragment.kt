@@ -83,7 +83,7 @@ class OverlayViewFragment : BaseFragment(),
   private var selectionTracker: SelectionTracker<Rebinder>? = null
   private var keyProvider: VideoTagKeyProvider? = null
 
-  private var kohii: Kohii? = null
+  private lateinit var kohii: Kohii
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -107,7 +107,7 @@ class OverlayViewFragment : BaseFragment(),
     )
     constraintSet.applyTo(this.videoOverlay as MotionLayout)
 
-    val videoAdapter = VideoItemsAdapter(videos, kohii!!)
+    val videoAdapter = VideoItemsAdapter(videos, kohii)
     keyProvider = VideoTagKeyProvider(recyclerView)
 
     recyclerView.apply {
@@ -168,7 +168,7 @@ class OverlayViewFragment : BaseFragment(),
         if (selected && key !== rebinder) {
           rebinder = key
           key.rebind(
-              kohii!!, overlayPlayerView, Playback.Config(priority = Playback.PRIORITY_HIGH)
+              kohii, overlayPlayerView, Playback.Config(priority = Playback.PRIORITY_HIGH)
           ) {
             playback = it
             overlaySheet?.state = STATE_EXPANDED
@@ -204,8 +204,7 @@ class OverlayViewFragment : BaseFragment(),
 
     rebinder = selectionTracker?.selection?.firstOrNull()
     rebinder?.rebind(
-        kohii!!,
-        overlayPlayerView, Playback.Config(priority = Playback.PRIORITY_HIGH)
+        kohii, overlayPlayerView, Playback.Config(priority = Playback.PRIORITY_HIGH)
     ) {
       playback = it
     }
@@ -219,7 +218,7 @@ class OverlayViewFragment : BaseFragment(),
     endId: Int,
     progress: Float
   ) {
-    // overlayPlayerView.useController = progress < 0.1
+    overlayPlayerView.useController = progress < 0.5
   }
 
   override fun consumeBackPress(): Boolean {

@@ -29,12 +29,13 @@ class ViewPager2Container(
 
   private val pageChangeCallback by lazy { SimpleOnPageChangeCallback(manager) }
 
-  override fun onManagerAttached() {
+  override fun onAdded() {
     container.registerOnPageChangeCallback(pageChangeCallback)
     manager.dispatchRefreshAll()
   }
 
-  override fun onManagerDetached() {
+  override fun onRemoved() {
+    super.onRemoved()
     container.unregisterOnPageChangeCallback(pageChangeCallback)
   }
 

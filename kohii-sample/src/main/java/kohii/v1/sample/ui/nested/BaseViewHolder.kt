@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.sample.ui.nested
 
-import kohii.media.Media
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
-interface BridgeProvider<PLAYER> : Cleanable {
+/**
+ * @author eneim (2018/07/06).
+ */
+abstract class BaseViewHolder(
+  val inflater: LayoutInflater,
+  layoutRes: Int,
+  val parent: ViewGroup
+) : ViewHolder(inflater.inflate(layoutRes, parent, false)) {
 
-  fun provideBridge(
-    kohii: Kohii,
-    media: Media,
-    config: Playable.Config
-  ): Bridge<PLAYER>
+  abstract fun bind(item: Item?)
+
+  open fun onRecycled(success: Boolean) {}
+
+  override fun toString(): String {
+    return "${javaClass.simpleName} -- $adapterPosition"
+  }
 }

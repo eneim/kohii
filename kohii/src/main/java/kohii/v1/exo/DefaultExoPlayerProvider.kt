@@ -40,7 +40,7 @@ import java.util.WeakHashMap
 /**
  * @author eneim (2018/10/27).
  */
-class DefaultPlayerProvider(
+class DefaultExoPlayerProvider(
   private val context: Context,
   private val bandwidthMeterFactory: BandwidthMeterFactory = DefaultBandwidthMeterFactory(),
   private val drmSessionManagerProvider: DrmSessionManagerProvider? = null,
@@ -48,8 +48,8 @@ class DefaultPlayerProvider(
   private val renderersFactory: RenderersFactory = DefaultRenderersFactory(
       context.applicationContext
   ).setExtensionRendererMode(EXTENSION_RENDERER_MODE_OFF),
-  internal val trackSelector: TrackSelector = DefaultTrackSelector()
-) : PlayerProvider {
+  override val trackSelector: TrackSelector = DefaultTrackSelector()
+) : ExoPlayerProvider {
 
   companion object {
     // Magic number: Build.VERSION.SDK_INT / 6 --> API 16 ~ 18 will set pool size to 2, etc.
