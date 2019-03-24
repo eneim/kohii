@@ -21,6 +21,7 @@ import kohii.v1.Playback.Config
 interface PlaybackCreator<CONTAINER, PLAYER> {
 
   fun createPlayback(
+    manager: PlaybackManager,
     target: Target<CONTAINER, PLAYER>,
     config: Config
   ): Playback<CONTAINER, PLAYER>
