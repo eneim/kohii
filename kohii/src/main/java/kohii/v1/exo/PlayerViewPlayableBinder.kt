@@ -40,10 +40,6 @@ internal class PlayerViewPlayableBinder(
     media: Media,
     config: Config
   ): Playable<PlayerView> {
-    if (!PlayerView::class.java.isAssignableFrom(playerType)) {
-      throw IllegalArgumentException("Unsupported target type: ${playerType.simpleName}")
-    }
-
     return PlayerViewPlayable(kohii, media, config)
   }
 }

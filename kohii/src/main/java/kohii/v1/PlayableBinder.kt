@@ -23,6 +23,7 @@ import kohii.v1.Playback.Config
 
 abstract class PlayableBinder<PLAYER>(
   protected val kohii: Kohii,
+  @Suppress("MemberVisibilityCanBePrivate")
   protected val playerType: Class<PLAYER>
 ) {
 

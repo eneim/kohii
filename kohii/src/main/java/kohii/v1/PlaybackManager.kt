@@ -268,7 +268,7 @@ abstract class PlaybackManager(
       if (ref?.manager === this && ref.target === target) {
         ref
       } else {
-        creator.createPlayback(target, config)
+        creator.createPlayback(this, target, config)
       }
 
     if (candidate !== ref) {
