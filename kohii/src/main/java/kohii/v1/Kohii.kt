@@ -63,7 +63,9 @@ class Kohii(context: Context) {
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Pair<Playable<*>, Class<*>>>()
 
   // For ExoPlayer resource management.
+  // TODO make this configurable
   internal val bridgeProvider: BridgeProvider<PlayerView>
+
   @Suppress("SpellCheckingInspection")
   private val cleanables = HashSet<Cleanable>()
 
