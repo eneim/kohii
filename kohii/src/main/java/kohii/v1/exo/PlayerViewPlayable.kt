@@ -186,11 +186,11 @@ internal class PlayerViewPlayable internal constructor(
     cb?.invoke(result)
   }
 
-  override fun onPlayerAcquired(player: PlayerView) {
+  override fun onPlayerActive(player: PlayerView) {
     bridge.playerView = player
   }
 
-  override fun onPlayerReleased(player: PlayerView?) {
+  override fun onPlayerInActive(player: PlayerView?) {
     if (bridge.playerView === player) bridge.playerView = null
   }
 }

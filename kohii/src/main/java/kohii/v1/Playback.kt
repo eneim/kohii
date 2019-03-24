@@ -240,8 +240,8 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
       callback.onActive(this)
     }
     val player = this.playerView
-    if (player != null && player === this.target && this.playerCallback != null) {
-      this.playerCallback!!.onPlayerAcquired(player)
+    if (this.playerCallback != null && player != null && player === this.target) {
+      this.playerCallback!!.onPlayerActive(player)
     }
   }
 
@@ -256,8 +256,8 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
       callback.onInActive(this)
     }
     val player = this.playerView
-    if (player === this.target && this.playerCallback != null) {
-      this.playerCallback!!.onPlayerReleased(player)
+    if (this.playerCallback != null && player === this.target) {
+      this.playerCallback!!.onPlayerInActive(player)
     }
   }
 
@@ -298,8 +298,8 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   // To communicate with Playable only.
   internal interface PlayerCallback<PLAYER> {
 
-    fun onPlayerAcquired(player: PLAYER)
+    fun onPlayerActive(player: PLAYER)
 
-    fun onPlayerReleased(player: PLAYER?)
+    fun onPlayerInActive(player: PLAYER?)
   }
 }

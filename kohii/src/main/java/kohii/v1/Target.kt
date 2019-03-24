@@ -24,7 +24,7 @@ interface Target<CONTAINER, PLAYER> {
 
   fun attachPlayer(player: PLAYER)
 
-  // Returning true if the Player actually do anything,
+  // Returning true if the Player has done anything,
   // For example: ViewGroup remove the PlayerView.
   fun detachPlayer(player: PLAYER): Boolean
 }

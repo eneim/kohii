@@ -48,7 +48,7 @@ internal class LazyViewPlayback<PLAYER>(
     if (_playerView == null) {
       _playerView = playerPool.acquirePlayer(this.boxedTarget, this.media)
       if (this.playerCallback != null && _playerView != null) {
-        this.playerCallback!!.onPlayerAcquired(_playerView!!)
+        this.playerCallback!!.onPlayerActive(_playerView!!)
       }
     }
     super.play()
@@ -58,7 +58,7 @@ internal class LazyViewPlayback<PLAYER>(
     _playerView?.let {
       playerPool.releasePlayer(this.boxedTarget, it, media)
       if (this.playerCallback != null) {
-        this.playerCallback!!.onPlayerReleased(_playerView)
+        this.playerCallback!!.onPlayerInActive(_playerView)
       }
       _playerView = null
     }
