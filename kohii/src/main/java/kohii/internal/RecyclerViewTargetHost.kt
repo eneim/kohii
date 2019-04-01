@@ -25,19 +25,19 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import kohii.v1.Container.Companion.BOTH_AXIS
-import kohii.v1.Container.Companion.HORIZONTAL
-import kohii.v1.Container.Companion.NONE_AXIS
-import kohii.v1.Container.Companion.VERTICAL
-import kohii.v1.Container.Companion.comparators
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
+import kohii.v1.TargetHost.Companion.BOTH_AXIS
+import kohii.v1.TargetHost.Companion.HORIZONTAL
+import kohii.v1.TargetHost.Companion.NONE_AXIS
+import kohii.v1.TargetHost.Companion.VERTICAL
+import kohii.v1.TargetHost.Companion.comparators
 import java.lang.ref.WeakReference
 
-internal class RecyclerViewContainer(
-  override val container: RecyclerView,
+internal class RecyclerViewTargetHost(
+  override val host: RecyclerView,
   manager: PlaybackManager
-) : ViewContainer<RecyclerView>(container, manager) {
+) : BaseTargetHost<RecyclerView>(host, manager) {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {
@@ -63,49 +63,61 @@ internal class RecyclerViewContainer(
   override fun onAdded() {
     super.onAdded()
     // TODO deal with CoordinatorLayout?
-    val params = container.layoutParams
+    val params = host.layoutParams
     @Suppress("UNUSED_VARIABLE")
     val behavior = (params as? CoordinatorLayout.LayoutParams)?.behavior
-    container.addOnScrollListener(scrollListener)
-    container.doOnLayout {
-      if (container.scrollState == SCROLL_STATE_IDLE) manager.dispatchRefreshAll()
+    host.addOnScrollListener(scrollListener)
+    host.doOnLayout {
+      if (host.scrollState == SCROLL_STATE_IDLE) manager.dispatchRefreshAll()
     }
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    container.removeOnScrollListener(scrollListener)
+    host.removeOnScrollListener(scrollListener)
   }
 
   override fun allowsToPlay(playback: Playback<*, *>): Boolean {
     return playback.target is View &&
-        this.container.findContainingViewHolder(playback.target) != null &&
+        this.host.findContainingViewHolder(playback.target) != null &&
         playback.token.shouldPlay()
   }
 
   override fun accepts(target: Any): Boolean {
     if (target !is View) return false
     val params = RecycleViewUtils.fetchItemViewParams(target)
-    return RecycleViewUtils.checkParams(container, params)
+    return RecycleViewUtils.checkParams(host, params)
   }
 
   override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
-    val orientation = container.fetchOrientation()
-    return candidates.sortedWith(comparators.getValue(orientation))
-        .let {
-          if (it.isEmpty()) emptyList() else listOf(it.first())
-        }
+    val orientation = host.fetchOrientation()
+    val grouped = candidates.groupBy { it.controller != null }
+        .withDefault { emptyList() }
+
+    val firstHalf by lazy {
+      listOfNotNull(
+          grouped.getValue(true).sortedWith(comparators.getValue(orientation)).firstOrNull()
+      )
+    }
+
+    val secondHalf by lazy {
+      listOfNotNull(
+          grouped.getValue(false).sortedWith(comparators.getValue(orientation)).firstOrNull()
+      )
+    }
+
+    return if (firstHalf.isNotEmpty()) firstHalf else secondHalf
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is RecyclerViewContainer) return false
-    if (container !== other.container) return false
+    if (other !is RecyclerViewTargetHost) return false
+    if (host !== other.host) return false
     return true
   }
 
   override fun hashCode(): Int {
-    return container.hashCode()
+    return host.hashCode()
   }
 
   private class SimpleOnScrollListener(manager: PlaybackManager) : OnScrollListener() {

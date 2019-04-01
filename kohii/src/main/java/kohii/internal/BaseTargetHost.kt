@@ -18,15 +18,16 @@ package kohii.internal
 
 import android.view.View
 import androidx.core.view.ViewCompat
-import kohii.v1.Container
-import kohii.v1.Container.Companion.changed
+import kohii.media.VolumeInfo
 import kohii.v1.PlaybackManager
+import kohii.v1.TargetHost
+import kohii.v1.TargetHost.Companion.changed
 import java.util.WeakHashMap
 
-abstract class ViewContainer<V : View>(
-  override val container: V,
+abstract class BaseTargetHost<V : Any>(
+  override val host: V,
   open val manager: PlaybackManager
-) : Container, View.OnAttachStateChangeListener,
+) : TargetHost, View.OnAttachStateChangeListener,
     View.OnLayoutChangeListener {
 
   private val targets = WeakHashMap<View, Any>()
@@ -37,13 +38,14 @@ abstract class ViewContainer<V : View>(
         this.onViewAttachedToWindow(target)
       }
       target.addOnAttachStateChangeListener(this)
-      targets[target] = Container.PRESENT
+      targets[target] = TargetHost.PRESENT
     }
   }
 
   override fun <T> detachTarget(target: T) {
     if (target is View && targets.containsKey(target)) {
       target.removeOnAttachStateChangeListener(this)
+      target.removeOnLayoutChangeListener(this)
       targets.remove(target)
     }
   }
@@ -78,7 +80,9 @@ abstract class ViewContainer<V : View>(
     }
   }
 
+  override var volumeInfo: VolumeInfo = VolumeInfo()
+
   override fun toString(): String {
-    return "${container.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
+    return "${host.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
   }
 }

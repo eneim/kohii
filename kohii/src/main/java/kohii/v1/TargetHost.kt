@@ -22,21 +22,23 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
-import kohii.internal.NestedScrollViewContainer
-import kohii.internal.RecyclerViewContainer
-import kohii.internal.ViewGroupContainerBase
-import kohii.internal.ViewGroupContainerV23
-import kohii.internal.ViewPager2Container
-import kohii.internal.ViewPagerContainer
+import kohii.internal.NestedScrollViewTargetHost
+import kohii.internal.RecyclerViewTargetHost
+import kohii.internal.ViewGroupTargetHostBase
+import kohii.internal.ViewGroupTargetHostV23
+import kohii.internal.ViewPager2TargetHost
+import kohii.internal.ViewPagerTargetHost
+import kohii.media.PlaybackInfo
+import kohii.media.VolumeInfo
 
 /**
- * A Container is the representation of a View in Kohii. A Container wraps a View and provides it
+ * A TargetHost is the representation of a View in Kohii. A TargetHost wraps a View and provides it
  * internal support such as listening to Scroll event, wrapping it with special LayoutParam to provide more control, etc.
  *
- * Implementation of a Container must correctly override required methods, such as [select], [accepts], ...
- * The [PlaybackManager] will talk to Container to ask for necessary information to update the overall behavior.
+ * Implementation of a TargetHost must correctly override required methods, such as [select], [accepts], ...
+ * The [PlaybackManager] will talk to TargetHost to ask for necessary information to update the overall behavior.
  */
-interface Container {
+interface TargetHost : Comparable<TargetHost> {
 
   companion object {
     internal const val VERTICAL = RecyclerView.VERTICAL
@@ -52,23 +54,22 @@ interface Container {
         Pair(NONE_AXIS, Playback.BOTH_AXIS_COMPARATOR)
     ).toMap()
 
-    internal fun createContainer(
+    internal fun createTargetHost(
       view: Any,
       manager: PlaybackManager
-    ): Container? {
+    ): TargetHost? {
       return when (view) {
         is RecyclerView ->
-          RecyclerViewContainer(view, manager)
+          RecyclerViewTargetHost(view, manager)
         is NestedScrollView ->
-          NestedScrollViewContainer(view, manager)
+          NestedScrollViewTargetHost(view, manager)
         is ViewPager ->
-          ViewPagerContainer(view, manager)
+          ViewPagerTargetHost(view, manager)
         is ViewPager2 ->
-          ViewPager2Container(view, manager)
+          ViewPager2TargetHost(view, manager)
         is ViewGroup ->
-          if (Build.VERSION.SDK_INT >= 23) ViewGroupContainerV23(
-              view, manager
-          ) else ViewGroupContainerBase(view, manager)
+          if (Build.VERSION.SDK_INT >= 23) ViewGroupTargetHostV23(view, manager)
+          else ViewGroupTargetHostBase(view, manager)
         else -> null
       }
     }
@@ -89,8 +90,14 @@ interface Container {
     }
   }
 
+  override fun compareTo(other: TargetHost): Int {
+    return 0 // all are equal by default.
+  }
+
   // The ViewGroup
-  val container: Any
+  val host: Any
+
+  var volumeInfo: VolumeInfo
 
   fun onAdded() {}
 
@@ -114,5 +121,15 @@ interface Container {
 
   fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
     return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
+  }
+
+  // Update PlaybackInfo for TargetHost-scoped
+  // Ensure that any newly added Playback has the same init state as this info.
+  fun applyPlaybackInfo(playbackInfo: PlaybackInfo) {
+    // TODO("Implement this")
+  }
+
+  fun applyVolumeInfo(volumeInfo: VolumeInfo) {
+    // TODO("Implement this")
   }
 }

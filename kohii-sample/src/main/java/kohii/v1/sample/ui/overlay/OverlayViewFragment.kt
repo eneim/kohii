@@ -37,22 +37,27 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kohii.media.VolumeInfo
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playback
+import kohii.v1.PlaybackManager
 import kohii.v1.Rebinder
+import kohii.v1.Scope
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.TransitionListenerAdapter
 import kohii.v1.sample.ui.overlay.data.Video
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.bottomSheet
+import kotlinx.android.synthetic.main.fragment_recycler_view_motion.extendedAction
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.recyclerView
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.videoOverlay
 import kotlinx.android.synthetic.main.video_overlay_fullscreen.overlayPlayerView
 import kotlinx.android.synthetic.main.video_overlay_fullscreen.video_player_container
 import okio.buffer
 import okio.source
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author eneim (2018/07/06).
@@ -84,6 +89,10 @@ class OverlayViewFragment : BaseFragment(),
   private var keyProvider: VideoTagKeyProvider? = null
 
   private lateinit var kohii: Kohii
+  private lateinit var manager: PlaybackManager
+
+  // for testing
+  private val volumeFlag = AtomicBoolean(true)
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -98,7 +107,9 @@ class OverlayViewFragment : BaseFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Kohii[this].also { it.register(this, arrayOf(video_player_container, recyclerView)) }
+    kohii = Kohii[this].also {
+      manager = it.register(this, arrayOf(video_player_container, recyclerView))
+    }
 
     // Update overlay view's max width on collapse mode.
     val constraintSet = (this.videoOverlay as MotionLayout).getConstraintSet(R.id.end)
@@ -178,6 +189,13 @@ class OverlayViewFragment : BaseFragment(),
     })
 
     (this.videoOverlay as MotionLayout).setTransitionListener(this)
+
+    extendedAction.setOnClickListener {
+      val current = volumeFlag.get()
+      manager.applyVolumeInfo(
+          VolumeInfo(volumeFlag.getAndSet(!current), 1F), recyclerView, Scope.TARGETHOST
+      )
+    }
   }
 
   override fun onViewStateRestored(savedInstanceState: Bundle?) {

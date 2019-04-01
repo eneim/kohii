@@ -16,14 +16,27 @@
 
 package kohii.v1
 
-import kohii.v1.Playback.Config
+import android.net.Uri
+import kohii.media.Media
+import kohii.media.MediaItem
 
-interface PlaybackCreator<CONTAINER, PLAYER> {
+// Use this instead of Kohii instance to provide more customizable detail.
+abstract class PlayableCreator<PLAYER>(
+  protected val kohii: Kohii,
+  internal val playerType: Class<PLAYER>
+) {
 
-  fun createPlayback(
-    manager: PlaybackManager,
-    target: Target<CONTAINER, PLAYER>,
-    playable: Playable<PLAYER>,
-    config: Config
-  ): Playback<CONTAINER, PLAYER>
+  fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
+
+  fun setUp(url: String) = this.setUp(Uri.parse(url))
+
+  fun setUp(media: Media): Binder<PLAYER> {
+    return Binder(kohii, this, media)
+  }
+
+  abstract fun createPlayable(
+    kohii: Kohii,
+    media: Media,
+    config: Playable.Config
+  ): Playable<PLAYER>
 }

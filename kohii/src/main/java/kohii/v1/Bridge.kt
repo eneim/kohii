@@ -39,6 +39,8 @@ interface Bridge<PLAYER> {
 
   val volumeInfo: VolumeInfo
 
+  fun seekTo(positionMs: Long)
+
   /**
    * Prepare the resource for a [ExoPlayer]. This method should:
    * - Request for new [ExoPlayer] instance if there is not a usable one.
@@ -52,6 +54,9 @@ interface Bridge<PLAYER> {
    * if `false` just do nothing for the MediaSource.
    */
   fun prepare(loadSource: Boolean)
+
+  // Ensure resource is ready to play. PlaybackDispatcher will require this for manual playback.
+  fun ensureResource()
 
   /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to true */
   fun play()

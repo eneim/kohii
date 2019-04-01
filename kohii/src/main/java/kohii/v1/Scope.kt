@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
-
-/**
- * @author eneim (2018/06/24).
- */
-@Parcelize
-data class VolumeInfo(
-  var mute: Boolean,
-  var volume: Float
-) : Parcelable {
-
-  constructor() : this(false, 1F)
-
-  constructor(original: VolumeInfo) : this(original.mute, original.volume)
-
-  fun setTo(
-    mute: Boolean,
-    volume: Float
-  ) {
-    this.mute = mute
-    this.volume = volume
-  }
-
-  companion object {
-    val SCRAP = VolumeInfo(false, 1F)
-  }
+// These scopes will be used for global actions.
+enum class Scope(@Suppress("unused") val priority: Int) {
+  GLOBAL(1),
+  ACTIVITY(2),
+  MANAGER(3),
+  TARGETHOST(4),
+  PLAYBACK(5)
 }

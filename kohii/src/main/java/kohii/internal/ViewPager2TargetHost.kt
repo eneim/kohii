@@ -16,35 +16,27 @@
 
 package kohii.internal
 
-import android.view.View
-import androidx.core.widget.NestedScrollView
-import androidx.core.widget.NestedScrollView.OnScrollChangeListener
+import androidx.viewpager2.widget.ViewPager2
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
+import java.lang.ref.WeakReference
 
-internal class NestedScrollViewContainer(
-  override val container: NestedScrollView,
+class ViewPager2TargetHost(
+  override val host: ViewPager2,
   manager: PlaybackManager
-) : ViewContainer<NestedScrollView>(container, manager), OnScrollChangeListener {
+) : BaseTargetHost<ViewPager2>(host, manager) {
+
+  private val pageChangeCallback by lazy { SimpleOnPageChangeCallback(manager) }
 
   override fun onAdded() {
-    super.onAdded()
-    container.setOnScrollChangeListener(this)
+    host.registerOnPageChangeCallback(pageChangeCallback)
+    manager.dispatchRefreshAll()
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    container.setOnScrollChangeListener(null as OnScrollChangeListener?)
-  }
-
-  override fun onScrollChange(
-    v: NestedScrollView?,
-    scrollX: Int,
-    scrollY: Int,
-    oldScrollX: Int,
-    oldScrollY: Int
-  ) {
-    manager.dispatchRefreshAll()
+    host.unregisterOnPageChangeCallback(pageChangeCallback)
   }
 
   override fun allowsToPlay(playback: Playback<*, *>): Boolean {
@@ -52,25 +44,31 @@ internal class NestedScrollViewContainer(
   }
 
   override fun accepts(target: Any): Boolean {
-    if (target !is View) return false
-    var view = target
-    var parent = view.parent
-    while (parent != null && parent !== this.container && parent is View) {
-      @Suppress("USELESS_CAST")
-      view = parent as View
-      parent = view.parent
-    }
-    return parent === this.container
+    return false
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is NestedScrollViewContainer) return false
-    if (container !== other.container) return false
+    if (other !is ViewPager2TargetHost) return false
+    if (host != other.host) return false
     return true
   }
 
   override fun hashCode(): Int {
-    return container.hashCode()
+    return host.hashCode()
+  }
+
+  private class SimpleOnPageChangeCallback(manager: PlaybackManager) : OnPageChangeCallback() {
+    val weakManager = WeakReference(manager)
+
+    override fun onPageSelected(position: Int) {
+      weakManager.get()
+          ?.dispatchRefreshAll()
+    }
+
+    override fun onPageScrollStateChanged(state: Int) {
+      weakManager.get()
+          ?.dispatchRefreshAll()
+    }
   }
 }

@@ -24,7 +24,7 @@ import android.os.Message
 /**
  * Support delayed playback.
  */
-class PlaybackDispatcher : Handler.Callback {
+class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
   companion object {
     private const val MSG_PLAY = 1234
   }
@@ -47,7 +47,7 @@ class PlaybackDispatcher : Handler.Callback {
     handler = null
   }
 
-  internal fun play(playback: Playback<*, *>) {
+  private fun justPlay(playback: Playback<*, *>) {
     handler?.let {
       val delay = playback.config.delay
       it.removeMessages(MSG_PLAY, playback)
@@ -61,7 +61,27 @@ class PlaybackDispatcher : Handler.Callback {
     }
   }
 
+  internal fun play(playback: Playback<*, *>) {
+    playback.playable.ensureResource()
+
+    val controller = playback.controller
+    // if (controller != null && !controller.allowsSystemControl()) return
+
+    if (controller != null) {
+      val state = kohii.manualFlag[playback.playable]
+      if (state != null) {
+        if (state != true) playback.pause()
+        else justPlay(playback)
+        return
+      }
+    } else {
+      justPlay(playback)
+    }
+  }
+
   internal fun pause(playback: Playback<*, *>) {
+    val controller = playback.controller
+    if (controller != null && !controller.allowsSystemControl()) return
     handler?.removeMessages(MSG_PLAY, playback)
     playback.pause()
   }

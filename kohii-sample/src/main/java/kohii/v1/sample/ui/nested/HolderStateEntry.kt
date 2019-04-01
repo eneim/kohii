@@ -34,7 +34,8 @@ class HolderStateEntry(
   override fun writeToParcel(
     parcel: Parcel,
     flags: Int
-  ) {}
+  ) {
+  }
 
   override fun describeContents(): Int {
     return 0

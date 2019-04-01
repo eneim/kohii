@@ -48,23 +48,26 @@ class VideoViewHolder(
     parent
 ), PlaybackEventListener, Playback.Callback {
 
-  override fun onFirstFrameRendered() {
+  override fun onFirstFrameRendered(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
   }
 
-  override fun onBuffering(playWhenReady: Boolean) {
+  override fun onBuffering(
+    playback: Playback<*, *>,
+    playWhenReady: Boolean
+  ) {
     Log.i("KohiiApp:VH:$adapterPosition", "onBuffering(): $playWhenReady")
   }
 
-  override fun onPlaying() {
+  override fun onPlaying(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPlaying()")
   }
 
-  override fun onPaused() {
+  override fun onPaused(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPaused()")
   }
 
-  override fun onCompleted() {
+  override fun onCompleted(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
   }
 

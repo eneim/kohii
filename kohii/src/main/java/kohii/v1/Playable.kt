@@ -19,6 +19,7 @@ package kohii.v1
 import androidx.annotation.IntDef
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
+import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playback.Callback
@@ -56,6 +57,13 @@ interface Playable<PLAYER> : Callback {
 
   val tag: Any
 
+  val media: Media
+
+  @RepeatMode
+  var repeatMode: Int
+
+  val isPlaying: Boolean
+
   fun <TARGET : Any> bind(
     target: TARGET,
     config: Playback.Config = Playback.Config(),
@@ -72,11 +80,15 @@ interface Playable<PLAYER> : Callback {
 
   fun prepare()
 
+  fun ensureResource()
+
   fun play()
 
   fun pause()
 
   fun release()
+
+  fun seekTo(positionMs: Long)
 
   fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 
@@ -89,7 +101,6 @@ interface Playable<PLAYER> : Callback {
   // data class for copying convenience.
   data class Config(
     val tag: String? = null,
-    val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
     val startDelay: Int = 0, // Delay on every "play" call.
     val prefetch: Boolean = false,
     @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
@@ -99,7 +110,6 @@ interface Playable<PLAYER> : Callback {
     fun copySelf(): Config {
       return Config(
           tag = this.tag,
-          playbackInfo = this.playbackInfo,
           prefetch = this.prefetch,
           repeatMode = this.repeatMode,
           playbackParameters = this.playbackParameters,
