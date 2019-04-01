@@ -29,7 +29,7 @@ internal object RecycleViewUtils {
     if (params == null) return false
     // Must be one of the following:
     // - Not yet bound by Adapter (its ViewHolder is null)
-    // - Or bound, and its owner RecyclerView is the same with the Container
+    // - Or bound, and its owner RecyclerView is the same with the TargetHost
     return params.mViewHolder == null || params.mViewHolder.mOwnerRecyclerView === recyclerView
   }
 

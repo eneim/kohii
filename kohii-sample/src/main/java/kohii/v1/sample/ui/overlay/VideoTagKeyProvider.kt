@@ -23,14 +23,15 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.NO_ID
 import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
+import kohii.v1.Rebinder
 import java.util.HashMap
 
 // This KeyProvider allow a detached View still in key/position map.
 class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
-    ItemKeyProvider<String>(SCOPE_CACHED) {
+    ItemKeyProvider<Rebinder>(SCOPE_CACHED) {
 
-  private val positionToKey = SparseArray<String>()
-  private val keyToPosition = HashMap<String, Int>()
+  private val positionToKey = SparseArray<Rebinder>()
+  private val keyToPosition = HashMap<Rebinder, Int>()
 
   init {
     recyclerView.addOnChildAttachStateChangeListener(
@@ -52,7 +53,7 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
       val position = holder.adapterPosition
       val id = holder.getItemId()
       if (id != NO_ID) {
-        val key = holder.tagKey
+        val key = holder.rebinder
         if (position != NO_POSITION && id != NO_ID && key != null) {
           positionToKey.put(position, key)
           keyToPosition[key] = position
@@ -69,7 +70,7 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
       // only if id == NO_ID, we remove this View from cache.
       // when id != NO_ID, it means that this View is still bound to an Item.
       if (id == NO_ID) {
-        val key = holder.tagKey
+        val key = holder.rebinder
         if (position != NO_POSITION && key != null) {
           positionToKey.delete(position)
           keyToPosition.remove(key)
@@ -78,11 +79,11 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
     }
   }
 
-  override fun getKey(position: Int): String? {
+  override fun getKey(position: Int): Rebinder? {
     return positionToKey.get(position, null)
   }
 
-  override fun getPosition(key: String): Int {
+  override fun getPosition(key: Rebinder): Int {
     return keyToPosition[key] ?: NO_POSITION
   }
 }

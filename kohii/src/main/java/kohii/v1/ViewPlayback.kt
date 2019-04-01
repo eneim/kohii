@@ -26,18 +26,18 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
-open class ViewPlayback<V : View>(
+open class ViewPlayback<V : View, PLAYER>(
   kohii: Kohii,
-  playable: Playable<V>,
+  playable: Playable<PLAYER>,
   manager: PlaybackManager,
-  container: Container,
+  targetHost: TargetHost,
   target: V,
-  options: Options
-) : Playback<V>(
+  options: Config
+) : Playback<V, PLAYER>(
     kohii,
     playable,
     manager,
-    container,
+    targetHost,
     target,
     options
 ) {
@@ -45,33 +45,36 @@ open class ViewPlayback<V : View>(
   // For debugging purpose only.
   private val debugListener: PlaybackEventListener by lazy {
     object : PlaybackEventListener {
-      override fun onFirstFrameRendered() {
+      override fun onFirstFrameRendered(playback: Playback<*, *>) {
         Log.d(TAG, "first frame: ${this@ViewPlayback}")
       }
 
-      override fun onBuffering(playWhenReady: Boolean) {
+      override fun onBuffering(
+        playback: Playback<*, *>,
+        playWhenReady: Boolean
+      ) {
         Log.d(TAG, "buffering: ${this@ViewPlayback}")
       }
 
-      override fun beforePlay() {
+      override fun beforePlay(playback: Playback<*, *>) {
         Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
         target.keepScreenOn = true
       }
 
-      override fun onPlaying() {
+      override fun onPlaying(playback: Playback<*, *>) {
         Log.d(TAG, "playing: ${this@ViewPlayback}")
       }
 
-      override fun onPaused() {
+      override fun onPaused(playback: Playback<*, *>) {
         Log.w(TAG, "paused: ${this@ViewPlayback}")
       }
 
-      override fun afterPause() {
+      override fun afterPause(playback: Playback<*, *>) {
         Log.w(TAG, "afterPause: ${this@ViewPlayback}")
         target.keepScreenOn = false
       }
 
-      override fun onCompleted() {
+      override fun onCompleted(playback: Playback<*, *>) {
         Log.d("Kohii:PB", "ended: ${this@ViewPlayback}")
         target.keepScreenOn = false
       }
@@ -83,7 +86,7 @@ open class ViewPlayback<V : View>(
     get() {
       val playerRect = Rect()
       val visible = target.getGlobalVisibleRect(playerRect, Point())
-      if (!visible) return ViewToken(this, playerRect, -1F)
+      if (!visible) return ViewToken(this.config, playerRect, -1F)
 
       val drawRect = Rect()
       target.getDrawingRect(drawRect)
@@ -95,7 +98,7 @@ open class ViewPlayback<V : View>(
         offset = visibleArea / drawArea.toFloat()
       }
 
-      return ViewToken(this, playerRect, offset)
+      return ViewToken(this.config, playerRect, offset)
     }
 
   @CallSuper
@@ -104,18 +107,19 @@ open class ViewPlayback<V : View>(
     if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
+  @CallSuper
   override fun onRemoved() {
     if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
     super.onRemoved()
   }
 
   override fun compareWidth(
-    other: Playback<*>,
+    other: Playback<*, *>,
     orientation: Int
   ): Int {
-    if (other !is ViewPlayback) {
+    if (other !is ViewPlayback<*, *>) {
       // Either 1 or -1.
-      return 1 or this.options.priority.compareTo(other.options.priority)
+      return 1 or this.config.priority.compareTo(other.config.priority)
     }
 
     val thisToken = this.token
@@ -124,13 +128,13 @@ open class ViewPlayback<V : View>(
     val vertical by lazy { CENTER_Y.compare(thisToken, thatToken) }
     val horizontal by lazy { CENTER_X.compare(thisToken, thatToken) }
 
-    var result = this.options.priority.compareTo(other.options.priority)
+    var result = this.config.priority.compareTo(other.config.priority)
     if (result == 0) {
       result = when (orientation) {
-        Container.VERTICAL -> vertical
-        Container.HORIZONTAL -> horizontal
-        Container.BOTH_AXIS -> max(vertical, horizontal) // FIXME or closer to center?
-        Container.NONE_AXIS -> max(vertical, horizontal) // FIXME or closer to center?
+        TargetHost.VERTICAL -> vertical
+        TargetHost.HORIZONTAL -> horizontal
+        TargetHost.BOTH_AXIS -> max(vertical, horizontal)
+        TargetHost.NONE_AXIS -> max(vertical, horizontal)
         else -> 0
       }
     }
@@ -139,28 +143,23 @@ open class ViewPlayback<V : View>(
     return result
   }
 
+  @Suppress("UNCHECKED_CAST")
+  override val playerView: PLAYER?
+    get() = this.target as? PLAYER
+
   // Location on screen, with visible offset within target's parent.
-  data class ViewToken internal constructor(
-    internal val owner: Playback<*>,
-    internal val viewRect: Rect,
-    internal val areaOffset: Float,
-    internal val canRelease: Boolean = true
+  data class ViewToken constructor(
+    val config: Config,
+    val viewRect: Rect,
+    val areaOffset: Float
   ) : Token() {
-    override fun compareTo(other: Token): Int {
-      return (other as? ViewToken)?.let {
-        var result = this.owner.options.priority.compareTo(other.owner.options.priority)
-        if (result == 0) result = CENTER_Y.compare(this, other)
-        if (result == 0) result = this.areaOffset.compareTo(other.areaOffset)
-        result
-      } ?: super.compareTo(other)
-    }
 
     override fun shouldPrepare(): Boolean {
       return areaOffset >= 0f
     }
 
     override fun shouldPlay(): Boolean {
-      return areaOffset >= owner.options.threshold
+      return areaOffset >= config.threshold
     }
 
     override fun toString(): String {

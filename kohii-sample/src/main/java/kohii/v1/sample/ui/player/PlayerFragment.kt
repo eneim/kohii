@@ -25,11 +25,10 @@ import androidx.core.view.ViewCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.transition.TransitionInflater
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
-import kohii.v1.Playable
 import kohii.v1.Prioritized
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
@@ -43,19 +42,16 @@ import kotlinx.android.synthetic.main.fragment_player.playerView
 class PlayerFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
 
   companion object {
-    private const val KEY_PLAYABLE_TAG = "kohii:fragment:player:tag"
     private const val KEY_INIT_DATA = "kohii:fragment:player:init_data"
+    private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
 
-    fun newInstance(tag: String): PlayerFragment {
+    fun newInstance(
+      rebinder: Rebinder,
+      initData: InitData
+    ): PlayerFragment {
       val bundle = Bundle().also {
-        it.putString(KEY_PLAYABLE_TAG, tag)
-      }
-      return PlayerFragment().also { it.arguments = bundle }
-    }
-
-    fun newInstance(data: InitData): PlayerFragment {
-      val bundle = Bundle().also {
-        it.putParcelable(KEY_INIT_DATA, data)
+        it.putParcelable(KEY_REBINDER, rebinder)
+        it.putParcelable(KEY_INIT_DATA, initData)
       }
       return PlayerFragment().also { it.arguments = bundle }
     }
@@ -89,12 +85,10 @@ class PlayerFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
 
     container.setAspectRatio(initData.aspectRatio)
     val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
-    @Suppress("UNCHECKED_CAST")
-    (kohii.findPlayable(initData.tag) as? Playable<PlayerView>)
-        ?.bind(playerView) {
-          startPostponedEnterTransition()
-        }
-
+    val rebinder = requireArguments().getParcelable<Rebinder>(KEY_REBINDER)
+    rebinder?.rebind(kohii, playerView) {
+      startPostponedEnterTransition()
+    }
   }
 
   override fun onDestroyView() {

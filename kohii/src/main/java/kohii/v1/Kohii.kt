@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
@@ -37,38 +38,66 @@ import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.takeFirstOrNull
 import kohii.v1.exo.DefaultBandwidthMeterFactory
-import kohii.v1.exo.DefaultBridgeProvider
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
+import kohii.v1.exo.DefaultExoPlayerProvider
 import kohii.v1.exo.DefaultMediaSourceFactoryProvider
-import kohii.v1.exo.DefaultPlayerProvider
-import kohii.v1.exo.MediaSourceFactoryProvider
-import kohii.v1.exo.PlayerProvider
+import kohii.v1.exo.PlayerViewBridgeProvider
+import kohii.v1.exo.PlayerViewPlayableCreator
 import java.io.File
 import java.util.WeakHashMap
 
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class Kohii(context: Context) {
 
-  internal val app = context.applicationContext as Application
+  val app = context.applicationContext as Application
 
   internal val owners = HashMap<LifecycleOwner, ActivityContainer>(2)
   internal val managers = HashMap<LifecycleOwner, PlaybackManager>()
 
   // Which Playable is managed by which Manager
   internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlaybackManager?>()
+  // Map the playback state of Playable made by client (manually)
+  internal val manualFlag = WeakHashMap<Playable<*>, Boolean>()
 
   // Store playable whose tag is available. Non tagged playable are always ignored.
-  internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Playable<*>>()
+  internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Pair<Playable<*>, Class<*>>>()
 
-  // For ExoPlayer resource management.
-  internal val bridgeProvider: BridgeProvider
-  internal val playerProvider: PlayerProvider
-  internal val mediaSourceFactoryProvider: MediaSourceFactoryProvider
+  internal val defaultBridgeProvider by lazy {
+    // Shared dependencies.
+    val userAgent = Kohii.getUserAgent(this.app, BuildConfig.LIB_NAME)
+    val bandwidthMeter = DefaultBandwidthMeter()
+    val httpDataSource =
+      DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
 
-  internal val screenStateReceiver by lazy {
+    // ExoPlayerProvider
+    val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this.app, httpDataSource)
+    val playerProvider = DefaultExoPlayerProvider(
+        this.app,
+        DefaultBandwidthMeterFactory(),
+        drmSessionManagerProvider
+    )
+
+    // MediaSourceFactoryProvider
+    var tempDir = this.app.getExternalFilesDir(null)
+    if (tempDir == null) tempDir = this.app.filesDir
+    val fileDir = tempDir
+    val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
+    val mediaCache = SimpleCache(contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE))
+    val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
+    val mediaSourceFactoryProvider =
+      DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
+
+    PlayerViewBridgeProvider(this, playerProvider, mediaSourceFactoryProvider)
+  }
+
+  private val defaultPlayableCreator = lazy { PlayerViewPlayableCreator(this) }
+
+  @Suppress("SpellCheckingInspection")
+  internal val cleanables = HashSet<Cleanable>()
+
+  private val screenStateReceiver by lazy {
     ScreenStateReceiver()
   }
 
@@ -78,10 +107,12 @@ class Kohii(context: Context) {
 
     @Volatile private var kohii: Kohii? = null
 
+    @JvmStatic
     operator fun get(context: Context) = kohii ?: synchronized(Kohii::class.java) {
       kohii ?: Kohii(context).also { kohii = it }
     }
 
+    @JvmStatic
     operator fun get(fragment: Fragment) = get(fragment.requireContext())
 
     // ExoPlayer's doesn't catch a RuntimeException and crash if Device has too many App installed.
@@ -101,34 +132,7 @@ class Kohii(context: Context) {
     }
   }
 
-  init {
-    // Shared dependencies.
-    val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
-    val bandwidthMeter = DefaultBandwidthMeter()
-    val httpDataSource = DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
-
-    // ExoPlayerProvider
-    val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this.app, httpDataSource)
-    playerProvider = DefaultPlayerProvider(
-        this.app,
-        DefaultBandwidthMeterFactory(),
-        drmSessionManagerProvider
-    )
-
-    // MediaSourceFactoryProvider
-    var tempDir = this.app.getExternalFilesDir(null)
-    if (tempDir == null) tempDir = this.app.filesDir
-    val fileDir = tempDir
-    val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
-    val mediaCache = SimpleCache(contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE))
-    val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
-    mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
-
-    bridgeProvider = DefaultBridgeProvider(playerProvider, mediaSourceFactoryProvider)
-    // bridgeProvider = DummyBridgeProvider()
-  }
-
-  //// instance methods
+  // instance methods
 
   internal fun findSuitableManager(target: Any): PlaybackManager? {
     return owners.values.takeFirstOrNull({ it.findSuitableManger(target) }, { it != null })
@@ -142,9 +146,9 @@ class Kohii(context: Context) {
   ) {
     tag?.run {
       val cache = mapTagToPlayable.remove(tag)
-      if (cache !== playable) {
+      if (cache?.first !== playable) {
         throw IllegalArgumentException(
-            "Illegal playable removal: cached playable of tag [$tag] is [$cache] but not [$playable]"
+            "Illegal playable removal: cached playable of tag [$tag] is [${cache?.first}] but not [$playable]"
         )
       }
     } ?: playable.release()
@@ -164,20 +168,21 @@ class Kohii(context: Context) {
 
   // Gat called when Kohii should free all resources.
   internal fun cleanUp() {
-    playerProvider.cleanUp()
+    cleanables.onEach { it.cleanUp() }
+        .clear()
   }
 
-  //// [BEGIN] Public API
+  // [BEGIN] Public API
 
   // Expose to client.
-  fun register(provider: LifecycleOwnerProvider) {
+  fun register(provider: LifecycleOwnerProvider): PlaybackManager {
     return this.register(provider, null)
   }
 
   fun register(
     provider: LifecycleOwnerProvider,
-    containers: Array<Any>?
-  ) {
+    hosts: Array<Any>?
+  ): PlaybackManager {
     val activity =
       when (provider) {
         is Fragment -> provider.requireActivity()
@@ -189,42 +194,43 @@ class Kohii(context: Context) {
     val parent = owners.getOrPut(activity) {
       val result = ActivityContainer(this, activity)
       activity.lifecycle.addObserver(result)
+      if (defaultPlayableCreator.isInitialized()) {
+        activity.lifecycle.addObserver(defaultPlayableCreator.value)
+      }
       return@getOrPut result
     }
     val lifecycleOwner = provider.provideLifecycleOwner()
     val manager = managers.getOrPut(lifecycleOwner) {
       // Create new in case of no cache found.
       if (lifecycleOwner is LifecycleService) {
-        // ServicePlaybackManager(this, provider)
-        throw IllegalArgumentException(
-            "Service is not supported yet."
-        )
+        throw IllegalArgumentException("Service is not supported yet.")
       } else {
-        val result = ViewPlaybackManager(this, parent, provider)
-        containers?.mapNotNull { Container.createContainer(it, result) }
-            ?.forEach { result.registerContainer(it, false) }
-        return@getOrPut result
+        return@getOrPut ViewPlaybackManager(this, parent, provider)
       }
     }
 
+    hosts?.mapNotNull { TargetHost.createTargetHost(it, manager) }
+        ?.forEach { manager.registerTargetHost(it, false) }
+
     lifecycleOwner.lifecycle.addObserver(manager)
     parent.attachPlaybackManager(manager)
+    return manager
   }
 
   fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
 
-  fun setUp(url: String) = this.setUp(MediaItem(Uri.parse(url)))
+  fun setUp(url: String) = this.setUp(url.toUri())
 
-  fun setUp(media: Media) = Playable.Builder(this, media = media)
+  fun setUp(media: Media) = defaultPlayableCreator.value.setUp(media)
 
-  // Find a Playable for a tag. Single player may use this for full-screen playback.
-  fun findPlayable(tag: Any?): Playable<*>? {
-    return this.mapTagToPlayable[tag].also {
-      mapPlayableToManager[it] = null // once found, it will be detached from the last Manager.
+  // Get Playbacks whose output Player is 'player'.
+  fun <PLAYER : Any> get(player: PLAYER): Playback<*, PLAYER>? {
+    return owners.values.flatMap {
+      it.managers()
+          .map { mng -> mng.findPlaybackForPlayer(player) }
     }
+        .firstOrNull()
   }
 
-  //// [END] Public API
-
-  //// Interface definitions
+  // [END] Public API
 }

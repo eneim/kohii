@@ -58,12 +58,12 @@ class DefaultMediaSourceFactoryProvider private constructor(
     offlineSourceHelper: OfflineSourceHelper
   ) : this(offlineSourceHelper, upstreamFactory, offlineSourceHelper.downloadCache)
 
-  private val dataSourceFactory: DataSource.Factory = //
+  private val dataSourceFactory: DataSource.Factory =
     if (mediaCache != null) {
-      CacheDataSourceFactory( //
-          mediaCache, //
-          upstreamFactory, //
-          FileDataSourceFactory(), null, //
+      CacheDataSourceFactory(
+          mediaCache,
+          upstreamFactory,
+          FileDataSourceFactory(), null,
           CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
       )
     } else {
@@ -74,23 +74,23 @@ class DefaultMediaSourceFactoryProvider private constructor(
     @C.ContentType val type = Util.inferContentType(media.uri, media.type)
     when (type) {
       C.TYPE_DASH ->
-        return DashMediaSource.Factory(dataSourceFactory) //
-            .setManifestParser( //
-                FilteringManifestParser<DashManifest>( //
-                    DashManifestParser(), getOfflineStreamKeys(media.uri) //
-                ) //
+        return DashMediaSource.Factory(dataSourceFactory)
+            .setManifestParser(
+                FilteringManifestParser<DashManifest>(
+                    DashManifestParser(), getOfflineStreamKeys(media.uri)
+                )
             )
       C.TYPE_SS ->
-        return SsMediaSource.Factory(dataSourceFactory) //
-            .setManifestParser( //
-                FilteringManifestParser<SsManifest>( //
-                    SsManifestParser(), getOfflineStreamKeys(media.uri) //
+        return SsMediaSource.Factory(dataSourceFactory)
+            .setManifestParser(
+                FilteringManifestParser<SsManifest>(
+                    SsManifestParser(), getOfflineStreamKeys(media.uri)
                 ) //
             )
       C.TYPE_HLS ->
-        return HlsMediaSource.Factory(dataSourceFactory) //
-            .setPlaylistParserFactory( //
-                DefaultHlsPlaylistParserFactory(getOfflineStreamKeys(media.uri)) //
+        return HlsMediaSource.Factory(dataSourceFactory)
+            .setPlaylistParserFactory(
+                DefaultHlsPlaylistParserFactory(getOfflineStreamKeys(media.uri))
             )
       C.TYPE_OTHER ->
         return ExtractorMediaSource.Factory(dataSourceFactory)

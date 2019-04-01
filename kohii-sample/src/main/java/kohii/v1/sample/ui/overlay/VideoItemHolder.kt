@@ -26,10 +26,12 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.Binder
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.svg.GlideApp
 import kohii.v1.sample.ui.overlay.data.Sources
@@ -49,17 +51,17 @@ internal class VideoItemHolder(
     OnClickListener {
 
   override fun onClick(v: View?) {
-    clickListener.onItemClick(v!!, null, adapterPosition, itemId, playback)
+    clickListener.onItemClick(v!!, null, adapterPosition, itemId, rebinder)
   }
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
-  val playerView = itemView.findViewById(R.id.playerView) as PlayerView
+  val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
   val playerContainer = itemView.findViewById(R.id.playerContainer) as View
 
-  var playable: Playable<PlayerView>? = null
-  var playback: Playback<PlayerView>? = null
+  var playback: Playback<ViewGroup, PlayerView>? = null
+  var binder: Binder<PlayerView>? = null
   var videoSources: Sources? = null
 
   init {
@@ -69,6 +71,10 @@ internal class VideoItemHolder(
 
   val tagKey: String?
     get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
+
+  // Trick
+  val rebinder: Rebinder?
+    get() = this.videoSources?.let { Rebinder(tagKey, PlayerView::class.java) }
 
   override fun bind(item: Any?) {
     (item as? Video)?.let {
@@ -82,18 +88,18 @@ internal class VideoItemHolder(
           }
           .sources.first()
 
-      if (host.selectionTracker?.isSelected(tagKey) == true) {
-        this.playable = null
+      this.binder = kohii.setUp(videoSources!!.file)
+          .config {
+            Playable.Config(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
+          }
+
+      if (host.selectionTracker?.isSelected(rebinder) == true) {
         this.playback = null
       } else {
-        this.playable = kohii.setUp(videoSources!!.file)
-            .copy(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
-            .asPlayable()
-
-        this.playable!!.bind(playerView) { pk ->
+        this.binder!!.bind(playerView) { pk ->
           pk.addPlaybackEventListener(this@VideoItemHolder)
           pk.addCallback(this@VideoItemHolder)
-          this.playback = pk
+          this@VideoItemHolder.playback = pk
         }
       }
     }
@@ -108,32 +114,32 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  override fun beforePlay() {
+  override fun beforePlay(playback: Playback<*, *>) {
     videoImage.isVisible = false
     Log.e("Kohii:VH", "beforePlay: $playback, $adapterPosition")
   }
 
-  override fun onPlaying() {
+  override fun onPlaying(playback: Playback<*, *>) {
     videoImage.isVisible = false
   }
 
-  override fun afterPause() {
+  override fun afterPause(playback: Playback<*, *>) {
     videoImage.isVisible = true
   }
 
-  override fun onCompleted() {
+  override fun onCompleted(playback: Playback<*, *>) {
     videoImage.isVisible = true
   }
 
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback<*, *>) {
     videoImage.isVisible = true
   }
 
-  /// Selection
+  // Selection
 
-  override fun getItemDetails(): ItemDetails<String> {
-    return object : ItemDetails<String>() {
-      override fun getSelectionKey() = playback?.tag as String?
+  fun getItemDetails(): ItemDetails<Rebinder> {
+    return object : ItemDetails<Rebinder>() {
+      override fun getSelectionKey() = rebinder
 
       override fun getPosition() = adapterPosition
     }

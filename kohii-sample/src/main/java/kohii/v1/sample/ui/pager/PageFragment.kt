@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Prioritized
 import kohii.v1.sample.R
@@ -65,7 +66,7 @@ class PageFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
   }
 
   private var landscape: Boolean = false
-  private var playback: Playback<PlayerView>? = null
+  private var playback: Playback<PlayerView, *>? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -98,9 +99,9 @@ class PageFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
       val pagePos = arguments?.getInt(pageTagKey) ?: -1
       val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
       kohii.setUp(video.file)
-          .copy(repeatMode = Player.REPEAT_MODE_ONE, prefetch = true)
-          .copy(tag = videoTag)
-          .asPlayable()
+          .config {
+            Playable.Config(tag = videoTag, repeatMode = Player.REPEAT_MODE_ONE, prefetch = true)
+          }
           .bind(playerView) { playback = it }
     }
   }
@@ -108,5 +109,4 @@ class PageFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
   override fun provideLifecycleOwner(): LifecycleOwner {
     return viewLifecycleOwner
   }
-
 }

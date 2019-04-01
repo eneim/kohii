@@ -24,14 +24,14 @@ import android.os.Message
 /**
  * Support delayed playback.
  */
-class PlaybackDispatcher : Handler.Callback {
+class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
   companion object {
     private const val MSG_PLAY = 1234
   }
 
   override fun handleMessage(msg: Message?): Boolean {
-    if (msg?.what == MSG_PLAY && msg.obj is Playback<*>) {
-      (msg.obj as Playback<*>).play()
+    if (msg?.what == MSG_PLAY && msg.obj is Playback<*, *>) {
+      (msg.obj as Playback<*, *>).play()
     }
     return true
   }
@@ -47,26 +47,46 @@ class PlaybackDispatcher : Handler.Callback {
     handler = null
   }
 
-  internal fun play(playback: Playback<*>) {
+  private fun justPlay(playback: Playback<*, *>) {
     handler?.let {
-      val delay = playback.options.delay
+      val delay = playback.config.delay
       it.removeMessages(MSG_PLAY, playback)
       when {
         delay <= Playback.DELAY_INFINITE -> {
           // ignored
         }
-        delay == 0L -> playback.play()
-        else -> it.sendMessageDelayed(it.obtainMessage(MSG_PLAY, playback), delay)
+        delay == 0 -> playback.play()
+        else -> it.sendMessageDelayed(it.obtainMessage(MSG_PLAY, playback), delay.toLong())
       }
     }
   }
 
-  internal fun pause(playback: Playback<*>) {
+  internal fun play(playback: Playback<*, *>) {
+    playback.playable.ensureResource()
+
+    val controller = playback.controller
+    // if (controller != null && !controller.allowsSystemControl()) return
+
+    if (controller != null) {
+      val state = kohii.manualFlag[playback.playable]
+      if (state != null) {
+        if (state != true) playback.pause()
+        else justPlay(playback)
+        return
+      }
+    } else {
+      justPlay(playback)
+    }
+  }
+
+  internal fun pause(playback: Playback<*, *>) {
+    val controller = playback.controller
+    if (controller != null && !controller.allowsSystemControl()) return
     handler?.removeMessages(MSG_PLAY, playback)
     playback.pause()
   }
 
-  internal fun onPlaybackRemoved(playback: Playback<*>) {
+  internal fun onPlaybackRemoved(playback: Playback<*, *>) {
     handler?.removeMessages(MSG_PLAY, playback)
   }
 }

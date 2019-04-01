@@ -29,6 +29,7 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.MediaItem
 import kohii.v1.Kohii
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
@@ -47,23 +48,26 @@ class VideoViewHolder(
     parent
 ), PlaybackEventListener, Playback.Callback {
 
-  override fun onFirstFrameRendered() {
+  override fun onFirstFrameRendered(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
   }
 
-  override fun onBuffering(playWhenReady: Boolean) {
+  override fun onBuffering(
+    playback: Playback<*, *>,
+    playWhenReady: Boolean
+  ) {
     Log.i("KohiiApp:VH:$adapterPosition", "onBuffering(): $playWhenReady")
   }
 
-  override fun onPlaying() {
+  override fun onPlaying(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPlaying()")
   }
 
-  override fun onPaused() {
+  override fun onPaused(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPaused()")
   }
 
-  override fun onCompleted() {
+  override fun onCompleted(playback: Playback<*, *>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
   }
 
@@ -71,7 +75,7 @@ class VideoViewHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
 
   var itemTag: String? = null
-  var playback: Playback<PlayerView>? = null
+  var playback: Playback<PlayerView, PlayerView>? = null
 
   @SuppressLint("SetTextI18n")
   override fun bind(item: Item?) {
@@ -91,20 +95,19 @@ class VideoViewHolder(
       itemTag = "${javaClass.canonicalName}::${item.uri}::$adapterPosition"
       mediaName.text = item.name
 
-      val playable = kohii
-          .setUp(mediaItem)
-          .copy(
-              tag = itemTag,
-              prefetch = false,
-              repeatMode = Player.REPEAT_MODE_ONE
-          )
-          .asPlayable()
-
-      playable.bind(playerView) {
-        it.addPlaybackEventListener(this@VideoViewHolder)
-        it.addCallback(this@VideoViewHolder)
-        playback = it
-      }
+      kohii.setUp(mediaItem)
+          .config {
+            Playable.Config(
+                tag = itemTag,
+                prefetch = false,
+                repeatMode = Player.REPEAT_MODE_ONE
+            )
+          }
+          .bind(playerView) {
+            it.addPlaybackEventListener(this@VideoViewHolder)
+            it.addCallback(this@VideoViewHolder)
+            playback = it
+          }
     }
   }
 

@@ -19,7 +19,6 @@ package kohii.v1.sample.ui.overlay
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 /**
@@ -37,16 +36,14 @@ abstract class BaseViewHolder(
 
   open fun onRecycled(success: Boolean) {}
 
-  abstract fun getItemDetails(): ItemDetails<String>
-
   interface OnClickListener {
 
     fun onItemClick(
-      itemView: View,   // The main View receives the click
+      itemView: View, // The main View receives the click
       transView: View?, // The view to use in SharedElement Transition.
-      adapterPos: Int,  // The adapter position.
+      adapterPos: Int, // The adapter position.
       itemId: Long,
-      payload: Any?      // Payload, for Video it is the tag (String), used as Transition name.
+      payload: Any? // Payload, for Video it is the tag (String), used as Transition name.
     )
   }
 

@@ -20,6 +20,7 @@ import android.os.Handler
 import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.IntDef
+import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
 import kohii.v1.Playable.Companion.STATE_END
@@ -36,35 +37,34 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-abstract class Playback<T> internal constructor(
+abstract class Playback<TARGET, PLAYER> internal constructor(
   internal val kohii: Kohii,
-  internal val playable: Playable<T>,
-  internal val manager: PlaybackManager,
-  internal val container: Container,
-  val target: T,
-  internal val options: Playback.Options
+  internal val playable: Playable<PLAYER>,
+  val manager: PlaybackManager,
+  internal var targetHost: TargetHost, // Manager will update this on demand.
+  val target: TARGET,
+  internal val config: Playback.Config
 ) {
 
   companion object {
     const val TAG = "Kohii::PB"
     const val DELAY_INFINITE = -1L
-    val NO_DELAY = { 0L }
 
     // Priority
     const val PRIORITY_HIGH = 1
     const val PRIORITY_NORMAL = 2
     const val PRIORITY_LOW = 3
 
-    val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWidth(o2, Container.VERTICAL)
+    val VERTICAL_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, TargetHost.VERTICAL)
     }
 
-    val HORIZONTAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWidth(o2, Container.HORIZONTAL)
+    val HORIZONTAL_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, TargetHost.HORIZONTAL)
     }
 
-    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWidth(o2, Container.BOTH_AXIS)
+    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
+      return@Comparator o1.compareWidth(o2, TargetHost.BOTH_AXIS)
     }
   }
 
@@ -72,32 +72,35 @@ abstract class Playback<T> internal constructor(
   @IntDef(PRIORITY_HIGH, PRIORITY_NORMAL, PRIORITY_LOW)
   annotation class Priority
 
-  open class Token : Comparable<Token> {
-    override fun compareTo(other: Token) = 0
+  open class Token {
 
     // = wantsToPlay()
     open fun shouldPlay() = false
 
-    // Called by Manager, to know if a Playback should start preparing or not. True by default.
+    // Called by TargetHost, to know if a Playback should start preparing or not. True by default.
     // = allowsToPlay(player)
     open fun shouldPrepare() = false
   }
 
-  class Options(
-    @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
+  class Config(
+    @Priority
     val priority: Int = PRIORITY_NORMAL,
-    val delay: Long = 0L,
+    val delay: Int = 0,
       // Indicator to used to judge of a Playback should be played or not.
       // This doesn't warranty that it will be played, it just to make the Playback be a candidate
       // to start a playback.
       // In ViewPlayback, this is equal to visible area offset of the video container View.
-    val threshold: Float = 0.65F
+    val threshold: Float = 0.65F,
+    val controller: Controller? = null,
+    val playbackInfo: PlaybackInfo? = null
   )
 
   // Listeners for Playable. Playable will access these filed on demand.
   internal val volumeListeners by lazy { VolumeChangedListeners() }
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
+
+  internal var availabilityCallback: PlayerAvailabilityCallback? = null
 
   private var listenerHandler: Handler? = null
 
@@ -106,8 +109,9 @@ abstract class Playback<T> internal constructor(
   private val callbacks = CopyOnWriteArraySet<Callback>()
 
   // Token is comparable.
-  // Returning null --> there is nothing to play. A bound Playable should be unbound.
   internal abstract val token: Token
+
+  internal abstract val playerView: PLAYER?
 
   // [BEGIN] Public API
 
@@ -143,6 +147,15 @@ abstract class Playback<T> internal constructor(
     this.playerListeners.remove(listener)
   }
 
+  val tag = playable.tag
+
+  // Notnull = User request for manual playback controller.
+  // When comparing Playbacks, client must take this into account.
+  var controller: Controller? = config.controller
+
+  // Playback info update.
+
+  // 1. Volume
   var volumeInfo: VolumeInfo
     get() {
       return playable.volumeInfo
@@ -151,7 +164,16 @@ abstract class Playback<T> internal constructor(
       playable.setVolumeInfo(value)
     }
 
-  val tag = playable.tag
+  fun seekTo(positionMs: Long) {
+    this.playable.seekTo(positionMs)
+  }
+
+  @RepeatMode
+  var repeatMode: Int = Playable.REPEAT_MODE_ONE
+    set(value) {
+      field = value
+      this.playable.repeatMode = value
+    }
 
   fun unbind() {
     this.unbindInternal()
@@ -160,15 +182,15 @@ abstract class Playback<T> internal constructor(
 
   // [END] Public API
 
-  /// Internal APIs
+  // Internal APIs
 
   // Lifecycle
 
   open fun compareWidth(
-    other: Playback<*>,
+    other: Playback<*, *>,
     orientation: Int
   ): Int {
-    return this.token.compareTo(other.token)
+    return this.config.priority.compareTo(other.config.priority)
   }
 
   internal open fun unbindInternal() {
@@ -182,24 +204,24 @@ abstract class Playback<T> internal constructor(
   }
 
   internal fun dispatchFirstFrameRendered() {
-    listeners.forEach { it.onFirstFrameRendered() }
+    listeners.forEach { it.onFirstFrameRendered(this@Playback) }
   }
 
-  internal fun prepare() {
+  open fun prepare() {
     playable.prepare()
   }
 
-  internal fun play() {
-    listeners.forEach { it.beforePlay() }
+  open fun play() {
+    listeners.forEach { it.beforePlay(this@Playback) }
     playable.play()
   }
 
-  internal fun pause() {
+  open fun pause() {
     playable.pause()
-    listeners.forEach { it.afterPause() }
+    listeners.forEach { it.afterPause(this@Playback) }
   }
 
-  internal fun release() {
+  open fun release() {
     Log.i("Kohii::X", "release: $this, $manager")
     playable.release()
   }
@@ -211,9 +233,16 @@ abstract class Playback<T> internal constructor(
       when (message.what) {
         STATE_IDLE -> {
         }
-        STATE_BUFFERING -> listeners.forEach { it.onBuffering(playWhenReady) }
-        STATE_READY -> listeners.forEach { if (playWhenReady) it.onPlaying() else it.onPaused() }
-        STATE_END -> listeners.forEach { it.onCompleted() }
+        STATE_BUFFERING ->
+          listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
+        STATE_READY ->
+          listeners.forEach {
+            if (playWhenReady) it.onPlaying(
+                this@Playback
+            ) else it.onPaused(this@Playback)
+          }
+        STATE_END ->
+          listeners.forEach { it.onCompleted(this@Playback) }
       }
       true
     })
@@ -227,7 +256,7 @@ abstract class Playback<T> internal constructor(
     for (callback in this.callbacks) {
       callback.onAdded(this)
     }
-    container.attachTarget(target)
+    targetHost.attachTarget(target)
   }
 
   // ~ View is attached
@@ -235,6 +264,10 @@ abstract class Playback<T> internal constructor(
   internal open fun onActive() {
     for (callback in this.callbacks) {
       callback.onActive(this)
+    }
+    val player = this.playerView
+    if (this.availabilityCallback != null && player != null && player === this.target) {
+      this.availabilityCallback!!.onPlayerActive(this, player)
     }
   }
 
@@ -248,6 +281,10 @@ abstract class Playback<T> internal constructor(
     for (callback in this.callbacks) {
       callback.onInActive(this)
     }
+    val player = this.playerView
+    if (this.availabilityCallback != null && player === this.target) {
+      this.availabilityCallback!!.onPlayerInActive(this, player)
+    }
   }
 
   // Being removed from Manager
@@ -257,7 +294,7 @@ abstract class Playback<T> internal constructor(
     for (callback in this.callbacks) {
       callback.onRemoved(this)
     }
-    container.detachTarget(target)
+    targetHost.detachTarget(target)
     this.callbacks.clear()
     this.listeners.clear()
   }
@@ -266,20 +303,49 @@ abstract class Playback<T> internal constructor(
   internal open fun onDestroyed() {
     this.listenerHandler = null
     this.removeCallback(this.playable)
+    this.availabilityCallback = null
   }
 
   override fun toString(): String {
     val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
-    return "$firstPart::$playable::$container"
+    return "$firstPart::$playable::$targetHost"
   }
 
   interface Callback {
-    fun onAdded(playback: Playback<*>) {}
+    fun onAdded(playback: Playback<*, *>) {}
 
-    fun onActive(playback: Playback<*>) {}
+    fun onActive(playback: Playback<*, *>) {}
 
-    fun onInActive(playback: Playback<*>) {}
+    fun onInActive(playback: Playback<*, *>) {}
 
-    fun onRemoved(playback: Playback<*>) {}
+    fun onRemoved(playback: Playback<*, *>) {}
+  }
+
+  // To communicate with Playable only.
+  internal interface PlayerAvailabilityCallback {
+
+    fun onPlayerActive(
+      playback: Playback<*, *>,
+      player: Any
+    )
+
+    fun onPlayerInActive(
+      playback: Playback<*, *>,
+      player: Any?
+    )
+  }
+
+  // Test scenarios:
+  // 1. User set Controller, User scroll Playback off screen, User remove Controller.
+  interface Controller {
+    // false = full manual.
+    // true = half manual.
+    // When true:
+    // - If user starts a play, it will not be paused unless Playback is not visible enough (controlled by Config)
+    // - If user pauses a playing Playback, it will not be played unless user resume it. Work with config change.
+    // - If user scrolls so that a Playback is not visible enough, system will pause the Playback.
+    // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously playing,
+    // or pause it if it was paused before (= do nothing).
+    fun allowsSystemControl(): Boolean = true
   }
 }
