@@ -35,24 +35,27 @@ import java.util.concurrent.CopyOnWriteArraySet
 /**
  * @author eneim (2018/06/24).
  */
-// TODO [20181226] rename to PlayableEventListener
 interface PlaybackEventListener {
 
-  fun onFirstFrameRendered() {}
+  fun onFirstFrameRendered(playback: Playback<*, *>) {}
 
-  fun onBuffering(playWhenReady: Boolean) {}  // ExoPlayer state: 2
+  fun onBuffering(
+    playback: Playback<*, *>,
+    playWhenReady: Boolean
+  ) {
+  } // ExoPlayer state: 2
 
-  fun onPlaying() {}  // ExoPlayer state: 3, play flag: true
+  fun onPlaying(playback: Playback<*, *>) {} // ExoPlayer state: 3, play flag: true
 
-  fun onPaused() {}   // ExoPlayer state: 3, play flag: false
+  fun onPaused(playback: Playback<*, *>) {} // ExoPlayer state: 3, play flag: false
 
-  fun onCompleted() {}  // ExoPlayer state: 4
+  fun onCompleted(playback: Playback<*, *>) {} // ExoPlayer state: 4
 
   // Called right before playback.play() is called.
-  fun beforePlay() {}
+  fun beforePlay(playback: Playback<*, *>) {}
 
   // Called right after playback.pause() is called.
-  fun afterPause() {}
+  fun afterPause(playback: Playback<*, *>) {}
 }
 
 interface PlayerEventListener : Player.EventListener,

@@ -17,6 +17,8 @@
 <resources>
   <string name="app_name">Kohii in Action</string>
 
+  <item format="integer" name="motion_view_tag" type="id"/>
+
   <string name="large_text">
     "Material is the metaphor.\n\n"
 

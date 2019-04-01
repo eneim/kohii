@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 package kohii.v1
 
-/**
- * @author eneim (2018/10/28).
- */
-interface BridgeProvider {
+import kohii.media.Media
 
-  fun provideBridge(builder: Playable.Builder): Bridge
+interface BridgeProvider<PLAYER> : Cleanable {
+
+  fun provideBridge(
+    kohii: Kohii,
+    media: Media,
+    config: Playable.Config
+  ): Bridge<PLAYER>
 }

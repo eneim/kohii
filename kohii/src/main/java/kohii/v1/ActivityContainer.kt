@@ -16,7 +16,7 @@
 
 package kohii.v1
 
-import android.app.Activity
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
@@ -34,19 +34,20 @@ import kohii.media.PlaybackInfo
  */
 class ActivityContainer(
   internal val kohii: Kohii,
-  internal val activity: Activity,
-  internal val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
+  internal val activity: FragmentActivity,
+    // TODO make this configurable
+  private val selector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
   private val prioritizedManagers = HashSet<PlaybackManager>()
   private val standardManagers = HashSet<PlaybackManager>()
   private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
-  private val dispatcher by lazy { ManagerDispatcher(this) }
+  private val dispatcher by lazy { ActivityContainerDispatcher(this) }
 
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
-    val defaultSelector: (Collection<Playback<*>>) -> Collection<Playback<*>> =
+    val defaultSelector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> =
       { listOfNotNull(it.firstOrNull()) }
   }
 
@@ -73,8 +74,8 @@ class ActivityContainer(
   }
 
   internal fun findSuitableManger(target: Any): PlaybackManager? {
-    return (this.prioritizedManagers + this.standardManagers) // Order is important.
-        .firstOrNull { it.findSuitableContainer(target) != null }
+    return this.managers()
+        .firstOrNull { it.findHostForTarget(target) != null }
   }
 
   internal fun dispatchManagerRefresh() {
@@ -82,30 +83,32 @@ class ActivityContainer(
     dispatcher.dispatchRefresh()
   }
 
-  internal fun trySavePlaybackInfo(playback: Playback<*>) {
+  internal fun trySavePlaybackInfo(playback: Playback<*, *>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
     }
   }
 
-  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
+  internal fun tryRestorePlaybackInfo(playback: Playback<*, *>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       val info = mapPlayableTagToInfo.remove(playback.playable.tag)
       if (info != null) playback.playable.playbackInfo = info
     }
   }
 
-  @Suppress("UNUSED_PARAMETER")
   @OnLifecycleEvent(ON_CREATE)
-  fun onOwnerCreate(owner: LifecycleOwner) {
+  fun onOwnerCreate() {
     playbackDispatcher.onAttached()
   }
 
   @OnLifecycleEvent(ON_DESTROY)
   fun onOwnerDestroy(owner: LifecycleOwner) {
     playbackDispatcher.onDetached()
+    if (!activity.isChangingConfigurations) {
+      kohii.manualFlag.clear()
+    }
     // Eagerly detach all PlaybackManager if there is any.
-    ((standardManagers + prioritizedManagers) as MutableSet) // Kotlin sdk should not change this.
+    this.managers()
         .onEach { detachPlaybackManager(it) }
         .clear()
 
@@ -113,11 +116,11 @@ class ActivityContainer(
     kohii.owners.remove(owner)
   }
 
-  override fun onRemoved(playback: Playback<*>) {
+  override fun onRemoved(playback: Playback<*, *>) {
     playbackDispatcher.onPlaybackRemoved(playback)
   }
 
-  private val playbackDispatcher = PlaybackDispatcher()
+  private val playbackDispatcher = PlaybackDispatcher(kohii)
 
   internal fun refreshPlaybacks() {
     // Steps
@@ -127,11 +130,10 @@ class ActivityContainer(
     // 4. Play the chosen one.
 
     // 1. Collect candidates from children PlaybackManagers
-    // candidates.clear()
-    val toPlay = LinkedHashSet<Playback<*>>()
-    val toPause = HashSet<Playback<*>>()
+    val toPlay = LinkedHashSet<Playback<*, *>>() // need the ordering.
+    val toPause = HashSet<Playback<*, *>>()
 
-    var picked = false
+    var picked = false // true --> prioritized Manager has candidates picked for playing.
     var prioritized = false
 
     if (prioritizedManagers.isNotEmpty()) {
@@ -157,9 +159,8 @@ class ActivityContainer(
             toPlay.addAll(it.first)
             toPause.addAll(it.second)
           }
-    } else { // Other Manager is prioritized, here we just collect Playback to pause.
-      standardManagers.map { it.partitionPlaybacks() }
-          .flatMap { it.first + it.second }
+    } else { // Other managers are prioritized, here we just collect Playback to pause.
+      standardManagers.flatMap { it.refreshPlaybacks() }
           .also { toPause.addAll(it) }
     }
 
@@ -167,6 +168,26 @@ class ActivityContainer(
     (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
     selected.forEach { playbackDispatcher.play(it) }
   }
+
+  internal fun play(playback: Playback<*, *>) {
+    val controller = playback.controller
+    if (controller != null) {
+      kohii.manualFlag[playback.playable] = true
+    }
+    playback.play()
+  }
+
+  internal fun pause(playback: Playback<*, *>) {
+    val controller = playback.controller
+    if (controller != null) {
+      kohii.manualFlag[playback.playable] = false
+    }
+    playback.pause()
+  }
+
+  // Hope that Kotlin would not change the MutableSet.
+  internal fun managers(): MutableSet<PlaybackManager> =
+    (this.prioritizedManagers + this.standardManagers) as MutableSet<PlaybackManager> // Order is important.
 
   override fun toString(): String {
     return "Root::${Integer.toHexString(hashCode())}"

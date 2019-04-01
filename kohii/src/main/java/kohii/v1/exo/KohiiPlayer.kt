@@ -47,7 +47,7 @@ open class KohiiPlayer(
   bandwidthMeter: BandwidthMeter,
   drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?,
   looper: Looper
-) : SimpleExoPlayer( //
+) : SimpleExoPlayer(
     context,
     renderersFactory,
     trackSelector,
@@ -62,7 +62,7 @@ open class KohiiPlayer(
   }
 
   init {
-    if (BuildConfig.DEBUG) Log.w("Kohii:Player", "player: ${instanceCount.incrementAndGet()}")
+    if (BuildConfig.DEBUG) Log.e("Kohii::Count", "player: ${instanceCount.incrementAndGet()}")
   }
 
   private val volumeChangedListeners by lazy { CopyOnWriteArraySet<VolumeChangedListener>() }

@@ -28,6 +28,8 @@ data class VolumeInfo(
   var volume: Float
 ) : Parcelable {
 
+  constructor() : this(false, 1F)
+
   constructor(original: VolumeInfo) : this(original.mute, original.volume)
 
   fun setTo(

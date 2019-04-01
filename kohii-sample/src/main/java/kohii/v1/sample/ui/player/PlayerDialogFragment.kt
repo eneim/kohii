@@ -26,12 +26,11 @@ import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
-import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
@@ -39,15 +38,15 @@ import kotlinx.android.synthetic.main.fragment_player.playerView
 class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, Callback {
 
   companion object {
-    private const val KEY_PLAYABLE_TAG = "kohii:player:dialog:tag"
     private const val KEY_INIT_DATA = "kohii::player::init_data"
+    private const val KEY_REBINDER = "kohii:player:dialog:rebinder"
 
     fun newInstance(
-      tag: String,
+      rebinder: Rebinder,
       initData: InitData
     ): PlayerDialogFragment {
       val bundle = Bundle().also {
-        it.putString(KEY_PLAYABLE_TAG, tag)
+        it.putParcelable(KEY_REBINDER, rebinder)
         it.putParcelable(KEY_INIT_DATA, initData)
       }
       return PlayerDialogFragment().also { it.arguments = bundle }
@@ -57,12 +56,13 @@ class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, 
   // Interface to tell ParentFragment about status of this Dialog.
   interface Callback {
 
-    fun onDialogActive(tag: Any)
+    fun onDialogActive()
 
-    fun onDialogInActive(tag: Any)
+    fun onDialogInActive(rebinder: Rebinder)
   }
 
-  var playback: Playback<*>? = null
+  var rebinder: Rebinder? = null
+  var playback: Playback<*, *>? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog = super.onCreateDialog(savedInstanceState)
@@ -89,23 +89,23 @@ class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, 
 
   override fun onStart() {
     super.onStart()
-    val playableTag = arguments?.getString(KEY_PLAYABLE_TAG) as String
     val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
-    @Suppress("UNCHECKED_CAST")
-    (kohii.findPlayable(playableTag) as? Playable<PlayerView>)
-        ?.bind(playerView, Playback.PRIORITY_NORMAL) {
-          it.addCallback(this)
-          playback = it
-        }
+    this.rebinder = arguments?.getParcelable(KEY_REBINDER)
+    this.rebinder?.rebind(kohii, playerView) {
+      it.addCallback(this)
+      playback = it
+    }
   }
 
-  override fun onActive(playback: Playback<*>) {
-    (parentFragment as? Callback)?.onDialogActive(playback.tag)
+  override fun onActive(playback: Playback<*, *>) {
+    (parentFragment as? Callback)?.onDialogActive()
   }
 
   // Would be called after onStop()
-  override fun onInActive(playback: Playback<*>) {
-    (parentFragment as? Callback)?.onDialogInActive(playback.tag)
+  override fun onInActive(playback: Playback<*, *>) {
+    this.rebinder?.let {
+      (parentFragment as? Callback)?.onDialogInActive(it)
+    }
   }
 
   override fun onStop() {
