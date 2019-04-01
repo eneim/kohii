@@ -17,26 +17,24 @@
 package kohii.v1.exo
 
 import android.view.ViewGroup
-import kohii.media.Media
-import kohii.v1.Container
 import kohii.v1.Kohii
+import kohii.v1.OutputHolderManager
 import kohii.v1.Playable
 import kohii.v1.PlaybackManager
-import kohii.v1.PlayerPool
 import kohii.v1.Target
+import kohii.v1.TargetHost
 import kohii.v1.ViewPlayback
 
 internal class LazyViewPlayback<PLAYER>(
   kohii: Kohii,
-  media: Media,
   playable: Playable<PLAYER>,
   manager: PlaybackManager,
-  container: Container,
+  targetHost: TargetHost,
   private val boxedTarget: Target<ViewGroup, PLAYER>,
   options: Config,
-  private val playerPool: PlayerPool<ViewGroup, PLAYER>
+  private val outputHolderManager: OutputHolderManager<ViewGroup, PLAYER>
 ) : ViewPlayback<ViewGroup, PLAYER>(
-    kohii, media, playable, manager, container, boxedTarget.requireContainer(), options
+    kohii, playable, manager, targetHost, boxedTarget.requireContainer(), options
 ) {
 
   private var _playerView: PLAYER? = null
@@ -46,9 +44,9 @@ internal class LazyViewPlayback<PLAYER>(
 
   override fun play() {
     if (_playerView == null) {
-      _playerView = playerPool.acquirePlayer(this.boxedTarget, this.media)
-      if (this.playerCallback != null && _playerView != null) {
-        this.playerCallback!!.onPlayerActive(_playerView!!)
+      _playerView = outputHolderManager.acquirePlayer(this.boxedTarget, playable.media)
+      if (this.availabilityCallback != null && _playerView != null) {
+        this.availabilityCallback!!.onPlayerActive(this, _playerView!!)
       }
     }
     super.play()
@@ -56,9 +54,9 @@ internal class LazyViewPlayback<PLAYER>(
 
   override fun pause() {
     _playerView?.let {
-      playerPool.releasePlayer(this.boxedTarget, it, media)
-      if (this.playerCallback != null) {
-        this.playerCallback!!.onPlayerInActive(_playerView)
+      outputHolderManager.releasePlayer(this.boxedTarget, it, playable.media)
+      if (this.availabilityCallback != null) {
+        this.availabilityCallback!!.onPlayerInActive(this, _playerView)
       }
       _playerView = null
     }
@@ -67,7 +65,7 @@ internal class LazyViewPlayback<PLAYER>(
 
   override fun onRemoved() {
     _playerView?.let {
-      playerPool.releasePlayer(this.boxedTarget, it, media)
+      outputHolderManager.releasePlayer(this.boxedTarget, it, playable.media)
       _playerView = null
     }
     super.onRemoved()

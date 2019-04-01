@@ -20,18 +20,16 @@ import android.util.Log
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ExoPlaybackException
 import kohii.media.Media
-import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.NO_TAG
-import kohii.v1.Playback.PlayerCallback
 
 // PLAYER: the 'view' for Bridge
 abstract class BasePlayable<PLAYER>(
   protected val kohii: Kohii,
-  protected val media: Media,
+  override val media: Media,
   protected val config: Playable.Config,
   protected val bridge: Bridge<PLAYER>
-) : Playable<PLAYER>, PlayerCallback<PLAYER> {
+) : Playable<PLAYER> {
 
   private var listener: PlayerEventListener? = null
 
@@ -57,6 +55,9 @@ abstract class BasePlayable<PLAYER>(
     this.bridge.addErrorListener(playback.errorListeners)
     this.bridge.addEventListener(playback.playerListeners)
     this.bridge.addVolumeChangeListener(playback.volumeListeners)
+
+    playback.config.playbackInfo?.let { this.playbackInfo = it }
+    this.setVolumeInfo(playback.targetHost.volumeInfo)
   }
 
   override fun onRemoved(playback: Playback<*, *>) {
@@ -100,8 +101,20 @@ abstract class BasePlayable<PLAYER>(
 
   override val tag: Any = config.tag ?: NO_TAG
 
+  override var repeatMode: Int
+    get() = this.bridge.repeatMode
+    set(value) {
+      this.bridge.repeatMode = value
+    }
+
+  override val isPlaying = this.bridge.isPlaying
+
   override fun prepare() {
     this.bridge.prepare(config.prefetch)
+  }
+
+  override fun ensureResource() {
+    this.bridge.ensureResource()
   }
 
   override fun play() {
@@ -116,11 +129,11 @@ abstract class BasePlayable<PLAYER>(
     this.bridge.release()
   }
 
-  override var playbackInfo: PlaybackInfo
-    get() = this.bridge.playbackInfo
-    set(value) {
-      this.bridge.playbackInfo = value
-    }
+  override fun seekTo(positionMs: Long) {
+    this.bridge.seekTo(positionMs)
+  }
+
+  override var playbackInfo = this.bridge.playbackInfo
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
     return this.bridge.setVolumeInfo(volumeInfo)

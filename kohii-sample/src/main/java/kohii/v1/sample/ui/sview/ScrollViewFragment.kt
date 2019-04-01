@@ -24,7 +24,6 @@ import androidx.annotation.Keep
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playable.Config

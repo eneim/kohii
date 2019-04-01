@@ -25,6 +25,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import kohii.media.VolumeInfo
 import kohii.takeFirstOrNull
 import kohii.v1.Playback.Config
 import java.util.WeakHashMap
@@ -34,8 +35,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Definition of an object that can manage multiple [Playback]s.
  */
 abstract class PlaybackManager(
-  protected val kohii: Kohii,
-  internal val parent: ActivityContainer,
+  val kohii: Kohii,
+  val parent: ActivityContainer,
   internal val provider: LifecycleOwnerProvider
 ) : LifecycleObserver, Comparable<PlaybackManager> {
 
@@ -60,10 +61,10 @@ abstract class PlaybackManager(
     }
   }
 
-  // Containers work in "first come first serve" model. Only one Container will be active at a time.
-  private val containers by lazy { LinkedHashSet<Container>() }
-  // TODO in 1.0, we do not use sticky container yet. It is complicated to implement, yet not so much requirement.
-  private val stickyContainers by lazy { LinkedHashSet<Container>() }
+  // TargetHosts work in "first come first serve" model. Only one TargetHost will be active at a time.
+  private val commonTargetHosts by lazy { LinkedHashSet<TargetHost>() }
+  // TODO in 1.0, we do not use sticky targetHost yet. It is complicated to implement, yet not so much extra benefit.
+  private val stickyTargetHosts by lazy { LinkedHashSet<TargetHost>() }
 
   private val attachFlag = AtomicBoolean(false)
 
@@ -139,10 +140,12 @@ abstract class PlaybackManager(
     }).clear()
 
     this.onDetached()
-    this.containers.onEach { it.onRemoved() }
+
+    this.commonTargetHosts.onEach { it.onRemoved() }
         .clear()
-    this.stickyContainers.onEach { it.onRemoved() }
+    this.stickyTargetHosts.onEach { it.onRemoved() }
         .clear()
+
     this.parent.detachPlaybackManager(this)
 
     owner.lifecycle.removeObserver(this)
@@ -157,13 +160,13 @@ abstract class PlaybackManager(
 
   protected open fun onAttached() {
     if (attachFlag.compareAndSet(false, true)) {
-      (this.stickyContainers + this.containers).forEach { it.onManagerAttached() }
+      targetHosts().forEach { it.onManagerAttached() }
     }
   }
 
   protected open fun onDetached() {
     if (attachFlag.compareAndSet(true, false)) {
-      (this.stickyContainers + this.containers).forEach { it.onManagerDetached() }
+      targetHosts().forEach { it.onManagerDetached() }
     }
   }
 
@@ -177,23 +180,23 @@ abstract class PlaybackManager(
     }
   }
 
-  internal fun registerContainer(
-    container: Container,
+  internal fun registerTargetHost(
+    targetHost: TargetHost,
     sticky: Boolean
   ): Boolean {
     val result = if (sticky) {
-      val existing = this.containers.firstOrNull { it.container === container.container }
+      val existing = this.commonTargetHosts.firstOrNull { it.host === targetHost.host }
       if (existing != null) {
         // remove from standard ones, add to sticky.
-        this.containers.remove(existing)
-        this.stickyContainers.add(existing)
+        this.commonTargetHosts.remove(existing)
+        this.stickyTargetHosts.add(existing)
       } else {
-        this.stickyContainers.add(container)
+        this.stickyTargetHosts.add(targetHost)
       }
     } else {
-      this.containers.add(container)
+      this.commonTargetHosts.add(targetHost)
     }
-    if (result) container.onAdded()
+    if (result) targetHost.onAdded()
     return result
   }
 
@@ -206,7 +209,12 @@ abstract class PlaybackManager(
     // This is the case of NestedScrollView.
     val toActive = mapDetachedPlaybackToTime.filter { it.key.token.shouldPrepare() }
         .keys
-    val toInActive = mapAttachedPlaybackToTime.filter { !it.key.token.shouldPrepare() }
+    val toInActive = mapAttachedPlaybackToTime.filter {
+      val controller = it.key.controller
+      val shouldPrepare = it.key.token.shouldPrepare()
+      return@filter !shouldPrepare &&
+          (controller == null || controller.allowsSystemControl() || kohii.manualFlag[it.key.playable] != true)
+    }
         .keys
 
     toActive.forEach { this.onTargetActive(it.target) }
@@ -218,15 +226,15 @@ abstract class PlaybackManager(
     val playbacks = refreshPlaybacks()
     val toPlay = HashSet<Playback<*, *>>()
 
-    val grouped = playbacks.filter { it.container.allowsToPlay(it) }
-        .groupBy { it.container }
+    val mapHostToPlaybacks = playbacks.filter { it.targetHost.allowsToPlay(it) }
+        .groupBy { it.targetHost }
 
-    // Iterate by this Set to preserve the Containers' order.
-    (this.stickyContainers + this.containers).filter { grouped[it] != null }
-        // First Container returns non empty will be picked
-        // Use this customized extension fun so we don't need to call select for all Containers
+    // Iterate by this Set to preserve the TargetHost's order.
+    targetHosts().filter { mapHostToPlaybacks[it] != null }
+        // First TargetHost returns non empty collection will be picked
+        // Use this customized extension fun so we don't need to call select for all TargetHosts
         .takeFirstOrNull(
-            transformer = { it.select(grouped.getValue(it)) },
+            transformer = { it.select(mapHostToPlaybacks.getValue(it)) },
             predicate = { it.isNotEmpty() }
         )
         ?.also {
@@ -250,7 +258,7 @@ abstract class PlaybackManager(
     // Next, search for and remove any other binding as well.
     val others = kohii.managers.filter { it.value !== this }
     // Next 1: remove old Playback that is for same Target, but different Playable and Manager
-    others.mapNotNull { it.value.mapTargetToPlayback[target as Any] }
+    others.mapNotNull { it.value.mapTargetToPlayback[target] }
         .filter { it.playable !== playable }
         .forEach { it.manager.performRemovePlayback(it) }
 
@@ -268,11 +276,11 @@ abstract class PlaybackManager(
       if (ref?.manager === this && ref.target === target) {
         ref
       } else {
-        creator.createPlayback(this, target, config)
+        creator.createPlayback(this, target, playable, config)
+            .also { it.onCreated() }
       }
 
     if (candidate !== ref) {
-      candidate.onCreated()
       ref?.let { it.manager.performRemovePlayback(it) }
     }
 
@@ -303,7 +311,7 @@ abstract class PlaybackManager(
     // In case we are adding existing one and it is already active, we refresh everything.
     if (mapAttachedPlaybackToTime.containsKey(playback)) {
       // shouldAdd is true when the target is not null and no pre-exist playback.
-      if (playback.container.allowsToPlay(playback)) this.dispatchRefreshAll()
+      if (playback.targetHost.allowsToPlay(playback)) this.dispatchRefreshAll()
     }
 
     // At this point, mapTargetToPlayback must contains the playback instance.
@@ -381,17 +389,19 @@ abstract class PlaybackManager(
   internal fun <T> onTargetUpdated(target: T) {
     val playback = mapTargetToPlayback[target as Any]
     if (playback != null) {
-      // fixed = the Container that truly accept the target.
+      // fixed = the TargetHost that truly accepts the target.
       // Scenario: in first bind of RV, VH's itemView has null Parent, but might has LayoutParams
-      // of RV, we 'temporarily' ask any RV to accept it. When it is updated, we find the right one.
+      // of RV, we 'temporarily' ask any RV to accept it. When it is updated, we find the correct one.
       // This operation should not happen always, ideally up to 1 time.
-      val fixed = (this.stickyContainers + this.containers).firstOrNull { it.accepts(target) }
-      if (fixed != null && playback.container !== fixed) {
-        playback.container.detachTarget(target)
-        playback.container = fixed
-        playback.container.attachTarget(target)
+      val fixed = this.targetHosts()
+          .firstOrNull { it.accepts(target) }
+      if (fixed != null && playback.targetHost !== fixed) {
+        playback.targetHost.detachTarget(target)
+        playback.targetHost = fixed
+        playback.targetHost.attachTarget(target)
       }
-      if (playback.container.allowsToPlay(playback)) this.dispatchRefreshAll()
+      if (playback.token.shouldPrepare()) playback.prepare()
+      if (playback.targetHost.allowsToPlay(playback)) this.dispatchRefreshAll()
     }
   }
 
@@ -401,12 +411,88 @@ abstract class PlaybackManager(
       it.playable === playable // this will also guaranty the type check.
     } as? Playback<*, PLAYER>?
 
-  internal fun findSuitableContainer(target: Any) =
-    (this.stickyContainers + this.containers).firstOrNull { it.accepts(target) }
+  @Suppress("UNCHECKED_CAST")
+  fun <PLAYER : Any> findPlaybackForPlayer(player: PLAYER): Playback<*, PLAYER>? =
+    this.mapTargetToPlayback.values.firstOrNull { it.playerView === player } as? Playback<*, PLAYER>
+
+  internal fun findHostForTarget(target: Any) = targetHosts().firstOrNull { it.accepts(target) }
+
+  private fun targetHosts(): Set<TargetHost> {
+    return (stickyTargetHosts + commonTargetHosts) as MutableSet<TargetHost>
+  }
 
   override fun toString(): String {
     return "Manager:${Integer.toHexString(super.hashCode())}, Provider: $provider"
   }
 
   // [END] Internal API
+
+  // [BEGIN] Public API
+
+  /**
+   * Apply a specific [VolumeInfo] to all Playbacks in a [Scope].
+   * - The smaller a scope's priority is, the wider applicable range it will be.
+   * - Applying new [VolumeInfo] to smaller [Scope] will change [VolumeInfo] of Playbacks in that [Scope].
+   * - If the [Scope] is from [Scope.TARGETHOST], any new [Playback] added to that [TargetHost] will be configured
+   * with the updated [VolumeInfo].
+   *
+   * @param receiver is the target to apply new [VolumeInfo] to. This must be set together with the [Scope].
+   * For example, if client wants to apply the [VolumeInfo] to [Scope.PLAYBACK], the receiver must be the [Playback]
+   * to apply to. If client wants to apply to [Scope.TARGETHOST], the receiver must be either the [Playback] inside that [TargetHost],
+   * or the targetHost object of a [TargetHost].
+   */
+  fun applyVolumeInfo(
+    volumeInfo: VolumeInfo,
+    receiver: Any? = null,
+    scope: Scope
+  ) {
+    when {
+      // Only update VolumeInfo of current Playback.
+      // Client need to update volume of more Playback should consider using higher priority Scope.
+      scope === Scope.PLAYBACK -> {
+        (receiver as? Playback<*, *> ?: throw IllegalArgumentException(
+            "Scope: $scope, expect Playback instance, found ${receiver?.javaClass}"
+        )).also {
+          it.volumeInfo = volumeInfo
+        }
+      }
+      // Change volume of all Playback in the same TargetHost.
+      // receiver must be a Playback, or the targetHost's object (eg: View contains the Targets).
+      scope === Scope.TARGETHOST -> {
+        targetHosts().firstOrNull {
+          if (receiver is Playback<*, *>) it === receiver.targetHost
+          else it.host === receiver /* client must pass the targetHost View */
+        }
+            ?.let {
+              it.volumeInfo = volumeInfo
+              this.mapTargetToPlayback.filter { pk -> pk.value.targetHost === it }
+                  .forEach { entry ->
+                    entry.value.volumeInfo = volumeInfo
+                  }
+            }
+      }
+      scope === Scope.MANAGER -> {
+        targetHosts().forEach { it.volumeInfo = volumeInfo }
+        for ((_, playback) in this.mapTargetToPlayback) {
+          playback.volumeInfo = volumeInfo
+        }
+      }
+      scope === Scope.ACTIVITY ->
+        this.parent.managers().forEach { it.applyVolumeInfo(volumeInfo, it, Scope.MANAGER) }
+      scope === Scope.GLOBAL -> {
+        for ((_, parent) in this.kohii.owners) {
+          parent.managers()
+              .forEach { it.applyVolumeInfo(volumeInfo, it, Scope.MANAGER) }
+        }
+      }
+    }
+  }
+
+  fun play(playback: Playback<*, *>) {
+    parent.play(playback)
+  }
+
+  fun pause(playback: Playback<*, *>) {
+    parent.pause(playback)
+  }
 }

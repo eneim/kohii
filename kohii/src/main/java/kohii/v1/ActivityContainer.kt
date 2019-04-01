@@ -16,14 +16,13 @@
 
 package kohii.v1
 
-import android.app.Activity
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.PlaybackInfo
-import kohii.v1.exo.PlayerViewCreator
 
 /**
  * Bind to an Activity, to manage [PlaybackManager]s inside.
@@ -35,19 +34,16 @@ import kohii.v1.exo.PlayerViewCreator
  */
 class ActivityContainer(
   internal val kohii: Kohii,
-  internal val activity: Activity,
+  internal val activity: FragmentActivity,
     // TODO make this configurable
   private val selector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
-
-  // TODO make this configurable
-  internal val playerViewPool by lazy { PlayerPool(2, PlayerViewCreator()) }
 
   private val prioritizedManagers = HashSet<PlaybackManager>()
   private val standardManagers = HashSet<PlaybackManager>()
   private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
-  private val dispatcher by lazy { ManagerDispatcher(this) }
+  private val dispatcher by lazy { ActivityContainerDispatcher(this) }
 
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
@@ -78,8 +74,8 @@ class ActivityContainer(
   }
 
   internal fun findSuitableManger(target: Any): PlaybackManager? {
-    return (this.prioritizedManagers + this.standardManagers) // Order is important.
-        .firstOrNull { it.findSuitableContainer(target) != null }
+    return this.managers()
+        .firstOrNull { it.findHostForTarget(target) != null }
   }
 
   internal fun dispatchManagerRefresh() {
@@ -100,21 +96,22 @@ class ActivityContainer(
     }
   }
 
-  @Suppress("UNUSED_PARAMETER")
   @OnLifecycleEvent(ON_CREATE)
-  fun onOwnerCreate(owner: LifecycleOwner) {
+  fun onOwnerCreate() {
     playbackDispatcher.onAttached()
   }
 
   @OnLifecycleEvent(ON_DESTROY)
   fun onOwnerDestroy(owner: LifecycleOwner) {
     playbackDispatcher.onDetached()
+    if (!activity.isChangingConfigurations) {
+      kohii.manualFlag.clear()
+    }
     // Eagerly detach all PlaybackManager if there is any.
-    ((standardManagers + prioritizedManagers) as MutableSet) // Kotlin sdk should not change this.
+    this.managers()
         .onEach { detachPlaybackManager(it) }
         .clear()
 
-    playerViewPool.cleanUp()
     owner.lifecycle.removeObserver(this)
     kohii.owners.remove(owner)
   }
@@ -123,7 +120,7 @@ class ActivityContainer(
     playbackDispatcher.onPlaybackRemoved(playback)
   }
 
-  private val playbackDispatcher = PlaybackDispatcher()
+  private val playbackDispatcher = PlaybackDispatcher(kohii)
 
   internal fun refreshPlaybacks() {
     // Steps
@@ -133,10 +130,10 @@ class ActivityContainer(
     // 4. Play the chosen one.
 
     // 1. Collect candidates from children PlaybackManagers
-    val toPlay = LinkedHashSet<Playback<*, *>>()
+    val toPlay = LinkedHashSet<Playback<*, *>>() // need the ordering.
     val toPause = HashSet<Playback<*, *>>()
 
-    var picked = false
+    var picked = false // true --> prioritized Manager has candidates picked for playing.
     var prioritized = false
 
     if (prioritizedManagers.isNotEmpty()) {
@@ -171,6 +168,26 @@ class ActivityContainer(
     (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
     selected.forEach { playbackDispatcher.play(it) }
   }
+
+  internal fun play(playback: Playback<*, *>) {
+    val controller = playback.controller
+    if (controller != null) {
+      kohii.manualFlag[playback.playable] = true
+    }
+    playback.play()
+  }
+
+  internal fun pause(playback: Playback<*, *>) {
+    val controller = playback.controller
+    if (controller != null) {
+      kohii.manualFlag[playback.playable] = false
+    }
+    playback.pause()
+  }
+
+  // Hope that Kotlin would not change the MutableSet.
+  internal fun managers(): MutableSet<PlaybackManager> =
+    (this.prioritizedManagers + this.standardManagers) as MutableSet<PlaybackManager> // Order is important.
 
   override fun toString(): String {
     return "Root::${Integer.toHexString(hashCode())}"

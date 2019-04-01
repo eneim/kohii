@@ -20,11 +20,13 @@ import android.view.View
 import android.view.ViewGroup
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
+import kohii.v1.TargetHost.Companion.NONE_AXIS
+import kohii.v1.TargetHost.Companion.comparators
 
-internal open class ViewGroupContainerBase(
-  override val container: ViewGroup,
+internal open class ViewGroupTargetHostBase(
+  override val host: ViewGroup,
   manager: PlaybackManager
-) : ViewContainer<ViewGroup>(container, manager) {
+) : BaseTargetHost<ViewGroup>(host, manager) {
 
   override fun onAdded() {
     super.onAdded()
@@ -39,23 +41,42 @@ internal open class ViewGroupContainerBase(
     return if (target is View) {
       var view = target
       var parent = view.parent
-      while (parent != null && parent !== this.container && parent is View) {
+      while (parent != null && parent !== this.host && parent is View) {
         @Suppress("USELESS_CAST")
         view = parent as View
         parent = view.parent
       }
-      parent === this.container
+      parent === this.host
     } else false
+  }
+
+  override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
+    val grouped = candidates.groupBy { it.controller != null }
+        .withDefault { emptyList() }
+
+    val firstHalf by lazy {
+      listOfNotNull(
+          grouped.getValue(true).sortedWith(comparators.getValue(NONE_AXIS)).firstOrNull()
+      )
+    }
+
+    val secondHalf by lazy {
+      listOfNotNull(
+          grouped.getValue(false).sortedWith(comparators.getValue(NONE_AXIS)).firstOrNull()
+      )
+    }
+
+    return if (firstHalf.isNotEmpty()) firstHalf else secondHalf
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is ViewGroupContainerBase) return false
-    if (container != other.container) return false
+    if (other !is ViewGroupTargetHostBase) return false
+    if (host != other.host) return false
     return true
   }
 
   override fun hashCode(): Int {
-    return container.hashCode()
+    return host.hashCode()
   }
 }

@@ -137,10 +137,13 @@ internal open class ExoPlayerBridge(
       field?.setErrorMessageProvider(this)
     }
 
-  override fun play() {
+  override fun ensureResource() {
     prepareMediaSource()
     requireNotNull(player) { "Bridge#play(): Player is null!" }
     ensurePlayerView()
+  }
+
+  override fun play() {
     player!!.playWhenReady = true
   }
 
@@ -210,12 +213,20 @@ internal open class ExoPlayerBridge(
     get() = this.playbackInfo.volumeInfo // this will first update the PlaybackInfo via getter.
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    val changed = playbackInfo.volumeInfo !== volumeInfo // Compare value.
+    val current = this.playbackInfo
+    val changed = current.volumeInfo !== volumeInfo // Compare value.
     if (changed) {
-      playbackInfo.volumeInfo = volumeInfo
-      player?.setVolumeInfo(playbackInfo.volumeInfo)
+      current.volumeInfo = volumeInfo
+      this.setPlaybackInfo(current, true)
     }
     return changed
+  }
+
+  override fun seekTo(positionMs: Long) {
+    val playbackInfo = this.playbackInfo
+    playbackInfo.resumePosition = positionMs
+    playbackInfo.resumeWindow = player?.currentWindowIndex ?: playbackInfo.resumeWindow
+    this.playbackInfo = playbackInfo
   }
 
   override var parameters: PlaybackParameters
@@ -231,18 +242,27 @@ internal open class ExoPlayerBridge(
       return _playbackInfo
     }
     set(value) {
-      _playbackInfo.resumeWindow = value.resumeWindow
-      _playbackInfo.resumePosition = value.resumePosition
-      _playbackInfo.volumeInfo = value.volumeInfo
+      this.setPlaybackInfo(value, false)
+    }
 
-      player?.let {
-        it.setVolumeInfo(_playbackInfo.volumeInfo)
+  private fun setPlaybackInfo(
+    playbackInfo: PlaybackInfo,
+    volumeOnly: Boolean
+  ) {
+    _playbackInfo.resumeWindow = playbackInfo.resumeWindow
+    _playbackInfo.resumePosition = playbackInfo.resumePosition
+    _playbackInfo.volumeInfo = playbackInfo.volumeInfo
+
+    player?.let {
+      it.setVolumeInfo(_playbackInfo.volumeInfo)
+      if (!volumeOnly) {
         val haveResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
         if (haveResumePosition) {
           it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
         }
       }
     }
+  }
 
   override var repeatMode: Int
     get() = _repeatMode

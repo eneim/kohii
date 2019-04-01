@@ -21,21 +21,23 @@ import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
+import kohii.v1.TargetHost.Companion.HORIZONTAL
+import kohii.v1.TargetHost.Companion.comparators
 
-class ViewPagerContainer(
-  override val container: ViewPager,
+class ViewPagerTargetHost(
+  override val host: ViewPager,
   manager: PlaybackManager
-) : ViewContainer<ViewPager>(container, manager), OnPageChangeListener {
+) : BaseTargetHost<ViewPager>(host, manager), OnPageChangeListener {
 
   override fun onAdded() {
     super.onAdded()
-    container.addOnPageChangeListener(this)
+    host.addOnPageChangeListener(this)
     manager.dispatchRefreshAll()
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    container.removeOnPageChangeListener(this)
+    host.removeOnPageChangeListener(this)
   }
 
   override fun onPageScrollStateChanged(state: Int) {
@@ -62,23 +64,42 @@ class ViewPagerContainer(
     return if (target is View) {
       var view = target
       var parent = view.parent
-      while (parent != null && parent !== this.container && parent is View) {
+      while (parent != null && parent !== this.host && parent is View) {
         @Suppress("USELESS_CAST")
         view = parent as View
         parent = view.parent
       }
-      parent === this.container
+      parent === this.host
     } else false
+  }
+
+  override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
+    val grouped = candidates.groupBy { it.controller != null }
+        .withDefault { emptyList() }
+
+    val firstHalf by lazy {
+      listOfNotNull(
+          grouped.getValue(true).sortedWith(comparators.getValue(HORIZONTAL)).firstOrNull()
+      )
+    }
+
+    val secondHalf by lazy {
+      listOfNotNull(
+          grouped.getValue(false).sortedWith(comparators.getValue(HORIZONTAL)).firstOrNull()
+      )
+    }
+
+    return if (firstHalf.isNotEmpty()) firstHalf else secondHalf
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is ViewPagerContainer) return false
-    if (container != other.container) return false
+    if (other !is ViewPagerTargetHost) return false
+    if (host != other.host) return false
     return true
   }
 
   override fun hashCode(): Int {
-    return container.hashCode()
+    return host.hashCode()
   }
 }

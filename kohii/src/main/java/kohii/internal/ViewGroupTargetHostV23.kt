@@ -23,19 +23,19 @@ import androidx.annotation.RequiresApi
 import kohii.v1.PlaybackManager
 
 @RequiresApi(23)
-internal open class ViewGroupContainerV23(
-  override val container: ViewGroup,
+internal open class ViewGroupTargetHostV23(
+  override val host: ViewGroup,
   manager: PlaybackManager
-) : ViewGroupContainerBase(container, manager), OnScrollChangeListener {
+) : ViewGroupTargetHostBase(host, manager), OnScrollChangeListener {
 
   override fun onAdded() {
     super.onAdded()
-    container.setOnScrollChangeListener(this)
+    host.setOnScrollChangeListener(this)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    container.setOnScrollChangeListener(null as OnScrollChangeListener?)
+    host.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
   override fun onScrollChange(
@@ -50,15 +50,15 @@ internal open class ViewGroupContainerV23(
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is ViewGroupContainerV23) return false
+    if (other !is ViewGroupTargetHostV23) return false
     if (!super.equals(other)) return false
-    if (container != other.container) return false
+    if (host != other.host) return false
     return true
   }
 
   override fun hashCode(): Int {
     var result = super.hashCode()
-    result = 31 * result + container.hashCode()
+    result = 31 * result + host.hashCode()
     return result
   }
 }

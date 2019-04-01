@@ -22,7 +22,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minHeight="200dp"
-    app:keep_content_on_player_reset="true"
+    app:keep_content_on_player_reset="false"
     app:resize_mode="fixed_width"
     app:show_buffering="when_playing"
     app:shutter_background_color="@android:color/black"
