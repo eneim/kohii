@@ -135,5 +135,5 @@ dependencies {
     transitive = true
   }
 
-  implementation 'com.google.firebase:firebase-core:16.0.7'
+  implementation 'com.google.firebase:firebase-core:16.0.8'
 }
