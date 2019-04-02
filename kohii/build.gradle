@@ -78,7 +78,7 @@ dependencies {
   // Optional -- Robolectric environment
   testImplementation 'androidx.test:core:1.1.0'
   // Optional -- Mockito framework
-  testImplementation 'org.mockito:mockito-core:2.23.0'
+  testImplementation 'org.mockito:mockito-core:2.24.0'
 }
 
 // Doesn't work well with Kotlin
