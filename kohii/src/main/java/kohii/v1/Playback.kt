@@ -226,7 +226,6 @@ abstract class Playback<OUTPUT> internal constructor(
   }
 
   open fun release() {
-    Log.i("Kohii::X", "release: $this, $manager")
     playable.release()
   }
 

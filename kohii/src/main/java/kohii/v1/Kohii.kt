@@ -99,7 +99,7 @@ class Kohii(context: Context) {
   internal val cleanables = HashSet<Cleanable>()
 
   private val screenStateReceiver by lazy {
-    ScreenStateReceiver()
+    ScreenStateReceiver(this)
   }
 
   companion object {
@@ -161,6 +161,25 @@ class Kohii(context: Context) {
 
   internal fun onLastManagerOffline() {
     app.unregisterReceiver(screenStateReceiver)
+  }
+
+  // TODO if this is a manual playback, need to pause any other 'not-manual' ones.
+  internal fun play(playback: Playback<*>) {
+    val controller = playback.controller
+    if (controller != null) {
+      manualFlag[playback.playable] = true
+    }
+    playback.play()
+    playback.manager.dispatchRefreshAll()
+  }
+
+  internal fun pause(playback: Playback<*>) {
+    val controller = playback.controller
+    if (controller != null) {
+      manualFlag[playback.playable] = false
+    }
+    playback.pause()
+    playback.manager.dispatchRefreshAll()
   }
 
   // Gat called when Kohii should free all resources.
