@@ -399,11 +399,11 @@ abstract class PlaybackManager(
       // Scenario: in first bind of RV, VH's itemView has null Parent, but might has LayoutParams
       // of RV, we 'temporarily' ask any RV to accept it. When it is updated, we find the correct one.
       // This operation should not happen always, ideally up to 1 time.
-      val fixed = this.targetHosts()
+      val properHost = this.targetHosts()
           .firstOrNull { it.accepts(target) }
-      if (fixed != null && playback.targetHost !== fixed) {
+      if (properHost != null && playback.targetHost !== properHost) {
         playback.targetHost.detachTarget(target)
-        playback.targetHost = fixed
+        playback.targetHost = properHost
         playback.targetHost.attachTarget(target)
       }
       if (playback.token.shouldPrepare()) playback.prepare()
@@ -495,11 +495,11 @@ abstract class PlaybackManager(
   }
 
   fun play(playback: Playback<*>) {
-    parent.play(playback)
+    kohii.play(playback)
   }
 
   fun pause(playback: Playback<*>) {
-    parent.pause(playback)
+    kohii.pause(playback)
   }
 
   inline fun <reified CONTAINER, reified OUTPUT> registerOutputHolderPool(outputHolderPool: OutputHolderPool<CONTAINER, OUTPUT>) {

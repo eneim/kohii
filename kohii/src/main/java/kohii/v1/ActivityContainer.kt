@@ -175,22 +175,6 @@ class ActivityContainer(
     selected.forEach { playbackDispatcher.play(it) }
   }
 
-  internal fun play(playback: Playback<*>) {
-    val controller = playback.controller
-    if (controller != null) {
-      kohii.manualFlag[playback.playable] = true
-    }
-    playback.play()
-  }
-
-  internal fun pause(playback: Playback<*>) {
-    val controller = playback.controller
-    if (controller != null) {
-      kohii.manualFlag[playback.playable] = false
-    }
-    playback.pause()
-  }
-
   // Hope that Kotlin would not change the MutableSet.
   internal fun managers(): MutableSet<PlaybackManager> =
     (this.prioritizedManagers + this.standardManagers) as MutableSet<PlaybackManager> // Order is important.
