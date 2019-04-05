@@ -19,12 +19,12 @@ package kohii.v1.exo
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.PlayerCreator
+import kohii.v1.OutputHolderCreator
 import kohii.v1.R
 
-class PlayerViewCreator : PlayerCreator<ViewGroup, PlayerView> {
+class PlayerViewCreator : OutputHolderCreator<ViewGroup, PlayerView> {
 
-  override fun createPlayer(
+  override fun createOutputHolder(
     container: ViewGroup,
     type: Int
   ): PlayerView {

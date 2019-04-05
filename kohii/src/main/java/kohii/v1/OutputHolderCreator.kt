@@ -18,12 +18,12 @@ package kohii.v1
 
 import kohii.media.Media
 
-interface PlayerCreator<CONTAINER, PLAYER> {
+interface OutputHolderCreator<CONTAINER, OUTPUT> {
 
-  fun getPlayerType(media: Media): Int = R.layout.kohii_player_surface_view
+  fun getMediaType(media: Media): Int = R.layout.kohii_player_surface_view
 
-  fun createPlayer(
+  fun createOutputHolder(
     container: CONTAINER,
     type: Int
-  ): PLAYER
+  ): OUTPUT
 }

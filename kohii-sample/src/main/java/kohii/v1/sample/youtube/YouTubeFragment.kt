@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.debug
+package kohii.v1.sample.youtube
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,20 +23,15 @@ import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
-import kohii.v1.Playable
+import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kotlinx.android.synthetic.main.fragment_test_reuse_bridge.playerView
-import kotlinx.android.synthetic.main.fragment_test_reuse_bridge.playerViewContainer
-import kotlinx.android.synthetic.main.fragment_test_reuse_bridge.scrollView
-import kotlinx.android.synthetic.main.fragment_test_reuse_bridge.switchButton
-import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
-class ReuseBridgeFragment : BaseFragment(), LifecycleOwnerProvider {
+class YouTubeFragment : BaseFragment(), LifecycleOwnerProvider {
 
   companion object {
-    fun newInstance() = ReuseBridgeFragment()
-    const val videoUrl = "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8"
+    fun newInstance() = YouTubeFragment()
   }
 
   override fun onCreateView(
@@ -44,7 +39,7 @@ class ReuseBridgeFragment : BaseFragment(), LifecycleOwnerProvider {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    return inflater.inflate(R.layout.fragment_test_reuse_bridge, container, false)
+    return inflater.inflate(R.layout.fragment_recycler_view, container, false)
   }
 
   override fun onViewCreated(
@@ -52,19 +47,9 @@ class ReuseBridgeFragment : BaseFragment(), LifecycleOwnerProvider {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this]
-    kohii.register(this, arrayOf(scrollView))
-
-    val views = arrayOf(playerView, playerViewContainer)
-    val rebinder = kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = videoUrl) }
-        .bind(playerView)
-
-    val viewCount = views.size
-    val current = AtomicInteger(0)
-    switchButton.setOnClickListener {
-      rebinder?.rebind(kohii, views[current.incrementAndGet() % viewCount])
-    }
+    Kohii[this].also { it.register(this, arrayOf(recyclerView)) }
+    val creator = (requireActivity().application as DemoApp).creator
+    recyclerView.adapter = YouTubeItemsAdapter(creator)
   }
 
   override fun provideLifecycleOwner(): LifecycleOwner {

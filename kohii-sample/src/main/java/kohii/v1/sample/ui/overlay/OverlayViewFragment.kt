@@ -84,7 +84,7 @@ class OverlayViewFragment : BaseFragment(),
 
   private var overlaySheet: BottomSheetBehavior<*>? = null
   private var rebinder: Rebinder? = null
-  private var playback: Playback<*, *>? = null
+  private var playback: Playback<*>? = null
   private var selectionTracker: SelectionTracker<Rebinder>? = null
   private var keyProvider: VideoTagKeyProvider? = null
 
@@ -159,7 +159,7 @@ class OverlayViewFragment : BaseFragment(),
             ) {
               if (state == STATE_HIDDEN) {
                 selectionTracker?.clearSelection()
-                (rebinder)?.let {
+                (rebinder)?.also {
                   val pos = keyProvider!!.getPosition(it)
                   val vh = recyclerView.findViewHolderForAdapterPosition(pos)
                   if (vh == null) playback?.unbind()

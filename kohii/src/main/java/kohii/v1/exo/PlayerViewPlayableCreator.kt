@@ -16,27 +16,20 @@
 
 package kohii.v1.exo
 
-import android.app.Activity
 import android.view.ViewGroup
-import androidx.collection.ArrayMap
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.BridgeProvider
-import kohii.v1.Cleanable
 import kohii.v1.Kohii
-import kohii.v1.OutputHolderManager
+import kohii.v1.LazyViewPlayback
+import kohii.v1.OutputHolderCreator
+import kohii.v1.OutputHolderPool
 import kohii.v1.Playable
 import kohii.v1.Playable.Config
 import kohii.v1.PlayableCreator
 import kohii.v1.Playback
-import kohii.v1.Playback.PlayerAvailabilityCallback
 import kohii.v1.PlaybackCreator
 import kohii.v1.PlaybackManager
-import kohii.v1.PlayerCreator
 import kohii.v1.Target
 import kohii.v1.ViewPlayback
 
@@ -50,22 +43,15 @@ import kohii.v1.ViewPlayback
  */
 class PlayerViewPlayableCreator(
   kohii: Kohii,
-  private val playerCreator: PlayerCreator<ViewGroup, PlayerView>,
+  private val outputHolderCreator: OutputHolderCreator<ViewGroup, PlayerView>,
   bridgeCreator: (Kohii) -> BridgeProvider<PlayerView>
 ) : PlayableCreator<PlayerView>(kohii, PlayerView::class.java),
-    PlaybackCreator<Any, PlayerView>,
-    Cleanable, LifecycleObserver {
+    PlaybackCreator<Any, PlayerView> {
 
   internal constructor(
     kohii: Kohii
   ) : this(kohii, PlayerViewCreator(), { kohii.defaultBridgeProvider })
 
-  init {
-    kohii.cleanables.add(this)
-    kohii.owners.forEach { it.value.activity.lifecycle.addObserver(this) }
-  }
-
-  private val outputHolderCache = ArrayMap<Activity, OutputHolderManager<ViewGroup, PlayerView>>()
   private val bridgeProvider = bridgeCreator.invoke(kohii)
 
   override fun createPlayable(
@@ -81,65 +67,42 @@ class PlayerViewPlayableCreator(
     target: Target<Any, PlayerView>,
     playable: Playable<PlayerView>,
     config: Playback.Config
-  ): Playback<Any, PlayerView> {
+  ): Playback<PlayerView> {
     val container = target.requireContainer()
-    val targetHost =
-      manager.findHostForTarget(target.requireContainer()) ?: throw IllegalStateException(
-          "This manager $this has no TargetHost that " +
-              "accepts this target: $target. Kohii requires at least one."
-      )
 
-    val outputHolderManager = outputHolderCache.getOrPut(manager.parent.activity) {
-      OutputHolderManager(2, playerCreator)
-    }
-
-    val result = when (container) {
+    return when (container) {
       is PlayerView -> {
-        @Suppress("UNCHECKED_CAST")
         ViewPlayback(
             kohii,
             playable,
             manager,
-            targetHost,
             container,
             config
-        ) as Playback<Any, PlayerView>
+        )
       }
 
       is ViewGroup -> {
+        val outputHolderPool =
+          manager.fetchOutputHolderPool(ViewGroup::class.java, PlayerView::class.java)
+              ?: OutputHolderPool(2, outputHolderCreator).also {
+                manager.registerOutputHolderPool(it)
+              }
+
         @Suppress("UNCHECKED_CAST")
         LazyViewPlayback(
             kohii,
             playable,
             manager,
-            targetHost,
             target as Target<ViewGroup, PlayerView>,
             config,
-            outputHolderManager
-        ) as Playback<Any, PlayerView>
+            outputHolderPool
+        )
       }
       else -> throw IllegalArgumentException("")
     }
-
-    if (playable is PlayerAvailabilityCallback) {
-      result.availabilityCallback = playable
-    }
-
-    return result
-  }
-
-  @OnLifecycleEvent(ON_DESTROY)
-  fun onOwnerDestroy(owner: LifecycleOwner) {
-    if (owner is Activity) {
-      outputHolderCache.remove(owner)
-          ?.cleanUp()
-    }
-    owner.lifecycle.removeObserver(this)
   }
 
   override fun cleanUp() {
     bridgeProvider.cleanUp()
-    outputHolderCache.onEach { it.value.cleanUp() }
-        .clear()
   }
 }

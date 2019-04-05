@@ -85,7 +85,7 @@ class PagerMainFragment : BaseFragment(), LifecycleOwnerProvider {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this, arrayOf(viewPager))
 
-    this.viewPager.let {
+    this.viewPager.also {
       it.adapter = VideoPagerAdapter(childFragmentManager, videos)
       it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
       val clientWidth =

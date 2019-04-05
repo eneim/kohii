@@ -85,7 +85,7 @@ class OneSurfaceFragment : BaseFragment(), LifecycleOwnerProvider {
 
   override fun onDestroyView() {
     super.onDestroyView()
-    scrollChangeListener?.let { recyclerView.removeOnScrollListener(it) }
+    scrollChangeListener?.also { recyclerView.removeOnScrollListener(it) }
     recyclerView.adapter = null
   }
 

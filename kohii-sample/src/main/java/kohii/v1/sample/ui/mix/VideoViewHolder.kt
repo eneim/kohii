@@ -48,26 +48,26 @@ class VideoViewHolder(
     parent
 ), PlaybackEventListener, Playback.Callback {
 
-  override fun onFirstFrameRendered(playback: Playback<*, *>) {
+  override fun onFirstFrameRendered(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
   }
 
   override fun onBuffering(
-    playback: Playback<*, *>,
+    playback: Playback<*>,
     playWhenReady: Boolean
   ) {
     Log.i("KohiiApp:VH:$adapterPosition", "onBuffering(): $playWhenReady")
   }
 
-  override fun onPlaying(playback: Playback<*, *>) {
+  override fun onPlaying(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPlaying()")
   }
 
-  override fun onPaused(playback: Playback<*, *>) {
+  override fun onPaused(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPaused()")
   }
 
-  override fun onCompleted(playback: Playback<*, *>) {
+  override fun onCompleted(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
   }
 
@@ -75,7 +75,7 @@ class VideoViewHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
 
   var itemTag: String? = null
-  var playback: Playback<PlayerView, PlayerView>? = null
+  var playback: Playback<PlayerView>? = null
 
   @SuppressLint("SetTextI18n")
   override fun bind(item: Item?) {

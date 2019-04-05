@@ -87,7 +87,7 @@ internal class VideoItemsAdapter(
   override fun play(viewHolder: VideoItemHolder) {
     if (activeHolder === viewHolder) return
     activeHolder?.unbindView(this.playerView)
-    playerView?.let {
+    playerView?.also {
       viewHolder.bindView(it)
       activeHolder = viewHolder
     }
@@ -100,7 +100,7 @@ internal class VideoItemsAdapter(
 
   override fun onViewDetachedFromWindow(holder: BaseViewHolder) {
     super.onViewDetachedFromWindow(holder)
-    (holder as? VideoItemHolder)?.let {
+    (holder as? VideoItemHolder)?.also {
       pause(it)
     }
   }

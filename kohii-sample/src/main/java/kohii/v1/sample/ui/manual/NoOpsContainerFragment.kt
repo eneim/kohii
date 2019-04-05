@@ -44,7 +44,7 @@ class NoOpsContainerFragment : BaseFragment(), LifecycleOwnerProvider {
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
   private lateinit var kohii: Kohii
   private lateinit var manager: PlaybackManager
-  private lateinit var playback: Playback<*, *>
+  private lateinit var playback: Playback<*>
 
   override fun onCreateView(
     inflater: LayoutInflater,

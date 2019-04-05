@@ -59,6 +59,7 @@ class Kohii(context: Context) {
   // Which Playable is managed by which Manager
   internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlaybackManager?>()
   // Map the playback state of Playable made by client (manually)
+  // true = the Playable is started by Client, not by Kohii.
   internal val manualFlag = WeakHashMap<Playable<*>, Boolean>()
 
   // Store playable whose tag is available. Non tagged playable are always ignored.
@@ -92,7 +93,7 @@ class Kohii(context: Context) {
     PlayerViewBridgeProvider(this, playerProvider, mediaSourceFactoryProvider)
   }
 
-  private val defaultPlayableCreator = lazy { PlayerViewPlayableCreator(this) }
+  private val defaultPlayableCreator by lazy { PlayerViewPlayableCreator(this) }
 
   @Suppress("SpellCheckingInspection")
   internal val cleanables = HashSet<Cleanable>()
@@ -133,10 +134,6 @@ class Kohii(context: Context) {
   }
 
   // instance methods
-
-  internal fun findSuitableManager(target: Any): PlaybackManager? {
-    return owners.values.takeFirstOrNull({ it.findSuitableManger(target) }, { it != null })
-  }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
   // Always get called after playback.release()
@@ -194,9 +191,6 @@ class Kohii(context: Context) {
     val parent = owners.getOrPut(activity) {
       val result = ActivityContainer(this, activity)
       activity.lifecycle.addObserver(result)
-      if (defaultPlayableCreator.isInitialized()) {
-        activity.lifecycle.addObserver(defaultPlayableCreator.value)
-      }
       return@getOrPut result
     }
     val lifecycleOwner = provider.provideLifecycleOwner()
@@ -221,15 +215,19 @@ class Kohii(context: Context) {
 
   fun setUp(url: String) = this.setUp(url.toUri())
 
-  fun setUp(media: Media) = defaultPlayableCreator.value.setUp(media)
+  fun setUp(media: Media) = defaultPlayableCreator.setUp(media)
 
   // Get Playbacks whose output Player is 'player'.
-  fun <PLAYER : Any> get(player: PLAYER): Playback<*, PLAYER>? {
+  fun <PLAYER : Any> get(player: PLAYER): Playback<PLAYER>? {
     return owners.values.flatMap {
       it.managers()
-          .map { mng -> mng.findPlaybackForPlayer(player) }
+          .map { mng -> mng.findPlaybackForOutputHolder(player) }
     }
         .firstOrNull()
+  }
+
+  fun findSuitableManager(target: Any): PlaybackManager? {
+    return owners.values.takeFirstOrNull({ it.findSuitableManger(target) }, { it != null })
   }
 
   // [END] Public API

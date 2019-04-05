@@ -48,6 +48,11 @@ open class BaseFragment : Fragment() {
     Log.d(logTag, "onStop() called")
   }
 
+  override fun onDestroyView() {
+    super.onDestroyView()
+    Log.d(logTag, "onDestroyView() called")
+  }
+
   override fun onDestroy() {
     super.onDestroy()
     Log.d(logTag, "onDestroy() called")

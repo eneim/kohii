@@ -56,7 +56,7 @@ class ViewPagerTargetHost(
     // no-op
   }
 
-  override fun allowsToPlay(playback: Playback<*, *>): Boolean {
+  override fun allowsToPlay(playback: Playback<*>): Boolean {
     return playback.token.shouldPlay()
   }
 
@@ -73,7 +73,7 @@ class ViewPagerTargetHost(
     } else false
   }
 
-  override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
+  override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
     val grouped = candidates.groupBy { it.controller != null }
         .withDefault { emptyList() }
 

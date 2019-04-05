@@ -62,7 +62,7 @@ internal fun RecyclerView.findAllVideoHolder(): Iterable<VideoItemHolder> {
 // Copy from androidx.core for ViewGroup.
 inline fun LayoutManager.forEachIndexed(action: (index: Int, view: View) -> Unit) {
   for (index in 0 until childCount) {
-    getChildAt(index)?.let { action(index, it) }
+    getChildAt(index)?.also { action(index, it) }
   }
 }
 

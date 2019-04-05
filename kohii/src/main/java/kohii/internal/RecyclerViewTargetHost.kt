@@ -77,9 +77,10 @@ internal class RecyclerViewTargetHost(
     host.removeOnScrollListener(scrollListener)
   }
 
-  override fun allowsToPlay(playback: Playback<*, *>): Boolean {
-    return playback.target is View &&
-        this.host.findContainingViewHolder(playback.target) != null &&
+  override fun allowsToPlay(playback: Playback<*>): Boolean {
+    val target = playback.target
+    return target is View &&
+        this.host.findContainingViewHolder(target) != null &&
         playback.token.shouldPlay()
   }
 
@@ -89,7 +90,7 @@ internal class RecyclerViewTargetHost(
     return RecycleViewUtils.checkParams(host, params)
   }
 
-  override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
+  override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
     val orientation = host.fetchOrientation()
     val grouped = candidates.groupBy { it.controller != null }
         .withDefault { emptyList() }
