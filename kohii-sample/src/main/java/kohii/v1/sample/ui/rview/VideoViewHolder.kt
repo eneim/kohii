@@ -48,26 +48,26 @@ class VideoViewHolder(
     itemView.setOnClickListener(this)
   }
 
-  override fun onFirstFrameRendered(playback: Playback<*, *>) {
+  override fun onFirstFrameRendered(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
   }
 
   override fun onBuffering(
-    playback: Playback<*, *>,
+    playback: Playback<*>,
     playWhenReady: Boolean
   ) {
     Log.i("KohiiApp:VH:$adapterPosition", "onBuffering(): $playWhenReady")
   }
 
-  override fun onPlaying(playback: Playback<*, *>) {
+  override fun onPlaying(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPlaying()")
   }
 
-  override fun onPaused(playback: Playback<*, *>) {
+  override fun onPaused(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onPaused()")
   }
 
-  override fun onCompleted(playback: Playback<*, *>) {
+  override fun onCompleted(playback: Playback<*>) {
     Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
   }
 
@@ -76,7 +76,7 @@ class VideoViewHolder(
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
   var rebinder: Rebinder? = null
-  var playback: Playback<PlayerView, PlayerView>? = null
+  var playback: Playback<PlayerView>? = null
   var payload: InitData? = null
 
   override fun bind(item: Item?) {
@@ -99,7 +99,7 @@ class VideoViewHolder(
     }
   }
 
-  override fun onRemoved(playback: Playback<*, *>) {
+  override fun onRemoved(playback: Playback<*>) {
     playback.removePlaybackEventListener(this)
     playback.removeCallback(this)
   }

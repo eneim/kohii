@@ -24,25 +24,23 @@ import kotlinx.android.parcel.Parcelize
 // This requires the type of next Target must be the same or sub-class of original Target.
 @Parcelize
 data class Rebinder(
-  val tag: String?,
-  val playerType: Class<*>
+  val tag: String,
+  val outputType: Class<*>
 ) : Parcelable {
 
-  fun <TARGET : Any> rebind(
+  fun <CONTAINER : Any> rebind(
     kohii: Kohii,
-    target: TARGET,
+    target: CONTAINER,
     config: Config = Config(), // default
-    cb: ((Playback<TARGET, *>) -> Unit)? = null
+    cb: ((Playback<*>) -> Unit)? = null
   ): Rebinder {
-    require(this.tag != null) { "Rebinder expects non-null tag." }
-    val tag = this.tag
-    val cache = kohii.mapTagToPlayable[tag]
+    val cache = kohii.mapTagToPlayable[this.tag]
     if (cache != null) {
-      val playable = if (this.playerType.isAssignableFrom(cache.second)) cache.first else null
-      check(playable != null) { "No Playable found. Tag is not correctly set." }
+      val playable = if (this.outputType.isAssignableFrom(cache.second)) cache.first else null
+      check(playable != null) { "No Playable found for tag ${this.tag}" }
       playable.bind(target, config, cb)
     } else if (BuildConfig.DEBUG) {
-      throw IllegalStateException("No Playable found for tag $tag.")
+      throw IllegalStateException("No Playable found for tag ${this.tag}.")
     }
     return this
   }

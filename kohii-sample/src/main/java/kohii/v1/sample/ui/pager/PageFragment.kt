@@ -24,7 +24,6 @@ import androidx.core.view.doOnLayout
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playable
@@ -66,7 +65,7 @@ class PageFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
   }
 
   private var landscape: Boolean = false
-  private var playback: Playback<PlayerView, *>? = null
+  private var playback: Playback<*>? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -87,7 +86,7 @@ class PageFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
     view.doOnLayout {
       val container = view.findViewById<View>(R.id.playerContainer)
       // [1] Update resize mode based on Window size.
-      (container as? AspectRatioFrameLayout)?.let { ctn ->
+      (container as? AspectRatioFrameLayout)?.also { ctn ->
         if (it.width * 9 >= it.height * 16) {
           ctn.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
         } else {

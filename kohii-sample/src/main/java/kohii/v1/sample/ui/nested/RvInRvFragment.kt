@@ -84,7 +84,7 @@ class RvInRvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
         val childHolder = holder.container.findViewHolderForAdapterPosition(childPos)
         if (childHolder?.itemView != null) {
           var childLeft = layout.getDecoratedLeft(childHolder.itemView)
-          (childHolder.itemView.layoutParams as? MarginLayoutParams)?.let {
+          (childHolder.itemView.layoutParams as? MarginLayoutParams)?.also {
             childLeft -= it.marginStart
           }
           childLeft -= holder.container.paddingStart

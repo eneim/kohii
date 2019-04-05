@@ -37,12 +37,11 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-abstract class Playback<TARGET, PLAYER> internal constructor(
+abstract class Playback<OUTPUT> internal constructor(
   internal val kohii: Kohii,
-  internal val playable: Playable<PLAYER>,
+  internal val playable: Playable<OUTPUT>,
   val manager: PlaybackManager,
-  internal var targetHost: TargetHost, // Manager will update this on demand.
-  val target: TARGET,
+  val target: Any,
   internal val config: Playback.Config
 ) {
 
@@ -55,15 +54,15 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
     const val PRIORITY_NORMAL = 2
     const val PRIORITY_LOW = 3
 
-    val VERTICAL_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
+    val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, TargetHost.VERTICAL)
     }
 
-    val HORIZONTAL_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
+    val HORIZONTAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, TargetHost.HORIZONTAL)
     }
 
-    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*, *>> { o1, o2 ->
+    val BOTH_AXIS_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, TargetHost.BOTH_AXIS)
     }
   }
@@ -100,7 +99,12 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   internal val playerListeners by lazy { PlayerEventListeners() }
   internal val errorListeners by lazy { ErrorListeners() }
 
-  internal var availabilityCallback: PlayerAvailabilityCallback? = null
+  // This verification is later than expected, but we do not want to expose many internal things.
+  // Ideally, targetHost should be verified before creating a Playback.
+  // But doing so on a custom Playable/PlaybackCreator will requires PlaybackManager.findHostForTarget to be accessible
+  // from client, which is not good.
+  internal var targetHost = manager.findHostForTarget(target)
+      ?: throw IllegalStateException("No host found for target: $target")
 
   private var listenerHandler: Handler? = null
 
@@ -111,7 +115,7 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   // Token is comparable.
   internal abstract val token: Token
 
-  internal abstract val playerView: PLAYER?
+  internal abstract val outputHolder: OUTPUT?
 
   // [BEGIN] Public API
 
@@ -187,7 +191,7 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   // Lifecycle
 
   open fun compareWidth(
-    other: Playback<*, *>,
+    other: Playback<*>,
     orientation: Int
   ): Int {
     return this.config.priority.compareTo(other.config.priority)
@@ -265,9 +269,9 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
     for (callback in this.callbacks) {
       callback.onActive(this)
     }
-    val player = this.playerView
-    if (this.availabilityCallback != null && player != null && player === this.target) {
-      this.availabilityCallback!!.onPlayerActive(this, player)
+    val player = this.outputHolder
+    if (player != null && player === this.target) {
+      this.playable.onPlayerActive(this, player)
     }
   }
 
@@ -281,9 +285,9 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
     for (callback in this.callbacks) {
       callback.onInActive(this)
     }
-    val player = this.playerView
-    if (this.availabilityCallback != null && player === this.target) {
-      this.availabilityCallback!!.onPlayerInActive(this, player)
+    val player = this.outputHolder
+    if (player === this.target) {
+      this.playable.onPlayerInActive(this, player)
     }
   }
 
@@ -303,7 +307,6 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   internal open fun onDestroyed() {
     this.listenerHandler = null
     this.removeCallback(this.playable)
-    this.availabilityCallback = null
   }
 
   override fun toString(): String {
@@ -312,27 +315,13 @@ abstract class Playback<TARGET, PLAYER> internal constructor(
   }
 
   interface Callback {
-    fun onAdded(playback: Playback<*, *>) {}
+    fun onAdded(playback: Playback<*>) {}
 
-    fun onActive(playback: Playback<*, *>) {}
+    fun onActive(playback: Playback<*>) {}
 
-    fun onInActive(playback: Playback<*, *>) {}
+    fun onInActive(playback: Playback<*>) {}
 
-    fun onRemoved(playback: Playback<*, *>) {}
-  }
-
-  // To communicate with Playable only.
-  internal interface PlayerAvailabilityCallback {
-
-    fun onPlayerActive(
-      playback: Playback<*, *>,
-      player: Any
-    )
-
-    fun onPlayerInActive(
-      playback: Playback<*, *>,
-      player: Any?
-    )
+    fun onRemoved(playback: Playback<*>) {}
   }
 
   // Test scenarios:

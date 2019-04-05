@@ -104,7 +104,6 @@ internal open class ExoPlayerBridge(
     if (player == null) {
       sourcePrepared.set(false)
       listenerApplied.set(false)
-      // player = playerProvider.acquirePlayer(this.media)
     }
 
     if (loadSource) {
@@ -118,17 +117,17 @@ internal open class ExoPlayerBridge(
 
   override var playerView: PlayerView? = null
     set(value) {
-      if (field == value) return // same reference
+      if (field === value) return // same reference
       this.lastSeenTrackGroupArray = null
       this.inErrorState = false
       if (value == null) {
-        field?.let {
+        field?.also {
           // 'field' must be not null here
           it.player = null
           it.setErrorMessageProvider(null)
         }
       } else {
-        this.player?.let {
+        this.player?.also {
           PlayerView.switchTargetView(it, field, value)
         }
       }
@@ -139,7 +138,7 @@ internal open class ExoPlayerBridge(
 
   override fun ensureResource() {
     prepareMediaSource()
-    requireNotNull(player) { "Bridge#play(): Player is null!" }
+    requireNotNull(player) { "Player must be available." }
     ensurePlayerView()
   }
 
@@ -153,7 +152,7 @@ internal open class ExoPlayerBridge(
 
   override fun reset() {
     playbackInfo.reset()
-    player?.let {
+    player?.also {
       it.setVolumeInfo(VolumeInfo(false, 1.0F))
       it.stop(true)
     }
@@ -166,7 +165,7 @@ internal open class ExoPlayerBridge(
   override fun release() {
     this.removeEventListener(this)
     this.playerView = null
-    player?.let {
+    player?.also {
       if (listenerApplied.compareAndSet(true, false)) {
         it.removeEventListener(eventListeners)
       }
@@ -253,7 +252,7 @@ internal open class ExoPlayerBridge(
     _playbackInfo.resumePosition = playbackInfo.resumePosition
     _playbackInfo.volumeInfo = playbackInfo.volumeInfo
 
-    player?.let {
+    player?.also {
       it.setVolumeInfo(_playbackInfo.volumeInfo)
       if (!volumeOnly) {
         val haveResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
@@ -268,11 +267,11 @@ internal open class ExoPlayerBridge(
     get() = _repeatMode
     set(value) {
       _repeatMode = value
-      this.player?.let { it.repeatMode = value }
+      this.player?.also { it.repeatMode = value }
     }
 
   private fun updatePlaybackInfo() {
-    player?.let {
+    player?.also {
       if (it.playbackState == Player.STATE_IDLE) return
       _playbackInfo.resumeWindow = it.currentWindowIndex
       _playbackInfo.resumePosition =
@@ -282,7 +281,7 @@ internal open class ExoPlayerBridge(
   }
 
   private fun ensurePlayerView() {
-    playerView?.let { if (it.player != this.player) it.player = this.player }
+    playerView?.also { if (it.player != this.player) it.player = this.player }
   }
 
   private fun prepareMediaSource() {
@@ -295,7 +294,7 @@ internal open class ExoPlayerBridge(
 
     if (!sourcePrepared.get()) {
       ensurePlayer()
-      (player as? ExoPlayer)?.let {
+      (player as? ExoPlayer)?.also {
         it.prepare(mediaSource, playbackInfo.resumeWindow == INDEX_UNSET, false)
         sourcePrepared.set(true)
       }
@@ -309,7 +308,7 @@ internal open class ExoPlayerBridge(
       player = playerProvider.acquirePlayer(this.media)
     }
 
-    player!!.let {
+    player!!.also {
       if (!listenerApplied.get()) {
         (player as? VolumeInfoController)?.addVolumeChangedListener(volumeListeners)
         it.addEventListener(eventListeners)

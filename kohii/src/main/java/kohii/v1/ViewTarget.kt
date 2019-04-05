@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1
 
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.contains
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Target
 
-internal class PlayerViewTarget<V : ViewGroup>(val container: V) : Target<V, PlayerView> {
-
-  override fun requireContainer(): V = container
-
-  override fun attachPlayer(
-    player: PlayerView
-  ) {
-    if (container is PlayerView || container === player) return
-    if (!container.contains(player)) container.addView(player)
+open class ViewTarget<CONTAINER : ViewGroup, OUTPUT : View>(val container: CONTAINER) : Target<CONTAINER, OUTPUT> {
+  override fun requireContainer(): CONTAINER {
+    return this.container
   }
 
-  override fun detachPlayer(
-    player: PlayerView
-  ): Boolean {
-    if (container is PlayerView || container === player) return false
-    if (!container.contains(player)) return false
-    container.removeView(player)
+  override fun attachOutputHolder(output: OUTPUT) {
+    if (container is PlayerView || container === output) return
+    if (!container.contains(output)) container.addView(output)
+  }
+
+  override fun detachOutputHolder(output: OUTPUT): Boolean {
+    if (container is PlayerView || container === output) return false
+    if (!container.contains(output)) return false
+    container.removeView(output)
     return true
   }
 }

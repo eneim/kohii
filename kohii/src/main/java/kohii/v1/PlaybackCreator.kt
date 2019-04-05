@@ -25,5 +25,5 @@ interface PlaybackCreator<CONTAINER, PLAYER> {
     target: Target<CONTAINER, PLAYER>,
     playable: Playable<PLAYER>,
     config: Config
-  ): Playback<CONTAINER, PLAYER>
+  ): Playback<PLAYER>
 }

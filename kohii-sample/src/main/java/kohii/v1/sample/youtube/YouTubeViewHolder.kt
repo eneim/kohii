@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.sample.youtube
 
-// A Target definition for a specific Container type.
-// Useful when use with LazyViewPlayback.
-interface Target<CONTAINER, OUTPUT> {
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import kohii.v1.sample.R
 
-  fun requireContainer(): CONTAINER
+class YouTubeViewHolder(itemView: View) : ViewHolder(itemView) {
 
-  fun attachOutputHolder(output: OUTPUT)
+  val container = itemView.findViewById(R.id.container) as AspectRatioFrameLayout
 
-  // Returning true if the Player has done anything,
-  // For example: ViewGroup remove the PlayerView.
-  fun detachOutputHolder(output: OUTPUT): Boolean
+  init {
+    container.setAspectRatio(1.6F)
+  }
 }

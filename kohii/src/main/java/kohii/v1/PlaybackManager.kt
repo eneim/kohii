@@ -18,6 +18,8 @@ package kohii.v1
 
 import android.util.Log
 import androidx.annotation.CallSuper
+import androidx.annotation.RestrictTo
+import androidx.annotation.RestrictTo.Scope.LIBRARY
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.Lifecycle.Event.ON_START
@@ -36,14 +38,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 abstract class PlaybackManager(
   val kohii: Kohii,
-  val parent: ActivityContainer,
+  internal val parent: ActivityContainer,
   internal val provider: LifecycleOwnerProvider
 ) : LifecycleObserver, Comparable<PlaybackManager> {
 
   companion object {
     val PRESENT = Any() // Use for mapping.
     val priorityComparator =
-      Comparator<Playback<*, *>> { o1, o2 -> o1.config.priority.compareTo(o2.config.priority) }
+      Comparator<Playback<*>> { o1, o2 -> o1.config.priority.compareTo(o2.config.priority) }
 
     fun compareAndCheck(
       left: Prioritized,
@@ -68,14 +70,18 @@ abstract class PlaybackManager(
 
   private val attachFlag = AtomicBoolean(false)
 
-  private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*, *>, Any>()
+  private val mapAttachedPlaybackToTime = LinkedHashMap<Playback<*>, Any>()
   // Weak map, so detached Playback can be cleared if not referred anymore.
   // TODO need a mechanism to release those weak Playbacks.
-  private val mapDetachedPlaybackToTime = WeakHashMap<Playback<*, *>, Any>()
+  private val mapDetachedPlaybackToTime = WeakHashMap<Playback<*>, Any>()
 
   // As a target has no idea which Playable it is bound to, Manager need to manage the link
   // So that when adding new link, it can effectively clean up old links.
-  private val mapTargetToPlayback = HashMap<Any /* Target */, Playback<*, *>>()
+  private val mapTargetToPlayback = HashMap<Any /* Target */, Playback<*>>()
+
+  // Client must not access this field directly. It is made public to use in an inline method only.
+  @RestrictTo(LIBRARY)
+  val outputHolderNest = HashMap<Pair<Class<*>, Class<*>>, OutputHolderPool<*, *>>()
 
   // [BEGIN] Internal API
 
@@ -204,7 +210,7 @@ abstract class PlaybackManager(
     this.parent.dispatchManagerRefresh()
   }
 
-  internal fun refreshPlaybacks(): ArrayList<Playback<*, *>> {
+  internal fun refreshPlaybacks(): ArrayList<Playback<*>> {
     // Confirm if any invisible view is visible again.
     // This is the case of NestedScrollView.
     val toActive = mapDetachedPlaybackToTime.filter { it.key.token.shouldPrepare() }
@@ -222,9 +228,9 @@ abstract class PlaybackManager(
     return ArrayList(mapAttachedPlaybackToTime.keys)
   }
 
-  internal fun partitionPlaybacks(): Pair<Collection<Playback<*, *>> /* toPlay */, Collection<Playback<*, *>> /* toPause */> {
+  internal fun partitionPlaybacks(): Pair<Collection<Playback<*>> /* toPlay */, Collection<Playback<*>> /* toPause */> {
     val playbacks = refreshPlaybacks()
-    val toPlay = HashSet<Playback<*, *>>()
+    val toPlay = HashSet<Playback<*>>()
 
     val mapHostToPlaybacks = playbacks.filter { it.targetHost.allowsToPlay(it) }
         .groupBy { it.targetHost }
@@ -246,12 +252,12 @@ abstract class PlaybackManager(
     return Pair(toPlay.sortedWith(priorityComparator), playbacks)
   }
 
-  internal fun <TARGET, PLAYER> performBindPlayable(
-    playable: Playable<PLAYER>,
-    target: Target<TARGET, PLAYER>,
+  internal fun <CONTAINER, OUTPUT> performBindPlayable(
+    playable: Playable<OUTPUT>,
+    target: Target<CONTAINER, OUTPUT>,
     config: Config,
-    creator: PlaybackCreator<TARGET, PLAYER>
-  ): Playback<TARGET, PLAYER> {
+    creator: PlaybackCreator<CONTAINER, OUTPUT>
+  ): Playback<OUTPUT> {
     // First, add to global cache.
     kohii.mapPlayableToManager[playable] = this
 
@@ -270,7 +276,7 @@ abstract class PlaybackManager(
 
     // Find Playback that was bound to this Playable before in the same Manager.
     @Suppress("UNCHECKED_CAST")
-    val ref = this.findPlaybackForPlayable(playable) as? Playback<TARGET, PLAYER>
+    val ref = this.findPlaybackForPlayable(playable)
 
     val candidate =
       if (ref?.manager === this && ref.target === target) {
@@ -281,7 +287,7 @@ abstract class PlaybackManager(
       }
 
     if (candidate !== ref) {
-      ref?.let { it.manager.performRemovePlayback(it) }
+      ref?.also { it.manager.performRemovePlayback(it) }
     }
 
     return performAddPlayback(candidate)
@@ -293,9 +299,9 @@ abstract class PlaybackManager(
    * Old [Playback] will be cleaned up and removed.
    */
   @Suppress("MemberVisibilityCanBePrivate")
-  internal fun <TARGET, PLAYER> performAddPlayback(playback: Playback<TARGET, PLAYER>): Playback<TARGET, PLAYER> {
+  internal fun <PLAYER> performAddPlayback(playback: Playback<PLAYER>): Playback<PLAYER> {
     val target = playback.target
-    val cache = mapTargetToPlayback[target as Any]
+    val cache = mapTargetToPlayback[target]
     val shouldAdd = cache == null || cache !== playback
 
     if (shouldAdd) {
@@ -332,7 +338,7 @@ abstract class PlaybackManager(
   // - mapAttachedPlaybackToTime
   // - mapDetachedPlaybackToTime
   // - mapPlayableTagToInfo
-  internal fun performRemovePlayback(playback: Playback<*, *>) {
+  internal fun performRemovePlayback(playback: Playback<*>) {
     if (mapTargetToPlayback.containsValue(playback)) {
       Log.w("Kohii::X", "remove: $playback, $this")
       mapTargetToPlayback.remove(playback.target)
@@ -352,7 +358,7 @@ abstract class PlaybackManager(
 
   // Called when a Playback's target is attached. Eg: PlayerView is attached to window.
   internal fun <T> onTargetActive(target: T) {
-    mapTargetToPlayback[target as Any]?.let {
+    mapTargetToPlayback[target as Any]?.also {
       mapAttachedPlaybackToTime[it] = PRESENT
       mapDetachedPlaybackToTime.remove(it)
       if (kohii.mapPlayableToManager[it.playable] === this) { // added 20190115, check this.
@@ -369,7 +375,7 @@ abstract class PlaybackManager(
   // Called when a Playback's target is detached. Eg: PlayerView is detached from window.
   // Call this will also save old PlaybackInfo if needed.
   internal fun <T> onTargetInActive(target: T) {
-    mapTargetToPlayback[target as Any]?.let {
+    mapTargetToPlayback[target as Any]?.also {
       mapDetachedPlaybackToTime[it] = PRESENT // Mark as detached/inactive
       mapAttachedPlaybackToTime.remove(it)
           ?.run { it.onInActive() }
@@ -406,14 +412,14 @@ abstract class PlaybackManager(
   }
 
   @Suppress("UNCHECKED_CAST")
-  internal fun <PLAYER> findPlaybackForPlayable(playable: Playable<PLAYER>): Playback<*, PLAYER>? =
+  internal fun <OUTPUT> findPlaybackForPlayable(playable: Playable<OUTPUT>): Playback<OUTPUT>? =
     this.mapTargetToPlayback.values.firstOrNull {
       it.playable === playable // this will also guaranty the type check.
-    } as? Playback<*, PLAYER>?
+    } as? Playback<OUTPUT>?
 
   @Suppress("UNCHECKED_CAST")
-  fun <PLAYER : Any> findPlaybackForPlayer(player: PLAYER): Playback<*, PLAYER>? =
-    this.mapTargetToPlayback.values.firstOrNull { it.playerView === player } as? Playback<*, PLAYER>
+  internal fun <OUTPUT : Any> findPlaybackForOutputHolder(output: OUTPUT): Playback<OUTPUT>? =
+    this.mapTargetToPlayback.values.firstOrNull { it.outputHolder === output } as? Playback<OUTPUT>
 
   internal fun findHostForTarget(target: Any) = targetHosts().firstOrNull { it.accepts(target) }
 
@@ -450,7 +456,7 @@ abstract class PlaybackManager(
       // Only update VolumeInfo of current Playback.
       // Client need to update volume of more Playback should consider using higher priority Scope.
       scope === Scope.PLAYBACK -> {
-        (receiver as? Playback<*, *> ?: throw IllegalArgumentException(
+        (receiver as? Playback<*> ?: throw IllegalArgumentException(
             "Scope: $scope, expect Playback instance, found ${receiver?.javaClass}"
         )).also {
           it.volumeInfo = volumeInfo
@@ -460,10 +466,10 @@ abstract class PlaybackManager(
       // receiver must be a Playback, or the targetHost's object (eg: View contains the Targets).
       scope === Scope.TARGETHOST -> {
         targetHosts().firstOrNull {
-          if (receiver is Playback<*, *>) it === receiver.targetHost
+          if (receiver is Playback<*>) it === receiver.targetHost
           else it.host === receiver /* client must pass the targetHost View */
         }
-            ?.let {
+            ?.also {
               it.volumeInfo = volumeInfo
               this.mapTargetToPlayback.filter { pk -> pk.value.targetHost === it }
                   .forEach { entry ->
@@ -488,11 +494,26 @@ abstract class PlaybackManager(
     }
   }
 
-  fun play(playback: Playback<*, *>) {
+  fun play(playback: Playback<*>) {
     parent.play(playback)
   }
 
-  fun pause(playback: Playback<*, *>) {
+  fun pause(playback: Playback<*>) {
     parent.pause(playback)
+  }
+
+  inline fun <reified CONTAINER, reified OUTPUT> registerOutputHolderPool(outputHolderPool: OutputHolderPool<CONTAINER, OUTPUT>) {
+    outputHolderNest.put(Pair(CONTAINER::class.java, OUTPUT::class.java), outputHolderPool)
+        ?.cleanUp()
+  }
+
+  fun <CONTAINER, OUTPUT> fetchOutputHolderPool(
+    containerClass: Class<CONTAINER>,
+    outputClass: Class<OUTPUT>
+  ): OutputHolderPool<CONTAINER, OUTPUT>? {
+    @Suppress("UNCHECKED_CAST")
+    return this.outputHolderNest[Pair(
+        containerClass, outputClass
+    )] as OutputHolderPool<CONTAINER, OUTPUT>?
   }
 }

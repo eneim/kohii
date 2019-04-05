@@ -16,7 +16,6 @@
 
 package kohii.v1.exo
 
-import android.util.Log
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
@@ -27,10 +26,9 @@ import kohii.v1.BridgeProvider
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
-import kohii.v1.Playback.Config
-import kohii.v1.Playback.PlayerAvailabilityCallback
 import kohii.v1.PlaybackCreator
 import kohii.v1.Target
+import kohii.v1.ViewTarget
 
 /**
  * @author eneim (2018/06/24).
@@ -42,8 +40,8 @@ internal class PlayerViewPlayable internal constructor(
   media: Media,
   config: Playable.Config,
   bridge: Bridge<PlayerView>,
-  private val playbackCreator: PlaybackCreator<Any, PlayerView>
-) : BasePlayable<PlayerView>(kohii, media, config, bridge), PlayerAvailabilityCallback {
+  playbackCreator: PlaybackCreator<Any, PlayerView>
+) : BasePlayable<PlayerView>(kohii, media, config, bridge, playbackCreator) {
 
   internal constructor(
     kohii: Kohii,
@@ -56,70 +54,31 @@ internal class PlayerViewPlayable internal constructor(
       playbackCreator
   )
 
-  @Suppress("UNCHECKED_CAST")
-  override fun <TARGET : Any> bind(
-    target: TARGET,
-    config: Config,
-    cb: ((Playback<TARGET, PlayerView>) -> Unit)?
-  ) {
-    val manager = kohii.findSuitableManager(target) ?: throw IllegalStateException(
-        "There is no manager for $target. Forget to register one?"
-    )
-
+  override fun <CONTAINER : Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, PlayerView> {
     val targetType = target.javaClass
-    val boxedTarget =
-      (when {
-        // order is important.
-        PlayerView::class.java.isAssignableFrom(targetType) ->
-          PlayerViewTarget(target as PlayerView)
-        ViewGroup::class.java.isAssignableFrom(targetType) ->
-          PlayerViewTarget(target as ViewGroup)
-        else -> throw IllegalArgumentException("Unsupported target type: $targetType")
-      }) as Target<TARGET, PlayerView>
-
-    val result = manager.performBindPlayable(
-        this, boxedTarget, config, playbackCreator as PlaybackCreator<TARGET, PlayerView>
-    )
-    cb?.invoke(result)
-  }
-
-  @Suppress("UNCHECKED_CAST")
-  override fun <TARGET : Any> bind(
-    target: Target<TARGET, PlayerView>,
-    config: Config,
-    cb: ((Playback<TARGET, PlayerView>) -> Unit)?
-  ) {
-    val actualTarget = target.requireContainer()
-    val manager = kohii.findSuitableManager(actualTarget) ?: throw IllegalStateException(
-        "There is no manager for $target. Forget to register one?"
-    )
-
-    Log.w("Kohii::X", "bind: $target, $manager")
-    val result = manager.performBindPlayable(
-        this, target, config, playbackCreator as PlaybackCreator<TARGET, PlayerView>
-    )
-    cb?.invoke(result)
+    @Suppress("UNCHECKED_CAST")
+    if (ViewGroup::class.java.isAssignableFrom(targetType))
+      return ViewTarget<ViewGroup, PlayerView>(target as ViewGroup) as Target<CONTAINER, PlayerView>
+    else throw IllegalArgumentException("Unsupported target type: $targetType")
   }
 
   override fun onPlayerActive(
-    playback: Playback<*, *>,
-    player: Any
+    playback: Playback<PlayerView>,
+    player: PlayerView
   ) {
-    if (player is PlayerView) {
-      bridge.playerView = player
-      val controller = playback.controller
-      if (controller != null) {
-        player.useController = true
-        if (controller is ControlDispatcher) player.setControlDispatcher(controller)
-      } else {
-        player.useController = false
-      }
+    bridge.playerView = player
+    val controller = playback.controller
+    if (controller != null) {
+      player.useController = true
+      if (controller is ControlDispatcher) player.setControlDispatcher(controller)
+    } else {
+      player.useController = false
     }
   }
 
   override fun onPlayerInActive(
-    playback: Playback<*, *>,
-    player: Any?
+    playback: Playback<PlayerView>,
+    player: PlayerView?
   ) {
     if (bridge.playerView === player) {
       bridge.playerView = null

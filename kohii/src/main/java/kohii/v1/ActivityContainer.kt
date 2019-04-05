@@ -23,6 +23,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.PlaybackInfo
+import kohii.v1.exo.PlayerViewCreator
 
 /**
  * Bind to an Activity, to manage [PlaybackManager]s inside.
@@ -36,7 +37,7 @@ class ActivityContainer(
   internal val kohii: Kohii,
   internal val activity: FragmentActivity,
     // TODO make this configurable
-  private val selector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> = defaultSelector
+  private val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
   private val prioritizedManagers = HashSet<PlaybackManager>()
@@ -44,10 +45,11 @@ class ActivityContainer(
   private val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
   private val dispatcher by lazy { ActivityContainerDispatcher(this) }
+  private val defaultOutputHolderPool by lazy { OutputHolderPool(2, PlayerViewCreator()) }
 
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
-    val defaultSelector: (Collection<Playback<*, *>>) -> Collection<Playback<*, *>> =
+    val defaultSelector: (Collection<Playback<*>>) -> Collection<Playback<*>> =
       { listOfNotNull(it.firstOrNull()) }
   }
 
@@ -60,6 +62,7 @@ class ActivityContainer(
     } else {
       standardManagers.add(playbackManager)
     }
+    playbackManager.registerOutputHolderPool(this.defaultOutputHolderPool)
   }
 
   // Called by PlaybackManager
@@ -83,13 +86,13 @@ class ActivityContainer(
     dispatcher.dispatchRefresh()
   }
 
-  internal fun trySavePlaybackInfo(playback: Playback<*, *>) {
+  internal fun trySavePlaybackInfo(playback: Playback<*>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
     }
   }
 
-  internal fun tryRestorePlaybackInfo(playback: Playback<*, *>) {
+  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
     if (playback.playable.tag != Playable.NO_TAG) {
       val info = mapPlayableTagToInfo.remove(playback.playable.tag)
       if (info != null) playback.playable.playbackInfo = info
@@ -109,14 +112,17 @@ class ActivityContainer(
     }
     // Eagerly detach all PlaybackManager if there is any.
     this.managers()
-        .onEach { detachPlaybackManager(it) }
+        .onEach {
+          detachPlaybackManager(it)
+        }
         .clear()
 
     owner.lifecycle.removeObserver(this)
+    dispatcher.onContainerDestroyed()
     kohii.owners.remove(owner)
   }
 
-  override fun onRemoved(playback: Playback<*, *>) {
+  override fun onRemoved(playback: Playback<*>) {
     playbackDispatcher.onPlaybackRemoved(playback)
   }
 
@@ -130,8 +136,8 @@ class ActivityContainer(
     // 4. Play the chosen one.
 
     // 1. Collect candidates from children PlaybackManagers
-    val toPlay = LinkedHashSet<Playback<*, *>>() // need the ordering.
-    val toPause = HashSet<Playback<*, *>>()
+    val toPlay = LinkedHashSet<Playback<*>>() // need the ordering.
+    val toPause = HashSet<Playback<*>>()
 
     var picked = false // true --> prioritized Manager has candidates picked for playing.
     var prioritized = false
@@ -169,7 +175,7 @@ class ActivityContainer(
     selected.forEach { playbackDispatcher.play(it) }
   }
 
-  internal fun play(playback: Playback<*, *>) {
+  internal fun play(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
       kohii.manualFlag[playback.playable] = true
@@ -177,7 +183,7 @@ class ActivityContainer(
     playback.play()
   }
 
-  internal fun pause(playback: Playback<*, *>) {
+  internal fun pause(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
       kohii.manualFlag[playback.playable] = false

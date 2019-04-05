@@ -22,18 +22,21 @@ import com.google.android.exoplayer2.ExoPlaybackException
 import kohii.media.Media
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.NO_TAG
+import kohii.v1.Playback.Config
 
-// PLAYER: the 'view' for Bridge
-abstract class BasePlayable<PLAYER>(
+// OUTPUT: the 'view' for Bridge
+abstract class BasePlayable<OUTPUT>(
   protected val kohii: Kohii,
   override val media: Media,
   protected val config: Playable.Config,
-  protected val bridge: Bridge<PLAYER>
-) : Playable<PLAYER> {
+  protected val bridge: Bridge<OUTPUT>,
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val playbackCreator: PlaybackCreator<*, OUTPUT>
+) : Playable<OUTPUT> {
 
   private var listener: PlayerEventListener? = null
 
-  override fun onAdded(playback: Playback<*, *>) {
+  override fun onAdded(playback: Playback<*>) {
     if (this.listener == null) {
       this.listener = object : PlayerEventListener {
         override fun onPlayerStateChanged(
@@ -56,11 +59,11 @@ abstract class BasePlayable<PLAYER>(
     this.bridge.addEventListener(playback.playerListeners)
     this.bridge.addVolumeChangeListener(playback.volumeListeners)
 
-    playback.config.playbackInfo?.let { this.playbackInfo = it }
+    playback.config.playbackInfo?.also { this.playbackInfo = it }
     this.setVolumeInfo(playback.targetHost.volumeInfo)
   }
 
-  override fun onRemoved(playback: Playback<*, *>) {
+  override fun onRemoved(playback: Playback<*>) {
     this.bridge.removeVolumeChangeListener(playback.volumeListeners)
     this.bridge.removeEventListener(playback.playerListeners)
     this.bridge.removeErrorListener(playback.errorListeners)
@@ -82,14 +85,14 @@ abstract class BasePlayable<PLAYER>(
    * - Instance of this class will have member 'playback' set to the method parameter.
    * - Bridge instance will be set with correct target (PlayerView).
    */
-  override fun onActive(playback: Playback<*, *>) {
+  override fun onActive(playback: Playback<*>) {
     require(playback.target is ViewGroup) {
       "${this.javaClass.simpleName} only works with target of type ViewGroup"
     }
   }
 
   // Playback.Callback#onInActive(Playback)
-  override fun onInActive(playback: Playback<*, *>) {
+  override fun onInActive(playback: Playback<*>) {
     // Make sure that the current Manager of this Playable is the same with playback's one, or null.
     if (kohii.mapPlayableToManager[this] === playback.manager || //
         kohii.mapPlayableToManager[this] == null
@@ -98,6 +101,41 @@ abstract class BasePlayable<PLAYER>(
       this.bridge.playerView = null
     }
   }
+
+  protected abstract fun <CONTAINER: Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, OUTPUT>
+
+  override fun <CONTAINER : Any> bind(
+    target: CONTAINER,
+    config: Config,
+    cb: ((Playback<OUTPUT>) -> Unit)?
+  ) {
+    val boxedTarget = createBoxedTarget(target)
+    this.bind(boxedTarget, config, cb)
+  }
+
+  override fun <CONTAINER : Any> bind(
+    target: Target<CONTAINER, OUTPUT>,
+    config: Config,
+    cb: ((Playback<OUTPUT>) -> Unit)?
+  ) {
+    val manager = kohii.findSuitableManager(target.requireContainer())
+        ?: throw IllegalStateException("There is no manager for $target. Forget to register one?")
+
+    @Suppress("UNCHECKED_CAST")
+    val result = this.performBind(
+        manager, target, config,
+        playbackCreator as PlaybackCreator<CONTAINER, OUTPUT>
+    )
+    cb?.invoke(result)
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected fun <CONTAINER> performBind(
+    manager: PlaybackManager,
+    target: Target<CONTAINER, OUTPUT>,
+    config: Config,
+    creator: PlaybackCreator<CONTAINER, OUTPUT>
+  ) = manager.performBindPlayable(this, target, config, creator)
 
   override val tag: Any = config.tag ?: NO_TAG
 

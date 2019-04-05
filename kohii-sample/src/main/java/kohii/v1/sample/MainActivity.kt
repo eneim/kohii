@@ -20,9 +20,9 @@ import android.os.Bundle
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseActivity
 import kohii.v1.sample.ui.MainFragment
-import kohii.v1.sample.ui.overlay.OverlayViewFragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
+import kohii.v1.sample.youtube.YouTubeFragment
 import kotlinx.android.synthetic.main.main_activity.toolbar
 
 class MainActivity : BaseActivity(), PlayerInfoHolder {
@@ -43,7 +43,7 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
       supportFragmentManager.beginTransaction()
           .replace(
               R.id.fragmentContainer,
-              OverlayViewFragment.newInstance(), MainFragment::class.java.simpleName
+              YouTubeFragment.newInstance(), MainFragment::class.java.simpleName
           )
           .commit()
     }

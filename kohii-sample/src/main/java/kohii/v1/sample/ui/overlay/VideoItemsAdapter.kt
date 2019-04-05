@@ -44,7 +44,7 @@ internal class VideoItemsAdapter(
     itemId: Long,
     payload: Any?
   ) {
-    (payload as Rebinder).let {
+    (payload as Rebinder).also {
       if (selectionTracker?.isSelected(it) == true) return
       selectionTracker?.select(it)
     }

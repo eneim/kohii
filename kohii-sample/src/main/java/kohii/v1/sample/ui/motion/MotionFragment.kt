@@ -85,7 +85,7 @@ class MotionFragment : BaseFragment(), Presenter, LifecycleOwnerProvider {
     video: Video
   ) {
     val rebinder = container.getTag(R.id.motion_view_tag)
-    (rebinder as? Rebinder)?.let {
+    (rebinder as? Rebinder)?.also {
       startActivity(
           PlayerActivity.createIntent(
               requireContext(),

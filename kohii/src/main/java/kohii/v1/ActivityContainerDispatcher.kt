@@ -34,6 +34,10 @@ internal class ActivityContainerDispatcher(activityContainer: ActivityContainer)
     handler.sendEmptyMessageDelayed(MSG_REFRESH, DELAY)
   }
 
+  internal fun onContainerDestroyed() {
+    handler.removeCallbacksAndMessages(null)
+  }
+
   class RootHandler(activityContainer: ActivityContainer) : Handler() {
 
     private val weakActivityContainer = WeakReference(activityContainer)

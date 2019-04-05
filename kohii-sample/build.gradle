@@ -136,4 +136,6 @@ dependencies {
   }
 
   implementation 'com.google.firebase:firebase-core:16.0.8'
+
+  implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.3'
 }

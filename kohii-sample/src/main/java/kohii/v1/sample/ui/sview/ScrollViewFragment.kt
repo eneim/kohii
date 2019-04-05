@@ -53,7 +53,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
   private var kohii: Kohii? = null
-  private var playback: Playback<*, *>? = null
+  private var playback: Playback<*>? = null
   private var dialogPlayer: DialogFragment? = null
 
   override fun onCreateView(
@@ -77,12 +77,14 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
         }
 
     playerContainer.setOnClickListener {
-      dialogPlayer = PlayerDialogFragment.newInstance(
-          rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f)
-      )
-          .also {
-            it.show(childFragmentManager, videoTag)
-          }
+      rebinder?.also {
+        dialogPlayer = PlayerDialogFragment.newInstance(
+            rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f)
+        )
+            .also { dialog ->
+              dialog.show(childFragmentManager, videoTag)
+            }
+      }
 
       /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
       @Suppress("ReplaceSingleLineLet")

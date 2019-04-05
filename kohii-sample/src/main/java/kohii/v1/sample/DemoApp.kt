@@ -20,12 +20,17 @@ import android.app.Application
 import com.crashlytics.android.Crashlytics
 import com.squareup.leakcanary.LeakCanary
 import io.fabric.sdk.android.Fabric
+import kohii.v1.Kohii
+import kohii.v1.sample.youtube.YouTubePlayableCreator
 
 /**
  * @author eneim (2018/06/26).
  */
 @Suppress("unused")
 class DemoApp : Application() {
+
+  // In practice, this instance should be managed and injected by a DI framework.
+  val creator by lazy { YouTubePlayableCreator(Kohii[this]) }
 
   override fun onCreate() {
     super.onCreate()

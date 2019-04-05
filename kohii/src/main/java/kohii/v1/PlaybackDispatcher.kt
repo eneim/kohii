@@ -30,8 +30,8 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
   }
 
   override fun handleMessage(msg: Message?): Boolean {
-    if (msg?.what == MSG_PLAY && msg.obj is Playback<*, *>) {
-      (msg.obj as Playback<*, *>).play()
+    if (msg?.what == MSG_PLAY && msg.obj is Playback<*>) {
+      (msg.obj as Playback<*>).play()
     }
     return true
   }
@@ -47,8 +47,8 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
     handler = null
   }
 
-  private fun justPlay(playback: Playback<*, *>) {
-    handler?.let {
+  private fun justPlay(playback: Playback<*>) {
+    handler?.also {
       val delay = playback.config.delay
       it.removeMessages(MSG_PLAY, playback)
       when {
@@ -61,7 +61,7 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
     }
   }
 
-  internal fun play(playback: Playback<*, *>) {
+  internal fun play(playback: Playback<*>) {
     playback.playable.ensureResource()
 
     val controller = playback.controller
@@ -79,14 +79,14 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
     }
   }
 
-  internal fun pause(playback: Playback<*, *>) {
+  internal fun pause(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null && !controller.allowsSystemControl()) return
     handler?.removeMessages(MSG_PLAY, playback)
     playback.pause()
   }
 
-  internal fun onPlaybackRemoved(playback: Playback<*, *>) {
+  internal fun onPlaybackRemoved(playback: Playback<*>) {
     handler?.removeMessages(MSG_PLAY, playback)
   }
 }
