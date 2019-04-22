@@ -19,20 +19,20 @@ package kohii.v1
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.contains
-import com.google.android.exoplayer2.ui.PlayerView
 
 open class ViewTarget<CONTAINER : ViewGroup, OUTPUT : View>(val container: CONTAINER) : Target<CONTAINER, OUTPUT> {
+
   override fun requireContainer(): CONTAINER {
     return this.container
   }
 
   override fun attachOutputHolder(output: OUTPUT) {
-    if (container is PlayerView || container === output) return
+    if (container === output || container::javaClass === output::javaClass) return
     if (!container.contains(output)) container.addView(output)
   }
 
   override fun detachOutputHolder(output: OUTPUT): Boolean {
-    if (container is PlayerView || container === output) return false
+    if (container === output || container::javaClass === output::javaClass) return false
     if (!container.contains(output)) return false
     container.removeView(output)
     return true
