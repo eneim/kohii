@@ -22,8 +22,6 @@ import android.graphics.Point
 import android.os.Build
 import android.util.TypedValue
 import android.view.View
-import androidx.core.view.ViewCompat
-import androidx.core.view.doOnNextLayout
 
 /**
  * @author eneim (2018/07/30).
@@ -54,16 +52,6 @@ inline fun <reified T : View> View.doOnNextLayoutAs(crossinline action: (view: T
       action(view as T)
     }
   })
-}
-
-inline fun <reified T : View> View.doOnLayoutAs(crossinline action: (view: T) -> Unit) {
-  if (ViewCompat.isLaidOut(this) && !isLayoutRequested) {
-    action(this as T)
-  } else {
-    doOnNextLayout {
-      action(it as T)
-    }
-  }
 }
 
 fun Activity.inMultiWindow(): Boolean {

@@ -33,9 +33,9 @@ import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
+import kohii.v1.sample.data.Sources
+import kohii.v1.sample.data.Video
 import kohii.v1.sample.svg.GlideApp
-import kohii.v1.sample.ui.overlay.data.Sources
-import kohii.v1.sample.ui.overlay.data.Video
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class VideoItemHolder(
@@ -60,7 +60,7 @@ internal class VideoItemHolder(
   val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
   val playerContainer = itemView.findViewById(R.id.playerContainer) as View
 
-  var playback: Playback<ViewGroup, PlayerView>? = null
+  var playback: Playback<PlayerView>? = null
   var binder: Binder<PlayerView>? = null
   var videoSources: Sources? = null
 
@@ -74,10 +74,10 @@ internal class VideoItemHolder(
 
   // Trick
   val rebinder: Rebinder?
-    get() = this.videoSources?.let { Rebinder(tagKey, PlayerView::class.java) }
+    get() = this.tagKey?.let { Rebinder(it, PlayerView::class.java) }
 
   override fun bind(item: Any?) {
-    (item as? Video)?.let {
+    (item as? Video)?.also {
       videoTitle.text = it.title
       videoInfo.text = it.description
       this.videoSources = it.playlist.first()
@@ -88,17 +88,18 @@ internal class VideoItemHolder(
           }
           .sources.first()
 
-      this.binder = kohii.setUp(videoSources!!.file)
+      val binder = kohii.setUp(videoSources!!.file)
           .config {
             Playable.Config(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
           }
 
+      this.binder = binder
+
       if (host.selectionTracker?.isSelected(rebinder) == true) {
         this.playback = null
       } else {
-        this.binder!!.bind(playerView) { pk ->
+        binder.bind(playerView, config = Playback.Config(callback = this@VideoItemHolder)) { pk ->
           pk.addPlaybackEventListener(this@VideoItemHolder)
-          pk.addCallback(this@VideoItemHolder)
           this@VideoItemHolder.playback = pk
         }
       }
@@ -108,30 +109,27 @@ internal class VideoItemHolder(
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
     this.videoSources = null
-    this.playback?.apply {
-      removeCallback(this@VideoItemHolder)
-    }
     videoImage.isVisible = true
   }
 
-  override fun beforePlay(playback: Playback<*, *>) {
+  override fun beforePlay(playback: Playback<*>) {
     videoImage.isVisible = false
     Log.e("Kohii:VH", "beforePlay: $playback, $adapterPosition")
   }
 
-  override fun onPlaying(playback: Playback<*, *>) {
+  override fun onPlaying(playback: Playback<*>) {
     videoImage.isVisible = false
   }
 
-  override fun afterPause(playback: Playback<*, *>) {
+  override fun afterPause(playback: Playback<*>) {
     videoImage.isVisible = true
   }
 
-  override fun onCompleted(playback: Playback<*, *>) {
+  override fun onCompleted(playback: Playback<*>) {
     videoImage.isVisible = true
   }
 
-  override fun onInActive(playback: Playback<*, *>) {
+  override fun onInActive(playback: Playback<*>) {
     videoImage.isVisible = true
   }
 

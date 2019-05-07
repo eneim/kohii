@@ -1,5 +1,45 @@
 [
   {
+    "name": "WV: Clear SD & HD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears.mpd"
+  },
+  {
+    "name": "WV: Clear SD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears_sd.mpd"
+  },
+  {
+    "name": "WV: Clear HD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears_hd.mpd"
+  },
+  {
+    "name": "WV: Clear UHD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears_uhd.mpd"
+  },
+  {
+    "name": "WV: Secure Fullsample SD & HD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears.mpd",
+    "drm_scheme": "widevine",
+    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
+  },
+  {
+    "name": "WV: Secure Fullsample SD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears_sd.mpd",
+    "drm_scheme": "widevine",
+    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
+  },
+  {
+    "name": "WV: Secure Fullsample HD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears_hd.mpd",
+    "drm_scheme": "widevine",
+    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
+  },
+  {
+    "name": "WV: Secure Fullsample UHD (WebM,VP9)",
+    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears_uhd.mpd",
+    "drm_scheme": "widevine",
+    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
+  },
+  {
     "name": "WV: Clear HD (MP4,H264)",
     "uri": "https://storage.googleapis.com/wvmedia/clear/h264/tears/tears_hd.mpd"
   },
@@ -188,46 +228,6 @@
   {
     "name": "WV: Secure UHD (cbcs,MP4,H264)",
     "uri": "https://storage.googleapis.com/wvmedia/cbcs/h264/tears/tears_aes_cbcs_uhd.mpd",
-    "drm_scheme": "widevine",
-    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
-  },
-  {
-    "name": "WV: Clear SD & HD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears.mpd"
-  },
-  {
-    "name": "WV: Clear SD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears_sd.mpd"
-  },
-  {
-    "name": "WV: Clear HD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears_hd.mpd"
-  },
-  {
-    "name": "WV: Clear UHD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears_uhd.mpd"
-  },
-  {
-    "name": "WV: Secure Fullsample SD & HD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears.mpd",
-    "drm_scheme": "widevine",
-    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
-  },
-  {
-    "name": "WV: Secure Fullsample SD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears_sd.mpd",
-    "drm_scheme": "widevine",
-    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
-  },
-  {
-    "name": "WV: Secure Fullsample HD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears_hd.mpd",
-    "drm_scheme": "widevine",
-    "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
-  },
-  {
-    "name": "WV: Secure Fullsample UHD (WebM,VP9)",
-    "uri": "https://storage.googleapis.com/wvmedia/cenc/vp9/tears/tears_uhd.mpd",
     "drm_scheme": "widevine",
     "drm_license_url": "https://proxy.uat.widevine.com/proxy?provider=widevine_test"
   },

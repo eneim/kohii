@@ -16,12 +16,14 @@
 
 package kohii.v1
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
+import androidx.collection.ArrayMap
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -36,6 +38,8 @@ import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.internal.ViewPlaybackManager
 import kohii.media.Media
 import kohii.media.MediaItem
+import kohii.media.PlaybackInfo
+import kohii.media.VolumeInfo
 import kohii.takeFirstOrNull
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
@@ -53,23 +57,27 @@ class Kohii(context: Context) {
 
   val app = context.applicationContext as Application
 
-  internal val owners = HashMap<LifecycleOwner, ActivityContainer>(2)
-  internal val managers = HashMap<LifecycleOwner, PlaybackManager>()
+  internal val groups = ArrayMap<Activity, PlaybackManagerGroup>(2)
+  internal val managers = ArrayMap<LifecycleOwner, PlaybackManager>()
 
   // Which Playable is managed by which Manager
   internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlaybackManager?>()
   // Map the playback state of Playable made by client (manually)
-  internal val manualFlag = WeakHashMap<Playable<*>, Boolean>()
+  // true = the Playable is started by Client/User, not by Kohii.
+  internal val manualPlayableState = WeakHashMap<Playable<*>, Boolean>()
+  // To mark a Playable as high priority once it is started manually.
+  internal val manualPlayables = ArrayMap<Playable<*>, Any>()
 
   // Store playable whose tag is available. Non tagged playable are always ignored.
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Pair<Playable<*>, Class<*>>>()
+  // In critical situation, this map may hold a lot of entries, so use HashMap.
+  // !Playable Tag is globally unique.
+  internal val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
   internal val defaultBridgeProvider by lazy {
-    // Shared dependencies.
-    val userAgent = Kohii.getUserAgent(this.app, BuildConfig.LIB_NAME)
+    val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
     val bandwidthMeter = DefaultBandwidthMeter()
-    val httpDataSource =
-      DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
+    val httpDataSource = DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
 
     // ExoPlayerProvider
     val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this.app, httpDataSource)
@@ -80,19 +88,16 @@ class Kohii(context: Context) {
     )
 
     // MediaSourceFactoryProvider
-    var tempDir = this.app.getExternalFilesDir(null)
-    if (tempDir == null) tempDir = this.app.filesDir
-    val fileDir = tempDir
+    val fileDir = this.app.getExternalFilesDir(null) ?: this.app.filesDir
     val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
     val mediaCache = SimpleCache(contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE))
     val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
-    val mediaSourceFactoryProvider =
-      DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
+    val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
 
     PlayerViewBridgeProvider(this, playerProvider, mediaSourceFactoryProvider)
   }
 
-  private val defaultPlayableCreator = lazy { PlayerViewPlayableCreator(this) }
+  private val defaultPlayableCreator by lazy { PlayerViewPlayableCreator(this) }
 
   @Suppress("SpellCheckingInspection")
   internal val cleanables = HashSet<Cleanable>()
@@ -104,6 +109,7 @@ class Kohii(context: Context) {
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
     private const val CACHE_SIZE = 32 * 1024 * 1024L // 32 Megabytes
+    internal val PRESENT = Any()
 
     @Volatile private var kohii: Kohii? = null
 
@@ -134,10 +140,6 @@ class Kohii(context: Context) {
 
   // instance methods
 
-  internal fun findSuitableManager(target: Any): PlaybackManager? {
-    return owners.values.takeFirstOrNull({ it.findSuitableManger(target) }, { it != null })
-  }
-
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
   // Always get called after playback.release()
   internal fun releasePlayable(
@@ -158,12 +160,35 @@ class Kohii(context: Context) {
     val intentFilter = IntentFilter().apply {
       addAction(Intent.ACTION_SCREEN_ON)
       addAction(Intent.ACTION_SCREEN_OFF)
+      addAction(Intent.ACTION_USER_PRESENT)
     }
     app.registerReceiver(screenStateReceiver, intentFilter)
   }
 
   internal fun onLastManagerOffline() {
     app.unregisterReceiver(screenStateReceiver)
+  }
+
+  // Only used from ControlDispatcher
+  internal fun play(playback: Playback<*>) {
+    val controller = playback.controller
+    if (controller != null) {
+      manualPlayableState[playback.playable] = true
+      if (!controller.pauseBySystem()) {
+        manualPlayables[playback.playable] = PRESENT
+      }
+    }
+    playback.manager.dispatchRefreshAll()
+  }
+
+  // only used from ControlDispatcher
+  internal fun pause(playback: Playback<*>) {
+    val controller = playback.controller
+    if (controller != null) {
+      manualPlayableState[playback.playable] = false
+      manualPlayables.remove(playback.playable)
+    }
+    playback.manager.dispatchRefreshAll()
   }
 
   // Gat called when Kohii should free all resources.
@@ -175,45 +200,40 @@ class Kohii(context: Context) {
   // [BEGIN] Public API
 
   // Expose to client.
-  fun register(provider: LifecycleOwnerProvider): PlaybackManager {
-    return this.register(provider, null)
-  }
-
   fun register(
-    provider: LifecycleOwnerProvider,
-    hosts: Array<Any>?
+    provider: Any,
+    vararg hosts: Any
   ): PlaybackManager {
-    val activity =
+    val (activity, lifecycleOwner) =
       when (provider) {
-        is Fragment -> provider.requireActivity()
-        is FragmentActivity -> provider
+        is Fragment -> Pair(provider.requireActivity(), provider.viewLifecycleOwner)
+        is FragmentActivity -> Pair(provider, provider)
         else -> throw IllegalArgumentException(
             "Unsupported provider: $provider. Kohii only supports Fragment, FragmentActivity."
         )
       }
-    val parent = owners.getOrPut(activity) {
-      val result = ActivityContainer(this, activity)
+    val managerGroup = groups.getOrPut(activity) {
+      val result = PlaybackManagerGroup(this, activity)
       activity.lifecycle.addObserver(result)
-      if (defaultPlayableCreator.isInitialized()) {
-        activity.lifecycle.addObserver(defaultPlayableCreator.value)
-      }
       return@getOrPut result
     }
-    val lifecycleOwner = provider.provideLifecycleOwner()
     val manager = managers.getOrPut(lifecycleOwner) {
       // Create new in case of no cache found.
       if (lifecycleOwner is LifecycleService) {
         throw IllegalArgumentException("Service is not supported yet.")
       } else {
-        return@getOrPut ViewPlaybackManager(this, parent, provider)
+        return@getOrPut ViewPlaybackManager(this, managerGroup, provider)
       }
     }
 
-    hosts?.mapNotNull { TargetHost.createTargetHost(it, manager) }
-        ?.forEach { manager.registerTargetHost(it, false) }
+    hosts.mapNotNull {
+      if (it is TargetHost) it
+      else TargetHost.createTargetHost(it, manager)
+    }
+        .forEach { manager.registerTargetHost(it) }
 
     lifecycleOwner.lifecycle.addObserver(manager)
-    parent.attachPlaybackManager(manager)
+    managerGroup.attachPlaybackManager(manager)
     return manager
   }
 
@@ -221,15 +241,143 @@ class Kohii(context: Context) {
 
   fun setUp(url: String) = this.setUp(url.toUri())
 
-  fun setUp(media: Media) = defaultPlayableCreator.value.setUp(media)
+  fun setUp(media: Media) = defaultPlayableCreator.setUp(media)
 
-  // Get Playbacks whose output Player is 'player'.
-  fun <PLAYER : Any> get(player: PLAYER): Playback<*, PLAYER>? {
-    return owners.values.flatMap {
-      it.managers()
-          .map { mng -> mng.findPlaybackForPlayer(player) }
+  internal fun findManagerForContainer(container: Any): PlaybackManager? {
+    return groups.values.takeFirstOrNull({ it.findManagerForContainer(container) })
+  }
+
+  /**
+   * Manually pause an object in a specific scope. After Playbacks of a Scope is paused by this method,
+   * only another call to [#resume(receiver, scope)] with same or higher priority Scope will resume it.
+   * For example:
+   * - Pausing a Playback with Scope.PLAYBACK --> a call to resume(playback, Scope.PLAYBACK) or
+   * resume(playback, Scope.HOST) will also resume it.
+   * - Pausing all Playback in a Manager by using Scope.MANAGER --> a call to resume(targetHost, Scope.HOST)
+   * will not resume anything, including Playbacks mapped to that targetHost.
+   *
+   * To be able to change the scope of Playbacks need to be paused, client must:
+   * - Resume all Playbacks of the same or higher priority Scope.
+   * - Call this method to pause Playbacks of expected scope.
+   */
+  fun pause(
+    receiver: Any?,
+    scope: Scope
+  ) {
+    when {
+      scope === Scope.GLOBAL ->
+        // receiver is ignored.
+        this.groups.forEach {
+          this.pause(it.value, Scope.ACTIVITY)
+        }
+      scope === Scope.ACTIVITY ->
+        when (receiver) {
+          is PlaybackManagerGroup -> {
+            receiver.lock.set(true)
+            receiver.managers()
+                .forEach { this.pause(it, Scope.MANAGER) }
+          }
+          is PlaybackManager -> this.pause(receiver.parent, Scope.ACTIVITY)
+          else -> throw IllegalArgumentException(
+              "Receiver for scope $scope must be a PlaybackManager or a PlaybackManagerGroup"
+          )
+        }
+      scope === Scope.MANAGER ->
+        (receiver as? PlaybackManager)?.let {
+          it.lock.set(true)
+          it.targetHosts.forEach { host -> this.pause(host, Scope.HOST) }
+        } ?: throw IllegalArgumentException("Receiver for scope $scope must be a PlaybackManager")
+      scope === Scope.HOST ->
+        when (receiver) {
+          is TargetHost -> {
+            receiver.lock.set(true)
+            receiver.manager.dispatchRefreshAll()
+          }
+          is Playback<*> -> this.pause(receiver.targetHost, Scope.HOST)
+          else -> {
+            // Find the TargetHost whose host is this receiver
+            val host = this.managers.values.takeFirstOrNull(
+                { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
+            )
+            if (host != null) this.pause(host, Scope.HOST)
+          }
+        }
+      scope === Scope.PLAYBACK ->
+        (receiver as? Playback<*>)?.let { this.pause(it) }
+            ?: throw IllegalArgumentException("Receiver for scope $scope must be a Playback")
     }
-        .firstOrNull()
+  }
+
+  /**
+   * Manually resume all Playback of a Scope those are paused by [#pause(receiver, Scope)].
+   */
+  fun resume(
+    receiver: Any?,
+    scope: Scope
+  ) {
+    when {
+      scope === Scope.GLOBAL ->
+        this.groups.forEach {
+          this.resume(it.value, Scope.ACTIVITY)
+        }
+      scope === Scope.ACTIVITY ->
+        when (receiver) {
+          is PlaybackManagerGroup -> {
+            receiver.lock.set(false)
+            receiver.managers()
+                .forEach { this.resume(it, Scope.MANAGER) }
+          }
+          is PlaybackManager -> this.resume(receiver.parent, Scope.ACTIVITY)
+          else -> throw IllegalArgumentException(
+              "Receiver for scope $scope must be a PlaybackManager or a PlaybackManagerGroup"
+          )
+        }
+      scope === Scope.MANAGER ->
+        (receiver as? PlaybackManager)?.let {
+          it.lock.set(false)
+          it.targetHosts.forEach { host -> this.resume(host, Scope.HOST) }
+        } ?: throw IllegalArgumentException("Receiver for scope $scope must be a PlaybackManager")
+      scope === Scope.HOST ->
+        when (receiver) {
+          is TargetHost -> {
+            receiver.lock.set(false)
+            receiver.manager.dispatchRefreshAll()
+          }
+          is Playback<*> -> this.resume(receiver.targetHost, Scope.HOST)
+          else -> {
+            // Find the TargetHost whose host is this receiver
+            val host = this.managers.values.takeFirstOrNull(
+                { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
+            )
+            if (host != null) this.resume(host, Scope.HOST)
+          }
+        }
+      scope === Scope.PLAYBACK ->
+        (receiver as? Playback<*>)?.let {
+          if (it.controller != null) { // has manual controller
+            manualPlayableState[it.playable] = null // TODO consider to not do this?
+            it.manager.dispatchRefreshAll()
+          }
+        } ?: throw IllegalArgumentException("Receiver for scope $scope must be a Playback")
+    }
+  }
+
+  fun applyVolumeInfo(
+    volumeInfo: VolumeInfo,
+    receiver: Any?,
+    scope: Scope
+  ) {
+    when (receiver) {
+      is Playback<*> -> receiver.manager.applyVolumeInfo(volumeInfo, receiver, scope)
+      is TargetHost -> receiver.manager.applyVolumeInfo(volumeInfo, receiver, scope)
+      is PlaybackManager -> receiver.applyVolumeInfo(volumeInfo, receiver, scope)
+      is PlaybackManagerGroup -> receiver.managers().forEach {
+        it.applyVolumeInfo(
+            volumeInfo, receiver, scope
+        )
+      }
+      else -> throw IllegalArgumentException("Unsupported receiver: $receiver")
+    }
   }
 
   // [END] Public API

@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.postDelayed
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionInflater
@@ -33,7 +32,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.sample.PlayerInfo
+import kohii.v1.sample.PlayerInfoHolder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.doOnNextLayoutAs
@@ -47,23 +47,10 @@ import okio.source
  * @author eneim (2018/07/06).
  */
 @Keep
-class RecyclerViewFragment : BaseFragment(), LifecycleOwnerProvider {
+class RecyclerViewFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = RecyclerViewFragment()
-  }
-
-  data class PlayerInfo(
-    val adapterPos: Int,
-    val viewTop: Int
-  )
-
-  // Implemented by host (Activity) to manage shared elements transition information.
-  interface PlayerInfoHolder {
-
-    fun recordPlayerInfo(info: PlayerInfo?)
-
-    fun fetchPlayerInfo(): PlayerInfo?
   }
 
   private val items: List<Item> by lazy {
@@ -164,8 +151,4 @@ class RecyclerViewFragment : BaseFragment(), LifecycleOwnerProvider {
 
   // Called by Adapter
   fun fetchPlayerInfo() = this.playerInfoHolder?.fetchPlayerInfo()
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return viewLifecycleOwner
-  }
 }

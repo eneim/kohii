@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.rview
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +26,6 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.InitData
@@ -42,33 +40,10 @@ class VideoViewHolder(
   private val kohii: Kohii,
   private val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
-    View.OnClickListener, PlaybackEventListener, Playback.Callback {
+    View.OnClickListener, Playback.Callback {
 
   init {
     itemView.setOnClickListener(this)
-  }
-
-  override fun onFirstFrameRendered(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
-  }
-
-  override fun onBuffering(
-    playback: Playback<*, *>,
-    playWhenReady: Boolean
-  ) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onBuffering(): $playWhenReady")
-  }
-
-  override fun onPlaying(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onPlaying()")
-  }
-
-  override fun onPaused(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onPaused()")
-  }
-
-  override fun onCompleted(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
   }
 
   val playerView = itemView.findViewById(R.id.playerView) as PlayerView
@@ -76,7 +51,7 @@ class VideoViewHolder(
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
   var rebinder: Rebinder? = null
-  var playback: Playback<PlayerView, PlayerView>? = null
+  var playback: Playback<PlayerView>? = null
   var payload: InitData? = null
 
   override fun bind(item: Item?) {
@@ -86,28 +61,19 @@ class VideoViewHolder(
       playerContainer.setAspectRatio(payload!!.aspectRatio)
       rebinder = kohii.setUp(item.content)
           .config {
-            Playable.Config(tag = itemTag, prefetch = true, repeatMode = Player.REPEAT_MODE_ONE)
+            Playable.Config(
+                tag = itemTag,
+                prefetch = true,
+                repeatMode = Player.REPEAT_MODE_ONE
+            )
           }
-          .bind(playerView) {
-            it.addPlaybackEventListener(this)
-            it.addCallback(this)
+          .bind(playerView, config = Playback.Config(callback = this)) {
             playback = it
             listener.onItemLoaded(itemView, adapterPosition)
           }
 
       ViewCompat.setTransitionName(transView, itemTag)
     }
-  }
-
-  override fun onRemoved(playback: Playback<*, *>) {
-    playback.removePlaybackEventListener(this)
-    playback.removeCallback(this)
-  }
-
-  override fun onRecycled(success: Boolean) {
-    super.onRecycled(success)
-    playback?.removePlaybackEventListener(this)
-    playback?.removeCallback(this)
   }
 
   override fun onClick(v: View?) {

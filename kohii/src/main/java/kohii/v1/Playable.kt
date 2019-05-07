@@ -22,7 +22,6 @@ import com.google.android.exoplayer2.Player
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.v1.Playback.Callback
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
@@ -32,7 +31,8 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-interface Playable<PLAYER> : Callback {
+// TODO [20190430] Instead of defining output TYPE by parameter, consider to have "allows" method.
+interface Playable<OUTPUT : Any> {
 
   companion object {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
@@ -64,23 +64,23 @@ interface Playable<PLAYER> : Callback {
 
   val isPlaying: Boolean
 
-  fun <TARGET : Any> bind(
-    target: TARGET,
+  fun <CONTAINER : Any> bind(
+    target: CONTAINER,
     config: Playback.Config = Playback.Config(),
-    cb: ((Playback<TARGET, PLAYER>) -> Unit)? = null
+    cb: ((Playback<OUTPUT>) -> Unit)? = null
   )
 
-  fun <TARGET : Any> bind(
-    target: Target<TARGET, PLAYER>,
+  fun <CONTAINER : Any> bind(
+    target: Target<CONTAINER, OUTPUT>,
     config: Playback.Config = Playback.Config(),
-    cb: ((Playback<TARGET, PLAYER>) -> Unit)? = null
+    cb: ((Playback<OUTPUT>) -> Unit)? = null
   )
 
   // Playback controller
 
   fun prepare()
 
-  fun ensureResource()
+  fun ensurePreparation()
 
   fun play()
 
@@ -98,10 +98,27 @@ interface Playable<PLAYER> : Callback {
   // Setter/Getter
   var playbackInfo: PlaybackInfo
 
+  fun onPlayerActive(
+    playback: Playback<OUTPUT>,
+    player: OUTPUT
+  )
+
+  fun onPlayerInActive(
+    playback: Playback<OUTPUT>,
+    player: OUTPUT?
+  )
+
+  fun onAdded(playback: Playback<*>) {}
+
+  fun onActive(playback: Playback<*>) {}
+
+  fun onInActive(playback: Playback<*>) {}
+
+  fun onRemoved(playback: Playback<*>) {}
+
   // data class for copying convenience.
   data class Config(
     val tag: String? = null,
-    val startDelay: Int = 0, // Delay on every "play" call.
     val prefetch: Boolean = false,
     @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
     val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
@@ -112,8 +129,7 @@ interface Playable<PLAYER> : Callback {
           tag = this.tag,
           prefetch = this.prefetch,
           repeatMode = this.repeatMode,
-          playbackParameters = this.playbackParameters,
-          startDelay = this.startDelay
+          playbackParameters = this.playbackParameters
       )
     }
   }

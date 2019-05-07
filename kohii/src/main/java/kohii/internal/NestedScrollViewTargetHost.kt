@@ -16,28 +16,25 @@
 
 package kohii.internal
 
-import android.util.Log
 import android.view.View
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.NestedScrollView.OnScrollChangeListener
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
-import kohii.v1.TargetHost.Companion.VERTICAL
-import kohii.v1.TargetHost.Companion.comparators
 
 internal class NestedScrollViewTargetHost(
-  override val host: NestedScrollView,
+  host: NestedScrollView,
   manager: PlaybackManager
 ) : BaseTargetHost<NestedScrollView>(host, manager), OnScrollChangeListener {
 
   override fun onAdded() {
     super.onAdded()
-    host.setOnScrollChangeListener(this)
+    actualHost.setOnScrollChangeListener(this)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    host.setOnScrollChangeListener(null as OnScrollChangeListener?)
+    actualHost.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
   override fun onScrollChange(
@@ -47,36 +44,20 @@ internal class NestedScrollViewTargetHost(
     oldScrollX: Int,
     oldScrollY: Int
   ) {
-    Log.i("Kohii::Scroll", "scrolled: $scrollX, $scrollY")
     manager.dispatchRefreshAll()
   }
 
-  override fun allowsToPlay(playback: Playback<*, *>): Boolean {
+  override fun allowsToPlay(playback: Playback<*>): Boolean {
     return playback.token.shouldPlay()
   }
 
-  override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
-    val grouped = candidates.groupBy { it.controller != null }
-        .withDefault { emptyList() }
-
-    val firstHalf by lazy {
-      listOfNotNull(
-          grouped.getValue(true).sortedWith(comparators.getValue(VERTICAL)).firstOrNull()
-      )
-    }
-
-    val secondHalf by lazy {
-      listOfNotNull(
-          grouped.getValue(false).sortedWith(comparators.getValue(VERTICAL)).firstOrNull()
-      )
-    }
-
-    return if (firstHalf.isNotEmpty()) firstHalf else secondHalf
+  override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    return super.selectByOrientation(candidates, VERTICAL)
   }
 
-  override fun accepts(target: Any): Boolean {
-    if (target !is View) return false
-    var view = target
+  override fun accepts(container: Any): Boolean {
+    if (container !is View) return false
+    var view = container
     var parent = view.parent
     while (parent != null && parent !== this.host && parent is View) {
       @Suppress("USELESS_CAST")
@@ -84,16 +65,5 @@ internal class NestedScrollViewTargetHost(
       parent = view.parent
     }
     return parent === this.host
-  }
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is NestedScrollViewTargetHost) return false
-    if (host !== other.host) return false
-    return true
-  }
-
-  override fun hashCode(): Int {
-    return host.hashCode()
   }
 }

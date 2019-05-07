@@ -18,7 +18,6 @@ package kohii.v1.sample.ui.mix
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -30,8 +29,6 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.MediaItem
 import kohii.v1.Kohii
 import kohii.v1.Playable
-import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
 
 /**
@@ -46,36 +43,12 @@ class VideoViewHolder(
     inflater,
     R.layout.holder_mix_view,
     parent
-), PlaybackEventListener, Playback.Callback {
-
-  override fun onFirstFrameRendered(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onFirstFrameRendered()")
-  }
-
-  override fun onBuffering(
-    playback: Playback<*, *>,
-    playWhenReady: Boolean
-  ) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onBuffering(): $playWhenReady")
-  }
-
-  override fun onPlaying(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onPlaying()")
-  }
-
-  override fun onPaused(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onPaused()")
-  }
-
-  override fun onCompleted(playback: Playback<*, *>) {
-    Log.i("KohiiApp:VH:$adapterPosition", "onCompleted()")
-  }
+) {
 
   val mediaName = itemView.findViewById(R.id.videoTitle) as TextView
   val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
 
   var itemTag: String? = null
-  var playback: Playback<PlayerView, PlayerView>? = null
 
   @SuppressLint("SetTextI18n")
   override fun bind(item: Item?) {
@@ -97,23 +70,9 @@ class VideoViewHolder(
 
       kohii.setUp(mediaItem)
           .config {
-            Playable.Config(
-                tag = itemTag,
-                prefetch = false,
-                repeatMode = Player.REPEAT_MODE_ONE
-            )
+            Playable.Config(tag = itemTag, prefetch = false, repeatMode = Player.REPEAT_MODE_ONE)
           }
-          .bind(playerView) {
-            it.addPlaybackEventListener(this@VideoViewHolder)
-            it.addCallback(this@VideoViewHolder)
-            playback = it
-          }
+          .bind(playerView)
     }
-  }
-
-  override fun onRecycled(success: Boolean) {
-    super.onRecycled(success)
-    playback?.removePlaybackEventListener(this)
-    playback?.removeCallback(this)
   }
 }

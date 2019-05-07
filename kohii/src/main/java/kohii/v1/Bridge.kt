@@ -22,10 +22,10 @@ import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.RepeatMode
 
-interface Bridge<PLAYER> {
+interface Bridge<OUTPUT : Any> {
 
   //  set/get
-  var playerView: PLAYER?
+  var playerView: OUTPUT?
 
   // set/get
   var playbackInfo: PlaybackInfo
@@ -56,7 +56,7 @@ interface Bridge<PLAYER> {
   fun prepare(loadSource: Boolean)
 
   // Ensure resource is ready to play. PlaybackDispatcher will require this for manual playback.
-  fun ensureResource()
+  fun ensurePreparation()
 
   /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to true */
   fun play()

@@ -21,23 +21,21 @@ import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
-import kohii.v1.TargetHost.Companion.HORIZONTAL
-import kohii.v1.TargetHost.Companion.comparators
 
-class ViewPagerTargetHost(
-  override val host: ViewPager,
+internal class ViewPagerTargetHost(
+  host: ViewPager,
   manager: PlaybackManager
 ) : BaseTargetHost<ViewPager>(host, manager), OnPageChangeListener {
 
   override fun onAdded() {
     super.onAdded()
-    host.addOnPageChangeListener(this)
+    actualHost.addOnPageChangeListener(this)
     manager.dispatchRefreshAll()
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    host.removeOnPageChangeListener(this)
+    actualHost.removeOnPageChangeListener(this)
   }
 
   override fun onPageScrollStateChanged(state: Int) {
@@ -56,13 +54,13 @@ class ViewPagerTargetHost(
     // no-op
   }
 
-  override fun allowsToPlay(playback: Playback<*, *>): Boolean {
+  override fun allowsToPlay(playback: Playback<*>): Boolean {
     return playback.token.shouldPlay()
   }
 
-  override fun accepts(target: Any): Boolean {
-    return if (target is View) {
-      var view = target
+  override fun accepts(container: Any): Boolean {
+    return if (container is View) {
+      var view = container
       var parent = view.parent
       while (parent != null && parent !== this.host && parent is View) {
         @Suppress("USELESS_CAST")
@@ -73,33 +71,7 @@ class ViewPagerTargetHost(
     } else false
   }
 
-  override fun select(candidates: Collection<Playback<*, *>>): Collection<Playback<*, *>> {
-    val grouped = candidates.groupBy { it.controller != null }
-        .withDefault { emptyList() }
-
-    val firstHalf by lazy {
-      listOfNotNull(
-          grouped.getValue(true).sortedWith(comparators.getValue(HORIZONTAL)).firstOrNull()
-      )
-    }
-
-    val secondHalf by lazy {
-      listOfNotNull(
-          grouped.getValue(false).sortedWith(comparators.getValue(HORIZONTAL)).firstOrNull()
-      )
-    }
-
-    return if (firstHalf.isNotEmpty()) firstHalf else secondHalf
-  }
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is ViewPagerTargetHost) return false
-    if (host != other.host) return false
-    return true
-  }
-
-  override fun hashCode(): Int {
-    return host.hashCode()
+  override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    return super.selectByOrientation(candidates, HORIZONTAL)
   }
 }

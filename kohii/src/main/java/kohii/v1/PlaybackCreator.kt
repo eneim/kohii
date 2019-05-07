@@ -18,12 +18,12 @@ package kohii.v1
 
 import kohii.v1.Playback.Config
 
-interface PlaybackCreator<CONTAINER, PLAYER> {
+interface PlaybackCreator<OUTPUT : Any> {
 
-  fun createPlayback(
+  fun <CONTAINER : Any> createPlayback(
     manager: PlaybackManager,
-    target: Target<CONTAINER, PLAYER>,
-    playable: Playable<PLAYER>,
+    target: Target<CONTAINER, OUTPUT>,
+    playable: Playable<OUTPUT>,
     config: Config
-  ): Playback<CONTAINER, PLAYER>
+  ): Playback<OUTPUT>
 }

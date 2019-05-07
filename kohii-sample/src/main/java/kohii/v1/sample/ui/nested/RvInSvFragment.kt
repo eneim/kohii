@@ -21,17 +21,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_scrollview_recyclerview.scrollView
 import kotlinx.android.synthetic.main.holder_nested_recyclereview.recyclerView
 
 // Nested RecyclerView in NestedScrollView
-class RvInSvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
+class RvInSvFragment : BaseNestedFragment() {
 
   companion object {
     fun newInstance() = RvInSvFragment()
@@ -66,9 +64,5 @@ class RvInSvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
   override fun onDestroyView() {
     super.onDestroyView()
     snapHelper.attachToRecyclerView(null)
-  }
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
   }
 }

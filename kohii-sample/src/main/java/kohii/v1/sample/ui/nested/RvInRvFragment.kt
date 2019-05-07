@@ -22,16 +22,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
-class RvInRvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
+class RvInRvFragment : BaseNestedFragment() {
 
   companion object {
     fun newInstance() = RvInRvFragment()
@@ -66,10 +64,6 @@ class RvInRvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
     recyclerView.layoutManager = layoutManager
   }
 
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
-  }
-
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     @Suppress("UNCHECKED_CAST")
@@ -84,7 +78,7 @@ class RvInRvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
         val childHolder = holder.container.findViewHolderForAdapterPosition(childPos)
         if (childHolder?.itemView != null) {
           var childLeft = layout.getDecoratedLeft(childHolder.itemView)
-          (childHolder.itemView.layoutParams as? MarginLayoutParams)?.let {
+          (childHolder.itemView.layoutParams as? MarginLayoutParams)?.also {
             childLeft -= it.marginStart
           }
           childLeft -= holder.container.paddingStart

@@ -22,16 +22,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.util.putAll
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 
 class MainAdapter(
   val kohii: Kohii,
-  private val lifecycleOwnerProvider: LifecycleOwnerProvider,
+  private val fragment: Fragment,
   private val items: List<Item>
 ) : Adapter<MainViewHolder>() {
 
@@ -73,7 +73,7 @@ class MainAdapter(
   ) {
     holder.bind(position)
     if (holder is NestRvViewHolder) {
-      kohii.register(lifecycleOwnerProvider, arrayOf(holder.container))
+      kohii.register(fragment, arrayOf(holder.container))
       val adapter = ItemsAdapter(items, kohii)
       holder.container.adapter = adapter
 
@@ -103,7 +103,7 @@ class MainAdapter(
       val childHolder = holder.container.findViewHolderForAdapterPosition(childPos)
       if (childHolder?.itemView != null) {
         var childLeft = layout.getDecoratedLeft(childHolder.itemView)
-        (childHolder.itemView.layoutParams as? MarginLayoutParams)?.let {
+        (childHolder.itemView.layoutParams as? MarginLayoutParams)?.also {
           childLeft -= it.marginStart
         }
         childLeft -= holder.container.paddingStart

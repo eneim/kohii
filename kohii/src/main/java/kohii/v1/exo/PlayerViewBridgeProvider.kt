@@ -41,7 +41,7 @@ class PlayerViewBridgeProvider(
     media: Media,
     config: Playable.Config
   ): Bridge<PlayerView> {
-    return ExoPlayerBridge(
+    return PlayerViewBridge(
         kohii,
         media,
         playerProvider,

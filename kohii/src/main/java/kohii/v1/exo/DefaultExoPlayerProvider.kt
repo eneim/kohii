@@ -25,10 +25,10 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.RenderersFactory
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.util.Util
-import kohii.acquireOrCreate
 import kohii.media.Media
 import kohii.onEachAcquired
 import java.lang.Math.max
@@ -71,23 +71,18 @@ class DefaultExoPlayerProvider(
 
   override fun acquirePlayer(media: Media): Player {
     val drmSessionManager = drmSessionManagerProvider?.provideDrmSessionManager(media)
-    if (drmSessionManager == null) { // No DRM support requires, use Pool to cache plain Player.
-      return plainPlayerPool.acquireOrCreate {
-        KohiiPlayer(
-            context,
-            renderersFactory,
-            trackSelector,
-            loadControl,
-            bandwidthMeterFactory.createBandwidthMeter(),
-            null,
-            Util.getLooper()
-        ).also {
-          it.setAudioAttributes(it.audioAttributes, true)
-        }
-      }
+    val result = if (drmSessionManager == null) {
+      plainPlayerPool.acquire() ?: KohiiPlayer(
+          context,
+          renderersFactory,
+          trackSelector,
+          loadControl,
+          bandwidthMeterFactory.createBandwidthMeter(),
+          null,
+          Util.getLooper()
+      )
     } else {
-      // Need DRM support, we'd better use fresh Player instances.
-      return KohiiPlayer(
+      KohiiPlayer(
           context,
           renderersFactory,
           trackSelector,
@@ -96,10 +91,12 @@ class DefaultExoPlayerProvider(
           drmSessionManager,
           Util.getLooper()
       ).also {
-        it.setAudioAttributes(it.audioAttributes, true)
         drmPlayerCache[it] = System.currentTimeMillis()
       }
     }
+
+    (result as? SimpleExoPlayer)?.also { it.setAudioAttributes(it.audioAttributes, true) }
+    return result
   }
 
   override fun releasePlayer(
