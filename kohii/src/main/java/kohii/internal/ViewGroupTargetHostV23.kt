@@ -24,18 +24,18 @@ import kohii.v1.PlaybackManager
 
 @RequiresApi(23)
 internal open class ViewGroupTargetHostV23(
-  override val host: ViewGroup,
+  host: ViewGroup,
   manager: PlaybackManager
 ) : ViewGroupTargetHostBase(host, manager), OnScrollChangeListener {
 
   override fun onAdded() {
     super.onAdded()
-    host.setOnScrollChangeListener(this)
+    actualHost.setOnScrollChangeListener(this)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    host.setOnScrollChangeListener(null as OnScrollChangeListener?)
+    actualHost.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
   override fun onScrollChange(
@@ -46,19 +46,5 @@ internal open class ViewGroupTargetHostV23(
     oldScrollY: Int
   ) {
     manager.dispatchRefreshAll()
-  }
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is ViewGroupTargetHostV23) return false
-    if (!super.equals(other)) return false
-    if (host != other.host) return false
-    return true
-  }
-
-  override fun hashCode(): Int {
-    var result = super.hashCode()
-    result = 31 * result + host.hashCode()
-    return result
   }
 }

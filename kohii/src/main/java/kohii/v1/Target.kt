@@ -18,13 +18,13 @@ package kohii.v1
 
 // A Target definition for a specific Container type.
 // Useful when use with LazyViewPlayback.
-interface Target<CONTAINER, PLAYER> {
+interface Target<CONTAINER : Any, OUTPUT : Any> {
 
   fun requireContainer(): CONTAINER
 
-  fun attachPlayer(player: PLAYER)
+  fun attachOutputHolder(output: OUTPUT)
 
   // Returning true if the Player has done anything,
   // For example: ViewGroup remove the PlayerView.
-  fun detachPlayer(player: PLAYER): Boolean
+  fun detachOutputHolder(output: OUTPUT): Boolean
 }

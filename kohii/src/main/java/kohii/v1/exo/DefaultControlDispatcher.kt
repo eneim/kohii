@@ -24,17 +24,21 @@ import kohii.v1.PlaybackManager
 
 open class DefaultControlDispatcher(
   private val manager: PlaybackManager,
-  private val playerView: PlayerView
+  private val playerView: PlayerView,
+  private val startBySystem: Boolean = true,
+  private val pauseBySystem: Boolean = true
 ) : ControlDispatcher, Controller {
 
-  override fun allowsSystemControl() = true
+  override fun pauseBySystem() = this.pauseBySystem
+
+  override fun startBySystem() = this.startBySystem
 
   override fun dispatchSeekTo(
     player: Player?,
     windowIndex: Int,
     positionMs: Long
   ): Boolean {
-    return manager.findPlaybackForPlayer(playerView)?.let {
+    return manager.findPlaybackForOutputHolder(playerView)?.let {
       it.seekTo(positionMs)
       true
     } ?: false
@@ -51,7 +55,7 @@ open class DefaultControlDispatcher(
     player: Player?,
     playWhenReady: Boolean
   ): Boolean {
-    return manager.findPlaybackForPlayer(playerView)?.let {
+    return manager.findPlaybackForOutputHolder(playerView)?.let {
       if (playWhenReady) manager.play(it)
       else manager.pause(it)
       true
@@ -62,7 +66,7 @@ open class DefaultControlDispatcher(
     player: Player?,
     repeatMode: Int
   ): Boolean {
-    return manager.findPlaybackForPlayer(playerView)?.let {
+    return manager.findPlaybackForOutputHolder(playerView)?.let {
       it.repeatMode = repeatMode
       true
     } ?: false
@@ -72,7 +76,7 @@ open class DefaultControlDispatcher(
     player: Player?,
     reset: Boolean
   ): Boolean {
-    return manager.findPlaybackForPlayer(playerView)?.let {
+    return manager.findPlaybackForOutputHolder(playerView)?.let {
       it.release()
       true
     } ?: false

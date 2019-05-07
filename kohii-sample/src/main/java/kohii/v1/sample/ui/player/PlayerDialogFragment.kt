@@ -24,10 +24,8 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
 import kohii.v1.Rebinder
@@ -35,7 +33,7 @@ import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
-class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, Callback {
+class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
 
   companion object {
     private const val KEY_INIT_DATA = "kohii::player::init_data"
@@ -62,7 +60,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, 
   }
 
   var rebinder: Rebinder? = null
-  var playback: Playback<*, *>? = null
+  var playback: Playback<*>? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog = super.onCreateDialog(savedInstanceState)
@@ -91,34 +89,24 @@ class PlayerDialogFragment : AppCompatDialogFragment(), LifecycleOwnerProvider, 
     super.onStart()
     val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
     this.rebinder = arguments?.getParcelable(KEY_REBINDER)
-    this.rebinder?.rebind(kohii, playerView) {
-      it.addCallback(this)
+    this.rebinder?.rebind(kohii, playerView, config = Playback.Config(callback = this)) {
       playback = it
     }
   }
 
-  override fun onActive(playback: Playback<*, *>) {
+  override fun onActive(playback: Playback<*>) {
     (parentFragment as? Callback)?.onDialogActive()
   }
 
   // Would be called after onStop()
-  override fun onInActive(playback: Playback<*, *>) {
-    this.rebinder?.let {
+  override fun onInActive(playback: Playback<*>) {
+    this.rebinder?.also {
       (parentFragment as? Callback)?.onDialogInActive(it)
     }
-  }
-
-  override fun onStop() {
-    super.onStop()
-    playback?.removeCallback(this@PlayerDialogFragment)
   }
 
   override fun onDestroyView() {
     super.onDestroyView()
     playback = null
-  }
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
   }
 }

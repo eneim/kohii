@@ -17,10 +17,11 @@
 package kohii.v1
 
 // These scopes will be used for global actions.
-enum class Scope(@Suppress("unused") val priority: Int) {
+@Suppress("unused")
+enum class Scope(val priority: Int) {
   GLOBAL(1),
   ACTIVITY(2),
   MANAGER(3),
-  TARGETHOST(4),
+  HOST(4),
   PLAYBACK(5)
 }

@@ -21,62 +21,75 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
+import androidx.core.view.ViewCompat
 import kotlin.math.max
 
 /**
  * @author eneim (2018/06/24).
  */
-open class ViewPlayback<V : View, PLAYER>(
+open class ViewPlayback<V : View, OUTPUT : Any>(
   kohii: Kohii,
-  playable: Playable<PLAYER>,
+  playable: Playable<OUTPUT>,
   manager: PlaybackManager,
-  targetHost: TargetHost,
   target: V,
   options: Config
-) : Playback<V, PLAYER>(
+) : Playback<OUTPUT>(
     kohii,
     playable,
     manager,
-    targetHost,
     target,
     options
 ) {
 
+  private val keepScreenOnListener by lazy {
+    object : PlaybackEventListener {
+
+      override fun beforePlay(playback: Playback<*>) {
+        target.keepScreenOn = true
+      }
+
+      override fun afterPause(playback: Playback<*>) {
+        target.keepScreenOn = false
+      }
+
+      override fun onCompleted(playback: Playback<*>) {
+        target.keepScreenOn = false
+      }
+    }
+  }
+
   // For debugging purpose only.
   private val debugListener: PlaybackEventListener by lazy {
     object : PlaybackEventListener {
-      override fun onFirstFrameRendered(playback: Playback<*, *>) {
+      override fun onFirstFrameRendered(playback: Playback<*>) {
         Log.d(TAG, "first frame: ${this@ViewPlayback}")
       }
 
       override fun onBuffering(
-        playback: Playback<*, *>,
+        playback: Playback<*>,
         playWhenReady: Boolean
       ) {
         Log.d(TAG, "buffering: ${this@ViewPlayback}")
       }
 
-      override fun beforePlay(playback: Playback<*, *>) {
+      override fun beforePlay(playback: Playback<*>) {
         Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
-        target.keepScreenOn = true
       }
 
-      override fun onPlaying(playback: Playback<*, *>) {
+      override fun onPlaying(playback: Playback<*>) {
         Log.d(TAG, "playing: ${this@ViewPlayback}")
       }
 
-      override fun onPaused(playback: Playback<*, *>) {
+      override fun onPaused(playback: Playback<*>) {
         Log.w(TAG, "paused: ${this@ViewPlayback}")
       }
 
-      override fun afterPause(playback: Playback<*, *>) {
+      override fun afterPause(playback: Playback<*>) {
         Log.w(TAG, "afterPause: ${this@ViewPlayback}")
-        target.keepScreenOn = false
       }
 
-      override fun onCompleted(playback: Playback<*, *>) {
-        Log.d("Kohii:PB", "ended: ${this@ViewPlayback}")
-        target.keepScreenOn = false
+      override fun onCompleted(playback: Playback<*>) {
+        Log.d(TAG, "ended: ${this@ViewPlayback}")
       }
     }
   }
@@ -84,12 +97,17 @@ open class ViewPlayback<V : View, PLAYER>(
   // TODO [20190112] deal with scaled/transformed View and/or its Parent.
   override val token: ViewToken
     get() {
+      val viewTarget = target as View
       val playerRect = Rect()
-      val visible = target.getGlobalVisibleRect(playerRect, Point())
+      if (!ViewCompat.isAttachedToWindow(viewTarget)) {
+        return ViewToken(this.config, playerRect, -1F)
+      }
+
+      val visible = viewTarget.getGlobalVisibleRect(playerRect, Point())
       if (!visible) return ViewToken(this.config, playerRect, -1F)
 
       val drawRect = Rect()
-      target.getDrawingRect(drawRect)
+      viewTarget.getDrawingRect(drawRect)
       val drawArea = drawRect.width() * drawRect.height()
 
       var offset = 0f
@@ -104,17 +122,19 @@ open class ViewPlayback<V : View, PLAYER>(
   @CallSuper
   override fun onAdded() {
     super.onAdded()
+    if (config.keepScreenOn) super.addPlaybackEventListener(keepScreenOnListener)
     if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
   @CallSuper
   override fun onRemoved() {
     if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
+    if (config.keepScreenOn) super.removePlaybackEventListener(keepScreenOnListener)
     super.onRemoved()
   }
 
   override fun compareWidth(
-    other: Playback<*, *>,
+    other: Playback<*>,
     orientation: Int
   ): Int {
     if (other !is ViewPlayback<*, *>) {
@@ -144,8 +164,8 @@ open class ViewPlayback<V : View, PLAYER>(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override val playerView: PLAYER?
-    get() = this.target as? PLAYER
+  override val outputHolder: OUTPUT?
+    get() = this.target as? OUTPUT
 
   // Location on screen, with visible offset within target's parent.
   data class ViewToken constructor(

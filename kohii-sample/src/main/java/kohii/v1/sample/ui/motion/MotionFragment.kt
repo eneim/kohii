@@ -22,9 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LifecycleOwner
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -37,7 +35,7 @@ import kotlinx.android.synthetic.main.fragment_motion.scrollView
  * @author eneim (2018/07/15).
  */
 @Keep
-class MotionFragment : BaseFragment(), Presenter, LifecycleOwnerProvider {
+class MotionFragment : BaseFragment(), Presenter {
 
   companion object {
     fun newInstance() = MotionFragment()
@@ -85,7 +83,7 @@ class MotionFragment : BaseFragment(), Presenter, LifecycleOwnerProvider {
     video: Video
   ) {
     val rebinder = container.getTag(R.id.motion_view_tag)
-    (rebinder as? Rebinder)?.let {
+    (rebinder as? Rebinder)?.also {
       startActivity(
           PlayerActivity.createIntent(
               requireContext(),
@@ -101,9 +99,5 @@ class MotionFragment : BaseFragment(), Presenter, LifecycleOwnerProvider {
 
   override fun requireProvider(): Kohii {
     return Kohii[this]
-  }
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return viewLifecycleOwner
   }
 }

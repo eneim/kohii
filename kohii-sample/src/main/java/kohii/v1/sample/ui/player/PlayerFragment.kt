@@ -22,11 +22,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.LifecycleOwner
 import androidx.transition.TransitionInflater
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Prioritized
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
@@ -39,7 +37,7 @@ import kotlinx.android.synthetic.main.fragment_player.playerView
  *
  * @author eneim (2018/06/26).
  */
-class PlayerFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
+open class PlayerFragment : BaseFragment(), Prioritized {
 
   companion object {
     private const val KEY_INIT_DATA = "kohii:fragment:player:init_data"
@@ -117,9 +115,5 @@ class PlayerFragment : BaseFragment(), LifecycleOwnerProvider, Prioritized {
         }
       }
     })
-  }
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return viewLifecycleOwner
   }
 }

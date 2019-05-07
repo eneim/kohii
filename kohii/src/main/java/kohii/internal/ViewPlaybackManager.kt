@@ -16,13 +16,12 @@
 
 package kohii.internal
 
-import kohii.v1.ActivityContainer
+import kohii.v1.PlaybackManagerGroup
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.PlaybackManager
 
 internal class ViewPlaybackManager(
   kohii: Kohii,
-  parent: ActivityContainer,
-  provider: LifecycleOwnerProvider
+  parent: PlaybackManagerGroup,
+  provider: Any
 ) : PlaybackManager(kohii, parent, provider)

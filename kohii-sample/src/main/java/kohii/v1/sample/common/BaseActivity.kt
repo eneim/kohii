@@ -25,7 +25,8 @@ import androidx.appcompat.app.AppCompatActivity
  */
 abstract class BaseActivity : AppCompatActivity() {
 
-  private var logTag: String = ""
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected lateinit var logTag: String
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

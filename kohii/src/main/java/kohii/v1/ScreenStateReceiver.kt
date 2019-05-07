@@ -21,14 +21,17 @@ import android.content.Context
 import android.content.Intent
 
 class ScreenStateReceiver : BroadcastReceiver() {
+
   override fun onReceive(
     context: Context?,
     intent: Intent?
   ) {
-    if (intent?.action.equals(Intent.ACTION_SCREEN_OFF)) {
-      // TODO pause all?
-    } else if (intent?.action.equals(Intent.ACTION_SCREEN_ON)) {
-      // TODO restart all?
+    if (context != null && intent != null) {
+      if (intent.action == Intent.ACTION_SCREEN_OFF) {
+        Kohii[context].pause(null, Scope.GLOBAL)
+      } else if (intent.action == Intent.ACTION_USER_PRESENT) {
+        Kohii[context].resume(null, Scope.GLOBAL)
+      }
     }
   }
 }

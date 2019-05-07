@@ -46,8 +46,19 @@ android {
   }
 
   testOptions {
-    unitTests.includeAndroidResources = true
+    unitTests {
+      includeAndroidResources = true
+    }
   }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+}
+
+configurations {
+  all*.exclude group: 'com.google.guava', module: 'listenablefuture'
 }
 
 dependencies {
@@ -58,27 +69,53 @@ dependencies {
 
   implementation libraries.kotlin.stdlib
   implementation libraries.androidx.core
+  implementation libraries.androidx.collectionktx
   implementation libraries.androidx.fragmentktx
   implementation libraries.androidx.viewpager2
-  // implementation libraries.androidx.appcompat
-  // implementation libraries.androidx.recyclerview
+  implementation libraries.androidx.appcompat
+  implementation libraries.androidx.recyclerview
   implementation libraries.androidx.material
   implementation libraries.androidx.lifecycle
   implementation libraries.androidx.lifecycleService
   kapt libraries.androidx.lifecycleCompiler
 
+  // implementation "androidx.media2:media2:1.0.0-alpha04"
   // implementation "androidx.leanback:leanback:1.1.0-alpha01"
-
-  // testImplementation libraries.junit
-  androidTestImplementation libraries.supporttest.runner
-  androidTestImplementation libraries.espresso.core
 
   // Required -- JUnit 4 framework
   testImplementation 'junit:junit:4.12'
-  // Optional -- Robolectric environment
-  testImplementation 'androidx.test:core:1.1.0'
   // Optional -- Mockito framework
-  testImplementation 'org.mockito:mockito-core:2.23.0'
+  // testImplementation 'org.mockito:mockito-core:2.24.0'
+  testImplementation "org.robolectric:robolectric:4.2.1"
+  testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+
+  // Core library
+  androidTestImplementation libraries.kotlin.stdlib
+  androidTestImplementation libraries.androidx.recyclerview
+  androidTestImplementation 'androidx.test:core:1.1.0'
+
+  // AndroidJUnitRunner and JUnit Rules
+  androidTestImplementation 'androidx.test:runner:1.1.1'
+  androidTestImplementation 'androidx.test:rules:1.1.1'
+
+  // Assertions
+  androidTestImplementation 'androidx.test.ext:junit:1.1.0'
+  // androidTestImplementation 'androidx.test.ext:truth:1.1.0'
+  // androidTestImplementation 'com.google.truth:truth:0.42'
+
+  // Espresso dependencies
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+  // androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.1'
+  // androidTestImplementation 'androidx.test.espresso:espresso-intents:3.1.1'
+  // androidTestImplementation 'androidx.test.espresso:espresso-accessibility:3.1.1'
+  // androidTestImplementation 'androidx.test.espresso:espresso-web:3.1.1'
+  // androidTestImplementation 'androidx.test.espresso.idling:idling-concurrent:3.1.1'
+
+  // The following Espresso dependency can be either "implementation"
+  // or "androidTestImplementation", depending on whether you want the
+  // dependency to appear on your APK's compile classpath or the test APK
+  // classpath.
+  // androidTestImplementation 'androidx.test.espresso:espresso-idling-resource:3.1.1'
 }
 
 // Doesn't work well with Kotlin

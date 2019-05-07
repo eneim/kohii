@@ -21,10 +21,8 @@ import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
 import android.os.Parcelable
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
@@ -35,7 +33,7 @@ import kotlinx.android.synthetic.main.activity_player.playerView
 /**
  * @author eneim (2018/08/08).
  */
-class PlayerActivity : BaseActivity(), LifecycleOwnerProvider {
+class PlayerActivity : BaseActivity() {
 
   companion object {
     private const val EXTRA_INIT_DATA = "kohii::player::init_data"
@@ -77,10 +75,6 @@ class PlayerActivity : BaseActivity(), LifecycleOwnerProvider {
       kohii.register(this, arrayOf(playerContainer))
       rebinder.rebind(kohii, this.playerView)
     } else finish()
-  }
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this
   }
 }
 

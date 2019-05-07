@@ -49,7 +49,7 @@ class VideoViewHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
 
   var itemTag: String? = null
-  var playback: Playback<PlayerView, PlayerView>? = null
+  var playback: Playback<PlayerView>? = null
 
   @SuppressLint("SetTextI18n")
   override fun bind(item: Item?) {
@@ -77,15 +77,9 @@ class VideoViewHolder(
                 repeatMode = Player.REPEAT_MODE_ONE
             )
           }
-          .bind(playerView) {
-            it.addCallback(this@VideoViewHolder)
+          .bind(playerView, config = Playback.Config(callback = this@VideoViewHolder)) {
             playback = it
           }
     }
-  }
-
-  override fun onRecycled(success: Boolean) {
-    super.onRecycled(success)
-    playback?.removeCallback(this)
   }
 }

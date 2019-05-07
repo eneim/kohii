@@ -36,7 +36,7 @@ fun Player.getVolumeInfo(): VolumeInfo {
       val volume = this.volume
       VolumeInfo(volume == 0f, volume)
     }
-    else -> throw UnsupportedOperationException(javaClass.simpleName + " doesn't support this.")
+    else -> throw UnsupportedOperationException(javaClass.name + " doesn't support this.")
   }
 }
 
@@ -50,7 +50,7 @@ fun Player.setVolumeInfo(volume: VolumeInfo) {
         this.volume = volume.volume
       }
     }
-    else -> throw UnsupportedOperationException(javaClass.simpleName + " doesn't support this.")
+    else -> throw UnsupportedOperationException(javaClass.name + " doesn't support this.")
   }
 }
 
@@ -79,15 +79,10 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   } while (true)
 }
 
-inline fun <T> Pool<T>.acquireOrCreate(creator: () -> T): T {
-  val value = acquire()
-  return value ?: creator.invoke()
-}
-
 // Apply a transformer on each item, return the first result that suffices the predicate.
 inline fun <T, R> Iterable<T>.takeFirstOrNull(
   transformer: (T) -> R,
-  predicate: (R) -> Boolean
+  predicate: (R) -> Boolean = { it != null } // default predicate
 ): R? {
   for (element in this) {
     val result = transformer.invoke(element)

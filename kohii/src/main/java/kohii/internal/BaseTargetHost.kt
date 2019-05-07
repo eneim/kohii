@@ -17,20 +17,45 @@
 package kohii.internal
 
 import android.view.View
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import kohii.media.VolumeInfo
+import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import kohii.v1.TargetHost
-import kohii.v1.TargetHost.Companion.changed
 import java.util.WeakHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class BaseTargetHost<V : Any>(
-  override val host: V,
-  open val manager: PlaybackManager
-) : TargetHost, View.OnAttachStateChangeListener,
-    View.OnLayoutChangeListener {
+internal abstract class BaseTargetHost<V : Any>(
+  protected val actualHost: V,
+  manager: PlaybackManager
+) : TargetHost(actualHost, manager), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
 
   private val targets = WeakHashMap<View, Any>()
+
+  override val lock = AtomicBoolean(false)
+  override var volumeInfo: VolumeInfo = VolumeInfo()
+
+  private val lazyHashCode by lazy {
+    var result = host.hashCode()
+    result = 31 * result + manager.hashCode()
+    result
+  }
+
+  override fun onAdded() {
+    super.onAdded()
+    val param = (host as? View)?.let {
+      it.layoutParams as? CoordinatorLayout.LayoutParams
+    }
+
+    if (param != null) {
+      // TODO deal with CoordinatorLayout?
+    }
+  }
+
+  override fun onRemoved() {
+    this.targets.clear()
+  }
 
   override fun <T> attachTarget(target: T) {
     if (target is View && !targets.containsKey(target)) {
@@ -38,7 +63,7 @@ abstract class BaseTargetHost<V : Any>(
         this.onViewAttachedToWindow(target)
       }
       target.addOnAttachStateChangeListener(this)
-      targets[target] = TargetHost.PRESENT
+      targets[target] = PRESENT
     }
   }
 
@@ -64,6 +89,30 @@ abstract class BaseTargetHost<V : Any>(
     }
   }
 
+  protected open fun selectByOrientation(
+    candidates: Collection<Playback<*>>,
+    orientation: Int
+  ): Collection<Playback<*>> {
+    val grouped = candidates.groupBy { it.controller != null }
+        .withDefault { emptyList() }
+
+    val manualCandidate by lazy {
+      val sorted = grouped.getValue(true)
+          .sortedWith(comparators.getValue(orientation))
+      val manuallyStarted =
+        sorted.firstOrNull { playback -> manager.kohii.manualPlayableState[playback.playable] == true }
+      return@lazy listOfNotNull(manuallyStarted ?: sorted.firstOrNull())
+    }
+
+    val automaticCandidate by lazy {
+      listOfNotNull(
+          grouped.getValue(false).sortedWith(comparators.getValue(orientation)).firstOrNull()
+      )
+    }
+
+    return if (manualCandidate.isNotEmpty()) manualCandidate else automaticCandidate
+  }
+
   override fun onLayoutChange(
     v: View?,
     left: Int,
@@ -80,9 +129,23 @@ abstract class BaseTargetHost<V : Any>(
     }
   }
 
-  override var volumeInfo: VolumeInfo = VolumeInfo()
-
   override fun toString(): String {
     return "${host.javaClass.simpleName}::${Integer.toHexString(hashCode())}"
   }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is BaseTargetHost<*>) return false
+
+    // Compare references on purpose
+    if (host !== other.host) return false
+    if (manager !== other.manager) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    return lazyHashCode
+  }
+
 }
