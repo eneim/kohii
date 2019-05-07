@@ -28,8 +28,11 @@ import kohii.internal.ViewGroupTargetHostBase
 import kohii.internal.ViewGroupTargetHostV23
 import kohii.internal.ViewPager2TargetHost
 import kohii.internal.ViewPagerTargetHost
-import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
+import kohii.v1.Playback.Companion.BOTH_AXIS_COMPARATOR
+import kohii.v1.Playback.Companion.HORIZONTAL_COMPARATOR
+import kohii.v1.Playback.Companion.VERTICAL_COMPARATOR
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A TargetHost is the representation of a View in Kohii. A TargetHost wraps a View and provides it
@@ -38,7 +41,10 @@ import kohii.media.VolumeInfo
  * Implementation of a TargetHost must correctly override required methods, such as [select], [accepts], ...
  * The [PlaybackManager] will talk to TargetHost to ask for necessary information to update the overall behavior.
  */
-interface TargetHost : Comparable<TargetHost> {
+abstract class TargetHost(
+  val host: Any,
+  val manager: PlaybackManager
+) /* : Comparable<TargetHost> */ {
 
   companion object {
     internal const val VERTICAL = RecyclerView.VERTICAL
@@ -47,29 +53,29 @@ interface TargetHost : Comparable<TargetHost> {
     internal const val NONE_AXIS = -2
 
     // read-only map
-    val comparators = listOf(
-        Pair(HORIZONTAL, Playback.HORIZONTAL_COMPARATOR),
-        Pair(VERTICAL, Playback.VERTICAL_COMPARATOR),
-        Pair(BOTH_AXIS, Playback.BOTH_AXIS_COMPARATOR),
-        Pair(NONE_AXIS, Playback.BOTH_AXIS_COMPARATOR)
-    ).toMap()
+    val comparators = mapOf(
+        HORIZONTAL to HORIZONTAL_COMPARATOR,
+        VERTICAL to VERTICAL_COMPARATOR,
+        BOTH_AXIS to BOTH_AXIS_COMPARATOR,
+        NONE_AXIS to BOTH_AXIS_COMPARATOR
+    )
 
     internal fun createTargetHost(
-      view: Any,
+      host: Any,
       manager: PlaybackManager
     ): TargetHost? {
-      return when (view) {
+      return when (host) {
         is RecyclerView ->
-          RecyclerViewTargetHost(view, manager)
+          RecyclerViewTargetHost(host, manager)
         is NestedScrollView ->
-          NestedScrollViewTargetHost(view, manager)
+          NestedScrollViewTargetHost(host, manager)
         is ViewPager ->
-          ViewPagerTargetHost(view, manager)
+          ViewPagerTargetHost(host, manager)
         is ViewPager2 ->
-          ViewPager2TargetHost(view, manager)
+          ViewPager2TargetHost(host, manager)
         is ViewGroup ->
-          if (Build.VERSION.SDK_INT >= 23) ViewGroupTargetHostV23(view, manager)
-          else ViewGroupTargetHostBase(view, manager)
+          if (Build.VERSION.SDK_INT >= 23) ViewGroupTargetHostV23(host, manager)
+          else ViewGroupTargetHostBase(host, manager)
         else -> null
       }
     }
@@ -90,46 +96,38 @@ interface TargetHost : Comparable<TargetHost> {
     }
   }
 
-  override fun compareTo(other: TargetHost): Int {
-    return 0 // all are equal by default.
-  }
+  // state
+  internal abstract val lock: AtomicBoolean
 
-  // The ViewGroup
-  val host: Any
+  internal abstract var volumeInfo: VolumeInfo
 
-  var volumeInfo: VolumeInfo
+  internal open fun onAdded() {}
 
-  fun onAdded() {}
+  internal open fun onRemoved() {}
 
-  fun onRemoved() {}
+  internal abstract fun <T> attachTarget(target: T)
 
-  // Call when the PlaybackManager is attached.
-  fun onManagerAttached() {}
+  internal abstract fun <T> detachTarget(target: T)
 
-  // Call when the PlaybackManager is detached.
-  fun onManagerDetached() {}
-
-  fun <T> attachTarget(target: T)
-
-  fun <T> detachTarget(target: T)
-
-  // Called by Manager when creating Playback object for the Target.
-  fun accepts(target: Any): Boolean
+  /**
+   * Returns true if this TargetHost accepts a container. When a TargetHost accepts a container, it keeps track
+   * of that container's state and send signal to the PlaybackManager when needed. A PlaybackManager has the
+   * power to change a container's Host base on certain situation.
+   */
+  internal abstract fun accepts(container: Any): Boolean
 
   // Must contain and allow it to play.
-  fun allowsToPlay(playback: Playback<*>): Boolean
+  internal abstract fun allowsToPlay(playback: Playback<*>): Boolean
 
-  fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+  internal open fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
     return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
   }
 
-  // Update PlaybackInfo for TargetHost-scoped
-  // Ensure that any newly added Playback has the same init state as this info.
-  fun applyPlaybackInfo(playbackInfo: PlaybackInfo) {
-    // TODO("Implement this")
-  }
+  data class Builder(
+    val host: Any,
+    val volumeInfo: VolumeInfo? = null
+  ) {
 
-  fun applyVolumeInfo(volumeInfo: VolumeInfo) {
-    // TODO("Implement this")
+    internal fun build(manager: PlaybackManager) = createTargetHost(this.host, manager)
   }
 }

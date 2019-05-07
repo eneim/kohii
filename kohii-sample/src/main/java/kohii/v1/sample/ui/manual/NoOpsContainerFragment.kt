@@ -20,19 +20,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import kohii.v1.exo.DefaultControlDispatcher
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
-import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView
+import kotlinx.android.synthetic.main.fragment_manual_scroll_view.playerView1
+import kotlinx.android.synthetic.main.fragment_manual_scroll_view.playerView2
+import kotlinx.android.synthetic.main.fragment_manual_scroll_view.scrollView
 
-class NoOpsContainerFragment : BaseFragment(), LifecycleOwnerProvider {
+class NoOpsContainerFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = NoOpsContainerFragment()
@@ -41,17 +40,18 @@ class NoOpsContainerFragment : BaseFragment(), LifecycleOwnerProvider {
     const val videoUrl = "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8"
   }
 
-  private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
+  private val videoTag1 by lazy { "${javaClass.canonicalName}::$videoUrl::1" }
+  private val videoTag2 by lazy { "${javaClass.canonicalName}::$videoUrl::2" }
+
   private lateinit var kohii: Kohii
   private lateinit var manager: PlaybackManager
-  private lateinit var playback: Playback<*>
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    return inflater.inflate(R.layout.fragment_scroll_view, container, false)
+    return inflater.inflate(R.layout.fragment_manual_scroll_view, container, false)
   }
 
   override fun onViewCreated(
@@ -65,16 +65,29 @@ class NoOpsContainerFragment : BaseFragment(), LifecycleOwnerProvider {
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = videoTag, repeatMode = Playable.REPEAT_MODE_ONE) }
+        .config { Playable.Config(tag = videoTag1, repeatMode = Playable.REPEAT_MODE_ONE) }
         .bind(
-            playerView,
-            config = Playback.Config(controller = DefaultControlDispatcher(manager, playerView))
-        ) {
-          playback = it
-        }
-  }
+            playerView1,
+            config = Playback.Config(
+                controller = DefaultControlDispatcher(
+                    manager, playerView1,
+                    startBySystem = false,
+                    pauseBySystem = false
+                )
+            )
+        )
 
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
+    kohii.setUp(videoUrl)
+        .config { Playable.Config(tag = videoTag2, repeatMode = Playable.REPEAT_MODE_ONE) }
+        .bind(
+            playerView2,
+            config = Playback.Config(
+                controller = DefaultControlDispatcher(
+                    manager, playerView2,
+                    startBySystem = true,
+                    pauseBySystem = false
+                )
+            )
+        )
   }
 }

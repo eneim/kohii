@@ -16,13 +16,15 @@
 
 package kohii.v1.sample
 
+import android.content.res.Configuration
 import android.os.Bundle
+import android.view.View
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseActivity
-import kohii.v1.sample.ui.MainFragment
+import kohii.v1.sample.ui.debug.DebugFragment
+import kohii.v1.sample.ui.echo.EchoFragment
+import kohii.v1.sample.ui.main.MainFragment
 import kohii.v1.sample.ui.overlay.OverlayViewFragment
-import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
-import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfoHolder
 import kotlinx.android.synthetic.main.main_activity.toolbar
 
 class MainActivity : BaseActivity(), PlayerInfoHolder {
@@ -43,7 +45,7 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
       supportFragmentManager.beginTransaction()
           .replace(
               R.id.fragmentContainer,
-              OverlayViewFragment.newInstance(), MainFragment::class.java.simpleName
+              EchoFragment.newInstance(), MainFragment::class.java.simpleName
           )
           .commit()
     }
@@ -55,4 +57,32 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
       super.onBackPressed()
     }
   }
+
+  override fun onPictureInPictureModeChanged(
+    isInPictureInPictureMode: Boolean,
+    newConfig: Configuration?
+  ) {
+    super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+    val decorView = window.decorView
+    if (isInPictureInPictureMode) {
+      decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+          View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+          View.SYSTEM_UI_FLAG_FULLSCREEN
+    } else {
+      decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+    }
+  }
+}
+
+data class PlayerInfo(
+  val adapterPos: Int,
+  val viewTop: Int
+)
+
+// Implemented by host (Activity) to manage shared elements transition information.
+interface PlayerInfoHolder {
+
+  fun recordPlayerInfo(info: PlayerInfo?)
+
+  fun fetchPlayerInfo(): PlayerInfo?
 }

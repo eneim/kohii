@@ -16,13 +16,25 @@
 
 package kohii.v1
 
+import kohii.Beta
 import kohii.media.Media
 
-class Binder<OUTPUT>(
+// TODO better Config overriding mechanism.
+class Binder<OUTPUT : Any>(
   private val kohii: Kohii,
-  private val playableCreator: PlayableCreator<OUTPUT>,
-  private val media: Media
+  private val media: Media,
+  private val playableCreator: PlayableCreator<OUTPUT>
 ) {
+
+  @Beta
+  data class Config(
+    var tag: Any? = null
+  ) {
+
+    operator fun invoke(config: Config) {
+      config.tag = this.tag
+    }
+  }
 
   var playableConfig = Playable.Config()
 
@@ -32,36 +44,60 @@ class Binder<OUTPUT>(
     return this
   }
 
+  @Beta
+  val config = Config()
+
+  @Beta
+  inline fun configs(handle: Config.() -> Unit): Binder<OUTPUT> {
+    handle.invoke(this.config)
+    return this
+  }
+
+  fun <CONTAINER : Any> bind(
+    target: Target<CONTAINER, OUTPUT>,
+    config: Playback.Config = Playback.Config(), // default
+    cb: ((Playback<OUTPUT>) -> Unit)? = null
+  ): Rebinder? {
+    val tag = playableConfig.tag
+    val playable = requestPlayable(tag)
+    playable.bind(target, config, cb)
+    return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
+  }
+
   fun <CONTAINER : Any> bind(
     target: CONTAINER,
     config: Playback.Config = Playback.Config(), // default
     cb: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
     val tag = playableConfig.tag
-    val toCreate: Playable<OUTPUT> by lazy {
-      this.playableCreator.createPlayable(
-          kohii, media, playableConfig
-      )
-    }
-
-    val playable = if (tag != null) {
-      val cache = kohii.mapTagToPlayable[tag]
-      if (cache?.second !== playableCreator.outputHolderType) {
-        // cached Playable of different output type will be replaced.
-        toCreate.also {
-          kohii.mapTagToPlayable[tag] = Pair(it, playableCreator.outputHolderType)
-          cache?.first?.release()
-        }
-      } else {
-        @Suppress("UNCHECKED_CAST")
-        cache.first as Playable<OUTPUT>
-      }
-    } else {
-      toCreate
-    }
-
-    kohii.mapPlayableToManager[playable] = null
+    val playable = requestPlayable(tag)
     playable.bind(target, config, cb)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
+  }
+
+  private fun requestPlayable(tag: Any?): Playable<OUTPUT> {
+    val toCreate: Playable<OUTPUT> by lazy {
+      this.playableCreator.createPlayable(kohii, media, playableConfig)
+    }
+
+    val playable =
+      if (tag != null) {
+        val cache = kohii.mapTagToPlayable[tag]
+        if (cache?.second !== playableCreator.outputHolderType) {
+          // cached Playable of different output type will be replaced.
+          toCreate.also {
+            kohii.mapTagToPlayable[tag] = Pair(it, playableCreator.outputHolderType)
+            cache?.first?.release()
+          }
+        } else {
+          @Suppress("UNCHECKED_CAST")
+          cache.first as Playable<OUTPUT>
+        }
+      } else {
+        toCreate
+      }
+
+    kohii.mapPlayableToManager[playable] = null
+    return playable
   }
 }

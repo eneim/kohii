@@ -21,7 +21,7 @@ import kohii.media.Media
 import kohii.media.MediaItem
 
 // Use this instead of Kohii instance to provide more customizable detail.
-abstract class PlayableCreator<OUTPUT>(
+abstract class PlayableCreator<OUTPUT : Any>(
   protected val kohii: Kohii,
   internal val outputHolderType: Class<OUTPUT>
 ) : Cleanable {
@@ -31,12 +31,12 @@ abstract class PlayableCreator<OUTPUT>(
     kohii.cleanables.add(this)
   }
 
-  open fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
+  fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
 
-  open fun setUp(url: String) = this.setUp(Uri.parse(url))
+  fun setUp(url: String) = this.setUp(Uri.parse(url))
 
-  open fun setUp(media: Media): Binder<OUTPUT> {
-    return Binder(kohii, this, media)
+  fun setUp(media: Media): Binder<OUTPUT> {
+    return Binder(kohii, media, this)
   }
 
   abstract fun createPlayable(

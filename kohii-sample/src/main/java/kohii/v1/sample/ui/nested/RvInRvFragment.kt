@@ -22,16 +22,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
-class RvInRvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
+class RvInRvFragment : BaseNestedFragment() {
 
   companion object {
     fun newInstance() = RvInRvFragment()
@@ -64,10 +62,6 @@ class RvInRvFragment : BaseNestedFragment(), LifecycleOwnerProvider {
     layoutManager = LinearLayoutManager(requireContext())
     layoutManager.isItemPrefetchEnabled = true
     recyclerView.layoutManager = layoutManager
-  }
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
   }
 
   override fun onSaveInstanceState(outState: Bundle) {

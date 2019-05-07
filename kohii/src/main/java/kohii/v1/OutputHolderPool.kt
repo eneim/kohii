@@ -23,7 +23,8 @@ import kohii.getOrPut
 import kohii.media.Media
 import kohii.onEachAcquired
 
-open class OutputHolderPool<CONTAINER, OUTPUT>(
+// A Pool must be kept in Activity's lifecycle. Because it has access to View created inside that.
+open class OutputHolderPool<CONTAINER : Any, OUTPUT : Any>(
   private val poolSize: Int,
   private val creator: OutputHolderCreator<CONTAINER, OUTPUT>
 ) : Cleanable {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,41 +20,92 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.Keep
-import androidx.lifecycle.LifecycleOwner
+import androidx.core.view.doOnLayout
+import kohii.media.VolumeInfo
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
+import kohii.v1.Playable
+import kohii.v1.Playback
+import kohii.v1.PlaybackEventListener
+import kohii.v1.Scope
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kotlinx.android.synthetic.main.fragment_debug.container
+import kotlinx.android.synthetic.main.fragment_debug.muteSwitch
+import kotlinx.android.synthetic.main.fragment_debug.playerView1
+import kotlinx.android.synthetic.main.fragment_debug.playerView2
+import kotlinx.android.synthetic.main.fragment_debug.scopes
+import kotlinx.android.synthetic.main.fragment_debug.scrollView
 
-/**
- * @author eneim (2018/07/13).
- */
-@Suppress("unused")
-@Keep
-class DebugFragment : BaseFragment(), LifecycleOwnerProvider {
+class DebugFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = DebugFragment()
-    const val videoUrl = "https://storage.googleapis.com/wvmedia/clear/h264/tears/tears_hd.mpd"
   }
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View {
+  ): View? {
     return inflater.inflate(R.layout.fragment_debug, container, false)
   }
 
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
-    // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    Kohii[this].register(this, arrayOf(container))
-  }
+  lateinit var playback: Playback<*>
 
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return viewLifecycleOwner
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    val kohii = Kohii[this]
+    val manager = kohii.register(this, scrollView)
+
+    kohii.setUp(videoUrl)
+        .config { Playable.Config(tag = "$videoUrl::1") }
+        .bind(playerView1) {
+          it.addPlaybackEventListener(object : PlaybackEventListener {
+            override fun onFirstFrameRendered(playback: Playback<*>) {
+              super.onFirstFrameRendered(playback)
+              this@DebugFragment.playback = playback
+            }
+          })
+        }
+
+    kohii.setUp(videoUrl)
+        .config { Playable.Config(tag = "$videoUrl::2") }
+        .bind(playerView2) {
+          it.addPlaybackEventListener(object : PlaybackEventListener {
+            override fun onFirstFrameRendered(playback: Playback<*>) {
+              super.onFirstFrameRendered(playback)
+              this@DebugFragment.playback = playback
+            }
+          })
+        }
+
+    val scopeMap = mapOf(
+        R.id.scopePlayback to Scope.PLAYBACK,
+        R.id.scopeHost to Scope.HOST,
+        R.id.scopeManager to Scope.MANAGER
+    )
+
+    var currentScope: Scope = scopeMap[scopes.checkedRadioButtonId] ?: Scope.PLAYBACK.also {
+      scopes.check(R.id.scopePlayback)
+    }
+
+    val unmuteVolume = VolumeInfo()
+    val muteVolume = VolumeInfo(true)
+
+    scopes.setOnCheckedChangeListener { _, checkedId ->
+      currentScope = scopeMap[checkedId] ?: error("No scope found for $checkedId")
+    }
+
+    view.doOnLayout {
+      muteSwitch.setOnCheckedChangeListener { _, isChecked ->
+        if (isChecked) {
+          manager.applyVolumeInfo(muteVolume, playback, currentScope)
+        } else {
+          manager.applyVolumeInfo(unmuteVolume, playback, currentScope)
+        }
+      }
+    }
   }
 }

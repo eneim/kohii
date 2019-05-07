@@ -22,7 +22,6 @@ import com.google.android.exoplayer2.Player
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.v1.Playback.Callback
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
@@ -32,7 +31,8 @@ import kotlin.annotation.AnnotationRetention.SOURCE
  *
  * @author eneim (2018/06/24).
  */
-interface Playable<OUTPUT> : Callback {
+// TODO [20190430] Instead of defining output TYPE by parameter, consider to have "allows" method.
+interface Playable<OUTPUT : Any> {
 
   companion object {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
@@ -80,7 +80,7 @@ interface Playable<OUTPUT> : Callback {
 
   fun prepare()
 
-  fun ensureResource()
+  fun ensurePreparation()
 
   fun play()
 
@@ -107,6 +107,14 @@ interface Playable<OUTPUT> : Callback {
     playback: Playback<OUTPUT>,
     player: OUTPUT?
   )
+
+  fun onAdded(playback: Playback<*>) {}
+
+  fun onActive(playback: Playback<*>) {}
+
+  fun onInActive(playback: Playback<*>) {}
+
+  fun onRemoved(playback: Playback<*>) {}
 
   // data class for copying convenience.
   data class Config(

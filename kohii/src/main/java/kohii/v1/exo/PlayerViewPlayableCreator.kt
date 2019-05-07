@@ -38,21 +38,17 @@ import kohii.v1.ViewPlayback
  *
  * Need to give the Config more power. Because Playable lives at global scope, so is instance of this class.
  * Responsibilities:
- * - Allow binding to specific type of Target.
- * - Judge from the target type to build correct Playable.
+ * - Allow binding to specific type of Container.
+ * - Judge from the Container type to build correct Playable.
  */
 class PlayerViewPlayableCreator(
   kohii: Kohii,
-  private val outputHolderCreator: OutputHolderCreator<ViewGroup, PlayerView>,
-  bridgeCreator: (Kohii) -> BridgeProvider<PlayerView>
+  private val outputHolderCreator: OutputHolderCreator<ViewGroup, PlayerView> = PlayerViewCreator(),
+  bridgeCreatorFactory: (Kohii) -> BridgeProvider<PlayerView> = { kohii.defaultBridgeProvider }
 ) : PlayableCreator<PlayerView>(kohii, PlayerView::class.java),
-    PlaybackCreator<Any, PlayerView> {
+    PlaybackCreator<PlayerView> {
 
-  internal constructor(
-    kohii: Kohii
-  ) : this(kohii, PlayerViewCreator(), { kohii.defaultBridgeProvider })
-
-  private val bridgeProvider = bridgeCreator.invoke(kohii)
+  private val bridgeProvider = bridgeCreatorFactory.invoke(kohii)
 
   override fun createPlayable(
     kohii: Kohii,
@@ -62,15 +58,13 @@ class PlayerViewPlayableCreator(
     return PlayerViewPlayable(kohii, media, config, bridgeProvider, this)
   }
 
-  override fun createPlayback(
+  override fun <CONTAINER : Any> createPlayback(
     manager: PlaybackManager,
-    target: Target<Any, PlayerView>,
+    target: Target<CONTAINER, PlayerView>,
     playable: Playable<PlayerView>,
     config: Playback.Config
   ): Playback<PlayerView> {
-    val container = target.requireContainer()
-
-    return when (container) {
+    return when (val container = target.requireContainer()) {
       is PlayerView -> {
         ViewPlayback(
             kohii,
@@ -82,10 +76,11 @@ class PlayerViewPlayableCreator(
       }
 
       is ViewGroup -> {
+        val key = ViewGroup::class.java to PlayerView::class.java
         val outputHolderPool =
-          manager.fetchOutputHolderPool(ViewGroup::class.java, PlayerView::class.java)
+          manager.fetchOutputHolderPool(key)
               ?: OutputHolderPool(2, outputHolderCreator).also {
-                manager.registerOutputHolderPool(it)
+                manager.registerOutputHolderPool(key, it)
               }
 
         @Suppress("UNCHECKED_CAST")
@@ -93,12 +88,12 @@ class PlayerViewPlayableCreator(
             kohii,
             playable,
             manager,
-            target as Target<ViewGroup, PlayerView>,
-            config,
-            outputHolderPool
+            boxedTarget = target as Target<ViewGroup, PlayerView>,
+            options = config,
+            outputHolderPool = outputHolderPool
         )
       }
-      else -> throw IllegalArgumentException("")
+      else -> throw IllegalArgumentException("Unsupported container type: ${container::javaClass}")
     }
   }
 

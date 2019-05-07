@@ -52,13 +52,13 @@
   </FrameLayout>
 
   <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-      android:id="@+id/extendedAction"
+      android:id="@+id/actionButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_margin="8dp"
-      android:text="Toggle volume"
+      android:layout_margin="@dimen/activity_vertical_margin"
+      android:text="Volume"
       app:layout_anchor="@id/recyclerView"
-      app:layout_anchorGravity="bottom|right|end"
+      app:layout_anchorGravity="bottom|end"
       />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

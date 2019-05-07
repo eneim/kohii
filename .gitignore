@@ -32,3 +32,5 @@
 /.idea/markdown-navigator.xml
 /kohii-sample/fabric.properties
 /kohii-sample/google-services.json
+/kohii/src/main/java/.scannerwork/
+/.scannerwork/.sonar_lock

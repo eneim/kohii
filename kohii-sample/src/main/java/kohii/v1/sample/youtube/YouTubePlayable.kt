@@ -33,7 +33,7 @@ class YouTubePlayable(
   media: Media,
   config: Config,
   bridge: Bridge<YouTubePlayerView>,
-  playbackCreator: PlaybackCreator<Any, YouTubePlayerView>
+  playbackCreator: PlaybackCreator<YouTubePlayerView>
 ) : BasePlayable<YouTubePlayerView>(kohii, media, config, bridge, playbackCreator) {
 
   override fun <CONTAINER : Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, YouTubePlayerView> {

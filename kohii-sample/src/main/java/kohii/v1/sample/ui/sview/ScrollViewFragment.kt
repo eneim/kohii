@@ -22,10 +22,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.Playable.Config
 import kohii.v1.Playback
 import kohii.v1.Rebinder
@@ -38,11 +36,11 @@ import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView
 
 @Keep
-class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, LifecycleOwnerProvider {
+class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   companion object {
     const val videoUrl =
-    // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
+      // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
       "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8" // Big Buck Bunny
 
     fun newInstance() = ScrollViewFragment().also {
@@ -122,8 +120,4 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, Lifecy
   }
 
   // END: PlayerDialogFragment.Callback
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
-  }
 }

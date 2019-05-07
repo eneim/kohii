@@ -26,9 +26,9 @@ import kohii.Draft
 @Draft("2019/02/16")
 class NestedScrollBehavior<V : View> : Behavior<V> {
 
-  constructor() : super()
+  internal constructor() : super()
 
-  constructor(
+  internal constructor(
     context: Context?,
     attrs: AttributeSet?
   ) : super(context, attrs)

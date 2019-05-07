@@ -24,14 +24,14 @@ import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.NO_TAG
 import kohii.v1.Playback.Config
 
-// OUTPUT: the 'view' for Bridge
-abstract class BasePlayable<OUTPUT>(
+// OUTPUT is what to render the content to. In Kohii, PlayerView is supported out of the box.
+abstract class BasePlayable<OUTPUT : Any>(
   protected val kohii: Kohii,
   override val media: Media,
   protected val config: Playable.Config,
   protected val bridge: Bridge<OUTPUT>,
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val playbackCreator: PlaybackCreator<*, OUTPUT>
+  protected val playbackCreator: PlaybackCreator<OUTPUT>
 ) : Playable<OUTPUT> {
 
   private var listener: PlayerEventListener? = null
@@ -43,15 +43,15 @@ abstract class BasePlayable<OUTPUT>(
           playWhenReady: Boolean,
           playbackState: Int
         ) {
-          playback.dispatchPlayerStateChanged(playWhenReady, playbackState)
+          playback.onPlayerStateChanged(playWhenReady, playbackState)
         }
 
         override fun onRenderedFirstFrame() {
-          playback.dispatchFirstFrameRendered()
+          playback.onFirstFrameRendered()
         }
 
         override fun onPlayerError(error: ExoPlaybackException?) {
-          Log.e("Kohii:Exo", "Error: ${error?.cause}")
+          Log.e("Kohii::Playable", "Error: ${error?.cause}")
         }
       }.also { this.bridge.addEventListener(it) }
     }
@@ -77,7 +77,6 @@ abstract class BasePlayable<OUTPUT>(
       // There is no other Manager to manage this Playable, and we are removing the last one, so ...
       kohii.releasePlayable(config.tag, this)
     }
-    playback.removeCallback(this)
   }
 
   // Playback.Callback#onActive(Playback)
@@ -87,22 +86,25 @@ abstract class BasePlayable<OUTPUT>(
    */
   override fun onActive(playback: Playback<*>) {
     require(playback.target is ViewGroup) {
-      "${this.javaClass.simpleName} only works with target of type ViewGroup"
+      "${this.javaClass.name} only works with target of type ViewGroup"
     }
   }
 
   // Playback.Callback#onInActive(Playback)
   override fun onInActive(playback: Playback<*>) {
-    // Make sure that the current Manager of this Playable is the same with playback's one, or null.
-    if (kohii.mapPlayableToManager[this] === playback.manager || //
-        kohii.mapPlayableToManager[this] == null
+    // When a Playback becomes inactive, its Playable may be attached to other Playback already.
+    // We only detach the Bridge's PlayerView when the Playable is no longer belong to any Playback,
+    // which is equal to: (1) it is not being managed, or (2) it is being managed by the Playback passed
+    // to this method, and this Playback is being inactive.
+    if (kohii.mapPlayableToManager[this] === playback.manager /* (2) */ ||
+        kohii.mapPlayableToManager[this] == null /* (1) */
     ) {
       // This will release current Video MediaCodec instances, which are expensive to retain.
       this.bridge.playerView = null
     }
   }
 
-  protected abstract fun <CONTAINER: Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, OUTPUT>
+  protected abstract fun <CONTAINER : Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, OUTPUT>
 
   override fun <CONTAINER : Any> bind(
     target: CONTAINER,
@@ -118,24 +120,15 @@ abstract class BasePlayable<OUTPUT>(
     config: Config,
     cb: ((Playback<OUTPUT>) -> Unit)?
   ) {
-    val manager = kohii.findSuitableManager(target.requireContainer())
+    val manager = kohii.findManagerForContainer(target.requireContainer())
         ?: throw IllegalStateException("There is no manager for $target. Forget to register one?")
 
-    @Suppress("UNCHECKED_CAST")
-    val result = this.performBind(
-        manager, target, config,
-        playbackCreator as PlaybackCreator<CONTAINER, OUTPUT>
+    val result = manager.performBindPlayable(
+        this, target, config,
+        playbackCreator
     )
     cb?.invoke(result)
   }
-
-  @Suppress("MemberVisibilityCanBePrivate")
-  protected fun <CONTAINER> performBind(
-    manager: PlaybackManager,
-    target: Target<CONTAINER, OUTPUT>,
-    config: Config,
-    creator: PlaybackCreator<CONTAINER, OUTPUT>
-  ) = manager.performBindPlayable(this, target, config, creator)
 
   override val tag: Any = config.tag ?: NO_TAG
 
@@ -145,14 +138,15 @@ abstract class BasePlayable<OUTPUT>(
       this.bridge.repeatMode = value
     }
 
-  override val isPlaying = this.bridge.isPlaying
+  override val isPlaying: Boolean
+    get() = this.bridge.isPlaying
 
   override fun prepare() {
     this.bridge.prepare(config.prefetch)
   }
 
-  override fun ensureResource() {
-    this.bridge.ensureResource()
+  override fun ensurePreparation() {
+    this.bridge.ensurePreparation()
   }
 
   override fun play() {
@@ -171,7 +165,11 @@ abstract class BasePlayable<OUTPUT>(
     this.bridge.seekTo(positionMs)
   }
 
-  override var playbackInfo = this.bridge.playbackInfo
+  override var playbackInfo
+    get() = this.bridge.playbackInfo
+    set(value) {
+      this.bridge.playbackInfo = value
+    }
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
     return this.bridge.setVolumeInfo(volumeInfo)

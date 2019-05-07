@@ -24,10 +24,14 @@ import kohii.v1.PlaybackManager
 
 open class DefaultControlDispatcher(
   private val manager: PlaybackManager,
-  private val playerView: PlayerView
+  private val playerView: PlayerView,
+  private val startBySystem: Boolean = true,
+  private val pauseBySystem: Boolean = true
 ) : ControlDispatcher, Controller {
 
-  override fun allowsSystemControl() = true
+  override fun pauseBySystem() = this.pauseBySystem
+
+  override fun startBySystem() = this.startBySystem
 
   override fun dispatchSeekTo(
     player: Player?,
