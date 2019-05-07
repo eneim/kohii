@@ -18,7 +18,7 @@ package kohii.v1
 
 // A Target definition for a specific Container type.
 // Useful when use with LazyViewPlayback.
-interface Target<CONTAINER, OUTPUT> {
+interface Target<CONTAINER : Any, OUTPUT : Any> {
 
   fun requireContainer(): CONTAINER
 

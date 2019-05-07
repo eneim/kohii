@@ -24,11 +24,11 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
 import kohii.v1.Kohii
 import kohii.v1.Rebinder
+import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.player.PlayerFragment
 import kohii.v1.sample.ui.rview.BaseViewHolder.OnClickListener
-import kohii.v1.sample.ui.rview.RecyclerViewFragment.PlayerInfo
 import kohii.v1.sample.ui.rview.data.Item
 import java.util.concurrent.atomic.AtomicBoolean
 

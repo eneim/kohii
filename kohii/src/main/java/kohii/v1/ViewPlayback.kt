@@ -21,12 +21,13 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
+import androidx.core.view.ViewCompat
 import kotlin.math.max
 
 /**
  * @author eneim (2018/06/24).
  */
-open class ViewPlayback<V : View, OUTPUT>(
+open class ViewPlayback<V : View, OUTPUT : Any>(
   kohii: Kohii,
   playable: Playable<OUTPUT>,
   manager: PlaybackManager,
@@ -39,6 +40,23 @@ open class ViewPlayback<V : View, OUTPUT>(
     target,
     options
 ) {
+
+  private val keepScreenOnListener by lazy {
+    object : PlaybackEventListener {
+
+      override fun beforePlay(playback: Playback<*>) {
+        target.keepScreenOn = true
+      }
+
+      override fun afterPause(playback: Playback<*>) {
+        target.keepScreenOn = false
+      }
+
+      override fun onCompleted(playback: Playback<*>) {
+        target.keepScreenOn = false
+      }
+    }
+  }
 
   // For debugging purpose only.
   private val debugListener: PlaybackEventListener by lazy {
@@ -56,7 +74,6 @@ open class ViewPlayback<V : View, OUTPUT>(
 
       override fun beforePlay(playback: Playback<*>) {
         Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
-        target.keepScreenOn = true
       }
 
       override fun onPlaying(playback: Playback<*>) {
@@ -69,12 +86,10 @@ open class ViewPlayback<V : View, OUTPUT>(
 
       override fun afterPause(playback: Playback<*>) {
         Log.w(TAG, "afterPause: ${this@ViewPlayback}")
-        target.keepScreenOn = false
       }
 
       override fun onCompleted(playback: Playback<*>) {
-        Log.d("Kohii:PB", "ended: ${this@ViewPlayback}")
-        target.keepScreenOn = false
+        Log.d(TAG, "ended: ${this@ViewPlayback}")
       }
     }
   }
@@ -82,12 +97,17 @@ open class ViewPlayback<V : View, OUTPUT>(
   // TODO [20190112] deal with scaled/transformed View and/or its Parent.
   override val token: ViewToken
     get() {
+      val viewTarget = target as View
       val playerRect = Rect()
-      val visible = (target as View).getGlobalVisibleRect(playerRect, Point())
+      if (!ViewCompat.isAttachedToWindow(viewTarget)) {
+        return ViewToken(this.config, playerRect, -1F)
+      }
+
+      val visible = viewTarget.getGlobalVisibleRect(playerRect, Point())
       if (!visible) return ViewToken(this.config, playerRect, -1F)
 
       val drawRect = Rect()
-      target.getDrawingRect(drawRect)
+      viewTarget.getDrawingRect(drawRect)
       val drawArea = drawRect.width() * drawRect.height()
 
       var offset = 0f
@@ -102,12 +122,14 @@ open class ViewPlayback<V : View, OUTPUT>(
   @CallSuper
   override fun onAdded() {
     super.onAdded()
+    if (config.keepScreenOn) super.addPlaybackEventListener(keepScreenOnListener)
     if (BuildConfig.DEBUG) super.addPlaybackEventListener(this.debugListener)
   }
 
   @CallSuper
   override fun onRemoved() {
     if (BuildConfig.DEBUG) super.removePlaybackEventListener(this.debugListener)
+    if (config.keepScreenOn) super.removePlaybackEventListener(keepScreenOnListener)
     super.onRemoved()
   }
 

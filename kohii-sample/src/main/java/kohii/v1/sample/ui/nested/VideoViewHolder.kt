@@ -77,15 +77,9 @@ class VideoViewHolder(
                 repeatMode = Player.REPEAT_MODE_ONE
             )
           }
-          .bind(playerView) {
-            it.addCallback(this@VideoViewHolder)
+          .bind(playerView, config = Playback.Config(callback = this@VideoViewHolder)) {
             playback = it
           }
     }
-  }
-
-  override fun onRecycled(success: Boolean) {
-    super.onRecycled(success)
-    playback?.removeCallback(this)
   }
 }

@@ -45,10 +45,13 @@ interface PlaybackEventListener {
   ) {
   } // ExoPlayer state: 2
 
+  // TODO rename to onPlay
   fun onPlaying(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: true
 
+  // TODO rename to onPause
   fun onPaused(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: false
 
+  // TODO rename to onEnd
   fun onCompleted(playback: Playback<*>) {} // ExoPlayer state: 4
 
   // Called right before playback.play() is called.

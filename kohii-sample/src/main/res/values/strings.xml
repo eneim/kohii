@@ -127,15 +127,27 @@
     ]]>
   </string>
 
+  <string name="demo_title_recycler_view_1">
+    Kohii + RecyclerView (1)
+  </string>
+
   <string name="demo_desc_recycler_view_1">
     RecyclerView (1) parse content from: https://material.io/tools/theme-editor/
     \n\nClicking to an item will open Single player for it with \'Shared Element Transition\'
     learnt from \"Continuous Shared Element Transitions: RecyclerView to ViewPager\".
   </string>
 
+  <string name="demo_title_recycler_view_2">
+    Kohii + RecyclerView (2)
+  </string>
+
   <string name="demo_desc_recycler_view_2">
     RecyclerView (2) uses sample Videos from ExoPlayer demo application.\n\nIn this demo, both DRM
     Video and non-DRM Video are presented and the PlayerView will be created on demand.
+  </string>
+
+  <string name="demo_title_recycler_view_3">
+    Kohii + RecyclerView (3)
   </string>
 
   <string name="demo_desc_recycler_view_3">
@@ -144,9 +156,17 @@
     playing smoothly.\n\nVideos from Caminandes (CC 3.0 open movie).
   </string>
 
+  <string name="demo_title_recycler_view_4">
+    Kohii + RecyclerView (4)
+  </string>
+
   <string name="demo_desc_recycler_view_4">
     RecyclerView (4) presents the scenario of reusing a single PlayerView instance across multiple
     Playbacks/ViewHolders.\n\nVideos are from Caminandes (CC 3.0 open movie).
+  </string>
+
+  <string name="demo_title_pager_1">
+    Kohii + Pager (1)
   </string>
 
   <string name="demo_desc_pager_1">
@@ -155,15 +175,27 @@
     while the Playback keeps playing smoothly.\n\nVideos are from Caminandes (CC 3.0 open movie).
   </string>
 
+  <string name="demo_title_nested_scrollview_1">
+    Kohii + (Nested) ScrollView (1)
+  </string>
+
   <string name="demo_desc_nested_scrollview_1">
     (Nested) ScrollView (1) uses content from https://design.google/library/making-motion-meaningful/
     where sub Videos are taken from another Material Design documentation.\n\nClicking to an item will
     open Single player in new Activity. The Playback keeps playing smoothly.
   </string>
 
+  <string name="demo_title_nested_scrollview_2">
+    Kohii + (Nested) ScrollView (2)
+  </string>
+
   <string name="demo_desc_nested_scrollview_2">
     (Nested) ScrollView (2) uses default long text with the movie \'Big Buck Bunny\'.\n\nClicking to an item will
     open Single player in a DialogFragment. The Playback keeps playing smoothly.
+  </string>
+
+  <string name="demo_title_master_detail">
+    Kohii + Master/Detail (1)
   </string>
 
   <string name="demo_desc_master_detail">

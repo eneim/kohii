@@ -24,7 +24,7 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.Kohii
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
-import kohii.v1.sample.ui.overlay.data.Video
+import kohii.v1.sample.data.Video
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,

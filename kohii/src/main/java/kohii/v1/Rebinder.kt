@@ -44,4 +44,21 @@ data class Rebinder(
     }
     return this
   }
+
+  fun <CONTAINER : Any> rebind(
+    kohii: Kohii,
+    target: Target<CONTAINER, Any>,
+    config: Config = Config(), // default
+    cb: ((Playback<*>) -> Unit)? = null
+  ): Rebinder {
+    val cache = kohii.mapTagToPlayable[this.tag]
+    if (cache != null) {
+      val playable = if (this.outputType.isAssignableFrom(cache.second)) cache.first else null
+      check(playable != null) { "No Playable found for tag ${this.tag}" }
+      playable.bind(target, config, cb)
+    } else if (BuildConfig.DEBUG) {
+      throw IllegalStateException("No Playable found for tag ${this.tag}.")
+    }
+    return this
+  }
 }

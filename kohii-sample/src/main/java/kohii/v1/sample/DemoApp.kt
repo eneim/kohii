@@ -19,9 +19,16 @@ package kohii.v1.sample
 import android.app.Application
 import com.crashlytics.android.Crashlytics
 import com.squareup.leakcanary.LeakCanary
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.fabric.sdk.android.Fabric
 import kohii.v1.Kohii
+import kohii.v1.sample.data.Video
 import kohii.v1.sample.youtube.YouTubePlayableCreator
+import okio.buffer
+import okio.source
 
 /**
  * @author eneim (2018/06/26).
@@ -30,7 +37,18 @@ import kohii.v1.sample.youtube.YouTubePlayableCreator
 class DemoApp : Application() {
 
   // In practice, this instance should be managed and injected by a DI framework.
-  val creator by lazy { YouTubePlayableCreator(Kohii[this]) }
+  val youTubePlayableCreator by lazy { YouTubePlayableCreator(Kohii[this]) }
+
+  // shared between demos
+  val videos by lazy {
+    val asset = assets
+    val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+    val jsonAdapter: JsonAdapter<List<Video>> =
+      moshi.adapter(Types.newParameterizedType(List::class.java, Video::class.java))
+    jsonAdapter.fromJson(asset.open("caminandes.json").source().buffer()) ?: emptyList()
+  }
 
   override fun onCreate() {
     super.onCreate()

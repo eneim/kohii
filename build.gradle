@@ -28,8 +28,7 @@ buildscript {
   }
 
   dependencies {
-    //noinspection GradleDependency
-    classpath "com.android.tools.build:gradle:$versions.gradlePlugin"
+    classpath 'com.android.tools.build:gradle:3.4.0'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
     classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.8.6'
     classpath 'io.fabric.tools:gradle:1.27.1'

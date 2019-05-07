@@ -18,7 +18,7 @@ package kohii.v1
 
 import android.view.ViewGroup
 
-open class LazyViewPlayback<OUTPUT>(
+open class LazyViewPlayback<OUTPUT : Any>(
   kohii: Kohii,
   playable: Playable<OUTPUT>,
   manager: PlaybackManager,
@@ -34,23 +34,23 @@ open class LazyViewPlayback<OUTPUT>(
   override val outputHolder: OUTPUT?
     get() = this._outputHolder
 
-  override fun play() {
+  override fun beforePlayInternal() {
+    super.beforePlayInternal()
     if (_outputHolder == null) {
       _outputHolder = outputHolderPool.acquireOutputHolder(this.boxedTarget, playable.media)
       if (_outputHolder != null) {
         this.playable.onPlayerActive(this, _outputHolder!!)
       }
     }
-    super.play()
   }
 
-  override fun pause() {
+  override fun afterPauseInternal() {
+    super.afterPauseInternal()
     _outputHolder?.also {
       outputHolderPool.releaseOutputHolder(this.boxedTarget, it, playable.media)
       this.playable.onPlayerInActive(this, _outputHolder)
       _outputHolder = null
     }
-    super.pause()
   }
 
   override fun onRemoved() {

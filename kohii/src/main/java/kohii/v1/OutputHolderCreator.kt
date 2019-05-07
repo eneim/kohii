@@ -18,8 +18,12 @@ package kohii.v1
 
 import kohii.media.Media
 
-interface OutputHolderCreator<CONTAINER, OUTPUT> {
+// In theory, instance of this interface doesn't need to be scoped in Activity lifecycle.
+interface OutputHolderCreator<CONTAINER : Any, OUTPUT : Any> {
 
+  // Return output type for a Media object, as an integer.
+  // This value will be used to cache the Output Holder used for this Media object.
+  // Same type Media object will use same type Output Holder.
   fun getMediaType(media: Media): Int = R.layout.kohii_player_surface_view
 
   fun createOutputHolder(

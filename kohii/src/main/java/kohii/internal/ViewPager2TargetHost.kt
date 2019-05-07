@@ -22,40 +22,34 @@ import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import java.lang.ref.WeakReference
 
-class ViewPager2TargetHost(
-  override val host: ViewPager2,
+internal class ViewPager2TargetHost(
+  host: ViewPager2,
   manager: PlaybackManager
 ) : BaseTargetHost<ViewPager2>(host, manager) {
 
   private val pageChangeCallback by lazy { SimpleOnPageChangeCallback(manager) }
 
   override fun onAdded() {
-    host.registerOnPageChangeCallback(pageChangeCallback)
+    super.onAdded()
+    actualHost.registerOnPageChangeCallback(pageChangeCallback)
     manager.dispatchRefreshAll()
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    host.unregisterOnPageChangeCallback(pageChangeCallback)
+    actualHost.unregisterOnPageChangeCallback(pageChangeCallback)
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
     return playback.token.shouldPlay()
   }
 
-  override fun accepts(target: Any): Boolean {
+  override fun accepts(container: Any): Boolean {
     return false
   }
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is ViewPager2TargetHost) return false
-    if (host != other.host) return false
-    return true
-  }
-
-  override fun hashCode(): Int {
-    return host.hashCode()
+  override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    return super.selectByOrientation(candidates, actualHost.orientation)
   }
 
   private class SimpleOnPageChangeCallback(manager: PlaybackManager) : OnPageChangeCallback() {
@@ -67,6 +61,15 @@ class ViewPager2TargetHost(
     }
 
     override fun onPageScrollStateChanged(state: Int) {
+      weakManager.get()
+          ?.dispatchRefreshAll()
+    }
+
+    override fun onPageScrolled(
+      position: Int,
+      positionOffset: Float,
+      positionOffsetPixels: Int
+    ) {
       weakManager.get()
           ?.dispatchRefreshAll()
     }

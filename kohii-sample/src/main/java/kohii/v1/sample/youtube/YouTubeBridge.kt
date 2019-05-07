@@ -30,22 +30,12 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.v1.Bridge
-import kohii.v1.ErrorListener
-import kohii.v1.ErrorListeners
+import kohii.v1.BaseBridge
 import kohii.v1.Playable
-import kohii.v1.PlayerEventListener
-import kohii.v1.PlayerEventListeners
-import kohii.v1.VolumeChangedListener
-import kohii.v1.VolumeChangedListeners
 
 class YouTubeBridge(
   private val media: Media
-) : Bridge<YouTubePlayerView> {
-
-  private val eventListeners by lazy { PlayerEventListeners() } // Set, so no duplicated
-  private val volumeListeners by lazy { VolumeChangedListeners() } // Set, so no duplicated
-  private val errorListeners by lazy { ErrorListeners() } // Set, so no duplicated
+) : BaseBridge<YouTubePlayerView>() {
 
   private var player: YouTubePlayer? = null
 
@@ -109,7 +99,8 @@ class YouTubeBridge(
 
   override var repeatMode: Int = Playable.REPEAT_MODE_ONE
 
-  override val isPlaying: Boolean = tracker.state === PLAYING
+  override val isPlaying: Boolean
+    get() = tracker.state === PLAYING
 
   override val volumeInfo: VolumeInfo = VolumeInfo()
 
@@ -124,7 +115,7 @@ class YouTubeBridge(
     // no-ops
   }
 
-  override fun ensureResource() {
+  override fun ensurePreparation() {
     // no-ops
   }
 
@@ -182,30 +173,6 @@ class YouTubeBridge(
     playerView = null
   }
 
-  override fun addEventListener(listener: PlayerEventListener) {
-    this.eventListeners.add(listener)
-  }
-
-  override fun removeEventListener(listener: PlayerEventListener?) {
-    this.eventListeners.remove(listener)
-  }
-
-  override fun addVolumeChangeListener(listener: VolumeChangedListener) {
-    this.volumeListeners.add(listener)
-  }
-
-  override fun removeVolumeChangeListener(listener: VolumeChangedListener?) {
-    this.volumeListeners.remove(listener)
-  }
-
-  override fun addErrorListener(errorListener: ErrorListener) {
-    this.errorListeners.add(errorListener)
-  }
-
-  override fun removeErrorListener(errorListener: ErrorListener?) {
-    this.errorListeners.remove(errorListener)
-  }
-
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
     return false
   }
@@ -215,14 +182,14 @@ class YouTubeBridge(
     /**
      * @return the player state. A value from [PlayerConstants.PlayerState]
      */
-    var state: PlayerConstants.PlayerState = PlayerConstants.PlayerState.UNKNOWN
+    var state: PlayerState = UNKNOWN
     var currentSecond: Float = 0f
     var videoDuration: Float = 0f
     var videoId: String? = null
 
     override fun onStateChange(
       youTubePlayer: YouTubePlayer,
-      state: PlayerConstants.PlayerState
+      state: PlayerState
     ) {
       this.state = state
     }

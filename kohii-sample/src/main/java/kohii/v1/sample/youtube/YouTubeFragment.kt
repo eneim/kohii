@@ -20,15 +20,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import kohii.v1.Kohii
-import kohii.v1.LifecycleOwnerProvider
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
-class YouTubeFragment : BaseFragment(), LifecycleOwnerProvider {
+class YouTubeFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = YouTubeFragment()
@@ -48,11 +46,7 @@ class YouTubeFragment : BaseFragment(), LifecycleOwnerProvider {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].also { it.register(this, arrayOf(recyclerView)) }
-    val creator = (requireActivity().application as DemoApp).creator
+    val creator = (requireActivity().application as DemoApp).youTubePlayableCreator
     recyclerView.adapter = YouTubeItemsAdapter(creator)
-  }
-
-  override fun provideLifecycleOwner(): LifecycleOwner {
-    return this.viewLifecycleOwner
   }
 }

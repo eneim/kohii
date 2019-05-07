@@ -21,10 +21,9 @@ import android.view.ViewGroup
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import kohii.v1.TargetHost.Companion.NONE_AXIS
-import kohii.v1.TargetHost.Companion.comparators
 
 internal open class ViewGroupTargetHostBase(
-  override val host: ViewGroup,
+  host: ViewGroup,
   manager: PlaybackManager
 ) : BaseTargetHost<ViewGroup>(host, manager) {
 
@@ -37,9 +36,9 @@ internal open class ViewGroupTargetHostBase(
     return playback.token.shouldPlay()
   }
 
-  override fun accepts(target: Any): Boolean {
-    return if (target is View) {
-      var view = target
+  override fun accepts(container: Any): Boolean {
+    return if (container is View) {
+      var view = container
       var parent = view.parent
       while (parent != null && parent !== this.host && parent is View) {
         @Suppress("USELESS_CAST")
@@ -51,32 +50,6 @@ internal open class ViewGroupTargetHostBase(
   }
 
   override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    val grouped = candidates.groupBy { it.controller != null }
-        .withDefault { emptyList() }
-
-    val firstHalf by lazy {
-      listOfNotNull(
-          grouped.getValue(true).sortedWith(comparators.getValue(NONE_AXIS)).firstOrNull()
-      )
-    }
-
-    val secondHalf by lazy {
-      listOfNotNull(
-          grouped.getValue(false).sortedWith(comparators.getValue(NONE_AXIS)).firstOrNull()
-      )
-    }
-
-    return if (firstHalf.isNotEmpty()) firstHalf else secondHalf
-  }
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is ViewGroupTargetHostBase) return false
-    if (host != other.host) return false
-    return true
-  }
-
-  override fun hashCode(): Int {
-    return host.hashCode()
+    return super.selectByOrientation(candidates, NONE_AXIS)
   }
 }

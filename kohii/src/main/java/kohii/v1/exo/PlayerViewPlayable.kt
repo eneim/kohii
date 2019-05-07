@@ -40,7 +40,7 @@ internal class PlayerViewPlayable internal constructor(
   media: Media,
   config: Playable.Config,
   bridge: Bridge<PlayerView>,
-  playbackCreator: PlaybackCreator<Any, PlayerView>
+  playbackCreator: PlaybackCreator<PlayerView>
 ) : BasePlayable<PlayerView>(kohii, media, config, bridge, playbackCreator) {
 
   internal constructor(
@@ -48,7 +48,7 @@ internal class PlayerViewPlayable internal constructor(
     media: Media,
     config: Playable.Config,
     bridgeProvider: BridgeProvider<PlayerView>,
-    playbackCreator: PlaybackCreator<Any, PlayerView>
+    playbackCreator: PlaybackCreator<PlayerView>
   ) : this(
       kohii, media, config, bridgeProvider.provideBridge(kohii, media, config),
       playbackCreator
@@ -72,6 +72,7 @@ internal class PlayerViewPlayable internal constructor(
       player.useController = true
       if (controller is ControlDispatcher) player.setControlDispatcher(controller)
     } else {
+      // Force PlayerView to not use Controller.
       player.useController = false
     }
   }
@@ -82,7 +83,6 @@ internal class PlayerViewPlayable internal constructor(
   ) {
     if (bridge.playerView === player) {
       bridge.playerView = null
-      player?.setControlDispatcher(null) // TODO check this.
     }
   }
 }

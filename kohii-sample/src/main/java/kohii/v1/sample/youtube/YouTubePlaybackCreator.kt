@@ -27,11 +27,12 @@ import kohii.v1.OutputHolderCreator
 import kohii.v1.OutputHolderPool
 import kohii.v1.Playable
 import kohii.v1.Playback
+import kohii.v1.Playback.Config
 import kohii.v1.PlaybackCreator
 import kohii.v1.PlaybackManager
 import kohii.v1.Target
 
-class YouTubePlaybackCreator(val kohii: Kohii) : PlaybackCreator<Any, YouTubePlayerView> {
+class YouTubePlaybackCreator(val kohii: Kohii) : PlaybackCreator<YouTubePlayerView> {
 
   private val youtubePlayerViewCreator =
     object : OutputHolderCreator<ViewGroup, YouTubePlayerView> {
@@ -57,18 +58,19 @@ class YouTubePlaybackCreator(val kohii: Kohii) : PlaybackCreator<Any, YouTubePla
     }
   }
 
-  override fun createPlayback(
+  override fun <CONTAINER : Any> createPlayback(
     manager: PlaybackManager,
-    target: Target<Any, YouTubePlayerView>,
+    target: Target<CONTAINER, YouTubePlayerView>,
     playable: Playable<YouTubePlayerView>,
-    config: Playback.Config
+    config: Config
   ): Playback<YouTubePlayerView> {
     if (target.requireContainer() !is ViewGroup) {
       throw IllegalArgumentException("Only accept ViewGroup container")
     }
+    val key = ViewGroup::class.java to YouTubePlayerView::class.java
     val outputHolderPool =
-      manager.fetchOutputHolderPool(ViewGroup::class.java, YouTubePlayerView::class.java)
-          ?: outputHolderPoolCreator.invoke().also { manager.registerOutputHolderPool(it) }
+      manager.fetchOutputHolderPool(key)
+          ?: outputHolderPoolCreator.invoke().also { manager.registerOutputHolderPool(key, it) }
     @Suppress("UNCHECKED_CAST")
     return LazyViewPlayback(
         kohii, playable, manager, target as Target<ViewGroup, YouTubePlayerView>, config,

@@ -33,9 +33,9 @@ import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
+import kohii.v1.sample.data.Sources
+import kohii.v1.sample.data.Video
 import kohii.v1.sample.svg.GlideApp
-import kohii.v1.sample.ui.overlay.data.Sources
-import kohii.v1.sample.ui.overlay.data.Video
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class VideoItemHolder(
@@ -88,17 +88,18 @@ internal class VideoItemHolder(
           }
           .sources.first()
 
-      this.binder = kohii.setUp(videoSources!!.file)
+      val binder = kohii.setUp(videoSources!!.file)
           .config {
             Playable.Config(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
           }
 
+      this.binder = binder
+
       if (host.selectionTracker?.isSelected(rebinder) == true) {
         this.playback = null
       } else {
-        this.binder!!.bind(playerView) { pk ->
+        binder.bind(playerView, config = Playback.Config(callback = this@VideoItemHolder)) { pk ->
           pk.addPlaybackEventListener(this@VideoItemHolder)
-          pk.addCallback(this@VideoItemHolder)
           this@VideoItemHolder.playback = pk
         }
       }
@@ -108,9 +109,6 @@ internal class VideoItemHolder(
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
     this.videoSources = null
-    this.playback?.apply {
-      removeCallback(this@VideoItemHolder)
-    }
     videoImage.isVisible = true
   }
 

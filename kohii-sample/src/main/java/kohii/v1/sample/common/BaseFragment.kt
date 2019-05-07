@@ -19,6 +19,7 @@ package kohii.v1.sample.common
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.fragment.app.Fragment
 
 /**
@@ -26,7 +27,12 @@ import androidx.fragment.app.Fragment
  */
 open class BaseFragment : Fragment() {
 
-  private val logTag by lazy { "Kohii::App:${javaClass.simpleName}" }
+  companion object {
+    const val videoUrl = "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8"
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val logTag by lazy { "Kohii::${javaClass.simpleName}" }
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
@@ -36,6 +42,14 @@ open class BaseFragment : Fragment() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     Log.d(logTag, "onCreate() called: $savedInstanceState")
+  }
+
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    Log.d(logTag, "onViewCreated() called")
+    super.onViewCreated(view, savedInstanceState)
   }
 
   override fun onStart() {
