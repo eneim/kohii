@@ -61,7 +61,7 @@ class PictureInPictureFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     pipButton.setOnClickListener { minimize() }
 
-    kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
+    kohii = Kohii[this].also { it.register(this, playerContainer) }
     kohii.setUp(videoUrl)
         .with {
           tag = "${javaClass.name}::videoUrl"

@@ -65,7 +65,7 @@ class MotionFragment : BaseFragment(), Presenter {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Kohii[this].register(this, arrayOf(scrollView))
+    Kohii[this].register(this, scrollView)
   }
 
   override fun onStart() {

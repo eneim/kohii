@@ -66,7 +66,7 @@ class PagerMainFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Kohii[this].register(this, arrayOf(viewPager))
+    Kohii[this].register(this, viewPager)
 
     this.viewPager.also {
       it.adapter =

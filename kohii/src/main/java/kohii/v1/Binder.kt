@@ -65,8 +65,8 @@ class Binder<OUTPUT : Any>(
 
   private val params = Params()
 
-  fun with(config: Params.() -> Unit): Binder<OUTPUT> {
-    this.params.apply(config)
+  fun with(params: Params.() -> Unit): Binder<OUTPUT> {
+    this.params.apply(params)
     return this
   }
 

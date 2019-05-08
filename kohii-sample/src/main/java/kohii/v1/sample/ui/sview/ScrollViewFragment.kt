@@ -49,7 +49,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
-  private var kohii: Kohii? = null
+  private lateinit var kohii: Kohii
   private var playback: Playback<*>? = null
   private var dialogPlayer: DialogFragment? = null
 
@@ -66,25 +66,21 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     super.onActivityCreated(savedInstanceState)
     // ⬇︎ For demo of manual fullscreen.
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    kohii = Kohii[this].also { it.register(this, arrayOf(this.scrollView)) }
-    val rebinder = kohii!!.setUp(videoUrl)
+    kohii = Kohii[this].also { it.register(this, this.scrollView) }
+    val rebinder = kohii.setUp(videoUrl)
         .with {
           tag = videoTag
           repeatMode = Playable.REPEAT_MODE_ONE
           priority = Playback.PRIORITY_NORMAL
         }
-        .bind(playerView) {
-          playback = it
-        }
+        .bind(playerView) { playback = it }
 
     playerContainer.setOnClickListener {
       rebinder?.also {
         dialogPlayer = PlayerDialogFragment.newInstance(
             rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f)
         )
-            .also { dialog ->
-              dialog.show(childFragmentManager, videoTag)
-            }
+            .also { dialog -> dialog.show(childFragmentManager, videoTag) }
       }
 
       /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
@@ -112,13 +108,10 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   override fun onDialogInActive(rebinder: Rebinder) {
     kohii?.run {
-      rebinder.rebind(
-          this,
-          playerView,
-          Playback.Config(priority = Playback.PRIORITY_NORMAL)
-      ) {
-        playback = it
-      }
+      rebinder.with { priority = Playback.PRIORITY_NORMAL }
+          .rebind(this, playerView) {
+            playback = it
+          }
     }
   }
 
