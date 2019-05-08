@@ -92,7 +92,7 @@ class PageFragment : BaseFragment(), Prioritized {
       }
 
       val kohii = Kohii[this].also {
-        it.register(this, arrayOf(view.findViewById(R.id.content) as View))
+        it.register(this, view.findViewById(R.id.content))
       }
       val pagePos = arguments?.getInt(pageTagKey) ?: -1
       val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"

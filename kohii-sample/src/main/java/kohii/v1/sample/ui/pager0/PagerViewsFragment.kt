@@ -96,7 +96,7 @@ class PagerViewsFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also { it.register(this, arrayOf(viewPager)) }
+    val kohii = Kohii[this].also { it.register(this, viewPager) }
 
     this.viewPager.adapter =
       PagerPagesAdapter(kohii, (requireActivity().application as DemoApp).videos)

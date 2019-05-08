@@ -58,7 +58,7 @@ class NoOpsContainerFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Kohii[this].also { manager = it.register(this, arrayOf(scrollView)) }
+    kohii = Kohii[this].also { manager = it.register(this, scrollView) }
   }
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {

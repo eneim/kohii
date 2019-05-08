@@ -72,7 +72,7 @@ class PlayerActivity : BaseActivity() {
       }
 
       val kohii = Kohii[this]
-      kohii.register(this, arrayOf(playerContainer))
+      kohii.register(this, playerContainer)
       rebinder.rebind(kohii, this.playerView)
     } else finish()
   }

@@ -48,6 +48,6 @@ class MasterDetailFragment : BaseFragment() {
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
-    Kohii[this].register(this, arrayOf(container))
+    Kohii[this].register(this, container)
   }
 }
