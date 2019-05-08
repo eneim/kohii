@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
-import com.google.android.exoplayer2.Player
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.sample.DemoApp
@@ -63,9 +62,12 @@ class PagerViewsFragment : BaseFragment() {
       container.addView(view)
       val video = videos[position % videos.size].playlist.first()
           .sources.first()
-      val tag = "$javaClass::$position::${video.file}"
+      val itemTag = "$javaClass::$position::${video.file}"
       kohii.setUp(video.file)
-          .config { Playable.Config(tag = tag, repeatMode = Player.REPEAT_MODE_ONE) }
+          .with {
+            tag = itemTag
+            repeatMode = Playable.REPEAT_MODE_ONE
+          }
           .bind(view.videoFrame)
       return view
     }

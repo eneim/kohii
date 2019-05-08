@@ -80,7 +80,10 @@ class VideoItemHolder(
           .sources.first()
 
       kohii.setUp(videoSources!!.file)
-          .config { Playable.Config(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE) }
+          .with {
+            tag = tagKey
+            repeatMode = Playable.REPEAT_MODE_ONE
+          }
           .bind(playerContainer) { playback ->
             playback.addVolumeChangeListener(this@VideoItemHolder)
             if (viewModel.volumeState.contains(this.adapterPosition)) {

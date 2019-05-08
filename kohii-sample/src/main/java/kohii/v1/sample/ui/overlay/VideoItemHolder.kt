@@ -89,8 +89,9 @@ internal class VideoItemHolder(
           .sources.first()
 
       val binder = kohii.setUp(videoSources!!.file)
-          .config {
-            Playable.Config(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE)
+          .with {
+            tag = tagKey
+            repeatMode = Playable.REPEAT_MODE_ONE
           }
 
       this.binder = binder

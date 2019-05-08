@@ -16,40 +16,32 @@
 
 package kohii.v1
 
-import kohii.Beta
+import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.Media
+import kohii.v1.Playable.RepeatMode
 
-// TODO better Config overriding mechanism.
 class Binder<OUTPUT : Any>(
   private val kohii: Kohii,
   private val media: Media,
   private val playableCreator: PlayableCreator<OUTPUT>
 ) {
 
-  @Beta
   data class Config(
-    var tag: Any? = null
+    var tag: String? = null,
+    var prefetch: Boolean = false,
+    @RepeatMode var repeatMode: Int = Playable.REPEAT_MODE_OFF,
+    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
   ) {
 
-    operator fun invoke(config: Config) {
-      config.tag = this.tag
+    internal fun createPlayableConfig(): Playable.Config {
+      return Playable.Config(this.tag, this.prefetch, this.repeatMode, this.parameters)
     }
   }
 
-  var playableConfig = Playable.Config()
+  internal val config = Config()
 
-  inline fun config(config: () -> Playable.Config): Binder<OUTPUT> {
-    this.playableConfig = config.invoke()
-        .copySelf()
-    return this
-  }
-
-  @Beta
-  val config = Config()
-
-  @Beta
-  inline fun configs(handle: Config.() -> Unit): Binder<OUTPUT> {
-    handle.invoke(this.config)
+  fun with(config: Config.() -> Unit): Binder<OUTPUT> {
+    this.config.apply(config)
     return this
   }
 
@@ -58,7 +50,7 @@ class Binder<OUTPUT : Any>(
     config: Playback.Config = Playback.Config(), // default
     cb: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
-    val tag = playableConfig.tag
+    val tag = this.config.tag
     val playable = requestPlayable(tag)
     playable.bind(target, config, cb)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
@@ -69,7 +61,7 @@ class Binder<OUTPUT : Any>(
     config: Playback.Config = Playback.Config(), // default
     cb: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
-    val tag = playableConfig.tag
+    val tag = this.config.tag
     val playable = requestPlayable(tag)
     playable.bind(target, config, cb)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
@@ -77,7 +69,7 @@ class Binder<OUTPUT : Any>(
 
   private fun requestPlayable(tag: Any?): Playable<OUTPUT> {
     val toCreate: Playable<OUTPUT> by lazy {
-      this.playableCreator.createPlayable(kohii, media, playableConfig)
+      this.playableCreator.createPlayable(kohii, media, this.config.createPlayableConfig())
     }
 
     val playable =

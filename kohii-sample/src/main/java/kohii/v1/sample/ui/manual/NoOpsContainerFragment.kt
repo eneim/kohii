@@ -65,7 +65,10 @@ class NoOpsContainerFragment : BaseFragment() {
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = videoTag1, repeatMode = Playable.REPEAT_MODE_ONE) }
+        .with {
+          tag = videoTag1
+          repeatMode = Playable.REPEAT_MODE_ONE
+        }
         .bind(
             playerView1,
             config = Playback.Config(
@@ -78,7 +81,10 @@ class NoOpsContainerFragment : BaseFragment() {
         )
 
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = videoTag2, repeatMode = Playable.REPEAT_MODE_ONE) }
+        .with {
+          tag = videoTag2
+          repeatMode = Playable.REPEAT_MODE_ONE
+        }
         .bind(
             playerView2,
             config = Playback.Config(

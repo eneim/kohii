@@ -26,7 +26,6 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import kohii.v1.Kohii
-import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Playback.Controller
 import kohii.v1.sample.R
@@ -65,7 +64,7 @@ class PictureInPictureFragment : BaseFragment() {
 
     kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = "${javaClass.name}::videoUrl") }
+        .with { tag = "${javaClass.name}::videoUrl" }
         .bind(playerView, config = Playback.Config(
             controller = object : Controller {
               override fun pauseBySystem(): Boolean {

@@ -22,9 +22,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.fragment.app.DialogFragment
-import com.google.android.exoplayer2.Player
 import kohii.v1.Kohii
-import kohii.v1.Playable.Config
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
@@ -69,7 +68,10 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     kohii = Kohii[this].also { it.register(this, arrayOf(this.scrollView)) }
     val rebinder = kohii!!.setUp(videoUrl)
-        .config { Config(tag = videoTag, repeatMode = Player.REPEAT_MODE_ONE) }
+        .with {
+          tag = videoTag
+          repeatMode = Playable.REPEAT_MODE_ONE
+        }
         .bind(playerView, Playback.Config(priority = Playback.PRIORITY_NORMAL)) {
           playback = it
         }

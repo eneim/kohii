@@ -60,7 +60,7 @@ class DebugFragment : BaseFragment() {
     val manager = kohii.register(this, scrollView)
 
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = "$videoUrl::1") }
+        .with { tag = "$videoUrl::1" }
         .bind(playerView1) {
           it.addPlaybackEventListener(object : PlaybackEventListener {
             override fun onFirstFrameRendered(playback: Playback<*>) {
@@ -71,7 +71,7 @@ class DebugFragment : BaseFragment() {
         }
 
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = "$videoUrl::2") }
+        .with { tag = "$videoUrl::2" }
         .bind(playerView2) {
           it.addPlaybackEventListener(object : PlaybackEventListener {
             override fun onFirstFrameRendered(playback: Playback<*>) {
