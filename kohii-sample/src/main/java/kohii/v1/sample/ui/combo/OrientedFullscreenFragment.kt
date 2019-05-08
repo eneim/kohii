@@ -100,7 +100,7 @@ class OrientedFullscreenFragment : BaseFragment() {
 
     rebinder?.rebind(
         kohii, playerView,
-        config = Config(controller = DefaultControlDispatcher(manager, playerView))
+        Config(controller = DefaultControlDispatcher(manager, playerView))
     )
 
     (requireActivity() as AppCompatActivity).also {

@@ -71,8 +71,9 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
         .with {
           tag = videoTag
           repeatMode = Playable.REPEAT_MODE_ONE
+          priority = Playback.PRIORITY_NORMAL
         }
-        .bind(playerView, Playback.Config(priority = Playback.PRIORITY_NORMAL)) {
+        .bind(playerView) {
           playback = it
         }
 

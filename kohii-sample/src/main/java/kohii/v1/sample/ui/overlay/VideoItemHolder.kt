@@ -92,6 +92,7 @@ internal class VideoItemHolder(
           .with {
             tag = tagKey
             repeatMode = Playable.REPEAT_MODE_ONE
+            callback = this@VideoItemHolder
           }
 
       this.binder = binder
@@ -99,7 +100,7 @@ internal class VideoItemHolder(
       if (host.selectionTracker?.isSelected(rebinder) == true) {
         this.playback = null
       } else {
-        binder.bind(playerView, config = Playback.Config(callback = this@VideoItemHolder)) { pk ->
+        binder.bind(playerView) { pk ->
           pk.addPlaybackEventListener(this@VideoItemHolder)
           this@VideoItemHolder.playback = pk
         }

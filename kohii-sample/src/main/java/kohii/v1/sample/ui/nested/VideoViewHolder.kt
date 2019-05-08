@@ -73,8 +73,9 @@ class VideoViewHolder(
             tag = itemTag
             prefetch = false
             repeatMode = Playable.REPEAT_MODE_ONE
+            callback = this@VideoViewHolder
           }
-          .bind(playerView, config = Playback.Config(callback = this@VideoViewHolder)) {
+          .bind(playerView) {
             playback = it
           }
     }
