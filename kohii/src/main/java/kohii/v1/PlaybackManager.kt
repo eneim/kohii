@@ -115,6 +115,7 @@ abstract class PlaybackManager(
     val configChange = parent.activity.isChangingConfigurations
     attachedPlaybacks.forEach {
       it.onInActive()
+      parent.selection.remove(it)
       val playable = it.playable
       // Only pause this playback if
       // - [1] config change is not happening and
@@ -401,6 +402,7 @@ abstract class PlaybackManager(
   // Call this will also save old PlaybackInfo if needed.
   internal fun <T> onTargetInActive(target: T) {
     mapTargetToPlayback[target as Any]?.also {
+      parent.selection.remove(it)
       detachedPlaybacks[it] = PRESENT // Mark as detached/inactive
       if (attachedPlaybacks.remove(it)) it.onInActive()
       this@PlaybackManager.dispatchRefreshAll() // To refresh latest playback status.
