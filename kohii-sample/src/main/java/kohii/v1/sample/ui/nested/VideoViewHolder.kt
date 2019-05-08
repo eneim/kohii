@@ -23,7 +23,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.view.get
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.MediaItem
@@ -70,12 +69,10 @@ class VideoViewHolder(
       mediaName.text = item.name
 
       kohii.setUp(mediaItem)
-          .config {
-            Playable.Config(
-                tag = itemTag,
-                prefetch = false,
-                repeatMode = Player.REPEAT_MODE_ONE
-            )
+          .with {
+            tag = itemTag
+            prefetch = false
+            repeatMode = Playable.REPEAT_MODE_ONE
           }
           .bind(playerView, config = Playback.Config(callback = this@VideoViewHolder)) {
             playback = it

@@ -20,7 +20,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
@@ -60,12 +59,10 @@ class VideoViewHolder(
       payload = InitData(tag = itemTag, aspectRatio = item.width / item.height.toFloat())
       playerContainer.setAspectRatio(payload!!.aspectRatio)
       rebinder = kohii.setUp(item.content)
-          .config {
-            Playable.Config(
-                tag = itemTag,
-                prefetch = true,
-                repeatMode = Player.REPEAT_MODE_ONE
-            )
+          .with {
+            tag = itemTag
+            prefetch = true
+            repeatMode = Playable.REPEAT_MODE_ONE
           }
           .bind(playerView, config = Playback.Config(callback = this)) {
             playback = it
