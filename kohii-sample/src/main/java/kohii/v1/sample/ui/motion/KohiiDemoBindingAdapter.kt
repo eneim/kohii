@@ -20,7 +20,6 @@ import android.net.Uri
 import android.widget.ImageView
 import androidx.core.view.ViewCompat
 import androidx.databinding.BindingAdapter
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.MediaItem
@@ -55,12 +54,10 @@ fun setVideo(
       ?.setAspectRatio(video.width / video.height)
 
   val rebinder = kohii.setUp(MediaItem(video.url, "mp4"))
-      .config {
-        Playable.Config(
-            tag = "${video.javaClass.canonicalName}::${video.url}",
-            prefetch = true,
-            repeatMode = Player.REPEAT_MODE_ONE
-        )
+      .with {
+        tag = "${video.javaClass.canonicalName}::${video.url}"
+        prefetch = true
+        repeatMode = Playable.REPEAT_MODE_ONE
       }
       .bind(view)
   view.setTag(R.id.motion_view_tag, rebinder)

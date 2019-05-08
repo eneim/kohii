@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.Kohii
-import kohii.v1.Playback.Config
 import kohii.v1.Rebinder
 import kohii.v1.exo.DefaultControlDispatcher
 import kohii.v1.sample.R
@@ -95,13 +94,12 @@ class OrientedFullscreenFragment : BaseFragment() {
     container.setAspectRatio(initData.aspectRatio)
 
     val kohii = Kohii[this]
-    val manager = kohii.register(this, arrayOf(playerContainer))
+    val manager = kohii.register(this, playerContainer)
     val rebinder = requireArguments().getParcelable<Rebinder>(KEY_REBINDER)
 
-    rebinder?.rebind(
-        kohii, playerView,
-        config = Config(controller = DefaultControlDispatcher(manager, playerView))
-    )
+    rebinder
+        ?.with { controller = DefaultControlDispatcher(manager, playerView) }
+        ?.rebind(kohii, playerView)
 
     (requireActivity() as AppCompatActivity).also {
       if (it.windowManager.defaultDisplay.rotation % 2 == 1) {

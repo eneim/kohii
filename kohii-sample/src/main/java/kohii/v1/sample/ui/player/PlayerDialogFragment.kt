@@ -87,11 +87,12 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
 
   override fun onStart() {
     super.onStart()
-    val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
+    val kohii = Kohii[this].also { it.register(this, playerContainer) }
     this.rebinder = arguments?.getParcelable(KEY_REBINDER)
-    this.rebinder?.rebind(kohii, playerView, config = Playback.Config(callback = this)) {
-      playback = it
-    }
+    this.rebinder?.with { callback = this@PlayerDialogFragment }
+        ?.rebind(kohii, playerView) {
+          playback = it
+        }
   }
 
   override fun onActive(playback: Playback<*>) {

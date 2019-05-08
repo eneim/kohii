@@ -53,7 +53,7 @@ class RvInRvFragment : BaseNestedFragment() {
     super.onViewCreated(view, savedInstanceState)
 
     val kohii = Kohii[this]
-    kohii.register(this, arrayOf(recyclerView))
+    kohii.register(this, recyclerView)
 
     adapter = MainAdapter(kohii, this, videos)
     if (savedInstanceState != null) adapter.onRestoreState(savedInstanceState)

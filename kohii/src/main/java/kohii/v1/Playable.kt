@@ -121,16 +121,6 @@ interface Playable<OUTPUT : Any> {
     val tag: String? = null,
     val prefetch: Boolean = false,
     @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
-    val playbackParameters: PlaybackParameters = PlaybackParameters.DEFAULT
-  ) {
-
-    fun copySelf(): Config {
-      return Config(
-          tag = this.tag,
-          prefetch = this.prefetch,
-          repeatMode = this.repeatMode,
-          playbackParameters = this.playbackParameters
-      )
-    }
-  }
+    val parameters: PlaybackParameters = PlaybackParameters.DEFAULT
+  )
 }

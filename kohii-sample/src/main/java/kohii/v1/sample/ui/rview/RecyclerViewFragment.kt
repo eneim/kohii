@@ -89,7 +89,7 @@ class RecyclerViewFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also { it.register(this, arrayOf(recyclerView)) }
+    val kohii = Kohii[this].also { it.register(this, recyclerView) }
 
     val data = ArrayList(items).apply { this.addAll(items) } // To double the list.
     val container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {

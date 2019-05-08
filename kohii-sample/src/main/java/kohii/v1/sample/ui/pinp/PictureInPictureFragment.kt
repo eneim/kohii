@@ -26,8 +26,6 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
 import kohii.v1.Playback.Controller
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -63,16 +61,17 @@ class PictureInPictureFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     pipButton.setOnClickListener { minimize() }
 
-    kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
+    kohii = Kohii[this].also { it.register(this, playerContainer) }
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = "${javaClass.name}::videoUrl") }
-        .bind(playerView, config = Playback.Config(
-            controller = object : Controller {
-              override fun pauseBySystem(): Boolean {
-                return true
-              }
+        .with {
+          tag = "${javaClass.name}::videoUrl"
+          controller = object : Controller {
+            override fun pauseBySystem(): Boolean {
+              return true
             }
-        ))
+          }
+        }
+        .bind(playerView)
   }
 
   private fun minimize() {

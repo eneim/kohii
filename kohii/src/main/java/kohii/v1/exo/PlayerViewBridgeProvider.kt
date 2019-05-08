@@ -48,7 +48,7 @@ class PlayerViewBridgeProvider(
         mediaSourceFactoryProvider
     ).also {
       it.repeatMode = config.repeatMode
-      it.parameters = config.playbackParameters
+      it.parameters = config.parameters
     }
   }
 

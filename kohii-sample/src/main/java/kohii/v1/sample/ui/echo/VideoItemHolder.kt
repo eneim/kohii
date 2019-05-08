@@ -46,7 +46,7 @@ class VideoItemHolder(
   @SuppressLint("SetTextI18n")
   override fun onVolumeChanged(volumeInfo: VolumeInfo) {
     volumeButton.text = "Mute: ${volumeInfo.mute}"
-    viewModel.updateState(this.adapterPosition, volumeInfo)
+    viewModel.saveVolumeInfo(this.adapterPosition, volumeInfo)
   }
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
@@ -80,13 +80,16 @@ class VideoItemHolder(
           .sources.first()
 
       kohii.setUp(videoSources!!.file)
-          .config { Playable.Config(tag = tagKey, repeatMode = Playable.REPEAT_MODE_ONE) }
+          .with {
+            tag = tagKey
+            repeatMode = Playable.REPEAT_MODE_ONE
+          }
           .bind(playerContainer) { playback ->
             playback.addVolumeChangeListener(this@VideoItemHolder)
-            if (viewModel.volumeState.contains(this.adapterPosition)) {
-              playback.volumeInfo = viewModel.volumeState.get(this.adapterPosition)
+            if (viewModel.volumeInfoStore.contains(this.adapterPosition)) {
+              playback.volumeInfo = viewModel.volumeInfoStore.get(this.adapterPosition)
             } else {
-              viewModel.updateState(this.adapterPosition, playback.volumeInfo) // save first.
+              viewModel.saveVolumeInfo(this.adapterPosition, playback.volumeInfo) // save first.
             }
             volumeButton.text = "Mute: ${playback.volumeInfo.mute}"
             this@VideoItemHolder.playback = playback

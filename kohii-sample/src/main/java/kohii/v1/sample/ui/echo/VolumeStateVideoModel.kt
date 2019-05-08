@@ -22,12 +22,12 @@ import kohii.media.VolumeInfo
 
 class VolumeStateVideoModel : ViewModel() {
 
-  val volumeState = SparseArray<VolumeInfo>()
+  val volumeInfoStore = SparseArray<VolumeInfo>()
 
-  fun updateState(
+  fun saveVolumeInfo(
     key: Int,
     volumeInfo: VolumeInfo
   ) {
-    volumeState.put(key, volumeInfo)
+    volumeInfoStore.put(key, volumeInfo)
   }
 }

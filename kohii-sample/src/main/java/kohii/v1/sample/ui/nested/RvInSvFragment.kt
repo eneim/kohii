@@ -51,7 +51,7 @@ class RvInSvFragment : BaseNestedFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
-    kohii.register(this, arrayOf(scrollView, recyclerView))
+    kohii.register(this, scrollView, recyclerView)
 
     (recyclerView as RecyclerView).also {
       it.setHasFixedSize(true)
