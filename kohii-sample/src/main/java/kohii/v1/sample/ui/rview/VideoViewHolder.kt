@@ -63,8 +63,9 @@ class VideoViewHolder(
             tag = itemTag
             prefetch = true
             repeatMode = Playable.REPEAT_MODE_ONE
+            callback = this@VideoViewHolder
           }
-          .bind(playerView, config = Playback.Config(callback = this)) {
+          .bind(playerView) {
             playback = it
             listener.onItemLoaded(itemView, adapterPosition)
           }
