@@ -72,7 +72,7 @@ class ComboFragment : BaseFragment() {
     val pool = OutputHolderPool(2, PlayerViewCreator.instance)
     val key = ViewGroup::class.java to PlayerView::class.java
     val kohii = Kohii[this].also {
-      it.register(this, arrayOf(recyclerView))
+      it.register(this, recyclerView)
           .registerOutputHolderPool(key, pool)
     }
 

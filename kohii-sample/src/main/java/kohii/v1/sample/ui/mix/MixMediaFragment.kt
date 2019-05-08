@@ -27,7 +27,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.Kohii
-import kohii.v1.TargetHost
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
@@ -68,11 +67,7 @@ class MixMediaFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also {
-      val manager = it.register(this)
-      val builder = TargetHost.Builder(recyclerView)
-      manager.registerTargetHost(builder)
-    }
+    val kohii = Kohii[this].also { it.register(this, recyclerView) }
 
     (recyclerView as RecyclerView).also {
       it.setHasFixedSize(true)

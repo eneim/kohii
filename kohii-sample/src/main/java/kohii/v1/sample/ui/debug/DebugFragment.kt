@@ -23,7 +23,6 @@ import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import kohii.media.VolumeInfo
 import kohii.v1.Kohii
-import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.Scope
@@ -60,7 +59,7 @@ class DebugFragment : BaseFragment() {
     val manager = kohii.register(this, scrollView)
 
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = "$videoUrl::1") }
+        .with { tag = "$videoUrl::1" }
         .bind(playerView1) {
           it.addPlaybackEventListener(object : PlaybackEventListener {
             override fun onFirstFrameRendered(playback: Playback<*>) {
@@ -71,7 +70,7 @@ class DebugFragment : BaseFragment() {
         }
 
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = "$videoUrl::2") }
+        .with { tag = "$videoUrl::2" }
         .bind(playerView2) {
           it.addPlaybackEventListener(object : PlaybackEventListener {
             override fun onFirstFrameRendered(playback: Playback<*>) {

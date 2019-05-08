@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import kohii.v1.Kohii
 import kohii.v1.Playable
-import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import kohii.v1.exo.DefaultControlDispatcher
 import kohii.v1.sample.R
@@ -59,35 +58,33 @@ class NoOpsContainerFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Kohii[this].also { manager = it.register(this, arrayOf(scrollView)) }
+    kohii = Kohii[this].also { manager = it.register(this, scrollView) }
   }
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = videoTag1, repeatMode = Playable.REPEAT_MODE_ONE) }
-        .bind(
-            playerView1,
-            config = Playback.Config(
-                controller = DefaultControlDispatcher(
-                    manager, playerView1,
-                    startBySystem = false,
-                    pauseBySystem = false
-                )
-            )
-        )
+        .with {
+          tag = videoTag1
+          repeatMode = Playable.REPEAT_MODE_ONE
+          controller = DefaultControlDispatcher(
+              manager, playerView1,
+              startBySystem = false,
+              pauseBySystem = false
+          )
+        }
+        .bind(playerView1)
 
     kohii.setUp(videoUrl)
-        .config { Playable.Config(tag = videoTag2, repeatMode = Playable.REPEAT_MODE_ONE) }
-        .bind(
-            playerView2,
-            config = Playback.Config(
-                controller = DefaultControlDispatcher(
-                    manager, playerView2,
-                    startBySystem = true,
-                    pauseBySystem = false
-                )
-            )
-        )
+        .with {
+          tag = videoTag2
+          repeatMode = Playable.REPEAT_MODE_ONE
+          controller = DefaultControlDispatcher(
+              manager, playerView2,
+              startBySystem = true,
+              pauseBySystem = false
+          )
+        }
+        .bind(playerView2)
   }
 }

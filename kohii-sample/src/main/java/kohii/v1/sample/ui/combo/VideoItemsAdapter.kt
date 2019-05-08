@@ -22,11 +22,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.MediaItem
 import kohii.v1.Kohii
-import kohii.v1.Playable.Config
+import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.ViewTarget
 import kohii.v1.sample.R
@@ -82,7 +81,11 @@ class VideoItemsAdapter(
     }
 
     holder.rebinder = kohii.setUp(mediaItem)
-        .config { Config(tag = itemTag, prefetch = false, repeatMode = Player.REPEAT_MODE_ONE) }
+        .with {
+          tag = itemTag
+          prefetch = false
+          repeatMode = Playable.REPEAT_MODE_ONE
+        }
         .bind(target) {
           onLoad?.invoke(holder, position)
           it.addPlayerEventListener(object : PlayerEventListener {

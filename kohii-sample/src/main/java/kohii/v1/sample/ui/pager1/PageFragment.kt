@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.Kohii
 import kohii.v1.Playable
@@ -93,19 +92,17 @@ class PageFragment : BaseFragment(), Prioritized {
       }
 
       val kohii = Kohii[this].also {
-        it.register(this, arrayOf(view.findViewById(R.id.content) as View))
+        it.register(this, view.findViewById(R.id.content))
       }
       val pagePos = arguments?.getInt(pageTagKey) ?: -1
       val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
       kohii.setUp(video.file)
-          .config {
-            Playable.Config(tag = videoTag, repeatMode = Player.REPEAT_MODE_ONE, prefetch = true)
+          .with {
+            tag = videoTag
+            repeatMode = Playable.REPEAT_MODE_ONE
+            prefetch = true
           }
           .bind(playerView) { playback = it }
     }
-  }
-
-  override fun onDestroyView() {
-    super.onDestroyView()
   }
 }

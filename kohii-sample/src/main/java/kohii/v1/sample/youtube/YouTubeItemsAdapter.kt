@@ -20,7 +20,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.PlayableCreator
-import kohii.v1.Playback.Config
 import kohii.v1.sample.R
 
 class YouTubeItemsAdapter(
@@ -58,7 +57,8 @@ class YouTubeItemsAdapter(
     position: Int
   ) {
     creator.setUp(getMedia(position))
-        .bind(holder.container, config = Config(threshold = 0.99F))
+        .with { threshold = 0.99F }
+        .bind(holder.container)
   }
 
   private fun getMedia(position: Int): String {

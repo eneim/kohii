@@ -16,68 +16,85 @@
 
 package kohii.v1
 
-import kohii.Beta
+import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.Media
+import kohii.media.PlaybackInfo
+import kohii.v1.Playable.RepeatMode
+import kohii.v1.Playback.Callback
+import kohii.v1.Playback.Controller
+import kohii.v1.Playback.Priority
 
-// TODO better Config overriding mechanism.
 class Binder<OUTPUT : Any>(
   private val kohii: Kohii,
   private val media: Media,
   private val playableCreator: PlayableCreator<OUTPUT>
 ) {
 
-  @Beta
-  data class Config(
-    var tag: Any? = null
+  data class Params(
+      // Playable.Config
+    var tag: String? = null,
+    var prefetch: Boolean = false,
+    @RepeatMode var repeatMode: Int = Playable.REPEAT_MODE_OFF,
+    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
+
+      // Playback.Config
+    @Priority
+    var priority: Int = Playback.PRIORITY_NORMAL,
+    var delay: Int = 0,
+      // Indicator to used to judge of a Playback should be played or not.
+      // This doesn't warranty that it will be played, it just to make the Playback be a candidate
+      // to start a playback.
+      // In ViewPlayback, this is equal to visible area offset of the video container View.
+    var threshold: Float = 0.65F,
+    var controller: Controller? = null,
+    var playbackInfo: PlaybackInfo? = null,
+    var keepScreenOn: Boolean = true,
+    var callback: Callback? = null
   ) {
 
-    operator fun invoke(config: Config) {
-      config.tag = this.tag
+    internal fun createPlayableConfig(): Playable.Config {
+      return Playable.Config(this.tag, this.prefetch, this.repeatMode, this.parameters)
+    }
+
+    internal fun createPlaybackConfig(): Playback.Config {
+      return Playback.Config(
+          priority, delay, threshold, controller, playbackInfo, keepScreenOn, callback
+      )
     }
   }
 
-  var playableConfig = Playable.Config()
+  private val params = Params()
 
-  inline fun config(config: () -> Playable.Config): Binder<OUTPUT> {
-    this.playableConfig = config.invoke()
-        .copySelf()
-    return this
-  }
-
-  @Beta
-  val config = Config()
-
-  @Beta
-  inline fun configs(handle: Config.() -> Unit): Binder<OUTPUT> {
-    handle.invoke(this.config)
+  fun with(params: Params.() -> Unit): Binder<OUTPUT> {
+    this.params.apply(params)
     return this
   }
 
   fun <CONTAINER : Any> bind(
     target: Target<CONTAINER, OUTPUT>,
-    config: Playback.Config = Playback.Config(), // default
-    cb: ((Playback<OUTPUT>) -> Unit)? = null
+    onDone: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
-    val tag = playableConfig.tag
-    val playable = requestPlayable(tag)
-    playable.bind(target, config, cb)
+    val tag = this.params.tag
+    val playable = requestPlayable()
+    playable.bind(target, this.params.createPlaybackConfig(), onDone)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
 
   fun <CONTAINER : Any> bind(
     target: CONTAINER,
-    config: Playback.Config = Playback.Config(), // default
-    cb: ((Playback<OUTPUT>) -> Unit)? = null
+    callback: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
-    val tag = playableConfig.tag
-    val playable = requestPlayable(tag)
-    playable.bind(target, config, cb)
+    val tag = this.params.tag
+    val playable = requestPlayable()
+    playable.bind(target, this.params.createPlaybackConfig(), callback)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
 
-  private fun requestPlayable(tag: Any?): Playable<OUTPUT> {
+  private fun requestPlayable(): Playable<OUTPUT> {
+    val config = this.params.createPlayableConfig()
+    val tag = config.tag
     val toCreate: Playable<OUTPUT> by lazy {
-      this.playableCreator.createPlayable(kohii, media, playableConfig)
+      this.playableCreator.createPlayable(kohii, media, this.params.createPlayableConfig())
     }
 
     val playable =

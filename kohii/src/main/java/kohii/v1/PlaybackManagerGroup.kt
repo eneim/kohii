@@ -21,6 +21,7 @@ import androidx.collection.ArraySet
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
@@ -127,6 +128,11 @@ class PlaybackManagerGroup(
   @OnLifecycleEvent(ON_CREATE)
   fun onOwnerCreate() {
     playbackDispatcher.onAttached()
+  }
+
+  @OnLifecycleEvent(ON_STOP)
+  fun onOwnerStop() {
+    selection.clear()
   }
 
   @OnLifecycleEvent(ON_DESTROY)

@@ -73,7 +73,7 @@ class MainAdapter(
   ) {
     holder.bind(position)
     if (holder is NestRvViewHolder) {
-      kohii.register(fragment, arrayOf(holder.container))
+      kohii.register(fragment, holder.container)
       val adapter = ItemsAdapter(items, kohii)
       holder.container.adapter = adapter
 

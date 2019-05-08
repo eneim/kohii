@@ -21,10 +21,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import androidx.fragment.app.DialogFragment
-import com.google.android.exoplayer2.Player
 import kohii.v1.Kohii
-import kohii.v1.Playable.Config
+import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
@@ -50,9 +48,8 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
-  private var kohii: Kohii? = null
+  private lateinit var kohii: Kohii
   private var playback: Playback<*>? = null
-  private var dialogPlayer: DialogFragment? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -67,21 +64,19 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     super.onActivityCreated(savedInstanceState)
     // ⬇︎ For demo of manual fullscreen.
     // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    kohii = Kohii[this].also { it.register(this, arrayOf(this.scrollView)) }
-    val rebinder = kohii!!.setUp(videoUrl)
-        .config { Config(tag = videoTag, repeatMode = Player.REPEAT_MODE_ONE) }
-        .bind(playerView, Playback.Config(priority = Playback.PRIORITY_NORMAL)) {
-          playback = it
+    kohii = Kohii[this].also { it.register(this, this.scrollView) }
+    val rebinder = kohii.setUp(videoUrl)
+        .with {
+          tag = videoTag
+          repeatMode = Playable.REPEAT_MODE_ONE
+          priority = Playback.PRIORITY_NORMAL
         }
+        .bind(playerView) { playback = it }
 
     playerContainer.setOnClickListener {
       rebinder?.also {
-        dialogPlayer = PlayerDialogFragment.newInstance(
-            rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f)
-        )
-            .also { dialog ->
-              dialog.show(childFragmentManager, videoTag)
-            }
+        PlayerDialogFragment.newInstance(rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f))
+            .show(childFragmentManager, videoTag)
       }
 
       /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
@@ -109,13 +104,10 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   override fun onDialogInActive(rebinder: Rebinder) {
     kohii?.run {
-      rebinder.rebind(
-          this,
-          playerView,
-          Playback.Config(priority = Playback.PRIORITY_NORMAL)
-      ) {
-        playback = it
-      }
+      rebinder.with { priority = Playback.PRIORITY_NORMAL }
+          .rebind(this, playerView) {
+            playback = it
+          }
     }
   }
 

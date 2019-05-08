@@ -82,7 +82,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
     ViewCompat.setTransitionName(transView!!, initData.tag)
 
     container.setAspectRatio(initData.aspectRatio)
-    val kohii = Kohii[this].also { it.register(this, arrayOf(playerContainer)) }
+    val kohii = Kohii[this].also { it.register(this, playerContainer) }
     val rebinder = requireArguments().getParcelable<Rebinder>(KEY_REBINDER)
     rebinder?.rebind(kohii, playerView) {
       startPostponedEnterTransition()

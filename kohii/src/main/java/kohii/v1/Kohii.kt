@@ -23,6 +23,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
+import android.view.View
 import androidx.collection.ArrayMap
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -202,7 +203,7 @@ class Kohii(context: Context) {
   // Expose to client.
   fun register(
     provider: Any,
-    vararg hosts: Any
+    vararg hosts: View
   ): PlaybackManager {
     val (activity, lifecycleOwner) =
       when (provider) {
@@ -230,7 +231,9 @@ class Kohii(context: Context) {
       if (it is TargetHost) it
       else TargetHost.createTargetHost(it, manager)
     }
-        .forEach { manager.registerTargetHost(it) }
+        .forEach {
+          manager.registerTargetHost(it)
+        }
 
     lifecycleOwner.lifecycle.addObserver(manager)
     managerGroup.attachPlaybackManager(manager)
