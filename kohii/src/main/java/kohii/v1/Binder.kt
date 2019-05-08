@@ -48,26 +48,28 @@ class Binder<OUTPUT : Any>(
   fun <CONTAINER : Any> bind(
     target: Target<CONTAINER, OUTPUT>,
     config: Playback.Config = Playback.Config(), // default
-    cb: ((Playback<OUTPUT>) -> Unit)? = null
+    callback: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
     val tag = this.config.tag
-    val playable = requestPlayable(tag)
-    playable.bind(target, config, cb)
+    val playable = requestPlayable()
+    playable.bind(target, config, callback)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
 
   fun <CONTAINER : Any> bind(
     target: CONTAINER,
     config: Playback.Config = Playback.Config(), // default
-    cb: ((Playback<OUTPUT>) -> Unit)? = null
+    callback: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
     val tag = this.config.tag
-    val playable = requestPlayable(tag)
-    playable.bind(target, config, cb)
+    val playable = requestPlayable()
+    playable.bind(target, config, callback)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
 
-  private fun requestPlayable(tag: Any?): Playable<OUTPUT> {
+  private fun requestPlayable(): Playable<OUTPUT> {
+    val config = this.config.createPlayableConfig()
+    val tag = config.tag
     val toCreate: Playable<OUTPUT> by lazy {
       this.playableCreator.createPlayable(kohii, media, this.config.createPlayableConfig())
     }
