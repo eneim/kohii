@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import androidx.fragment.app.DialogFragment
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
@@ -51,7 +50,6 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   private lateinit var kohii: Kohii
   private var playback: Playback<*>? = null
-  private var dialogPlayer: DialogFragment? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -77,10 +75,8 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
     playerContainer.setOnClickListener {
       rebinder?.also {
-        dialogPlayer = PlayerDialogFragment.newInstance(
-            rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f)
-        )
-            .also { dialog -> dialog.show(childFragmentManager, videoTag) }
+        PlayerDialogFragment.newInstance(rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f))
+            .show(childFragmentManager, videoTag)
       }
 
       /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
