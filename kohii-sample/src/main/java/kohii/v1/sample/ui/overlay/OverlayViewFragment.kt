@@ -168,11 +168,11 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       ) {
         if (selected && key !== rebinder) {
           rebinder = key
-          key.with { priority = Playback.PRIORITY_HIGH }
-              .rebind(kohii, overlayPlayerView) {
-                playback = it
-                sheet.state = STATE_EXPANDED
-              }
+          key.rebind(kohii, overlayPlayerView) {
+            kohii.promote(it)
+            playback = it
+            sheet.state = STATE_EXPANDED
+          }
         }
       }
     })
@@ -211,10 +211,10 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     }
 
     rebinder = selectionTracker.selection?.firstOrNull()
-    rebinder?.with { priority = Playback.PRIORITY_HIGH }
-        ?.rebind(kohii, overlayPlayerView) {
-          playback = it
-        }
+    rebinder?.rebind(kohii, overlayPlayerView) {
+      kohii.promote(it)
+      playback = it
+    }
   }
 
   // MotionLayout.TransitionListener

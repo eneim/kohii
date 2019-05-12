@@ -46,6 +46,7 @@ class PlaybackManagerGroup(
   private val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
+  private var promotedManager: PlaybackManager? = null
   private val stickyManagers by lazy { LinkedHashSet<PlaybackManager>() }
   private val commonManagers = ArraySet<PlaybackManager>()
 
@@ -149,6 +150,7 @@ class PlaybackManagerGroup(
           detachPlaybackManager(it)
         }
         .clear()
+    promotedManager?.let { this.detachPlaybackManager(it) }
 
     owner.lifecycle.removeObserver(this)
     dispatcher.onContainerDestroyed()
@@ -174,18 +176,36 @@ class PlaybackManagerGroup(
     var picked = false // if true --> prioritized Managers has candidates picked for playing.
     var prioritized = false
 
-    if (stickyManagers.isNotEmpty()) {
-      prioritized = true
-      stickyManagers.forEach {
-        val (canPlay, canPause) = it.partitionPlaybacks()
-        toPause.addAll(canPause)
-        if (!picked) {
-          if (canPlay.isNotEmpty()) {
-            toPlay.addAll(canPlay)
-            picked = true
+    // Promoted Manager always win.
+    val promotedManager = this.promotedManager
+    if (promotedManager != null) {
+      val (canPlay, canPause) = promotedManager.partitionPlaybacks()
+      toPause.addAll(canPause)
+      if (!picked) {
+        if (canPlay.isNotEmpty()) {
+          toPlay.addAll(canPlay)
+          picked = true
+        }
+      } else {
+        toPause.addAll(canPlay)
+      }
+      prioritized = picked
+    }
+
+    if (!prioritized) {
+      if (stickyManagers.isNotEmpty()) {
+        prioritized = true
+        stickyManagers.forEach {
+          val (canPlay, canPause) = it.partitionPlaybacks()
+          toPause.addAll(canPause)
+          if (!picked) {
+            if (canPlay.isNotEmpty()) {
+              toPlay.addAll(canPlay)
+              picked = true
+            }
+          } else {
+            toPause.addAll(canPlay)
           }
-        } else {
-          toPause.addAll(canPlay)
         }
       }
     }
@@ -217,5 +237,24 @@ class PlaybackManagerGroup(
 
   override fun toString(): String {
     return "Root::${Integer.toHexString(hashCode())}::$activity"
+  }
+
+  internal fun promote(manager: PlaybackManager?) {
+    if (manager != null) {
+      this.stickyManagers.remove(manager)
+      this.commonManagers.remove(manager)
+    } else {
+      if (this.promotedManager != null) {
+        if (promotedManager!!.provider is Prioritized) {
+          stickyManagers.add(promotedManager!!)
+          val temp = stickyManagers.sortedWith(managerComparator)
+          stickyManagers.clear()
+          stickyManagers.addAll(temp)
+        } else {
+          commonManagers.add(promotedManager!!)
+        }
+      }
+    }
+    this.promotedManager = manager
   }
 }

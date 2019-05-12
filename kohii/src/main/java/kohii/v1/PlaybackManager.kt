@@ -44,8 +44,6 @@ abstract class PlaybackManager(
 
   companion object {
     val PRESENT = Any() // Use for mapping.
-    val priorityComparator =
-      Comparator<Playback<*>> { o1, o2 -> o1.config.priority.compareTo(o2.config.priority) }
 
     fun compareAndCheck(
       left: Prioritized,
@@ -65,8 +63,7 @@ abstract class PlaybackManager(
 
   // TargetHosts work in "first come first serve" model. Only one TargetHost will be active at a time.
   private val commonTargetHosts = LinkedHashSet<TargetHost>()
-  // TODO in 1.0, we do not use sticky targetHost yet. It is complicated to implement, yet not so much extra benefit.
-  private val stickyTargetHosts by lazy { LinkedHashSet<TargetHost>() }
+  private val stickyTargetHosts by lazy { ArraySet<TargetHost>() }
 
   private val attachedPlaybacks = ArraySet<Playback<*>>()
   // Weak map, so detached Playback can be cleared if not referred anymore.
@@ -196,19 +193,15 @@ abstract class PlaybackManager(
     volumeInfo: VolumeInfo = this.volumeInfo,
     sticky: Boolean = false
   ): TargetHost? {
-    val added =
-      if (sticky) {
-        val existing = this.commonTargetHosts.firstOrNull { it.host === targetHost.host }
-        if (existing != null) {
-          // remove from standard ones, add to sticky.
-          this.commonTargetHosts.remove(existing)
-          this.stickyTargetHosts.add(existing)
-        } else {
-          this.stickyTargetHosts.add(targetHost)
-        }
-      } else {
-        this.commonTargetHosts.add(targetHost)
-      }
+    val added = if (sticky) {
+      this.commonTargetHosts.remove(targetHost)
+      this.commonTargetHosts.addAll(this.stickyTargetHosts)
+      this.stickyTargetHosts.clear()
+      this.stickyTargetHosts.add(targetHost)
+    } else {
+      this.commonTargetHosts.add(targetHost)
+    }
+
     if (added) {
       targetHost.volumeInfo = volumeInfo
       targetHost.onAdded()
@@ -275,7 +268,7 @@ abstract class PlaybackManager(
     return if (lock.get()) {
       Pair(emptyList(), toPlay + playbacks)
     } else {
-      Pair(toPlay.sortedWith(priorityComparator), playbacks)
+      Pair(toPlay, playbacks)
     }
   }
 
@@ -543,5 +536,9 @@ abstract class PlaybackManager(
   ): OutputHolderPool<CONTAINER, OUTPUT>? {
     @Suppress("UNCHECKED_CAST")
     return parent.outputHolderNest[key] as OutputHolderPool<CONTAINER, OUTPUT>?
+  }
+
+  internal fun promote(targetHost: TargetHost) {
+    this.registerTargetHost(targetHost, sticky = true)
   }
 }

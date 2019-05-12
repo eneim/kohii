@@ -18,7 +18,6 @@ package kohii.v1
 
 import android.util.Log
 import androidx.annotation.CallSuper
-import androidx.annotation.IntDef
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
@@ -28,7 +27,6 @@ import kohii.v1.Playable.Companion.STATE_READY
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
-import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
  * Instance of this class will be tight to a Target. And that target is not reusable, so instance
@@ -48,11 +46,6 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     const val TAG = "Kohii::PB"
     const val DELAY_INFINITE = -1L
 
-    // Priority
-    const val PRIORITY_HIGH = 1
-    const val PRIORITY_NORMAL = 2
-    const val PRIORITY_LOW = 3
-
     val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, TargetHost.VERTICAL)
     }
@@ -66,10 +59,6 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     }
   }
 
-  @Retention(SOURCE)
-  @IntDef(PRIORITY_HIGH, PRIORITY_NORMAL, PRIORITY_LOW)
-  annotation class Priority
-
   open class Token {
 
     // = wantsToPlay()
@@ -81,8 +70,6 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   }
 
   data class Config(
-    @Priority
-    val priority: Int = PRIORITY_NORMAL,
     val delay: Int = 0,
       // Indicator to used to judge of a Playback should be played or not.
       // This doesn't warranty that it will be played, it just to make the Playback be a candidate
@@ -193,7 +180,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     other: Playback<*>,
     orientation: Int
   ): Int {
-    return this.config.priority.compareTo(other.config.priority)
+    return 0
   }
 
   internal open fun unbindInternal() {

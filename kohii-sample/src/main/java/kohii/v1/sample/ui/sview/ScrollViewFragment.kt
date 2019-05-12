@@ -62,14 +62,11 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
-    // ⬇︎ For demo of manual fullscreen.
-    // requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     kohii = Kohii[this].also { it.register(this, this.scrollView) }
     val rebinder = kohii.setUp(videoUrl)
         .with {
           tag = videoTag
           repeatMode = Playable.REPEAT_MODE_ONE
-          priority = Playback.PRIORITY_NORMAL
         }
         .bind(playerView) { playback = it }
 
@@ -78,17 +75,6 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
         PlayerDialogFragment.newInstance(rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f))
             .show(childFragmentManager, videoTag)
       }
-
-      /* Below: test the case opening PlayerFragment using Activity's FragmentManager.
-      @Suppress("ReplaceSingleLineLet")
-      fragmentManager?.let {
-        it.beginTransaction()
-            .replace(R.id.fragmentContainer, PlayerFragment.newInstance(videoTag), videoTag)
-            .setReorderingAllowed(true) // This is important.
-            .addToBackStack(null)
-            .commit()
-      }
-      */
     }
   }
 
@@ -103,11 +89,8 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   }
 
   override fun onDialogInActive(rebinder: Rebinder) {
-    kohii?.run {
-      rebinder.with { priority = Playback.PRIORITY_NORMAL }
-          .rebind(this, playerView) {
-            playback = it
-          }
+    rebinder.rebind(kohii, playerView) {
+      playback = it
     }
   }
 
