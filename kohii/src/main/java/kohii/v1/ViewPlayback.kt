@@ -138,25 +138,21 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
     orientation: Int
   ): Int {
     if (other !is ViewPlayback<*, *>) {
-      // Either 1 or -1.
-      return 1 or this.config.priority.compareTo(other.config.priority)
+      return 0
     }
 
     val thisToken = this.token
     val thatToken = other.token
 
-    val vertical by lazy { CENTER_Y.compare(thisToken, thatToken) }
-    val horizontal by lazy { CENTER_X.compare(thisToken, thatToken) }
+    val verticalOrder by lazy { CENTER_Y.compare(thisToken, thatToken) }
+    val horizontalOrder by lazy { CENTER_X.compare(thisToken, thatToken) }
 
-    var result = this.config.priority.compareTo(other.config.priority)
-    if (result == 0) {
-      result = when (orientation) {
-        TargetHost.VERTICAL -> vertical
-        TargetHost.HORIZONTAL -> horizontal
-        TargetHost.BOTH_AXIS -> max(vertical, horizontal)
-        TargetHost.NONE_AXIS -> max(vertical, horizontal)
-        else -> 0
-      }
+    var result = when (orientation) {
+      TargetHost.VERTICAL -> verticalOrder
+      TargetHost.HORIZONTAL -> horizontalOrder
+      TargetHost.BOTH_AXIS -> max(verticalOrder, horizontalOrder)
+      TargetHost.NONE_AXIS -> max(verticalOrder, horizontalOrder)
+      else -> 0
     }
 
     if (result == 0) result = compareValues(thisToken.areaOffset, thatToken.areaOffset)
