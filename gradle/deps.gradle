@@ -15,6 +15,11 @@
  */
 
 ext {
+  // query git for the SHA, Tag and commit count. Use these to automate versioning.
+  gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+  gitCommitCount =
+      100 + Integer.parseInt('git rev-list --count HEAD'.execute([], project.rootDir).text.trim())
+
   buildConfig =
       [
           compileSdk: 28,
@@ -32,12 +37,7 @@ ext {
   buildConfig.version['name'] = //
       "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A06"
 
-  buildConfig.version['code'] = //
-      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2802 --> 109,092,802 */
-      buildConfig.version.major * 100000000 + //
-          buildConfig.version.minor * 1000000 + //
-          buildConfig.version.patch * 10000 + //
-          buildConfig.version.build
+  buildConfig.version['code'] = gitCommitCount
 
   versions = //
       [//
