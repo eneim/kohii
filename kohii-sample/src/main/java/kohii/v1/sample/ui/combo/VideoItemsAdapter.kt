@@ -29,6 +29,8 @@ import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.ViewTarget
 import kohii.v1.sample.R
+import kohii.v1.sample.data.DrmItem
+import kohii.v1.sample.data.Item
 
 class VideoItemsAdapter(
   val kohii: Kohii,

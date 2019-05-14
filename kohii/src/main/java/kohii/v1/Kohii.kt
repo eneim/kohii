@@ -392,12 +392,20 @@ class Kohii(context: Context) {
     }
   }
 
+  fun findRebinder(tag: Any?): Rebinder? {
+    val cache = if (tag is String) this.mapTagToPlayable[tag] else null
+    return if (cache != null) {
+      Rebinder(tag as String, cache.second)
+    } else null
+  }
+
   fun promote(playback: Playback<*>) {
     // 1. Promote the Host
     val manager = playback.manager
     manager.promote(playback.targetHost)
     // 2. Promote the Manager
     manager.parent.promote(manager)
+    manager.dispatchRefreshAll()
   }
 
   // [END] Public API

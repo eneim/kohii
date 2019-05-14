@@ -77,6 +77,8 @@ abstract class PlaybackManager(
   // So that when adding new link, it can effectively clean up old links.
   private val mapTargetToPlayback = HashMap<Any /* Target Container */, Playback<*>>()
 
+  internal val selectionCallbacks = lazy { OnSelectionCallbacks() }
+
   // will be updated every time a new TargetHost is registered.
   internal val targetHosts = LinkedHashSet<TargetHost>()
   // Flag that is when false, no Playback should be played in any situation.
@@ -153,6 +155,8 @@ abstract class PlaybackManager(
 
     owner.lifecycle.removeObserver(this)
     kohii.managers.remove(owner)
+
+    if (this.selectionCallbacks.isInitialized()) this.selectionCallbacks.value.clear()
 
     val configChange = parent.activity.isChangingConfigurations
     // If this is the last Manager, and it is not a config change, clean everything.
@@ -536,6 +540,14 @@ abstract class PlaybackManager(
   ): OutputHolderPool<CONTAINER, OUTPUT>? {
     @Suppress("UNCHECKED_CAST")
     return parent.outputHolderNest[key] as OutputHolderPool<CONTAINER, OUTPUT>?
+  }
+
+  fun addOnSelectionCallback(selectionCallback: OnSelectionCallback) {
+    this.selectionCallbacks.value.add(selectionCallback)
+  }
+
+  fun removeOnSelectionCallback(selectionCallback: OnSelectionCallback?) {
+    this.selectionCallbacks.value.remove(selectionCallback)
   }
 
   internal fun promote(targetHost: TargetHost) {

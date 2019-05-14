@@ -15,26 +15,27 @@
   ~ limitations under the License.
   -->
 
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/playerContainer"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
-    android:fitsSystemWindows="false"
+    tools:context=".MainActivity"
     >
 
-  <com.google.android.exoplayer2.ui.PlayerView
-      android:id="@id/playerView"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:fitsSystemWindows="false"
-      app:keep_content_on_player_reset="true"
-      app:resize_mode="fit"
-      app:show_buffering="when_playing"
-      app:surface_type="surface_view"
-      app:use_controller="false"
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/recyclerView"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:orientation="vertical"
+      app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
       />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
