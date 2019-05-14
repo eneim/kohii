@@ -23,15 +23,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.commit
+import androidx.fragment.app.viewModels
+import kohii.media.VolumeInfo
 import kohii.v1.Kohii
 import kohii.v1.OnSelectionCallback
 import kohii.v1.Playback
 import kohii.v1.Rebinder
+import kohii.v1.Scope
 import kohii.v1.TargetHost.Builder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.currentVisible
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.isLandscape
+import kohii.v1.sample.ui.fbook.vh.FbookItemHolder
+import kohii.v1.sample.ui.fbook.vh.FbookItemHolder.OnClick
+import kohii.v1.sample.ui.fbook.vh.VideoViewHolder
 import kohii.v1.sample.ui.player.InitData
 import kotlinx.android.synthetic.main.fragment_facebook.recyclerView
 
@@ -42,8 +49,11 @@ class FbookFragment : BaseFragment() {
 
   companion object {
     const val ARG_KEY_REBINDER = "kohii::fbook::arg::rebinder"
+    const val PAYLOAD_VOLUME = "kohii::fbook::payload::volume"
     fun newInstance() = FbookFragment()
   }
+
+  val viewModel: FbookViewModel by viewModels()
 
   lateinit var kohii: Kohii
   var latestRebinder: Rebinder? = null
@@ -64,7 +74,7 @@ class FbookFragment : BaseFragment() {
     kohii = Kohii[this]
     val manager = kohii.register(this)
     val hostBuilder = Builder(recyclerView)
-    manager.registerTargetHost(hostBuilder)
+    val rvHost = manager.registerTargetHost(hostBuilder)
     manager.addOnSelectionCallback(object : OnSelectionCallback {
       override fun onSelection(playbacks: Collection<Playback<*>>) {
         Log.w("Kohii::Fb", "selection: $playbacks")
@@ -72,8 +82,26 @@ class FbookFragment : BaseFragment() {
       }
     })
 
+    viewModel.timelineVolumeInfo.observe({ viewLifecycleOwner.lifecycle }) {
+      kohii.applyVolumeInfo(it, rvHost, Scope.HOST)
+      recyclerView.currentVisible<VideoViewHolder>()
+          .forEach { viewHolder ->
+            recyclerView.adapter?.notifyItemChanged(viewHolder.adapterPosition, it)
+          }
+    }
+
     val videos = getApp().videos
-    recyclerView.adapter = FbookAdapter(kohii, videos)
+    recyclerView.adapter = FbookAdapter(kohii, videos, onClick = object : OnClick {
+      override fun onClick(
+        receiver: View,
+        holder: FbookItemHolder
+      ) {
+        if (holder is VideoViewHolder && receiver === holder.volume) {
+          val current = viewModel.timelineVolumeInfo.value as VolumeInfo
+          viewModel.timelineVolumeInfo.value = VolumeInfo(!current.mute, current.volume)
+        }
+      }
+    })
 
     // Trick to ensure the order of Playback binding.
     // By doing this, the RecyclerView will finish its layout before the BigPlayerFragment being destroyed (if it exists before).
