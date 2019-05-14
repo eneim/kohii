@@ -22,6 +22,8 @@ import android.graphics.Point
 import android.os.Build
 import android.util.TypedValue
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.LayoutManager
 
 /**
  * @author eneim (2018/07/30).
@@ -74,4 +76,19 @@ fun Activity.isLandscape(): Boolean {
     display.getSize(it)
     it.x >= it.y || (inMultiWindow() && it.y <= realSize.y * 0.5)
   }
+}
+
+inline fun <reified T> RecyclerView.currentVisible(): List<T> {
+  val layout: LayoutManager = layoutManager ?: return emptyList()
+  val childCount = layout.childCount
+  if (childCount == 0) return emptyList()
+  val result = ArrayList<T>()
+  for (i in 0 until childCount) {
+    val view = layout.getChildAt(i)
+    if (view != null) {
+      val holder = this.findContainingViewHolder(view)
+      if (holder is T) result.add(holder)
+    }
+  }
+  return result
 }

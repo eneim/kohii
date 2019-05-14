@@ -17,13 +17,15 @@
 package kohii.v1.sample.ui.fbook.vh
 
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playable
-import kohii.v1.Rebinder
+import kohii.v1.Playback
+import kohii.v1.PlaybackEventListener
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
@@ -31,22 +33,25 @@ import kohii.v1.sample.data.Video
 internal class VideoViewHolder(
   parent: ViewGroup,
   val kohii: Kohii
-) : FbookItemHolder(parent) {
+) : FbookItemHolder(parent), PlaybackEventListener {
 
   init {
     videoContainer.isVisible = true
   }
 
-  private val playerView = itemView.findViewById(R.id.playerView) as PlayerView
-  private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
+  internal val playerView = itemView.findViewById(R.id.playerView) as PlayerView
+  internal val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
+  internal val volume = itemView.findViewById(R.id.volumeSwitch) as ImageButton
 
-  var videoSources: Sources? = null
+  private var videoSources: Sources? = null
 
-  val tagKey: String?
+  private val videoTag: String?
     get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
 
-  val rebinder: Rebinder?
-    get() = this.tagKey?.let { Rebinder(it, PlayerView::class.java) }
+  override fun setupOnClick(onClick: OnClick) {
+    super.setupOnClick(onClick)
+    volume.setOnClickListener { onClick.onClick(it, this) }
+  }
 
   override fun bind(item: Any?) {
     super.bind(item)
@@ -61,10 +66,21 @@ internal class VideoViewHolder(
 
       kohii.setUp(videoSources!!.file)
           .with {
-            tag = tagKey
+            tag = videoTag
             repeatMode = Playable.REPEAT_MODE_ONE
           }
-          .bind(playerView)
+          .bind(playerView) { playback ->
+            playback.addPlaybackEventListener(this@VideoViewHolder)
+            volume.isSelected = !playback.volumeInfo.mute
+          }
     }
+  }
+
+  override fun beforePlay(playback: Playback<*>) {
+    thumbnail.isVisible = false
+  }
+
+  override fun afterPause(playback: Playback<*>) {
+    thumbnail.isVisible = true
   }
 }

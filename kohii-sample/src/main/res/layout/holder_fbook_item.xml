@@ -234,17 +234,28 @@
         app:show_buffering="when_playing"
         app:surface_type="surface_view"
         app:use_controller="false"
-        />
+        >
+
+      <androidx.appcompat.widget.AppCompatImageButton
+          android:id="@+id/volumeSwitch"
+          android:layout_width="48dp"
+          android:layout_height="48dp"
+          android:layout_gravity="bottom|end"
+          android:layout_margin="@dimen/activity_horizontal_margin"
+          android:background="?attr/selectableItemBackgroundBorderless"
+          android:padding="4dp"
+          android:scaleType="fitCenter"
+          app:srcCompat="@drawable/fb_volume_switch"
+          />
+
+    </com.google.android.exoplayer2.ui.PlayerView>
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:adjustViewBounds="false"
-        android:padding="@dimen/activity_horizontal_margin"
-        android:scaleType="fitCenter"
-        android:visibility="gone"
+        android:scaleType="centerCrop"
         app:srcCompat="@drawable/ic_kohii"
         />
 
