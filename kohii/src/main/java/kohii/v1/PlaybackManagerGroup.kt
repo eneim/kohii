@@ -98,6 +98,8 @@ class PlaybackManagerGroup(
       stickyManagers.remove(playbackManager)
     } else commonManagers.remove(playbackManager)
 
+    if (promotedManager === playbackManager) promotedManager = null
+
     if (handled) {
       if (kohii.managers.isEmpty) kohii.onLastManagerOffline()
     }
@@ -151,6 +153,7 @@ class PlaybackManagerGroup(
         }
         .clear()
     promotedManager?.let { this.detachPlaybackManager(it) }
+    promotedManager = null
 
     owner.lifecycle.removeObserver(this)
     dispatcher.onContainerDestroyed()
@@ -229,6 +232,8 @@ class PlaybackManagerGroup(
       this.selection.addAll(selected)
       (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
       selected.forEach { playbackDispatcher.play(it) }
+      selected.groupBy { it.manager }
+          .forEach { (m, p) -> m.selectionCallbacks.value.onSelection(p) }
     }
   }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.combo
+package kohii.v1.sample.data
 
 import android.os.Parcelable
 import com.squareup.moshi.Json

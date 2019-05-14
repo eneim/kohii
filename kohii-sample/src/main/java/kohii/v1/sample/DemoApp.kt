@@ -25,6 +25,7 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.fabric.sdk.android.Fabric
 import kohii.v1.Kohii
+import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.youtube.YouTubePlayableCreator
 import okio.buffer
@@ -48,6 +49,16 @@ class DemoApp : Application() {
     val jsonAdapter: JsonAdapter<List<Video>> =
       moshi.adapter(Types.newParameterizedType(List::class.java, Video::class.java))
     jsonAdapter.fromJson(asset.open("caminandes.json").source().buffer()) ?: emptyList()
+  }
+
+  val exoItems: List<Item> by lazy {
+    val asset = assets
+    val type = Types.newParameterizedType(List::class.java, Item::class.java)
+    val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+    val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
+    adapter.fromJson(asset.open("medias.json").source().buffer()) ?: emptyList()
   }
 
   override fun onCreate() {
