@@ -21,6 +21,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.commit
 import kohii.v1.Kohii
 import kohii.v1.OnSelectionCallback
@@ -73,6 +74,14 @@ class FbookFragment : BaseFragment() {
 
     val videos = getApp().videos
     recyclerView.adapter = FbookAdapter(kohii, videos)
+
+    // Trick to ensure the order of Playback binding.
+    // By doing this, the RecyclerView will finish its layout before the BigPlayerFragment being destroyed (if it exists before).
+    // Therefore, the ViewHolder will finish the binding before its Playable is released by the destruction of BigPlayerFragment
+    postponeEnterTransition()
+    recyclerView.doOnLayout {
+      startPostponedEnterTransition()
+    }
 
     val savedBinder = savedInstanceState?.getParcelable(ARG_KEY_REBINDER) as Rebinder?
     if (savedBinder != null && requireActivity().isLandscape()) {
