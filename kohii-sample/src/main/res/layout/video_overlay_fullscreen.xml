@@ -39,8 +39,8 @@
       android:layout_width="0dp"
       android:layout_height="0dp"
       app:layout_constraintDimensionRatio="16:9"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       />
 
@@ -62,8 +62,7 @@
         android:layout_height="match_parent"
         app:resize_mode="fixed_width"
         app:show_buffering="when_playing"
-        app:shutter_background_color="@color/shutter_color"
-        app:surface_type="surface_view"
+        app:surface_type="texture_view"
         app:use_controller="false"
         />
   </FrameLayout>

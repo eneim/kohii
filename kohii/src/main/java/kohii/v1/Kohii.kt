@@ -392,10 +392,18 @@ class Kohii(context: Context) {
     }
   }
 
-  fun findRebinder(tag: Any?): Rebinder? {
+  fun fetchRebinder(tag: Any?): Rebinder? {
     val cache = if (tag is String) this.mapTagToPlayable[tag] else null
     return if (cache != null) {
       Rebinder(tag as String, cache.second)
+    } else null
+  }
+
+  fun fetchPlayback(rebinder: Rebinder): Playback<*>? {
+    val cache = this.mapTagToPlayable[rebinder.tag]
+    return if (cache != null) {
+      this.managers.values.map { it.findPlaybackForPlayable(cache.first) }
+          .firstOrNull()
     } else null
   }
 

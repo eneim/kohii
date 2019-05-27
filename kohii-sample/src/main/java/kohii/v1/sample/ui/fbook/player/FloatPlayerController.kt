@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.fbook
+package kohii.v1.sample.ui.fbook.player
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import kohii.media.VolumeInfo
+import kohii.v1.Rebinder
 
-class FbookViewModel : ViewModel() {
+interface FloatPlayerController {
 
-  val timelineVolume = MutableLiveData<VolumeInfo>(VolumeInfo())
-
-  val overlayPlayerInfo = MutableLiveData<OverlayPlayerInfo>()
+  fun showFloatPlayer(rebinder: Rebinder)
 }

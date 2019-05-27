@@ -16,13 +16,20 @@
 
 package kohii.v1.sample.ui.fbook
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import kohii.media.VolumeInfo
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.LayoutManager
 
-class FbookViewModel : ViewModel() {
-
-  val timelineVolume = MutableLiveData<VolumeInfo>(VolumeInfo())
-
-  val overlayPlayerInfo = MutableLiveData<OverlayPlayerInfo>()
+inline fun <reified T> RecyclerView.currentVisible(predicate: (T) -> Boolean = { true }): List<T> {
+  val layout: LayoutManager = layoutManager ?: return emptyList()
+  val childCount = layout.childCount
+  if (childCount == 0) return emptyList()
+  val result = ArrayList<T>()
+  for (i in 0 until childCount) {
+    val view = layout.getChildAt(i)
+    if (view != null) {
+      val holder = this.findContainingViewHolder(view)
+      if (holder is T && predicate(holder)) result.add(holder)
+    }
+  }
+  return result
 }

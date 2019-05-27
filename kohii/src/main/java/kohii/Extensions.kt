@@ -135,3 +135,8 @@ inline fun <E> SparseArrayCompat<E>.forEach(actor: (E, Int) -> Unit) {
     }
   }
 }
+
+fun <T> Set<T>.plusNotNull(element: T?): Set<T> {
+  if (element != null) return this + element
+  return this
+}

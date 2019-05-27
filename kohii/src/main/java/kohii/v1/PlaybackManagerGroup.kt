@@ -26,6 +26,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
+import kohii.plusNotNull
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -238,7 +239,8 @@ class PlaybackManagerGroup(
   }
 
   internal fun managers(): MutableSet<PlaybackManager> =
-    (this.stickyManagers + this.commonManagers) as MutableSet<PlaybackManager> // Order is important.
+    (this.stickyManagers + this.commonManagers)
+        .plusNotNull(this.promotedManager) as MutableSet<PlaybackManager> // Order is important.
 
   override fun toString(): String {
     return "Root::${Integer.toHexString(hashCode())}::$activity"

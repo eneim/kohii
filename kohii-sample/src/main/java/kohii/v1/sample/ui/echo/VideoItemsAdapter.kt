@@ -38,7 +38,7 @@ class VideoItemsAdapter(
     val holder = VideoItemHolder(parent, kohii, viewModel)
     holder.volumeButton.setOnClickListener {
       if (holder.playback != null) {
-        volumeControl.invoke(holder.playback!!)
+        volumeControl(holder.playback!!)
       }
     }
 

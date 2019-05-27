@@ -89,6 +89,9 @@ internal open class PlayerViewBridge(
   private var lastSeenTrackGroupArray: TrackGroupArray? = null
   private var inErrorState = false
 
+  override val playbackState: Int
+    get() = player?.playbackState ?: -1
+
   override fun prepare(loadSource: Boolean) {
     this.addEventListener(this)
 
