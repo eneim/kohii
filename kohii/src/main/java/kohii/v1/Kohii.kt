@@ -399,6 +399,7 @@ class Kohii(context: Context) {
     } else null
   }
 
+  @Suppress("unused")
   fun fetchPlayback(rebinder: Rebinder): Playback<*>? {
     val cache = this.mapTagToPlayable[rebinder.tag]
     return if (cache != null) {

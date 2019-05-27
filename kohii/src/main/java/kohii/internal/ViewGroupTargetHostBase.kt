@@ -20,7 +20,6 @@ import android.view.View
 import android.view.ViewGroup
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
-import kohii.v1.TargetHost.Companion.NONE_AXIS
 
 internal open class ViewGroupTargetHostBase(
   host: ViewGroup,

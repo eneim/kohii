@@ -286,7 +286,7 @@ internal open class PlayerViewBridge(
       }
 
       it.playbackParameters = _playbackParams
-      val hasResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET
+      val hasResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
       if (hasResumePosition) {
         it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
       }
