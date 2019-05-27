@@ -19,6 +19,7 @@
       <w>targethost</w>
       <w>textureview</w>
       <w>transcoder</w>
+      <w>unmute</w>
     </words>
   </dictionary>
 </component>

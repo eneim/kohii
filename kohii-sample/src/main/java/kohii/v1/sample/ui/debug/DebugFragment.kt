@@ -34,6 +34,7 @@ import kotlinx.android.synthetic.main.fragment_debug.playerView2
 import kotlinx.android.synthetic.main.fragment_debug.scopes
 import kotlinx.android.synthetic.main.fragment_debug.scrollView
 
+@Suppress("unused")
 class DebugFragment : BaseFragment() {
 
   companion object {
