@@ -174,6 +174,15 @@ class Kohii(context: Context) {
   internal fun play(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
+      val manager = playback.manager
+      val properHost = manager.targetHosts.firstOrNull { it.accepts(playback.target) }
+      if (properHost != null && playback.targetHost !== properHost) {
+        playback.targetHost.detachTarget(playback.target)
+        playback.targetHost = properHost
+        playback.targetHost.attachTarget(playback.target)
+      }
+      if (playback.token.shouldPrepare()) playback.playable.prepare()
+
       manualPlayableState[playback.playable] = true
       if (!controller.pauseBySystem()) {
         manualPlayables[playback.playable] = PRESENT
@@ -381,6 +390,31 @@ class Kohii(context: Context) {
       }
       else -> throw IllegalArgumentException("Unsupported receiver: $receiver")
     }
+  }
+
+  fun fetchRebinder(tag: Any?): Rebinder? {
+    val cache = if (tag is String) this.mapTagToPlayable[tag] else null
+    return if (cache != null) {
+      Rebinder(tag as String, cache.second)
+    } else null
+  }
+
+  @Suppress("unused")
+  fun fetchPlayback(rebinder: Rebinder): Playback<*>? {
+    val cache = this.mapTagToPlayable[rebinder.tag]
+    return if (cache != null) {
+      this.managers.values.map { it.findPlaybackForPlayable(cache.first) }
+          .firstOrNull()
+    } else null
+  }
+
+  fun promote(playback: Playback<*>) {
+    // 1. Promote the Host
+    val manager = playback.manager
+    manager.promote(playback.targetHost)
+    // 2. Promote the Manager
+    manager.parent.promote(manager)
+    manager.dispatchRefreshAll()
   }
 
   // [END] Public API

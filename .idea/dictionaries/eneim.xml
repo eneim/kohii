@@ -5,6 +5,7 @@
       <w>crashlytics</w>
       <w>eneim</w>
       <w>exoplayer</w>
+      <w>fbook</w>
       <w>firebase</w>
       <w>kaigi</w>
       <w>kohii</w>
@@ -18,6 +19,7 @@
       <w>targethost</w>
       <w>textureview</w>
       <w>transcoder</w>
+      <w>unmute</w>
     </words>
   </dictionary>
 </component>

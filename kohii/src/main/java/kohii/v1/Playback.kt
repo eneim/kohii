@@ -18,7 +18,7 @@ package kohii.v1
 
 import android.util.Log
 import androidx.annotation.CallSuper
-import androidx.annotation.IntDef
+import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
@@ -28,7 +28,6 @@ import kohii.v1.Playable.Companion.STATE_READY
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
-import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
  * Instance of this class will be tight to a Target. And that target is not reusable, so instance
@@ -48,11 +47,6 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     const val TAG = "Kohii::PB"
     const val DELAY_INFINITE = -1L
 
-    // Priority
-    const val PRIORITY_HIGH = 1
-    const val PRIORITY_NORMAL = 2
-    const val PRIORITY_LOW = 3
-
     val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
       return@Comparator o1.compareWidth(o2, TargetHost.VERTICAL)
     }
@@ -66,10 +60,6 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     }
   }
 
-  @Retention(SOURCE)
-  @IntDef(PRIORITY_HIGH, PRIORITY_NORMAL, PRIORITY_LOW)
-  annotation class Priority
-
   open class Token {
 
     // = wantsToPlay()
@@ -81,8 +71,6 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   }
 
   data class Config(
-    @Priority
-    val priority: Int = PRIORITY_NORMAL,
     val delay: Int = 0,
       // Indicator to used to judge of a Playback should be played or not.
       // This doesn't warranty that it will be played, it just to make the Playback be a candidate
@@ -91,6 +79,8 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     val threshold: Float = 0.65F,
     val controller: Controller? = null,
     val playbackInfo: PlaybackInfo? = null,
+    @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
+    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
     val keepScreenOn: Boolean = true,
     val callback: Callback? = null
   )
@@ -119,7 +109,19 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   // [BEGIN] Public API
 
   fun addPlaybackEventListener(listener: PlaybackEventListener) {
-    this.listeners.add(listener)
+    if (this.listeners.add(listener)) {
+      when (this.playbackState) {
+        STATE_IDLE -> {
+        }
+        STATE_BUFFERING ->
+          listener.onBuffering(this@Playback, playable.isPlaying)
+        STATE_READY ->
+          if (playable.isPlaying) listener.onPlaying(
+              this@Playback
+          ) else listener.onPaused(this@Playback)
+        STATE_END -> listener.onCompleted(this@Playback)
+      }
+    }
   }
 
   fun removePlaybackEventListener(listener: PlaybackEventListener?) {
@@ -178,6 +180,13 @@ abstract class Playback<OUTPUT : Any> internal constructor(
       this.playable.repeatMode = value
     }
 
+  val playbackState: Int
+    get() = playable.playbackState
+
+  fun rewind() {
+    playable.reset()
+  }
+
   fun unbind() {
     this.unbindInternal()
     manager.performRemovePlayback(this)
@@ -193,7 +202,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     other: Playback<*>,
     orientation: Int
   ): Int {
-    return this.config.priority.compareTo(other.config.priority)
+    return 0
   }
 
   internal open fun unbindInternal() {
@@ -264,6 +273,8 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   // ~ View is attached
   @CallSuper
   internal open fun onActive() {
+    // TODO [20190527] why we do not call this anymore?
+    // playable.onActive(this)
     for (callback in this.callbacks) {
       callback.onActive(this)
     }
@@ -287,6 +298,8 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     if (player === this.target) {
       this.playable.onPlayerInActive(this, player)
     }
+    // TODO [20190527] why we do not call this anymore?
+    // playable.onInActive(this)
   }
 
   // Being removed from Manager

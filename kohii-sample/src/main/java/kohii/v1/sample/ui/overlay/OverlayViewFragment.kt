@@ -18,6 +18,7 @@ package kohii.v1.sample.ui.overlay
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -101,13 +102,15 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       adapter = videoAdapter
     }
 
-    volumeViewModel.overlayVolume.observe({ viewLifecycleOwner.lifecycle }) {
-      kohii.applyVolumeInfo(it, overlayHost, Scope.HOST)
-    }
+    volumeViewModel.apply {
+      overlayVolume.observe({ viewLifecycleOwner.lifecycle }) {
+        kohii.applyVolumeInfo(it, overlayHost, Scope.HOST)
+      }
 
-    volumeViewModel.recyclerViewVolume.observe({ viewLifecycleOwner.lifecycle }) {
-      kohii.applyVolumeInfo(it, rvHost, Scope.HOST)
-      actionButton.text = "Mute RV: ${it.mute}"
+      recyclerViewVolume.observe({ viewLifecycleOwner.lifecycle }) {
+        kohii.applyVolumeInfo(it, rvHost, Scope.HOST)
+        actionButton.text = "Mute RV: ${it.mute}"
+      }
     }
 
     actionButton.setOnClickListener {
@@ -117,6 +120,9 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
     // Selection
     keyProvider = VideoTagKeyProvider(recyclerView)
+
+    // Must be created after setting the Adapter, because once created, this instance will
+    // call recyclerView.adapter and will throw NPE if it doesn't present.
     selectionTracker = SelectionTracker.Builder<Rebinder>(
         "caminandes.json",
         recyclerView,
@@ -149,6 +155,12 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         state: Int
       ) {
         if (state == STATE_HIDDEN) {
+          // When the overlay panel is dismissed, it is equal to that the overlay Playback also disappears.
+          // In that case, if the ViewHolder of the same Video does not present on the screen,
+          //   We need to unbind the Playback, so that the list can refresh the Videos and start new Playbacks.
+          // If that ViewHolder still presents, not that the call to "clearSelection" will ask the
+          // Adapter to update its content, which will rebind the Video to its PlayerView. After that,
+          // we can see that the list is back to normal playback.
           selectionTracker.clearSelection()
           rebinder?.also {
             val pos = keyProvider.getPosition(it)
@@ -168,11 +180,12 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       ) {
         if (selected && key !== rebinder) {
           rebinder = key
-          key.with { priority = Playback.PRIORITY_HIGH }
-              .rebind(kohii, overlayPlayerView) {
-                playback = it
-                sheet.state = STATE_EXPANDED
-              }
+          key.rebind(kohii, overlayPlayerView) {
+            Log.w("Kohii::RX", "rebind: $it, ${key.tag}")
+            kohii.promote(it)
+            playback = it
+            sheet.state = STATE_EXPANDED
+          }
         }
       }
     })
@@ -211,10 +224,10 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     }
 
     rebinder = selectionTracker.selection?.firstOrNull()
-    rebinder?.with { priority = Playback.PRIORITY_HIGH }
-        ?.rebind(kohii, overlayPlayerView) {
-          playback = it
-        }
+    rebinder?.rebind(kohii, overlayPlayerView) {
+      kohii.promote(it)
+      playback = it
+    }
   }
 
   // MotionLayout.TransitionListener

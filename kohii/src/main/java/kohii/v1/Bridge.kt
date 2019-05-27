@@ -24,6 +24,8 @@ import kohii.v1.Playable.RepeatMode
 
 interface Bridge<OUTPUT : Any> {
 
+  val playbackState: Int
+
   //  set/get
   var playerView: OUTPUT?
 

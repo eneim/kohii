@@ -20,8 +20,6 @@
   <item format="integer" name="motion_view_tag" type="id"/>
 
   <string name="large_text">
-    "Material is the metaphor.\n\n"
-
     "A material metaphor is the unifying theory of a rationalized space and a system of motion."
     "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
     "technologically advanced and open to imagination and magic.\n"
@@ -201,5 +199,14 @@
   <string name="demo_desc_master_detail">
     2 Fragments (Master Fragment and Detail Fragment) in one main Fragment.
     \n\nThis demo shows how Kohii could work in complicated scenario. It doesn\'t really focus on the "Master" and "Detail" aspect (so their content are just randomly picked from other demo).
+  </string>
+
+  <string name="demo_title_fbook">
+    Kohii + Facebook
+  </string>
+
+  <string name="demo_desc_fbook">
+    Facebook Video list demonstration. It will automatically open fullscreen Player on landscape mode (judged by resource.configuration.landscape flag).
+    It also supports floating Player (same concept as Picture-In-Picture, but not for Activity).
   </string>
 </resources>

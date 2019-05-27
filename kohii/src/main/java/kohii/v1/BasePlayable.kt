@@ -34,6 +34,7 @@ abstract class BasePlayable<OUTPUT : Any>(
   protected val playbackCreator: PlaybackCreator<OUTPUT>
 ) : Playable<OUTPUT> {
 
+  private var _playbackState = -1
   private var listener: PlayerEventListener? = null
 
   override fun onAdded(playback: Playback<*>) {
@@ -43,6 +44,7 @@ abstract class BasePlayable<OUTPUT : Any>(
           playWhenReady: Boolean,
           playbackState: Int
         ) {
+          _playbackState = playbackState
           playback.onPlayerStateChanged(playWhenReady, playbackState)
         }
 
@@ -58,6 +60,9 @@ abstract class BasePlayable<OUTPUT : Any>(
     this.bridge.addErrorListener(playback.errorListeners)
     this.bridge.addEventListener(playback.playerListeners)
     this.bridge.addVolumeChangeListener(playback.volumeListeners)
+
+    this.bridge.repeatMode = playback.config.repeatMode
+    this.bridge.parameters = playback.config.parameters
 
     playback.config.playbackInfo?.also { this.playbackInfo = it }
     this.setVolumeInfo(playback.targetHost.volumeInfo)
@@ -79,7 +84,6 @@ abstract class BasePlayable<OUTPUT : Any>(
     }
   }
 
-  // Playback.Callback#onActive(Playback)
   /* Expected:
    * - Instance of this class will have member 'playback' set to the method parameter.
    * - Bridge instance will be set with correct target (PlayerView).
@@ -90,7 +94,6 @@ abstract class BasePlayable<OUTPUT : Any>(
     }
   }
 
-  // Playback.Callback#onInActive(Playback)
   override fun onInActive(playback: Playback<*>) {
     // When a Playback becomes inactive, its Playable may be attached to other Playback already.
     // We only detach the Bridge's PlayerView when the Playable is no longer belong to any Playback,
@@ -132,6 +135,9 @@ abstract class BasePlayable<OUTPUT : Any>(
 
   override val tag: Any = config.tag ?: NO_TAG
 
+  override val playbackState: Int
+    get() = _playbackState
+
   override var repeatMode: Int
     get() = this.bridge.repeatMode
     set(value) {
@@ -155,6 +161,10 @@ abstract class BasePlayable<OUTPUT : Any>(
 
   override fun pause() {
     bridge.pause()
+  }
+
+  override fun reset() {
+    bridge.reset()
   }
 
   override fun release() {

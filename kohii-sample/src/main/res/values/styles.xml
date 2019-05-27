@@ -26,7 +26,24 @@
     <item name="windowNoTitle">true</item>
   </style>
 
+  <style name="AppTheme.Fbook" parent="Theme.MaterialComponents.Light.Bridge">
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+  </style>
+
   <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">
+  </style>
+
+  <style name="Kohii.Dialog.Infinity" parent="Theme.AppCompat.Light.DialogWhenLarge">
+  </style>
+
+  <style name="Kohii.Dialog.Infinity.NoTitle">
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+  </style>
+
+  <style name="Kohii.Board" parent="Kohii.Dialog.Infinity.NoTitle">
+    <item name="android:windowBackground">@android:color/black</item>
   </style>
 
 </resources>

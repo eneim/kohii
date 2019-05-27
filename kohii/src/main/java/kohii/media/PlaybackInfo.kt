@@ -34,7 +34,6 @@ data class PlaybackInfo(
   companion object {
     const val TIME_UNSET = Long.MIN_VALUE + 1
     const val INDEX_UNSET = -1
-    val SCRAP = PlaybackInfo()
   }
 
   fun reset() {

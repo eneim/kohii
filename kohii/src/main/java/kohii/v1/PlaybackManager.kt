@@ -44,8 +44,6 @@ abstract class PlaybackManager(
 
   companion object {
     val PRESENT = Any() // Use for mapping.
-    val priorityComparator =
-      Comparator<Playback<*>> { o1, o2 -> o1.config.priority.compareTo(o2.config.priority) }
 
     fun compareAndCheck(
       left: Prioritized,
@@ -65,8 +63,7 @@ abstract class PlaybackManager(
 
   // TargetHosts work in "first come first serve" model. Only one TargetHost will be active at a time.
   private val commonTargetHosts = LinkedHashSet<TargetHost>()
-  // TODO in 1.0, we do not use sticky targetHost yet. It is complicated to implement, yet not so much extra benefit.
-  private val stickyTargetHosts by lazy { LinkedHashSet<TargetHost>() }
+  private val stickyTargetHosts by lazy { ArraySet<TargetHost>() }
 
   private val attachedPlaybacks = ArraySet<Playback<*>>()
   // Weak map, so detached Playback can be cleared if not referred anymore.
@@ -74,11 +71,14 @@ abstract class PlaybackManager(
   private val detachedPlaybacks = WeakHashMap<Playback<*>, Any>()
   // Any Playback to be removed will be put here.
   // TODO consider to remove the Playback **after** adding new one, like Activity lifecycle.
+  @Suppress("unused")
   private val playbacksToRemove = ArraySet<Playback<*>>()
 
   // As a target has no idea which Playable it is bound to, Manager need to manage the link
   // So that when adding new link, it can effectively clean up old links.
   private val mapTargetToPlayback = HashMap<Any /* Target Container */, Playback<*>>()
+
+  internal val selectionCallbacks = lazy { OnSelectionCallbacks() }
 
   // will be updated every time a new TargetHost is registered.
   internal val targetHosts = LinkedHashSet<TargetHost>()
@@ -157,6 +157,8 @@ abstract class PlaybackManager(
     owner.lifecycle.removeObserver(this)
     kohii.managers.remove(owner)
 
+    if (this.selectionCallbacks.isInitialized()) this.selectionCallbacks.value.clear()
+
     val configChange = parent.activity.isChangingConfigurations
     // If this is the last Manager, and it is not a config change, clean everything.
     if (kohii.managers.isEmpty) {
@@ -196,19 +198,15 @@ abstract class PlaybackManager(
     volumeInfo: VolumeInfo = this.volumeInfo,
     sticky: Boolean = false
   ): TargetHost? {
-    val added =
-      if (sticky) {
-        val existing = this.commonTargetHosts.firstOrNull { it.host === targetHost.host }
-        if (existing != null) {
-          // remove from standard ones, add to sticky.
-          this.commonTargetHosts.remove(existing)
-          this.stickyTargetHosts.add(existing)
-        } else {
-          this.stickyTargetHosts.add(targetHost)
-        }
-      } else {
-        this.commonTargetHosts.add(targetHost)
-      }
+    val added = if (sticky) {
+      this.commonTargetHosts.remove(targetHost)
+      this.commonTargetHosts.addAll(this.stickyTargetHosts)
+      this.stickyTargetHosts.clear()
+      this.stickyTargetHosts.add(targetHost)
+    } else {
+      this.commonTargetHosts.add(targetHost)
+    }
+
     if (added) {
       targetHost.volumeInfo = volumeInfo
       targetHost.onAdded()
@@ -275,7 +273,7 @@ abstract class PlaybackManager(
     return if (lock.get()) {
       Pair(emptyList(), toPlay + playbacks)
     } else {
-      Pair(toPlay.sortedWith(priorityComparator), playbacks)
+      Pair(toPlay, playbacks)
     }
   }
 
@@ -543,5 +541,17 @@ abstract class PlaybackManager(
   ): OutputHolderPool<CONTAINER, OUTPUT>? {
     @Suppress("UNCHECKED_CAST")
     return parent.outputHolderNest[key] as OutputHolderPool<CONTAINER, OUTPUT>?
+  }
+
+  fun addOnSelectionCallback(selectionCallback: OnSelectionCallback) {
+    this.selectionCallbacks.value.add(selectionCallback)
+  }
+
+  @Suppress("unused") fun removeOnSelectionCallback(selectionCallback: OnSelectionCallback?) {
+    this.selectionCallbacks.value.remove(selectionCallback)
+  }
+
+  internal fun promote(targetHost: TargetHost) {
+    this.registerTargetHost(targetHost, sticky = true)
   }
 }

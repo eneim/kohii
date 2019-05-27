@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="#fefefe"
+    android:elevation="1dp"
+    >
+
+  <FrameLayout
+      android:id="@+id/textContainer"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:visibility="gone"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/guide_hor_1"
+      tools:layout_constraintDimensionRatio="2:1"
+      tools:layout_height="0dp"
+      tools:visibility="visible"
+      >
+
+    <!-- Sorry I'm just too tired writing ConstraintLayout things -->
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/textContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:lineSpacingMultiplier="1.15"
+        android:maxLines="6"
+        android:padding="8dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        />
+  </FrameLayout>
+
+  <LinearLayout
+      android:id="@+id/photoContainer"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:orientation="vertical"
+      android:visibility="gone"
+      app:layout_constraintDimensionRatio="1:1"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/textContainer"
+      tools:layout_height="0dp"
+      tools:visibility="visible"
+      >
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/photoCaption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:lineSpacingMultiplier="1.15"
+        android:maxLines="3"
+        android:padding="8dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/photoContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="false"
+        android:scaleType="centerCrop"
+        />
+
+  </LinearLayout>
+
+  <View
+      android:id="@+id/divider"
+      android:layout_width="0dp"
+      android:layout_height="0.5dp"
+      android:layout_marginStart="@dimen/activity_horizontal_margin"
+      android:layout_marginEnd="@dimen/activity_horizontal_margin"
+      android:background="?android:listDivider"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/videoContainer"
+      />
+
+  <androidx.appcompat.widget.AppCompatImageButton
+      android:id="@+id/userIcon"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_margin="8dp"
+      android:background="?attr/selectableItemBackgroundBorderless"
+      android:src="@mipmap/ic_launcher"
+      app:layout_constraintBottom_toTopOf="@id/guide_hor_1"
+      app:layout_constraintDimensionRatio="1:1"
+      app:layout_constraintEnd_toStartOf="@id/guide_ver_1"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:src="@mipmap/ic_launcher"
+      />
+
+  <androidx.appcompat.widget.AppCompatTextView
+      android:id="@+id/likeButton"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:background="?attr/selectableItemBackground"
+      android:clickable="true"
+      android:focusable="true"
+      android:gravity="center"
+      android:padding="8dp"
+      android:text="Like"
+      android:textAppearance="@style/TextAppearance.AppCompat.Small"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toStartOf="@id/commentButton"
+      app:layout_constraintHorizontal_weight="1"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/divider"
+      />
+
+  <androidx.appcompat.widget.AppCompatTextView
+      android:id="@+id/commentButton"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:background="?attr/selectableItemBackground"
+      android:clickable="true"
+      android:focusable="true"
+      android:gravity="center"
+      android:padding="8dp"
+      android:text="Comment"
+      android:textAppearance="@style/TextAppearance.AppCompat.Small"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toStartOf="@id/shareButton"
+      app:layout_constraintHorizontal_chainStyle="packed"
+      app:layout_constraintHorizontal_weight="1"
+      app:layout_constraintStart_toEndOf="@id/likeButton"
+      app:layout_constraintTop_toBottomOf="@id/divider"
+      />
+
+  <androidx.appcompat.widget.AppCompatTextView
+      android:id="@+id/shareButton"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:background="?attr/selectableItemBackground"
+      android:clickable="true"
+      android:focusable="true"
+      android:gravity="center"
+      android:padding="8dp"
+      android:text="Share"
+      android:textAppearance="@style/TextAppearance.AppCompat.Small"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_chainStyle="packed"
+      app:layout_constraintHorizontal_weight="1"
+      app:layout_constraintStart_toEndOf="@id/commentButton"
+      app:layout_constraintTop_toBottomOf="@id/divider"
+      />
+
+  <androidx.appcompat.widget.AppCompatTextView
+      android:id="@+id/userName"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:gravity="start"
+      android:text="Nam Nguyen"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/guide_ver_1"
+      app:layout_constraintTop_toTopOf="@id/userIcon"
+      />
+
+  <androidx.appcompat.widget.AppCompatTextView
+      android:id="@+id/postTime"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:gravity="start"
+      android:text="2 hours ago"
+      android:textAppearance="@style/TextAppearance.AppCompat.Small"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/guide_ver_1"
+      app:layout_constraintTop_toBottomOf="@id/userName"
+      />
+
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guide_hor_1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      app:layout_constraintGuide_begin="64dp"
+      />
+
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/guide_ver_1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_begin="64dp"
+      />
+
+  <FrameLayout
+      android:id="@+id/videoContainer"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:background="#ccffff00"
+      android:visibility="gone"
+      app:layout_constraintDimensionRatio="16:9"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/photoContainer"
+      tools:layout_height="0dp"
+      tools:visibility="visible"
+      >
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/playerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        app:keep_content_on_player_reset="true"
+        app:resize_mode="fixed_width"
+        app:show_buffering="when_playing"
+        app:surface_type="surface_view"
+        app:use_controller="false"
+        >
+
+      <androidx.appcompat.widget.AppCompatImageButton
+          android:id="@+id/volumeSwitch"
+          android:layout_width="48dp"
+          android:layout_height="48dp"
+          android:layout_gravity="bottom|end"
+          android:layout_margin="@dimen/activity_horizontal_margin"
+          android:background="?attr/selectableItemBackgroundBorderless"
+          android:padding="4dp"
+          android:scaleType="fitCenter"
+          app:srcCompat="@drawable/fb_volume_switch"
+          />
+
+    </com.google.android.exoplayer2.ui.PlayerView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"
+        app:srcCompat="@drawable/ic_kohii"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/playerAgain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Play Again"
+        android:visibility="gone"
+        />
+
+  </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

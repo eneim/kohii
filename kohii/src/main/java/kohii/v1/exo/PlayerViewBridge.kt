@@ -89,6 +89,9 @@ internal open class PlayerViewBridge(
   private var lastSeenTrackGroupArray: TrackGroupArray? = null
   private var inErrorState = false
 
+  override val playbackState: Int
+    get() = player?.playbackState ?: -1
+
   override fun prepare(loadSource: Boolean) {
     this.addEventListener(this)
 
@@ -283,7 +286,7 @@ internal open class PlayerViewBridge(
       }
 
       it.playbackParameters = _playbackParams
-      val hasResumePosition = _playbackInfo.resumeWindow != PlaybackInfo.INDEX_UNSET
+      val hasResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
       if (hasResumePosition) {
         it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
       }

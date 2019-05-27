@@ -16,13 +16,14 @@
 
 package kohii.v1
 
+import androidx.annotation.RestrictTo
+import androidx.annotation.RestrictTo.Scope.LIBRARY
 import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Controller
-import kohii.v1.Playback.Priority
 
 class Binder<OUTPUT : Any>(
   private val kohii: Kohii,
@@ -37,9 +38,6 @@ class Binder<OUTPUT : Any>(
     @RepeatMode var repeatMode: Int = Playable.REPEAT_MODE_OFF,
     var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
 
-      // Playback.Config
-    @Priority
-    var priority: Int = Playback.PRIORITY_NORMAL,
     var delay: Int = 0,
       // Indicator to used to judge of a Playback should be played or not.
       // This doesn't warranty that it will be played, it just to make the Playback be a candidate
@@ -53,19 +51,20 @@ class Binder<OUTPUT : Any>(
   ) {
 
     internal fun createPlayableConfig(): Playable.Config {
-      return Playable.Config(this.tag, this.prefetch, this.repeatMode, this.parameters)
+      return Playable.Config(this.tag, this.prefetch)
     }
 
     internal fun createPlaybackConfig(): Playback.Config {
       return Playback.Config(
-          priority, delay, threshold, controller, playbackInfo, keepScreenOn, callback
+          delay, threshold, controller, playbackInfo, repeatMode, parameters, keepScreenOn, callback
       )
     }
   }
 
-  private val params = Params()
+  @RestrictTo(LIBRARY) // don't touch this.
+  val params = Params()
 
-  fun with(params: Params.() -> Unit): Binder<OUTPUT> {
+  inline fun with(params: Params.() -> Unit): Binder<OUTPUT> {
     this.params.apply(params)
     return this
   }

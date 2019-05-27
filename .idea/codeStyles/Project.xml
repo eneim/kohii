@@ -277,28 +277,22 @@
           <section>
             <rule>
               <match>
-                <NAME>class</NAME>
+                <AND>
+                  <NAME>xmlns:android</NAME>
+                  <XML_ATTRIBUTE />
+                  <XML_NAMESPACE>^$</XML_NAMESPACE>
+                </AND>
               </match>
             </rule>
           </section>
           <section>
             <rule>
               <match>
-                <NAME>layout</NAME>
-              </match>
-            </rule>
-          </section>
-          <section>
-            <rule>
-              <match>
-                <NAME>xmlns:android</NAME>
-              </match>
-            </rule>
-          </section>
-          <section>
-            <rule>
-              <match>
-                <NAME>xmlns:.*</NAME>
+                <AND>
+                  <NAME>xmlns:.*</NAME>
+                  <XML_ATTRIBUTE />
+                  <XML_NAMESPACE>^$</XML_NAMESPACE>
+                </AND>
               </match>
               <order>BY_NAME</order>
             </rule>
@@ -308,6 +302,7 @@
               <match>
                 <AND>
                   <NAME>.*:id</NAME>
+                  <XML_ATTRIBUTE />
                   <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
@@ -318,6 +313,7 @@
               <match>
                 <AND>
                   <NAME>.*:name</NAME>
+                  <XML_ATTRIBUTE />
                   <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
@@ -327,8 +323,9 @@
             <rule>
               <match>
                 <AND>
-                  <NAME>.*:layout_width</NAME>
-                  <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
+                  <NAME>name</NAME>
+                  <XML_ATTRIBUTE />
+                  <XML_NAMESPACE>^$</XML_NAMESPACE>
                 </AND>
               </match>
             </rule>
@@ -337,8 +334,9 @@
             <rule>
               <match>
                 <AND>
-                  <NAME>.*:layout_height</NAME>
-                  <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
+                  <NAME>style</NAME>
+                  <XML_ATTRIBUTE />
+                  <XML_NAMESPACE>^$</XML_NAMESPACE>
                 </AND>
               </match>
             </rule>
@@ -347,8 +345,9 @@
             <rule>
               <match>
                 <AND>
-                  <NAME>.*:layout_.*</NAME>
-                  <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
+                  <NAME>.*</NAME>
+                  <XML_ATTRIBUTE />
+                  <XML_NAMESPACE>^$</XML_NAMESPACE>
                 </AND>
               </match>
               <order>BY_NAME</order>
@@ -359,25 +358,23 @@
               <match>
                 <AND>
                   <NAME>.*</NAME>
+                  <XML_ATTRIBUTE />
                   <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
-              <order>BY_NAME</order>
+              <order>ANDROID_ATTRIBUTE_ORDER</order>
             </rule>
           </section>
           <section>
             <rule>
               <match>
-                <NAME>.*(?&lt;!style)$</NAME>
+                <AND>
+                  <NAME>.*</NAME>
+                  <XML_ATTRIBUTE />
+                  <XML_NAMESPACE>.*</XML_NAMESPACE>
+                </AND>
               </match>
               <order>BY_NAME</order>
-            </rule>
-          </section>
-          <section>
-            <rule>
-              <match>
-                <NAME>style</NAME>
-              </match>
             </rule>
           </section>
         </rules>

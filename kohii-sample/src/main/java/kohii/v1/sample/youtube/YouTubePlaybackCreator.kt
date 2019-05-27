@@ -70,7 +70,7 @@ class YouTubePlaybackCreator(val kohii: Kohii) : PlaybackCreator<YouTubePlayerVi
     val key = ViewGroup::class.java to YouTubePlayerView::class.java
     val outputHolderPool =
       manager.fetchOutputHolderPool(key)
-          ?: outputHolderPoolCreator.invoke().also { manager.registerOutputHolderPool(key, it) }
+          ?: outputHolderPoolCreator().also { manager.registerOutputHolderPool(key, it) }
     @Suppress("UNCHECKED_CAST")
     return LazyViewPlayback(
         kohii, playable, manager, target as Target<ViewGroup, YouTubePlayerView>, config,
