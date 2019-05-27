@@ -92,6 +92,7 @@ inline fun <T, R> Iterable<T>.takeFirstOrNull(
 }
 
 // Find a CoordinatorLayout parent
+@Suppress("unused")
 fun findSuitableParent(
   root: View,
   target: View?

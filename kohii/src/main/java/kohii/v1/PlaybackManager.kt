@@ -71,6 +71,7 @@ abstract class PlaybackManager(
   private val detachedPlaybacks = WeakHashMap<Playback<*>, Any>()
   // Any Playback to be removed will be put here.
   // TODO consider to remove the Playback **after** adding new one, like Activity lifecycle.
+  @Suppress("unused")
   private val playbacksToRemove = ArraySet<Playback<*>>()
 
   // As a target has no idea which Playable it is bound to, Manager need to manage the link
@@ -546,7 +547,7 @@ abstract class PlaybackManager(
     this.selectionCallbacks.value.add(selectionCallback)
   }
 
-  fun removeOnSelectionCallback(selectionCallback: OnSelectionCallback?) {
+  @Suppress("unused") fun removeOnSelectionCallback(selectionCallback: OnSelectionCallback?) {
     this.selectionCallbacks.value.remove(selectionCallback)
   }
 
