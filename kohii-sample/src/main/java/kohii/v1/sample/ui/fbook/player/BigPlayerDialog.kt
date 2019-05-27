@@ -171,8 +171,4 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     }
     playerCallback?.onPlayerInActive(this, playback)
   }
-
-  override fun dismiss() {
-    super.dismiss()
-  }
 }
