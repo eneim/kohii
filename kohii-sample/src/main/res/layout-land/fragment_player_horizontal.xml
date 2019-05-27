@@ -22,14 +22,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    android:fitsSystemWindows="true"
+    android:fitsSystemWindows="false"
     >
 
   <com.google.android.exoplayer2.ui.PlayerView
       android:id="@id/playerView"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:fitsSystemWindows="true"
+      android:fitsSystemWindows="false"
       app:keep_content_on_player_reset="true"
       app:resize_mode="fit"
       app:show_buffering="when_playing"

@@ -182,3 +182,15 @@ class ErrorListeners : CopyOnWriteArraySet<ErrorListener>(), ErrorListener {
     this.forEach { it.onError(error) }
   }
 }
+
+interface OnSelectionCallback {
+
+  fun onSelection(playbacks: Collection<Playback<*>>)
+}
+
+internal class OnSelectionCallbacks : CopyOnWriteArraySet<OnSelectionCallback>(),
+    OnSelectionCallback {
+  override fun onSelection(playbacks: Collection<Playback<*>>) {
+    this.forEach { it.onSelection(playbacks) }
+  }
+}

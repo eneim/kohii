@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.ui.combo.ComboFragment
+import kohii.v1.sample.ui.fbook.FbookFragment
 import kohii.v1.sample.ui.motion.MotionFragment
 import kohii.v1.sample.ui.mstdtl.MasterDetailFragment
 import kohii.v1.sample.ui.overlay.OverlayViewFragment
@@ -38,6 +39,11 @@ class DemoItemsAdapter(
 
   init {
     items = arrayListOf(
+        DemoItem(
+            R.string.demo_title_fbook,
+            R.string.demo_desc_fbook,
+            FbookFragment::class.java
+        ),
         DemoItem(
             R.string.demo_title_master_detail,
             R.string.demo_desc_master_detail,
@@ -87,7 +93,7 @@ class DemoItemsAdapter(
     return when (viewType) {
       R.layout.holder_main_text -> TextViewHolder(parent)
       R.layout.holder_main_demo_item -> DemoItemViewHolder(parent).also {
-        it.itemView.setOnClickListener { _ -> onClick.invoke(items[it.adapterPosition - 1]) }
+        it.itemView.setOnClickListener { _ -> onClick(items[it.adapterPosition - 1]) }
       }
       else -> throw IllegalArgumentException("Unsupported type: $viewType")
     }

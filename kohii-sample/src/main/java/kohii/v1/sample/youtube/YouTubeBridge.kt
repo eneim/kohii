@@ -99,6 +99,9 @@ class YouTubeBridge(
 
   override var repeatMode: Int = Playable.REPEAT_MODE_ONE
 
+  override val playbackState: Int
+    get() = tracker.state.ordinal
+
   override val isPlaying: Boolean
     get() = tracker.state === PLAYING
 

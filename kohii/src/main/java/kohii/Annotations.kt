@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package kohii
 
 import kotlin.annotation.AnnotationRetention.SOURCE

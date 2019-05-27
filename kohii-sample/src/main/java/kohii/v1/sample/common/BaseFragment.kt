@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
+import kohii.v1.sample.DemoApp
 
 /**
  * @author eneim (2018/07/27).
@@ -77,3 +78,5 @@ open class BaseFragment : Fragment() {
     Log.d(logTag, "onDetach() called")
   }
 }
+
+fun BaseFragment.getApp() = this.requireActivity().application as DemoApp

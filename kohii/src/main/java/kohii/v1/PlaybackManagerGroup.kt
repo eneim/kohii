@@ -26,6 +26,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
+import kohii.plusNotNull
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -46,6 +47,7 @@ class PlaybackManagerGroup(
   private val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
 ) : LifecycleObserver, Playback.Callback {
 
+  private var promotedManager: PlaybackManager? = null
   private val stickyManagers by lazy { LinkedHashSet<PlaybackManager>() }
   private val commonManagers = ArraySet<PlaybackManager>()
 
@@ -96,6 +98,8 @@ class PlaybackManagerGroup(
     val handled = if (playbackManager.provider is Prioritized) {
       stickyManagers.remove(playbackManager)
     } else commonManagers.remove(playbackManager)
+
+    if (promotedManager === playbackManager) promotedManager = null
 
     if (handled) {
       if (kohii.managers.isEmpty) kohii.onLastManagerOffline()
@@ -149,6 +153,8 @@ class PlaybackManagerGroup(
           detachPlaybackManager(it)
         }
         .clear()
+    promotedManager?.let { this.detachPlaybackManager(it) }
+    promotedManager = null
 
     owner.lifecycle.removeObserver(this)
     dispatcher.onContainerDestroyed()
@@ -174,18 +180,36 @@ class PlaybackManagerGroup(
     var picked = false // if true --> prioritized Managers has candidates picked for playing.
     var prioritized = false
 
-    if (stickyManagers.isNotEmpty()) {
-      prioritized = true
-      stickyManagers.forEach {
-        val (canPlay, canPause) = it.partitionPlaybacks()
-        toPause.addAll(canPause)
-        if (!picked) {
-          if (canPlay.isNotEmpty()) {
-            toPlay.addAll(canPlay)
-            picked = true
+    // Promoted Manager always win.
+    val promotedManager = this.promotedManager
+    if (promotedManager != null) {
+      val (canPlay, canPause) = promotedManager.partitionPlaybacks()
+      toPause.addAll(canPause)
+      if (!picked) {
+        if (canPlay.isNotEmpty()) {
+          toPlay.addAll(canPlay)
+          picked = true
+        }
+      } else {
+        toPause.addAll(canPlay)
+      }
+      prioritized = picked
+    }
+
+    if (!prioritized) {
+      if (stickyManagers.isNotEmpty()) {
+        prioritized = true
+        stickyManagers.forEach {
+          val (canPlay, canPause) = it.partitionPlaybacks()
+          toPause.addAll(canPause)
+          if (!picked) {
+            if (canPlay.isNotEmpty()) {
+              toPlay.addAll(canPlay)
+              picked = true
+            }
+          } else {
+            toPause.addAll(canPlay)
           }
-        } else {
-          toPause.addAll(canPlay)
         }
       }
     }
@@ -209,13 +233,35 @@ class PlaybackManagerGroup(
       this.selection.addAll(selected)
       (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
       selected.forEach { playbackDispatcher.play(it) }
+      selected.groupBy { it.manager }
+          .forEach { (m, p) -> m.selectionCallbacks.value.onSelection(p) }
     }
   }
 
   internal fun managers(): MutableSet<PlaybackManager> =
-    (this.stickyManagers + this.commonManagers) as MutableSet<PlaybackManager> // Order is important.
+    (this.stickyManagers + this.commonManagers)
+        .plusNotNull(this.promotedManager) as MutableSet<PlaybackManager> // Order is important.
 
   override fun toString(): String {
     return "Root::${Integer.toHexString(hashCode())}::$activity"
+  }
+
+  internal fun promote(manager: PlaybackManager?) {
+    if (manager != null) {
+      this.stickyManagers.remove(manager)
+      this.commonManagers.remove(manager)
+    } else {
+      if (this.promotedManager != null) {
+        if (promotedManager!!.provider is Prioritized) {
+          stickyManagers.add(promotedManager!!)
+          val temp = stickyManagers.sortedWith(managerComparator)
+          stickyManagers.clear()
+          stickyManagers.addAll(temp)
+        } else {
+          commonManagers.add(promotedManager!!)
+        }
+      }
+    }
+    this.promotedManager = manager
   }
 }

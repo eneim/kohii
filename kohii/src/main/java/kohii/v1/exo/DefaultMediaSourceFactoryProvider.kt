@@ -71,8 +71,7 @@ class DefaultMediaSourceFactoryProvider private constructor(
     }
 
   override fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory {
-    @C.ContentType val type = Util.inferContentType(media.uri, media.type)
-    when (type) {
+    when (@C.ContentType val type = Util.inferContentType(media.uri, media.type)) {
       C.TYPE_DASH ->
         return DashMediaSource.Factory(dataSourceFactory)
             .setManifestParser(

@@ -21,6 +21,7 @@
     android:id="@+id/playerView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     android:minHeight="200dp"
     app:keep_content_on_player_reset="false"
     app:resize_mode="fixed_width"

@@ -46,10 +46,7 @@ class PlayerViewBridgeProvider(
         media,
         playerProvider,
         mediaSourceFactoryProvider
-    ).also {
-      it.repeatMode = config.repeatMode
-      it.parameters = config.parameters
-    }
+    )
   }
 
   override fun cleanUp() {

@@ -31,6 +31,7 @@ import kohii.v1.OutputHolderPool
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.PlayerViewCreator
+import kohii.v1.sample.data.Item
 import kohii.v1.sample.ui.player.InitData
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 import okio.buffer
