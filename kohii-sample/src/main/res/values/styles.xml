@@ -26,6 +26,11 @@
     <item name="windowNoTitle">true</item>
   </style>
 
+  <style name="AppTheme.Fbook" parent="Theme.MaterialComponents.Light.Bridge">
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+  </style>
+
   <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">
   </style>
 

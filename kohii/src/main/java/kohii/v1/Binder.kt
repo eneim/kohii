@@ -51,11 +51,13 @@ class Binder<OUTPUT : Any>(
   ) {
 
     internal fun createPlayableConfig(): Playable.Config {
-      return Playable.Config(this.tag, this.prefetch, this.repeatMode, this.parameters)
+      return Playable.Config(this.tag, this.prefetch)
     }
 
     internal fun createPlaybackConfig(): Playback.Config {
-      return Playback.Config(delay, threshold, controller, playbackInfo, keepScreenOn, callback)
+      return Playback.Config(
+          delay, threshold, controller, playbackInfo, repeatMode, parameters, keepScreenOn, callback
+      )
     }
   }
 

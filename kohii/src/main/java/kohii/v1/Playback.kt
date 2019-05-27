@@ -18,6 +18,7 @@ package kohii.v1
 
 import android.util.Log
 import androidx.annotation.CallSuper
+import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
@@ -78,6 +79,8 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     val threshold: Float = 0.65F,
     val controller: Controller? = null,
     val playbackInfo: PlaybackInfo? = null,
+    @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
+    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
     val keepScreenOn: Boolean = true,
     val callback: Callback? = null
   )
@@ -106,7 +109,19 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   // [BEGIN] Public API
 
   fun addPlaybackEventListener(listener: PlaybackEventListener) {
-    this.listeners.add(listener)
+    if (this.listeners.add(listener)) {
+      when (this.playbackState) {
+        STATE_IDLE -> {
+        }
+        STATE_BUFFERING ->
+          listener.onBuffering(this@Playback, playable.isPlaying)
+        STATE_READY ->
+          if (playable.isPlaying) listener.onPlaying(
+              this@Playback
+          ) else listener.onPaused(this@Playback)
+        STATE_END -> listener.onCompleted(this@Playback)
+      }
+    }
   }
 
   fun removePlaybackEventListener(listener: PlaybackEventListener?) {
@@ -164,6 +179,13 @@ abstract class Playback<OUTPUT : Any> internal constructor(
       field = value
       this.playable.repeatMode = value
     }
+
+  val playbackState: Int
+    get() = playable.playbackState
+
+  fun rewind() {
+    playable.reset()
+  }
 
   fun unbind() {
     this.unbindInternal()
@@ -251,6 +273,8 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   // ~ View is attached
   @CallSuper
   internal open fun onActive() {
+    // TODO [20190527] why we do not call this anymore?
+    // playable.onActive(this)
     for (callback in this.callbacks) {
       callback.onActive(this)
     }
@@ -274,6 +298,8 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     if (player === this.target) {
       this.playable.onPlayerInActive(this, player)
     }
+    // TODO [20190527] why we do not call this anymore?
+    // playable.onInActive(this)
   }
 
   // Being removed from Manager

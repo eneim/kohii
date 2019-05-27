@@ -17,7 +17,6 @@
 package kohii.v1
 
 import androidx.annotation.IntDef
-import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import kohii.media.Media
 import kohii.media.PlaybackInfo
@@ -55,6 +54,8 @@ interface Playable<OUTPUT : Any> {
   @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)
   annotation class State
 
+  val playbackState: Int
+
   val tag: Any
 
   val media: Media
@@ -85,6 +86,8 @@ interface Playable<OUTPUT : Any> {
   fun play()
 
   fun pause()
+
+  fun reset()
 
   fun release()
 
@@ -119,8 +122,6 @@ interface Playable<OUTPUT : Any> {
   // data class for copying convenience.
   data class Config(
     val tag: String? = null,
-    val prefetch: Boolean = false,
-    @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF,
-    val parameters: PlaybackParameters = PlaybackParameters.DEFAULT
+    val prefetch: Boolean = false
   )
 }

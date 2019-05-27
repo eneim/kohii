@@ -57,13 +57,13 @@
   <LinearLayout
       android:id="@+id/photoContainer"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_height="0dp"
       android:orientation="vertical"
       android:visibility="gone"
+      app:layout_constraintDimensionRatio="1:1"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/textContainer"
-      tools:layout_constraintDimensionRatio="2:1"
       tools:layout_height="0dp"
       tools:visibility="visible"
       >
@@ -82,7 +82,10 @@
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/photoContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="false"
+        android:scaleType="centerCrop"
         />
 
   </LinearLayout>
@@ -257,6 +260,15 @@
         android:layout_gravity="center"
         android:scaleType="centerCrop"
         app:srcCompat="@drawable/ic_kohii"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/playerAgain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Play Again"
+        android:visibility="gone"
         />
 
   </FrameLayout>

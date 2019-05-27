@@ -17,22 +17,28 @@
 package kohii.v1.sample.ui.fbook.vh
 
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.bumptech.glide.Glide
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
-import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
+import kohii.v1.PlaybackManager
+import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
 
 internal class VideoViewHolder(
   parent: ViewGroup,
-  val kohii: Kohii
+  val kohii: Kohii,
+  val manager: PlaybackManager,
+  val shouldBind: (Rebinder?) -> Boolean
 ) : FbookItemHolder(parent), PlaybackEventListener {
 
   init {
@@ -40,17 +46,34 @@ internal class VideoViewHolder(
   }
 
   internal val playerView = itemView.findViewById(R.id.playerView) as PlayerView
-  internal val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
   internal val volume = itemView.findViewById(R.id.volumeSwitch) as ImageButton
+  private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
+  private val playAgain = itemView.findViewById(R.id.playerAgain) as Button
 
   private var videoSources: Sources? = null
+  private var playback: Playback<*>? = null
 
   private val videoTag: String?
     get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
 
+  // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
+  // be useful in some verifications.
+  internal val rebinder: Rebinder?
+    get() = this.videoTag?.let { Rebinder(it, PlayerView::class.java) }
+
   override fun setupOnClick(onClick: OnClick) {
     super.setupOnClick(onClick)
     volume.setOnClickListener { onClick.onClick(it, this) }
+    playAgain.setOnClickListener {
+      if (!playAgain.isVisible) return@setOnClickListener
+      // Once completed, a Playback needs to be reset to starting position.
+      playback?.rewind()
+      rebinder?.rebind(kohii, playerView) { playback ->
+        playback.addPlaybackEventListener(this@VideoViewHolder)
+        volume.isSelected = !playback.volumeInfo.mute
+        this@VideoViewHolder.playback = playback
+      }
+    }
   }
 
   override fun bind(item: Any?) {
@@ -64,23 +87,53 @@ internal class VideoViewHolder(
           }
           .sources.first()
 
-      kohii.setUp(videoSources!!.file)
-          .with {
-            tag = videoTag
-            repeatMode = Playable.REPEAT_MODE_ONE
-          }
-          .bind(playerView) { playback ->
-            playback.addPlaybackEventListener(this@VideoViewHolder)
-            volume.isSelected = !playback.volumeInfo.mute
-          }
+      // We suppose to do this here, but for a specific scenario of this demo, we need to
+      // do it when the VideoHolder is attached via adapter#onViewAttachedToWindow.
+      // dispatchBindVideo()
+    }
+  }
+
+  internal fun getItemDetails(): ItemDetails<Rebinder> {
+    return object : ItemDetails<Rebinder>() {
+      override fun getSelectionKey() = rebinder
+      override fun getPosition() = adapterPosition
     }
   }
 
   override fun beforePlay(playback: Playback<*>) {
     thumbnail.isVisible = false
+    playAgain.isVisible = false
   }
 
   override fun afterPause(playback: Playback<*>) {
     thumbnail.isVisible = true
+  }
+
+  override fun onCompleted(playback: Playback<*>) {
+    playback.removePlaybackEventListener(this@VideoViewHolder)
+    thumbnail.isVisible = true
+    playAgain.isVisible = true
+  }
+
+  internal fun dispatchBindVideo() {
+    val source = videoSources ?: return
+    val binder = kohii.setUp(source.file)
+        .with {
+          tag = videoTag
+        }
+
+    if (!shouldBind(this.rebinder)) {
+      // Selected = this ViewHolder should not own the Playback
+      // do not bind to PlayerView
+    } else {
+      // bind the Video to PlayerView
+      binder.bind(playerView) { playback ->
+        playback.addPlaybackEventListener(this@VideoViewHolder)
+        volume.isSelected = !playback.volumeInfo.mute
+        this@VideoViewHolder.playback = playback
+      }
+    }
+
+    playAgain.isVisible = playback?.playbackState == Player.STATE_ENDED
   }
 }

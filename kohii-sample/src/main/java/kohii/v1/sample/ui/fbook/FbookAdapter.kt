@@ -20,6 +20,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.media.VolumeInfo
 import kohii.v1.Kohii
+import kohii.v1.PlaybackManager
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.fbook.vh.FbookItemHolder
 import kohii.v1.sample.ui.fbook.vh.FbookItemHolder.OnClick
@@ -29,7 +30,9 @@ import kohii.v1.sample.ui.fbook.vh.VideoViewHolder
 
 internal class FbookAdapter(
   val kohii: Kohii,
+  val manager: PlaybackManager,
   val videos: List<Video>,
+  val fragment: FbookFragment,
   val onClick: OnClick
 ) : Adapter<FbookItemHolder>() {
 
@@ -37,6 +40,14 @@ internal class FbookAdapter(
     const val TYPE_TEXT = 100
     const val TYPE_PHOTO = 200
     const val TYPE_VIDEO = 300
+  }
+
+  init {
+    setHasStableIds(true)
+  }
+
+  override fun getItemId(position: Int): Long {
+    return position.toLong()
   }
 
   override fun getItemViewType(position: Int): Int {
@@ -53,7 +64,9 @@ internal class FbookAdapter(
     val result = when (viewType) {
       TYPE_TEXT -> TextViewHolder(parent)
       TYPE_PHOTO -> PhotoViewHolder(parent)
-      TYPE_VIDEO -> VideoViewHolder(parent, kohii)
+      TYPE_VIDEO -> VideoViewHolder(parent, kohii, manager) {
+        fragment.currentPlayerInfo?.rebinder != it
+      }
       else -> throw IllegalArgumentException("Unknown type: $viewType")
     }
 
@@ -80,11 +93,16 @@ internal class FbookAdapter(
     position: Int,
     payloads: MutableList<Any>
   ) {
-    val payload = payloads.firstOrNull()
-    if (payload is VolumeInfo && holder is VideoViewHolder) {
-      holder.volume.isSelected = !payload.mute
+    val payload = payloads.firstOrNull { it is VolumeInfo }
+    if (payload != null && holder is VideoViewHolder) {
+      holder.volume.isSelected = !(payload as VolumeInfo).mute
     } else {
       super.onBindViewHolder(holder, position, payloads)
     }
+  }
+
+  override fun onViewAttachedToWindow(holder: FbookItemHolder) {
+    super.onViewAttachedToWindow(holder)
+    (holder as? VideoViewHolder)?.dispatchBindVideo()
   }
 }

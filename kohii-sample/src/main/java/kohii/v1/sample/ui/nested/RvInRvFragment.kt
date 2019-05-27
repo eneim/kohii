@@ -97,7 +97,7 @@ fun RecyclerView.filterViewHolder(predicate: (ViewHolder) -> Boolean): List<View
     for (index in 0 until layout.childCount) {
       val view = layout.getChildAt(index)
       val holder = if (view != null) this.findContainingViewHolder(view) else null
-      if (holder != null && predicate.invoke(holder)) {
+      if (holder != null && predicate(holder)) {
         result.add(holder)
       }
     }

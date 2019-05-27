@@ -17,13 +17,13 @@
 package kohii.v1.sample.common
 
 import android.app.Activity
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Point
-import android.os.Build
 import android.util.TypedValue
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import android.view.Window
+import androidx.fragment.app.DialogFragment
 
 /**
  * @author eneim (2018/07/30).
@@ -56,10 +56,6 @@ inline fun <reified T : View> View.doOnNextLayoutAs(crossinline action: (view: T
   })
 }
 
-fun Activity.inMultiWindow(): Boolean {
-  return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
-}
-
 fun Activity.getDisplayPoint(): Point {
   return Point().also {
     this.windowManager.defaultDisplay.getSize(it)
@@ -67,28 +63,9 @@ fun Activity.getDisplayPoint(): Point {
 }
 
 fun Activity.isLandscape(): Boolean {
-  val display = this.windowManager.defaultDisplay
-  val realSize = Point().let {
-    display.getRealSize(it)
-    it
-  }
-  return Point().let {
-    display.getSize(it)
-    it.x >= it.y || (inMultiWindow() && it.y <= realSize.y * 0.5)
-  }
+  return resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 }
 
-inline fun <reified T> RecyclerView.currentVisible(): List<T> {
-  val layout: LayoutManager = layoutManager ?: return emptyList()
-  val childCount = layout.childCount
-  if (childCount == 0) return emptyList()
-  val result = ArrayList<T>()
-  for (i in 0 until childCount) {
-    val view = layout.getChildAt(i)
-    if (view != null) {
-      val holder = this.findContainingViewHolder(view)
-      if (holder is T) result.add(holder)
-    }
-  }
-  return result
+fun DialogFragment.requireWindow(): Window = checkNotNull(requireDialog().window) {
+  "Window of Dialog is null"
 }
