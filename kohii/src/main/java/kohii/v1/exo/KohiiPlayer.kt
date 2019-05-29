@@ -30,9 +30,10 @@ import com.google.android.exoplayer2.upstream.BandwidthMeter
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig
 import kohii.v1.VolumeChangedListener
+import kohii.v1.VolumeChangedListeners
 import kohii.v1.VolumeInfoController
-import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Extend the [SimpleExoPlayer] to have custom configuration.
@@ -65,7 +66,7 @@ open class KohiiPlayer(
     if (BuildConfig.DEBUG) Log.e("Kohii::Count", "player: ${instanceCount.incrementAndGet()}")
   }
 
-  private val volumeChangedListeners by lazy { CopyOnWriteArraySet<VolumeChangedListener>() }
+  private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
   private val _volumeInfo = VolumeInfo(false, 1.0F) // backing field.
 
   override val volumeInfo
@@ -81,7 +82,7 @@ open class KohiiPlayer(
     if (changed) {
       this._volumeInfo.setTo(volumeInfo.mute, volumeInfo.volume)
       super.setVolume(if (volumeInfo.mute) 0F else volumeInfo.volume)
-      this.volumeChangedListeners.forEach { it.onVolumeChanged(volumeInfo) }
+      this.volumeChangedListeners.onVolumeChanged(volumeInfo)
     }
     return changed
   }
