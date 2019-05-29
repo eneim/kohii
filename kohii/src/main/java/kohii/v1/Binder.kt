@@ -21,7 +21,6 @@ import androidx.annotation.RestrictTo.Scope.LIBRARY
 import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.Media
 import kohii.media.PlaybackInfo
-import kohii.v1.Playable.Config
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Controller
@@ -90,7 +89,7 @@ class Binder<OUTPUT : Any>(
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
 
-  private fun requestPlayable(config: Config): Playable<OUTPUT> {
+  private fun requestPlayable(config: Playable.Config): Playable<OUTPUT> {
     val tag = config.tag
     val toCreate: Playable<OUTPUT> by lazy {
       this.playableCreator.createPlayable(kohii, media, config)
