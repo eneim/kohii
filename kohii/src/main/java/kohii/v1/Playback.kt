@@ -18,7 +18,6 @@ package kohii.v1
 
 import android.util.Log
 import androidx.annotation.CallSuper
-import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
