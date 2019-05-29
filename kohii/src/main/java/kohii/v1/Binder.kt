@@ -74,7 +74,7 @@ class Binder<OUTPUT : Any>(
     onDone: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
     val tag = this.params.tag
-    val playable = requestPlayable()
+    val playable = requestPlayable(this.params.createPlayableConfig())
     playable.bind(target, this.params.createPlaybackConfig(), onDone)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
@@ -84,16 +84,15 @@ class Binder<OUTPUT : Any>(
     callback: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
     val tag = this.params.tag
-    val playable = requestPlayable()
+    val playable = requestPlayable(this.params.createPlayableConfig())
     playable.bind(target, this.params.createPlaybackConfig(), callback)
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
 
-  private fun requestPlayable(): Playable<OUTPUT> {
-    val config = this.params.createPlayableConfig()
+  private fun requestPlayable(config: Playable.Config): Playable<OUTPUT> {
     val tag = config.tag
     val toCreate: Playable<OUTPUT> by lazy {
-      this.playableCreator.createPlayable(kohii, media, this.params.createPlayableConfig())
+      this.playableCreator.createPlayable(kohii, media, config)
     }
 
     val playable =
