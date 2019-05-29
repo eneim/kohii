@@ -22,6 +22,7 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.core.view.ViewCompat
+import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
 
 /**
@@ -41,7 +42,7 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
     options
 ) {
 
-  private val keepScreenOnListener by lazy {
+  private val keepScreenOnListener by lazy(NONE) {
     object : PlaybackEventListener {
 
       override fun beforePlay(playback: Playback<*>) {

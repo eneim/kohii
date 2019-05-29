@@ -30,6 +30,7 @@ import kohii.takeFirstOrNull
 import kohii.v1.Playback.Config
 import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Definition of an object that can manage multiple [Playback]s.
@@ -67,10 +68,8 @@ abstract class PlaybackManager(
 
   private val attachedPlaybacks = ArraySet<Playback<*>>()
   // Weak map, so detached Playback can be cleared if not referred anymore.
-  // TODO need a mechanism to release those weak Playbacks.
   private val detachedPlaybacks = WeakHashMap<Playback<*>, Any>()
   // Any Playback to be removed will be put here.
-  // TODO consider to remove the Playback **after** adding new one, like Activity lifecycle.
   @Suppress("unused")
   private val playbacksToRemove = ArraySet<Playback<*>>()
 
@@ -277,6 +276,7 @@ abstract class PlaybackManager(
     }
   }
 
+  // Bind the Playable for a Target in this PlaybackManager.
   internal fun <CONTAINER : Any, OUTPUT : Any> performBindPlayable(
     playable: Playable<OUTPUT>,
     target: Target<CONTAINER, OUTPUT>,
@@ -286,24 +286,11 @@ abstract class PlaybackManager(
     // First, add to global cache.
     kohii.mapPlayableToManager[playable] = this
 
-    // Next, search for and remove any other binding as well.
-    val others = kohii.managers.filter { it.value !== this }
-    // Next 1: remove old Playback that is for same Target, but different Playable and Manager
-    others.mapNotNull { it.value.mapTargetToPlayback[target] }
-        .filter { it.playable !== playable }
-        .forEach { it.manager.performRemovePlayback(it) }
-
-    // Next 2: remove old Playback that is for same Playable, but different Manager
-    others.mapNotNull { it.value.findPlaybackForPlayable(playable) }
-        .forEach {
-          it.manager.performRemovePlayback(it)
-        }
-
     // Find Playback that was bound to this Playable before in the same Manager.
-    val ref = this.findPlaybackForPlayable(playable)
+    val existing = this.findPlaybackForPlayable(playable)
     val candidate =
-      if (ref?.manager === this && ref.target === target.requireContainer() && ref.config == config) {
-        ref
+      if (existing != null && existing.target === target.requireContainer() && existing.config == config /* not === */) {
+        existing
       } else {
         creator.createPlayback(this, target, playable, config)
             .also {
@@ -313,8 +300,30 @@ abstract class PlaybackManager(
       }
 
     val result = performAddPlayback(candidate)
-    if (candidate !== ref) {
-      ref?.also { it.manager.performRemovePlayback(it) }
+
+    // Next, search for and remove any other binding of same Target/Playable as well.
+    val toRemove = lazy(NONE) { mutableSetOf<Playback<*>>() }
+    if (candidate !== existing) {
+      existing?.also { toRemove.value += it }
+    }
+
+    val others = kohii.managers.filter { it.value !== this }
+
+    // [All] = [Same Target] + [Same Playable] - [Both] + [Others] ([Both] was counted twice)
+    val playbacksInOtherManagers = others.flatMap { it.value.mapTargetToPlayback.values } // [All]
+    val sameTarget = others.mapNotNull { it.value.mapTargetToPlayback[target] } // [Same Target]
+    val samePlayable = (playbacksInOtherManagers - sameTarget).filter {
+      it.playable === playable
+    } // [Same Playable] - [Both]
+
+    // Only care about [Same Target] + [Same Playable] - [Both]
+    (sameTarget + samePlayable).also {
+      if (it.isNotEmpty()) toRemove.value += it
+    }
+
+    if (toRemove.isInitialized()) {
+      toRemove.value.groupBy { it.manager }
+          .forEach { (t, u) -> t.performRemovePlaybacks(u) }
     }
 
     return result
@@ -364,20 +373,22 @@ abstract class PlaybackManager(
   // - detachedPlaybacks
   // - mapPlayableTagToInfo
   internal fun performRemovePlayback(playback: Playback<*>) {
-    if (mapTargetToPlayback.containsValue(playback)) {
-      mapTargetToPlayback.remove(playback.target)
-          ?.also {
-            if (it !== playback) throw IllegalStateException(
-                "Illegal cache: expect $playback but get $it"
-            )
-            val toInActive = attachedPlaybacks.remove(it)
-            detachedPlaybacks.remove(it)
-            if (toInActive) it.onInActive()
-            it.onRemoved()
-            it.onDestroyed()
-            it.removeCallback(parent)
-          }
-    }
+    mapTargetToPlayback.remove(playback.target)
+        ?.also {
+          if (it !== playback) throw IllegalStateException(
+              "Illegal cache: expect $playback but get $it"
+          )
+          val toInActive = attachedPlaybacks.remove(it)
+          detachedPlaybacks.remove(it)
+          if (toInActive) it.onInActive()
+          it.onRemoved()
+          it.onDestroyed()
+          it.removeCallback(parent)
+        }
+  }
+
+  private fun performRemovePlaybacks(playbacks: Collection<Playback<*>>) {
+    playbacks.forEach { performRemovePlayback(it) }
   }
 
   // Called when a Playback's target is attached. Eg: PlayerView is attached to window.

@@ -18,6 +18,7 @@ package kohii.v1
 
 import android.util.Log
 import androidx.annotation.CallSuper
+import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
@@ -41,7 +42,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   val manager: PlaybackManager,
   val target: Any,
   internal val config: Config
-) {
+) : PlayerEventListener {
 
   companion object {
     const val TAG = "Kohii::PB"
@@ -210,7 +211,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   }
 
   // Used by subclasses to dispatch internal event listeners
-  internal fun onPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
+  override fun onPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
     when (playbackState) {
       STATE_IDLE -> {
       }
@@ -227,7 +228,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     }
   }
 
-  internal fun onFirstFrameRendered() {
+  override fun onRenderedFirstFrame() {
     listeners.forEach { it.onFirstFrameRendered(this@Playback) }
   }
 
@@ -244,6 +245,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   internal fun release() {
     Log.w("Kohii::X", "release ${this.tag}, manager: $manager")
     playable.release()
+    kohii.mapPlayableTagToInfo.remove(playable.tag)
   }
 
   protected open fun beforePlayInternal() {

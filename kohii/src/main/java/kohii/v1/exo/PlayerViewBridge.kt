@@ -16,6 +16,7 @@
 
 package kohii.v1.exo
 
+import android.util.Log
 import android.util.Pair
 import android.widget.Toast
 import com.google.android.exoplayer2.C
@@ -296,11 +297,14 @@ internal open class PlayerViewBridge(
   }
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected fun onErrorMessage(message: String) {
+  protected fun onErrorMessage(
+    message: String,
+    cause: Throwable?
+  ) {
     // Sub class can have custom reaction about the error here, including not to show this toast
     // (by not calling super.onErrorMessage(message)).
-    if (this.errorListeners.size > 0) {
-      this.errorListeners.onError(RuntimeException(message))
+    if (this.errorListeners.isNotEmpty()) {
+      this.errorListeners.onError(RuntimeException(message, cause))
     } else if (playerView != null) {
       Toast.makeText(playerView!!.context.applicationContext, message, Toast.LENGTH_SHORT)
           .show()
@@ -310,6 +314,7 @@ internal open class PlayerViewBridge(
   // ErrorMessageProvider<ExoPlaybackException> ⬇︎
 
   override fun getErrorMessage(e: ExoPlaybackException?): Pair<Int, String> {
+    Log.e("Kohii::Bridge", "Error: ${e?.cause}")
     var errorString = context.getString(R.string.error_generic)
     if (e?.type == ExoPlaybackException.TYPE_RENDERER) {
       val exception = e.rendererException
@@ -335,6 +340,7 @@ internal open class PlayerViewBridge(
   // DefaultEventListener ⬇︎
 
   override fun onPlayerError(error: ExoPlaybackException?) {
+    Log.e("Kohii::Bridge", "Error: ${error?.cause}")
     if (playerView == null) {
       var errorString: String? = null
       if (error?.type == ExoPlaybackException.TYPE_RENDERER) {
@@ -355,7 +361,7 @@ internal open class PlayerViewBridge(
         }
       }
 
-      if (errorString != null) onErrorMessage(errorString)
+      if (errorString != null) onErrorMessage(errorString, error)
     }
 
     inErrorState = true
@@ -387,11 +393,11 @@ internal open class PlayerViewBridge(
     val trackInfo = trackSelector.currentMappedTrackInfo
     if (trackInfo != null) {
       if (trackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_video))
+        onErrorMessage(context.getString(R.string.error_unsupported_video), player?.playbackError)
       }
 
       if (trackInfo.getTypeSupport(C.TRACK_TYPE_AUDIO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_audio))
+        onErrorMessage(context.getString(R.string.error_unsupported_audio), player?.playbackError)
       }
     }
   }

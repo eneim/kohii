@@ -21,7 +21,6 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.view.isVisible
-import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
@@ -93,13 +92,6 @@ internal class VideoViewHolder(
     }
   }
 
-  internal fun getItemDetails(): ItemDetails<Rebinder> {
-    return object : ItemDetails<Rebinder>() {
-      override fun getSelectionKey() = rebinder
-      override fun getPosition() = adapterPosition
-    }
-  }
-
   override fun beforePlay(playback: Playback<*>) {
     thumbnail.isVisible = false
     playAgain.isVisible = false
@@ -115,6 +107,17 @@ internal class VideoViewHolder(
     playAgain.isVisible = true
   }
 
+  // Called by FbookFragment to immediately reclaim the Rebinder, prevent the Playback to be removed.
+  internal fun reclaimRebinder(rebinder: Rebinder) {
+    if (shouldBind(rebinder)) {
+      rebinder.rebind(kohii, playerView) { playback ->
+        playback.addPlaybackEventListener(this@VideoViewHolder)
+        volume.isSelected = !playback.volumeInfo.mute
+        this@VideoViewHolder.playback = playback
+      }
+    }
+  }
+
   internal fun dispatchBindVideo() {
     val source = videoSources ?: return
     val binder = kohii.setUp(source.file)
@@ -122,10 +125,7 @@ internal class VideoViewHolder(
           tag = videoTag
         }
 
-    if (!shouldBind(this.rebinder)) {
-      // Selected = this ViewHolder should not own the Playback
-      // do not bind to PlayerView
-    } else {
+    if (shouldBind(this.rebinder)) {
       // bind the Video to PlayerView
       binder.bind(playerView) { playback ->
         playback.addPlaybackEventListener(this@VideoViewHolder)
