@@ -146,7 +146,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
         }
         .rebind(kohii, playerView) {
           it.addPlaybackEventListener(object : PlaybackEventListener {
-            override fun onCompleted(playback: Playback<*>) {
+            override fun onEnd(playback: Playback<*>) {
               playback.removePlaybackEventListener(this)
               dismissAllowingStateLoss()
             }

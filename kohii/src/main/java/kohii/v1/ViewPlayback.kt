@@ -53,7 +53,7 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
         target.keepScreenOn = false
       }
 
-      override fun onCompleted(playback: Playback<*>) {
+      override fun onEnd(playback: Playback<*>) {
         target.keepScreenOn = false
       }
     }
@@ -77,11 +77,11 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
         Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
       }
 
-      override fun onPlaying(playback: Playback<*>) {
+      override fun onPlay(playback: Playback<*>) {
         Log.d(TAG, "playing: ${this@ViewPlayback}")
       }
 
-      override fun onPaused(playback: Playback<*>) {
+      override fun onPause(playback: Playback<*>) {
         Log.w(TAG, "paused: ${this@ViewPlayback}")
       }
 
@@ -89,7 +89,7 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
         Log.w(TAG, "afterPause: ${this@ViewPlayback}")
       }
 
-      override fun onCompleted(playback: Playback<*>) {
+      override fun onEnd(playback: Playback<*>) {
         Log.d(TAG, "ended: ${this@ViewPlayback}")
       }
     }

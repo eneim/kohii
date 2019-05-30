@@ -119,7 +119,7 @@ internal class VideoItemHolder(
     Log.e("Kohii:VH", "beforePlay: $playback, $adapterPosition")
   }
 
-  override fun onPlaying(playback: Playback<*>) {
+  override fun onPlay(playback: Playback<*>) {
     videoImage.isVisible = false
   }
 
@@ -127,7 +127,7 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  override fun onCompleted(playback: Playback<*>) {
+  override fun onEnd(playback: Playback<*>) {
     videoImage.isVisible = true
   }
 
