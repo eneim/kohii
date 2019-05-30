@@ -45,11 +45,6 @@ class DemoItemsAdapter(
             FbookFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_master_detail,
-            R.string.demo_desc_master_detail,
-            MasterDetailFragment::class.java
-        ),
-        DemoItem(
             R.string.demo_title_pager_1,
             R.string.demo_desc_pager_1,
             PagerMainFragment::class.java
@@ -68,6 +63,11 @@ class DemoItemsAdapter(
             R.string.demo_title_recycler_view_3,
             R.string.demo_desc_recycler_view_3,
             OverlayViewFragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_master_detail,
+            R.string.demo_desc_master_detail,
+            MasterDetailFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_nested_scrollview_1,
