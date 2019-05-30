@@ -116,10 +116,10 @@ abstract class Playback<OUTPUT : Any> internal constructor(
         STATE_BUFFERING ->
           listener.onBuffering(this@Playback, playable.isPlaying)
         STATE_READY ->
-          if (playable.isPlaying) listener.onPlaying(
+          if (playable.isPlaying) listener.onPlay(
               this@Playback
-          ) else listener.onPaused(this@Playback)
-        STATE_END -> listener.onCompleted(this@Playback)
+          ) else listener.onPause(this@Playback)
+        STATE_END -> listener.onEnd(this@Playback)
       }
     }
   }
@@ -218,12 +218,12 @@ abstract class Playback<OUTPUT : Any> internal constructor(
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       STATE_READY ->
         listeners.forEach {
-          if (playWhenReady) it.onPlaying(
+          if (playWhenReady) it.onPlay(
               this@Playback
-          ) else it.onPaused(this@Playback)
+          ) else it.onPause(this@Playback)
         }
       STATE_END ->
-        listeners.forEach { it.onCompleted(this@Playback) }
+        listeners.forEach { it.onEnd(this@Playback) }
     }
   }
 
@@ -328,12 +328,17 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   }
 
   interface Callback {
+
+    /** Called when the Playback is added to the PlaybackManager */
     fun onAdded(playback: Playback<*>) {}
 
+    /** Called when the Playback becomes active. It is equal to that the target PlayerView is attached to the Window */
     fun onActive(playback: Playback<*>) {}
 
+    /** Called when the Playback becomes inactive. It is equal to that the target PlayerView is detached from the Window */
     fun onInActive(playback: Playback<*>) {}
 
+    /** Called when the Playback is removed from the PlaybackManager */
     fun onRemoved(playback: Playback<*>) {}
   }
 

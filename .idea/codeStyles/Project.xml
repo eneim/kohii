@@ -112,7 +112,8 @@
       <option name="IF_RPAREN_ON_NEW_LINE" value="true" />
     </JetCodeStyleSettings>
     <MarkdownNavigatorCodeStyleSettings>
-      <option name="RIGHT_MARGIN" value="72" />
+      <option name="INDENT_SIZE" value="2" />
+      <option name="RIGHT_MARGIN" value="100" />
     </MarkdownNavigatorCodeStyleSettings>
     <XML>
       <option name="XML_ALIGN_ATTRIBUTES" value="false" />
@@ -240,6 +241,11 @@
       <indentOptions>
         <option name="INDENT_SIZE" value="2" />
         <option name="TAB_SIZE" value="2" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="Markdown">
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="SQL">

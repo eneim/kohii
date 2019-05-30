@@ -101,7 +101,7 @@ internal class VideoViewHolder(
     thumbnail.isVisible = true
   }
 
-  override fun onCompleted(playback: Playback<*>) {
+  override fun onEnd(playback: Playback<*>) {
     playback.removePlaybackEventListener(this@VideoViewHolder)
     thumbnail.isVisible = true
     playAgain.isVisible = true
