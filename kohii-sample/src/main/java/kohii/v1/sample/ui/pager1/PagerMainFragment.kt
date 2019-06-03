@@ -44,7 +44,7 @@ class PagerMainFragment : BaseFragment() {
   class VideoPagerAdapter(
     fm: FragmentManager,
     private val videos: List<Video>
-  ) : FragmentStatePagerAdapter(fm) {
+  ) : FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getItem(position: Int): Fragment {
       return PageFragment.newInstance(position, videos[position % videos.size])
