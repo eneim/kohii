@@ -65,8 +65,8 @@ interface Playable<OUTPUT : Any> {
 
   val isPlaying: Boolean
 
-  fun <CONTAINER : Any> bind(
-    target: CONTAINER,
+  fun bind(
+    target: OUTPUT,
     config: Playback.Config = Playback.Config(),
     cb: ((Playback<OUTPUT>) -> Unit)? = null
   )
