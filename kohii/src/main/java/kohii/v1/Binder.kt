@@ -24,6 +24,7 @@ import kohii.media.PlaybackInfo
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Controller
+import kotlin.LazyThreadSafetyMode.NONE
 
 class Binder<OUTPUT : Any>(
   private val kohii: Kohii,
@@ -79,8 +80,8 @@ class Binder<OUTPUT : Any>(
     return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
   }
 
-  fun <CONTAINER : Any> bind(
-    target: CONTAINER,
+  fun bind(
+    target: OUTPUT,
     callback: ((Playback<OUTPUT>) -> Unit)? = null
   ): Rebinder? {
     val tag = this.params.tag
@@ -91,7 +92,7 @@ class Binder<OUTPUT : Any>(
 
   private fun requestPlayable(config: Playable.Config): Playable<OUTPUT> {
     val tag = config.tag
-    val toCreate: Playable<OUTPUT> by lazy {
+    val toCreate: Playable<OUTPUT> by lazy(NONE) {
       this.playableCreator.createPlayable(kohii, media, config)
     }
 

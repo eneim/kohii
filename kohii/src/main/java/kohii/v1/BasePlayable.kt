@@ -84,8 +84,8 @@ abstract class BasePlayable<OUTPUT : Any>(
 
   protected abstract fun <CONTAINER : Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, OUTPUT>
 
-  override fun <CONTAINER : Any> bind(
-    target: CONTAINER,
+  override fun bind(
+    target: OUTPUT,
     config: Config,
     cb: ((Playback<OUTPUT>) -> Unit)?
   ) {
