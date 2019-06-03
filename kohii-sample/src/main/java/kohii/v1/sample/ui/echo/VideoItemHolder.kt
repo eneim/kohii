@@ -17,7 +17,6 @@
 package kohii.v1.sample.ui.echo
 
 import android.annotation.SuppressLint
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
@@ -29,6 +28,7 @@ import kohii.media.VolumeInfo
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
+import kohii.v1.ViewTarget
 import kohii.v1.VolumeChangedListener
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
@@ -53,7 +53,7 @@ class VideoItemHolder(
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
   val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
-  val playerContainer = itemView.findViewById(R.id.playerContainer) as View
+  val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
   val volumeButton = itemView.findViewById(R.id.volumeButton) as MaterialButton
 
   init {
@@ -84,7 +84,7 @@ class VideoItemHolder(
             tag = tagKey
             repeatMode = Playable.REPEAT_MODE_ONE
           }
-          .bind(playerContainer) { playback ->
+          .bind(ViewTarget(playerContainer)) { playback ->
             playback.addVolumeChangeListener(this@VideoItemHolder)
             if (viewModel.volumeInfoStore.contains(this.adapterPosition)) {
               playback.volumeInfo = viewModel.volumeInfoStore.get(this.adapterPosition)

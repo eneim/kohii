@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 import kohii.v1.Kohii
 import kohii.v1.Playable
+import kohii.v1.ViewTarget
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -68,7 +69,7 @@ class PagerViewsFragment : BaseFragment() {
             tag = itemTag
             repeatMode = Playable.REPEAT_MODE_ONE
           }
-          .bind(view.videoFrame)
+          .bind(ViewTarget(view.videoFrame))
       return view
     }
 
