@@ -56,6 +56,7 @@ open class LazyViewPlayback<OUTPUT : Any>(
   override fun onRemoved() {
     _outputHolder?.also {
       outputHolderPool.releaseOutputHolder(this.boxedTarget, it, playable.media)
+      this.playable.onPlayerInActive(this, _outputHolder)
       _outputHolder = null
     }
     super.onRemoved()
