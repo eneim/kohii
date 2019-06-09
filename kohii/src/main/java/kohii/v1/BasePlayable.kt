@@ -22,15 +22,15 @@ import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.NO_TAG
 import kohii.v1.Playback.Config
 
-// OUTPUT is what to render the content to. In Kohii, PlayerView is supported out of the box.
-abstract class BasePlayable<OUTPUT : Any>(
+// RENDERER is what to render the content to. In Kohii, PlayerView is supported out of the box.
+abstract class BasePlayable<RENDERER : Any>(
   protected val kohii: Kohii,
   override val media: Media,
   protected val config: Playable.Config,
-  protected val bridge: Bridge<OUTPUT>,
+  protected val bridge: Bridge<RENDERER>,
   @Suppress("MemberVisibilityCanBePrivate")
-  protected val playbackCreator: PlaybackCreator<OUTPUT>
-) : Playable<OUTPUT> {
+  protected val playbackCreator: PlaybackCreator<RENDERER>
+) : Playable<RENDERER> {
 
   override fun onAdded(playback: Playback<*>) {
     this.bridge.addEventListener(playback)
@@ -82,23 +82,12 @@ abstract class BasePlayable<OUTPUT : Any>(
     }
   }
 
-  protected abstract fun <CONTAINER : Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, OUTPUT>
-
-  override fun bind(
-    target: OUTPUT,
-    config: Config,
-    cb: ((Playback<OUTPUT>) -> Unit)?
-  ) {
-    val boxedTarget = createBoxedTarget(target)
-    this.bind(boxedTarget, config, cb)
-  }
-
   override fun <CONTAINER : Any> bind(
-    target: Target<CONTAINER, OUTPUT>,
+    target: Target<CONTAINER, RENDERER>,
     config: Config,
-    cb: ((Playback<OUTPUT>) -> Unit)?
+    cb: ((Playback<RENDERER>) -> Unit)?
   ) {
-    val manager = kohii.findManagerForContainer(target.requireContainer())
+    val manager = kohii.findManagerForContainer(target.container)
         ?: throw IllegalStateException("There is no manager for $target. Forget to register one?")
 
     val result = manager.performBindPlayable(
@@ -123,7 +112,7 @@ abstract class BasePlayable<OUTPUT : Any>(
     get() = this.bridge.isPlaying
 
   override fun prepare() {
-    this.bridge.prepare(config.prefetch)
+    this.bridge.prepare(config.preLoad)
   }
 
   override fun ensurePreparation() {
@@ -162,6 +151,22 @@ abstract class BasePlayable<OUTPUT : Any>(
 
   override val volumeInfo: VolumeInfo
     get() = this.bridge.volumeInfo
+
+  override fun onPlayerActive(
+    playback: Playback<RENDERER>,
+    player: RENDERER
+  ) {
+    bridge.playerView = player
+  }
+
+  override fun onPlayerInActive(
+    playback: Playback<RENDERER>,
+    player: RENDERER?
+  ) {
+    if (bridge.playerView === player) {
+      bridge.playerView = null
+    }
+  }
 
   override fun toString(): String {
     val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"

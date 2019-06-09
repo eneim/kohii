@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.youtube
+package kohii.v1.yta
 
-import android.view.ViewGroup
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.media.Media
 import kohii.v1.BasePlayable
 import kohii.v1.Bridge
 import kohii.v1.Kohii
 import kohii.v1.Playable.Config
-import kohii.v1.Playback
 import kohii.v1.PlaybackCreator
-import kohii.v1.Target
-import kohii.v1.ViewTarget
 
 class YouTubePlayable(
   kohii: Kohii,
@@ -34,31 +30,4 @@ class YouTubePlayable(
   config: Config,
   bridge: Bridge<YouTubePlayerView>,
   playbackCreator: PlaybackCreator<YouTubePlayerView>
-) : BasePlayable<YouTubePlayerView>(kohii, media, config, bridge, playbackCreator) {
-
-  override fun <CONTAINER : Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, YouTubePlayerView> {
-    val targetType = target.javaClass
-    @Suppress("UNCHECKED_CAST")
-    if (ViewGroup::class.java.isAssignableFrom(targetType))
-      return ViewTarget<ViewGroup, YouTubePlayerView>(
-          target as ViewGroup
-      ) as Target<CONTAINER, YouTubePlayerView>
-    else throw IllegalArgumentException("Unsupported target type: $targetType")
-  }
-
-  override fun onPlayerActive(
-    playback: Playback<YouTubePlayerView>,
-    player: YouTubePlayerView
-  ) {
-    bridge.playerView = player
-  }
-
-  override fun onPlayerInActive(
-    playback: Playback<YouTubePlayerView>,
-    player: YouTubePlayerView?
-  ) {
-    if (bridge.playerView === player) {
-      bridge.playerView = null
-    }
-  }
-}
+) : BasePlayable<YouTubePlayerView>(kohii, media, config, bridge, playbackCreator)

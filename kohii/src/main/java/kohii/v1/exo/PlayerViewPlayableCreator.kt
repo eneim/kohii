@@ -20,16 +20,16 @@ import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.BridgeProvider
+import kohii.v1.DefaultRendererPool
 import kohii.v1.Kohii
 import kohii.v1.LazyViewPlayback
-import kohii.v1.OutputHolderCreator
-import kohii.v1.OutputHolderPool
 import kohii.v1.Playable
 import kohii.v1.Playable.Config
 import kohii.v1.PlayableCreator
 import kohii.v1.Playback
 import kohii.v1.PlaybackCreator
 import kohii.v1.PlaybackManager
+import kohii.v1.RendererCreator
 import kohii.v1.Target
 import kohii.v1.ViewPlayback
 
@@ -43,7 +43,7 @@ import kohii.v1.ViewPlayback
  */
 class PlayerViewPlayableCreator(
   kohii: Kohii,
-  private val outputHolderCreator: OutputHolderCreator<ViewGroup, PlayerView> = PlayerViewCreator(),
+  private val rendererCreator: RendererCreator<PlayerView> = PlayerViewCreator(),
   bridgeCreatorFactory: (Kohii) -> BridgeProvider<PlayerView> = { kohii.defaultBridgeProvider }
 ) : PlayableCreator<PlayerView>(kohii, PlayerView::class.java),
     PlaybackCreator<PlayerView> {
@@ -64,7 +64,7 @@ class PlayerViewPlayableCreator(
     playable: Playable<PlayerView>,
     config: Playback.Config
   ): Playback<PlayerView> {
-    return when (val container = target.requireContainer()) {
+    return when (val container = target.container) {
       is PlayerView -> {
         ViewPlayback(
             kohii,
@@ -76,12 +76,11 @@ class PlayerViewPlayableCreator(
       }
 
       is ViewGroup -> {
-        val key = ViewGroup::class.java to PlayerView::class.java
-        val outputHolderPool =
-          manager.fetchOutputHolderPool(key)
-              ?: OutputHolderPool(2, outputHolderCreator).also {
-                manager.registerOutputHolderPool(key, it)
-              }
+        val rendererPool =
+          manager.fetchRendererPool(PlayerView::class.java) ?: //
+          DefaultRendererPool(kohii, creator = rendererCreator).also {
+            manager.registerRendererPool(PlayerView::class.java, it)
+          }
 
         @Suppress("UNCHECKED_CAST")
         LazyViewPlayback(
@@ -90,7 +89,7 @@ class PlayerViewPlayableCreator(
             manager,
             boxedTarget = target as Target<ViewGroup, PlayerView>,
             options = config,
-            outputHolderPool = outputHolderPool
+            rendererPool = rendererPool
         )
       }
       else -> throw IllegalArgumentException("Unsupported container type: ${container::javaClass}")

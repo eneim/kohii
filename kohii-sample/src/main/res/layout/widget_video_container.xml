@@ -21,13 +21,13 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/card_dark_background"
     >
 
   <FrameLayout
       android:id="@+id/videoFrame"
       android:layout_width="0dp"
       android:layout_height="0dp"
-      android:background="@color/cardview_dark_background"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintDimensionRatio="16:10"
       app:layout_constraintEnd_toEndOf="parent"

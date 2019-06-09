@@ -60,10 +60,10 @@ interface PlaybackEventListener {
   /** Called when the Video finishes its playback */
   fun onEnd(playback: Playback<*>) {} // ExoPlayer state: 4
 
-  /** Called when right before Playback's play() method is called. Maybe called multiple times */
+  /** Called when right before Playback's playInternal() method is called. Maybe called multiple times */
   fun beforePlay(playback: Playback<*>) {}
 
-  /** Called when right after Playback's pause() method is called. Maybe called multiple times */
+  /** Called when right after Playback's pauseInternal() method is called. Maybe called multiple times */
   fun afterPause(playback: Playback<*>) {}
 }
 

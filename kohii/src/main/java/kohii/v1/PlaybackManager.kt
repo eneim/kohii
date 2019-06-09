@@ -39,8 +39,9 @@ import kotlin.LazyThreadSafetyMode.NONE
  */
 abstract class PlaybackManager(
   val kohii: Kohii,
+  val provider: Any,
   internal val parent: PlaybackManagerGroup,
-  internal val provider: Any
+  internal val owner: LifecycleOwner
 ) : LifecycleObserver, Comparable<PlaybackManager> {
 
   companion object {
@@ -85,6 +86,8 @@ abstract class PlaybackManager(
   internal val lock = AtomicBoolean(false)
   internal var volumeInfo = VolumeInfo()
 
+  internal val rendererPools = HashMap<Class<*>, DefaultRendererPool<*>>()
+
   // [BEGIN] Internal API
 
   @CallSuper
@@ -122,7 +125,7 @@ abstract class PlaybackManager(
       // FYI: The Playable instances holds the actual playback resource. It is not managed by
       // anything else when the Activity is destroyed and to be recreated (config change).
       if (!configChange && kohii.mapPlayableToManager[playable] === this) {
-        it.pause()
+        it.pauseInternal()
         parent.trySavePlaybackInfo(it)
         it.release()
         // There is no recreation. If this manager is managing the playable, unload the Playable.
@@ -136,13 +139,13 @@ abstract class PlaybackManager(
   protected open fun onOwnerDestroy(owner: LifecycleOwner) {
     // Wrap by an ArrayList because we also remove entry while iterating by performRemovePlayback
     (ArrayList(mapTargetToPlayback.values).apply {
-      this.forEach {
-        performRemovePlayback(it)
-        if (kohii.mapPlayableToManager[it.playable] === this@PlaybackManager) {
-          kohii.mapPlayableToManager[it.playable] = null
-        }
-      }
+      this.forEach { performRemovePlayback(it) }
     }).clear()
+
+    kohii.mapPlayableToManager.filter { it.value === this }
+        .forEach {
+          kohii.mapPlayableToManager.remove(it.key, it.value)
+        }
 
     this.onDetached()
 
@@ -277,19 +280,19 @@ abstract class PlaybackManager(
   }
 
   // Bind the Playable for a Target in this PlaybackManager.
-  internal fun <CONTAINER : Any, OUTPUT : Any> performBindPlayable(
-    playable: Playable<OUTPUT>,
-    target: Target<CONTAINER, OUTPUT>,
+  internal fun <CONTAINER : Any, RENDERER : Any> performBindPlayable(
+    playable: Playable<RENDERER>,
+    target: Target<CONTAINER, RENDERER>,
     config: Config,
-    creator: PlaybackCreator<OUTPUT>
-  ): Playback<OUTPUT> {
+    creator: PlaybackCreator<RENDERER>
+  ): Playback<RENDERER> {
     // First, add to global cache.
     kohii.mapPlayableToManager[playable] = this
 
-    // Find Playback that was bound to this Playable before in the same Manager.
+    // Find Playback that was bound to this Playable and Target before in the same Manager.
     val existing = this.findPlaybackForPlayable(playable)
     val candidate =
-      if (existing != null && existing.target === target.requireContainer() && existing.config == config /* not === */) {
+      if (existing != null && existing.target === target.container && existing.config == config /* not === */) {
         existing
       } else {
         creator.createPlayback(this, target, playable, config)
@@ -419,7 +422,7 @@ abstract class PlaybackManager(
       if (!configChange && kohii.mapPlayableToManager[it.playable] === this) {
         // Become inactive in this Manager.
         // Only pause and release if this Manager manages the Playable.
-        it.pause()
+        it.pauseInternal()
         parent.trySavePlaybackInfo(it)
         it.release()
       }
@@ -453,7 +456,7 @@ abstract class PlaybackManager(
 
   @Suppress("UNCHECKED_CAST")
   internal fun <OUTPUT : Any> findPlaybackForOutputHolder(output: OUTPUT): Playback<OUTPUT>? =
-    this.mapTargetToPlayback.values.firstOrNull { it.outputHolder === output } as? Playback<OUTPUT>
+    this.mapTargetToPlayback.values.firstOrNull { it.renderer === output } as? Playback<OUTPUT>
 
   internal fun findHostForContainer(container: Any) =
     targetHosts.firstOrNull { it.accepts(container) }
@@ -539,19 +542,20 @@ abstract class PlaybackManager(
     kohii.pause(playback)
   }
 
-  fun <CONTAINER : Any, OUTPUT : Any> registerOutputHolderPool(
-    key: Pair<Class<CONTAINER>, Class<OUTPUT>>,
-    outputHolderPool: OutputHolderPool<CONTAINER, OUTPUT>
+  fun <RENDERER : Any> registerRendererPool(
+    key: Class<RENDERER>,
+    rendererPool: RendererPool<RENDERER>
   ) {
-    parent.outputHolderNest.put(key, outputHolderPool)
+    if (rendererPool is LifecycleObserver) owner.lifecycle.addObserver(rendererPool)
+    parent.rendererPools.put(key, rendererPool)
         ?.cleanUp()
   }
 
-  fun <CONTAINER : Any, OUTPUT : Any> fetchOutputHolderPool(
-    key: Pair<Class<CONTAINER>, Class<OUTPUT>>
-  ): OutputHolderPool<CONTAINER, OUTPUT>? {
+  fun <RENDERER : Any> fetchRendererPool(
+    key: Class<RENDERER>
+  ): RendererPool<RENDERER>? {
     @Suppress("UNCHECKED_CAST")
-    return parent.outputHolderNest[key] as OutputHolderPool<CONTAINER, OUTPUT>?
+    return parent.rendererPools[key] as RendererPool<RENDERER>?
   }
 
   fun addOnSelectionCallback(selectionCallback: OnSelectionCallback) {

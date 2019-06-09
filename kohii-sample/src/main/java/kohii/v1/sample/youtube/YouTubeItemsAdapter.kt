@@ -16,52 +16,106 @@
 
 package kohii.v1.sample.youtube
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView.Adapter
+import androidx.fragment.app.FragmentManager
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
+import com.google.api.services.youtube.model.Video
 import kohii.v1.PlayableCreator
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseViewHolder
+import kohii.v1.sample.youtube.data.NetworkState
+import kohii.v1.ytb.YouTubePlayerFragment
 
 class YouTubeItemsAdapter(
-  private val creator: PlayableCreator<*>
-) : Adapter<YouTubeViewHolder>() {
+  private val creator: PlayableCreator<YouTubePlayerFragment>,
+  private val fragmentManager: FragmentManager
+) : PagedListAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
+  override fun areItemsTheSame(
+    oldItem: Video,
+    newItem: Video
+  ): Boolean {
+    return newItem.id === oldItem.id
+  }
 
-  companion object {
-    val videos = arrayOf(
-        "_pOd4uW2upg", "EOjq4OIWKqM", "FV3iN4PIB5U", "NNWejxBORgc", "0-HpOUwbp5w", "lRiYvQbKoiY"
-    )
+  override fun areContentsTheSame(
+    oldItem: Video,
+    newItem: Video
+  ): Boolean {
+    return newItem.statistics == oldItem.statistics
+  }
+}) {
 
-    val videoUrls = arrayOf(
-        "https://content.jwplatform.com/videos/0G7vaSoF-oQOe5Prq.mp4",
-        "https://content.jwplatform.com/videos/0G7vaSoF-oQOe5Prq.mp4",
-        "https://content.jwplatform.com/videos/0G7vaSoF-oQOe5Prq.mp4",
-        "https://content.jwplatform.com/videos/0G7vaSoF-oQOe5Prq.mp4"
-    )
+  private var networkState: NetworkState? = null
+
+  private fun hasExtraRow() = networkState != null && networkState != NetworkState.LOADED
+
+  override fun getItemViewType(position: Int): Int {
+    return if (hasExtraRow() && position == itemCount - 1) {
+      R.layout.holder_loading // to loading type
+    } else {
+      R.layout.holder_youtube_container
+    }
+  }
+
+  override fun getItemCount(): Int {
+    return super.getItemCount() + if (hasExtraRow()) 1 else 0
+  }
+
+  fun setNetworkState(newNetworkState: NetworkState?) {
+    val previousState = this.networkState
+    val hadExtraRow = hasExtraRow()
+    this.networkState = newNetworkState
+    val hasExtraRow = hasExtraRow()
+    if (hadExtraRow != hasExtraRow) {
+      if (hadExtraRow) {
+        notifyItemRemoved(super.getItemCount())
+      } else {
+        notifyItemInserted(super.getItemCount())
+      }
+    } else if (hasExtraRow && previousState != newNetworkState) {
+      notifyItemChanged(itemCount - 1)
+    }
   }
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
-  ): YouTubeViewHolder {
-    val view = LayoutInflater.from(parent.context)
-        .inflate(R.layout.holder_youtube_container, parent, false)
-    return YouTubeViewHolder(view)
-  }
-
-  override fun getItemCount(): Int {
-    return Int.MAX_VALUE
+  ): BaseViewHolder {
+    return when (viewType) {
+      R.layout.holder_youtube_container -> YouTubeViewHolder(parent, viewType, fragmentManager)
+      R.layout.holder_loading -> BaseViewHolder(parent, viewType)
+      else -> throw IllegalArgumentException("unknown view type $viewType")
+    }
   }
 
   override fun onBindViewHolder(
-    holder: YouTubeViewHolder,
+    holder: BaseViewHolder,
     position: Int
   ) {
-    creator.setUp(getMedia(position))
-        .with { threshold = 0.99F }
-        .bind(holder.container)
+    if (holder is YouTubeViewHolder) {
+      val item = getItem(position)
+      holder.bind(item)
+      val videoId = item?.id ?: "EOjq4OIWKqM"
+      creator.setUp(videoId)
+          .with {
+            tag = videoId
+            threshold = 0.99F
+          }
+          .bind(holder) {
+            it.addPlaybackEventListener(holder)
+            holder.playback = it
+          }
+    }
   }
 
-  private fun getMedia(position: Int): String {
-    return videos[position % videos.size]
+  override fun onViewRecycled(holder: BaseViewHolder) {
+    super.onViewRecycled(holder)
+    holder.onRecycled(true)
+  }
+
+  override fun onFailedToRecycleView(holder: BaseViewHolder): Boolean {
+    holder.onRecycled(false)
+    return super.onFailedToRecycleView(holder)
   }
 }

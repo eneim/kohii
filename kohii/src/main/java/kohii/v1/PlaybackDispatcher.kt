@@ -33,7 +33,7 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
 
   override fun handleMessage(msg: Message?): Boolean {
     if (msg?.what == MSG_PLAY && msg.obj is Playback<*>) {
-      (msg.obj as Playback<*>).play()
+      (msg.obj as Playback<*>).playInternal()
     }
     return true
   }
@@ -57,7 +57,7 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
         delay <= Playback.DELAY_INFINITE -> {
           // ignored
         }
-        delay == 0 -> playback.play()
+        delay == 0 -> playback.playInternal()
         else -> it.sendMessageDelayed(it.obtainMessage(MSG_PLAY, playback), delay.toLong())
       }
     }
@@ -65,7 +65,7 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
 
   private fun justPause(playback: Playback<*>) {
     handler?.removeMessages(MSG_PLAY, playback)
-    playback.pause()
+    playback.pauseInternal()
   }
 
   internal fun play(playback: Playback<*>) {
