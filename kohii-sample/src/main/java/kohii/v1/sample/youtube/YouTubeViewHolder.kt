@@ -16,16 +16,105 @@
 
 package kohii.v1.sample.youtube
 
-import android.view.View
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.view.contains
+import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commitNow
+import com.bumptech.glide.Glide
+import com.google.api.services.youtube.model.Video
+import kohii.v1.Playback
+import kohii.v1.PlaybackEventListener
+import kohii.v1.Target
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseViewHolder
+import kohii.v1.sample.svg.GlideApp
+import kohii.v1.ytb.YouTubePlayerFragment
 
-class YouTubeViewHolder(itemView: View) : ViewHolder(itemView) {
+@Suppress("MemberVisibilityCanBePrivate")
+class YouTubeViewHolder(
+  parent: ViewGroup,
+  layoutId: Int,
+  val fragmentManager: FragmentManager
+) : BaseViewHolder(parent, layoutId),
+    PlaybackEventListener,
+    Target<FrameLayout, YouTubePlayerFragment> {
 
-  val container = itemView.findViewById(R.id.container) as AspectRatioFrameLayout
+  override val container = itemView.findViewById(R.id.container) as FrameLayout
+  val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
+  val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
+
+  var playback: Playback<*>? = null
 
   init {
-    container.setAspectRatio(1.6F)
+    // container.id = ViewCompat.generateViewId()
+  }
+
+  override fun bind(item: Any?) {
+    super.bind(item)
+    (item as? Video)?.apply {
+      val lowResThumb = this.snippet.thumbnails.medium.url
+      val thumbRequest = Glide.with(itemView)
+          .load(lowResThumb)
+      val highResThumb = this.snippet.thumbnails.maxres.url
+      GlideApp.with(itemView)
+          .load(highResThumb)
+          .thumbnail(thumbRequest)
+          .fitCenter()
+          .into(thumbnail)
+
+      videoTitle.text = this.snippet.title
+    }
+  }
+
+  override fun onEnd(playback: Playback<*>) {
+    thumbnail.isVisible = true
+  }
+
+  override fun beforePlay(playback: Playback<*>) {
+    thumbnail.isVisible = false
+  }
+
+  override fun afterPause(playback: Playback<*>) {
+    thumbnail.isVisible = true
+  }
+
+  override fun onRecycled(success: Boolean) {
+    super.onRecycled(success)
+    playback = null
+  }
+
+  // Target
+
+  override fun attachRenderer(renderer: YouTubePlayerFragment) {
+    container.id = adapterPosition + 1
+    val old = fragmentManager.findFragmentById(container.id)
+    if (old !== renderer) {
+      fragmentManager.commitNow {
+        replace(container.id, renderer, playback?.tag.toString())
+      }
+    } else {
+      renderer.view?.let {
+        if (!container.contains(it)) {
+          val parent = it.parent
+          if (parent is ViewGroup) parent.removeView(it)
+          container.removeAllViews()
+          container.addView(it)
+        }
+      }
+    }
+  }
+
+  override fun detachRenderer(renderer: YouTubePlayerFragment): Boolean {
+    /* if (!renderer.isDetached) {
+      fragmentManager.commitNow(allowStateLoss = true) {
+        detach(renderer)
+        Log.i("Kohii::YTX", "detach: $renderer")
+      }
+    } */
+    return true
   }
 }

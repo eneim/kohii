@@ -17,48 +17,52 @@
 package kohii.v1
 
 import android.view.ViewGroup
+import kotlin.properties.Delegates
 
-open class LazyViewPlayback<OUTPUT : Any>(
+open class LazyViewPlayback<RENDERER : Any>(
   kohii: Kohii,
-  playable: Playable<OUTPUT>,
+  playable: Playable<RENDERER>,
   manager: PlaybackManager,
-  private val boxedTarget: Target<ViewGroup, OUTPUT>,
+  private val boxedTarget: Target<ViewGroup, RENDERER>,
   options: Config,
-  private val outputHolderPool: OutputHolderPool<ViewGroup, OUTPUT>
-) : ViewPlayback<ViewGroup, OUTPUT>(
-    kohii, playable, manager, boxedTarget.requireContainer(), options
+  private val rendererPool: RendererPool<RENDERER>
+) : ViewPlayback<ViewGroup, RENDERER>(
+    kohii, playable, manager, boxedTarget.container, options
 ) {
 
-  private var _outputHolder: OUTPUT? = null
+  private var _renderer: RENDERER? by Delegates.observable(null as RENDERER?,
+      onChange = { _, prev, next ->
+        if (next === prev) return@observable
+        // 1. Release previous value to Pool
+        if (prev != null) {
+          if (boxedTarget.detachRenderer(prev)) {
+            rendererPool.releaseRenderer(boxedTarget, prev, playable.media)
+            this.playable.onPlayerInActive(this@LazyViewPlayback, prev)
+          }
+        }
+        // 2. If next value is not null, notify its value
+        if (next != null) {
+          boxedTarget.attachRenderer(next)
+          this.playable.onPlayerActive(this@LazyViewPlayback, next)
+        }
+      })
 
-  override val outputHolder: OUTPUT?
-    get() = this._outputHolder
+  override val renderer: RENDERER?
+    get() = this._renderer
 
   override fun beforePlayInternal() {
     super.beforePlayInternal()
-    if (_outputHolder == null) {
-      _outputHolder = outputHolderPool.acquireOutputHolder(this.boxedTarget, playable.media)
-      if (_outputHolder != null) {
-        this.playable.onPlayerActive(this, _outputHolder!!)
-      }
-    }
+    if (_renderer == null) _renderer =
+      rendererPool.acquireRenderer(this, this.boxedTarget, playable.media)
   }
 
   override fun afterPauseInternal() {
     super.afterPauseInternal()
-    _outputHolder?.also {
-      outputHolderPool.releaseOutputHolder(this.boxedTarget, it, playable.media)
-      this.playable.onPlayerInActive(this, _outputHolder)
-      _outputHolder = null
-    }
+    _renderer = null
   }
 
   override fun onRemoved() {
-    _outputHolder?.also {
-      outputHolderPool.releaseOutputHolder(this.boxedTarget, it, playable.media)
-      this.playable.onPlayerInActive(this, _outputHolder)
-      _outputHolder = null
-    }
+    _renderer = null
     super.onRemoved()
   }
 }

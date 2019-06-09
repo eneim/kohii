@@ -58,15 +58,18 @@ class PagerViewsFragment : BaseFragment() {
       container: ViewGroup,
       position: Int
     ): Any {
+      // Normal creation
       val view = LayoutInflater.from(container.context)
           .inflate(R.layout.widget_video_container, container, false)
       container.addView(view)
+      // Now bind the content
       val video = videos[position % videos.size].playlist.first()
           .sources.first()
       val itemTag = "$javaClass::$position::${video.file}"
       kohii.setUp(video.file)
           .with {
             tag = itemTag
+            preLoad = true
             repeatMode = Playable.REPEAT_MODE_ONE
           }
           .bind(ViewTarget(view.videoFrame))

@@ -23,13 +23,18 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.ui.combo.ComboFragment
+import kohii.v1.sample.ui.echo.EchoFragment
 import kohii.v1.sample.ui.fbook.FbookFragment
 import kohii.v1.sample.ui.motion.MotionFragment
 import kohii.v1.sample.ui.mstdtl.MasterDetailFragment
 import kohii.v1.sample.ui.overlay.OverlayViewFragment
-import kohii.v1.sample.ui.pager1.PagerMainFragment
+import kohii.v1.sample.ui.pager0.PagerViewsFragment
+import kohii.v1.sample.ui.pager1.Pager1Fragment
+import kohii.v1.sample.ui.pager2.Pager2Fragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
+import kohii.v1.sample.ui.youtube1.YouTube1Fragment
+import kohii.v1.sample.ui.youtube2.YouTube2Fragment
 
 class DemoItemsAdapter(
   private val onClick: (DemoItem) -> Unit
@@ -45,9 +50,14 @@ class DemoItemsAdapter(
             FbookFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_pager_1,
-            R.string.demo_desc_pager_1,
-            PagerMainFragment::class.java
+            R.string.demo_title_youtube_1,
+            R.string.demo_desc_youtube_1,
+            YouTube1Fragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_youtube_2,
+            R.string.demo_desc_youtube_2,
+            YouTube2Fragment::class.java
         ),
         DemoItem(
             R.string.demo_title_recycler_view_1,
@@ -65,9 +75,9 @@ class DemoItemsAdapter(
             OverlayViewFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_master_detail,
-            R.string.demo_desc_master_detail,
-            MasterDetailFragment::class.java
+            R.string.demo_title_recycler_view_4,
+            R.string.demo_desc_recycler_view_4,
+            EchoFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_nested_scrollview_1,
@@ -78,6 +88,26 @@ class DemoItemsAdapter(
             R.string.demo_title_nested_scrollview_2,
             R.string.demo_desc_nested_scrollview_2,
             ScrollViewFragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_pager_1,
+            R.string.demo_desc_pager_1,
+            Pager1Fragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_pager_2,
+            R.string.demo_desc_pager_2,
+            Pager2Fragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_pager_3,
+            R.string.demo_desc_pager_3,
+            PagerViewsFragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_master_detail,
+            R.string.demo_desc_master_detail,
+            MasterDetailFragment::class.java
         )
     )
   }

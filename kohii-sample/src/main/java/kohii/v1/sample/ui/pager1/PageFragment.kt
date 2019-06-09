@@ -100,7 +100,7 @@ class PageFragment : BaseFragment(), Prioritized {
           .with {
             tag = videoTag
             repeatMode = Playable.REPEAT_MODE_ONE
-            prefetch = true
+            preLoad = true
           }
           .bind(playerView) { playback = it }
     }

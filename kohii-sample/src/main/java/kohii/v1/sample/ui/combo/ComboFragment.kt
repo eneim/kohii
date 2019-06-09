@@ -26,8 +26,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kohii.v1.DefaultRendererPool
 import kohii.v1.Kohii
-import kohii.v1.OutputHolderPool
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.PlayerViewCreator
@@ -69,13 +69,11 @@ class ComboFragment : BaseFragment() {
     postponeEnterTransition()
     recyclerView.doOnNextLayout { startPostponedEnterTransition() }
 
+    val kohii = Kohii[this]
     // Setup Kohii and do stuff
-    val pool = OutputHolderPool(2, PlayerViewCreator.instance)
-    val key = ViewGroup::class.java to PlayerView::class.java
-    val kohii = Kohii[this].also {
-      it.register(this, recyclerView)
-          .registerOutputHolderPool(key, pool)
-    }
+    val pool = DefaultRendererPool(kohii, creator = PlayerViewCreator.instance)
+    kohii.register(this, recyclerView)
+        .registerRendererPool(PlayerView::class.java, pool)
 
     recyclerView.adapter = VideoItemsAdapter(kohii, videos,
         onClick = { holder, _ ->

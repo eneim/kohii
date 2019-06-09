@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -32,13 +31,10 @@ import kohii.v1.sample.common.getDisplayPoint
 import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 
-@Suppress("unused")
-@Keep
-class PagerMainFragment : BaseFragment() {
+class Pager1Fragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = PagerMainFragment()
-    const val TAG = "kohii:Pager"
+    fun newInstance() = Pager1Fragment()
   }
 
   class VideoPagerAdapter(

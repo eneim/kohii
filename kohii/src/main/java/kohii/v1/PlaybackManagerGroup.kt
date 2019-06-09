@@ -59,7 +59,7 @@ class PlaybackManagerGroup(
   internal val lock = AtomicBoolean(false)
   internal var volumeInfo = VolumeInfo()
 
-  internal val outputHolderNest = HashMap<Pair<Class<*>, Class<*>>, OutputHolderPool<*, *>>()
+  internal val rendererPools = HashMap<Class<*>, RendererPool<*>>()
 
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
@@ -155,6 +155,9 @@ class PlaybackManagerGroup(
         .clear()
     promotedManager?.let { this.detachPlaybackManager(it) }
     promotedManager = null
+
+    this.rendererPools.onEach { it.value.cleanUp() }
+        .clear()
 
     owner.lifecycle.removeObserver(this)
     dispatcher.onContainerDestroyed()

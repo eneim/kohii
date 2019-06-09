@@ -61,7 +61,7 @@ class VideoViewHolder(
       rebinder = kohii.setUp(item.content)
           .with {
             tag = itemTag
-            prefetch = true
+            preLoad = true
             repeatMode = Playable.REPEAT_MODE_ONE
             callback = this@VideoViewHolder
           }

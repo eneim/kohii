@@ -16,7 +16,6 @@
 
 package kohii.v1.exo
 
-import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
@@ -27,8 +26,6 @@ import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackCreator
-import kohii.v1.Target
-import kohii.v1.ViewTarget
 
 /**
  * @author eneim (2018/06/24).
@@ -50,23 +47,14 @@ internal class PlayerViewPlayable internal constructor(
     bridgeProvider: BridgeProvider<PlayerView>,
     playbackCreator: PlaybackCreator<PlayerView>
   ) : this(
-      kohii, media, config, bridgeProvider.provideBridge(kohii, media, config),
-      playbackCreator
+      kohii, media, config, bridgeProvider.provideBridge(kohii, media, config), playbackCreator
   )
-
-  override fun <CONTAINER : Any> createBoxedTarget(target: CONTAINER): Target<CONTAINER, PlayerView> {
-    val targetType = target.javaClass
-    @Suppress("UNCHECKED_CAST")
-    if (ViewGroup::class.java.isAssignableFrom(targetType))
-      return ViewTarget<ViewGroup, PlayerView>(target as ViewGroup) as Target<CONTAINER, PlayerView>
-    else throw IllegalArgumentException("Unsupported target type: $targetType")
-  }
 
   override fun onPlayerActive(
     playback: Playback<PlayerView>,
     player: PlayerView
   ) {
-    bridge.playerView = player
+    super.onPlayerActive(playback, player)
     val controller = playback.controller
     if (controller != null) {
       player.useController = true
@@ -74,15 +62,6 @@ internal class PlayerViewPlayable internal constructor(
     } else {
       // Force PlayerView to not use Controller.
       player.useController = false
-    }
-  }
-
-  override fun onPlayerInActive(
-    playback: Playback<PlayerView>,
-    player: PlayerView?
-  ) {
-    if (bridge.playerView === player) {
-      bridge.playerView = null
     }
   }
 }

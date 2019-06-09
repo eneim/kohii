@@ -141,10 +141,11 @@ dependencies {
   kapt "com.github.bumptech.glide:compiler:4.9.0"
   implementation 'com.caverock:androidsvg-aar:1.4'
 
-  debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
-  releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
+  // debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
+  // releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
   // Optional, if you use support library fragments:
-  debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.3'
+  // debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.3'
+  debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.0-alpha-2'
 
   implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
     transitive = true
