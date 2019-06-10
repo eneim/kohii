@@ -18,18 +18,16 @@ package kohii.v1.sample
 
 import android.app.Application
 import com.crashlytics.android.Crashlytics
-import com.squareup.leakcanary.LeakCanary
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.fabric.sdk.android.Fabric
-import kohii.v1.Kohii
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
-import kohii.v1.sample.youtube.YouTubePlayableCreator
 import okio.buffer
 import okio.source
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * @author eneim (2018/06/26).
@@ -37,11 +35,8 @@ import okio.source
 @Suppress("unused")
 class DemoApp : Application() {
 
-  // In practice, this instance should be managed and injected by a DI framework.
-  val youTubePlayableCreator by lazy { YouTubePlayableCreator(Kohii[this]) }
-
   // shared between demos
-  val videos by lazy {
+  val videos by lazy(NONE) {
     val asset = assets
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -63,12 +58,6 @@ class DemoApp : Application() {
 
   override fun onCreate() {
     super.onCreate()
-    if (LeakCanary.isInAnalyzerProcess(this)) {
-      // This process is dedicated to LeakCanary for heap analysis.
-      // You should not init your app in this process.
-      return
-    }
-    LeakCanary.install(this)
     Fabric.with(this, Crashlytics())
   }
 }

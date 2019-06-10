@@ -17,7 +17,8 @@
 <resources>
   <string name="app_name">Kohii in Action</string>
 
-  <item format="integer" name="motion_view_tag" type="id"/>
+  <item name="motion_view_tag" format="integer" type="id"/>
+  <string name="yt_api_key">AIzaSyCzekSu5fvTozXe65UVOj1eKnx-bd701N4</string>
 
   <string name="large_text">
     "A material metaphor is the unifying theory of a rationalized space and a system of motion."
@@ -154,13 +155,23 @@
     playing smoothly.\n\nVideos from Caminandes (CC 3.0 open movie).
   </string>
 
+  <string name="demo_title_recycler_view_5">
+    Kohii + RecyclerView (4)
+  </string>
+
+  <string name="demo_desc_recycler_view_5">
+    RecyclerView (4) presents the scenario of reusing a single PlayerView instance across multiple
+    Playbacks/ViewHolders.\n\nVideos are from Caminandes (CC 3.0 open movie).
+  </string>
+
   <string name="demo_title_recycler_view_4">
     Kohii + RecyclerView (4)
   </string>
 
   <string name="demo_desc_recycler_view_4">
-    RecyclerView (4) presents the scenario of reusing a single PlayerView instance across multiple
-    Playbacks/ViewHolders.\n\nVideos are from Caminandes (CC 3.0 open movie).
+    RecyclerView (5) shows how developer can control Volume of each item individually.
+    The Volume info is saved/restored across configuration change thanks to Android Architecture Components.
+    \n\nVideos from Caminandes (CC 3.0 open movie).
   </string>
 
   <string name="demo_title_pager_1">
@@ -171,6 +182,24 @@
     Pager (1) shows how Kohii could work in ViewPager. Each page will start the Playback with 500ms
     delay.\n\nThis demo also shows different layout in landscape and portrait orientation,
     while the Playback keeps playing smoothly.\n\nVideos are from Caminandes (CC 3.0 open movie).
+  </string>
+
+  <string name="demo_title_pager_2">
+    Kohii + Pager (2)
+  </string>
+
+  <string name="demo_desc_pager_2">
+    Pager (2) is the same with Pager (1), but uses the new ViewPager2 instead. Each page is a Fragment.
+    \n\nVideos are from Caminandes (CC 3.0 open movie).
+  </string>
+
+  <string name="demo_title_pager_3">
+    Kohii + Pager (3)
+  </string>
+
+  <string name="demo_desc_pager_3">
+    Pager (2) is the same with Pager (1), but each page is a View instead of a Fragment.
+    \n\nVideos are from Caminandes (CC 3.0 open movie).
   </string>
 
   <string name="demo_title_nested_scrollview_1">
@@ -208,5 +237,21 @@
   <string name="demo_desc_fbook">
     Facebook Video list demonstration. It will automatically open fullscreen Player on landscape mode (judged by resource.configuration.landscape flag).
     It also supports floating Player (same concept as Picture-In-Picture, but not for Activity).
+  </string>
+
+  <string name="demo_title_youtube_1">
+    Kohii + YouTube (1)
+  </string>
+
+  <string name="demo_desc_youtube_1">
+    Kohii with YouTube video using the YouTube Android Player API.
+  </string>
+
+  <string name="demo_title_youtube_2">
+    Kohii + YouTube (2)
+  </string>
+
+  <string name="demo_desc_youtube_2">
+    Kohii with YouTube videos using https://github.com/PierfrancescoSoffritti/android-youtube-player library.
   </string>
 </resources>

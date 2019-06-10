@@ -66,12 +66,6 @@ interface Playable<OUTPUT : Any> {
   val isPlaying: Boolean
 
   fun <CONTAINER : Any> bind(
-    target: CONTAINER,
-    config: Playback.Config = Playback.Config(),
-    cb: ((Playback<OUTPUT>) -> Unit)? = null
-  )
-
-  fun <CONTAINER : Any> bind(
     target: Target<CONTAINER, OUTPUT>,
     config: Playback.Config = Playback.Config(),
     cb: ((Playback<OUTPUT>) -> Unit)? = null
@@ -122,6 +116,6 @@ interface Playable<OUTPUT : Any> {
   // data class for copying convenience.
   data class Config(
     val tag: String? = null,
-    val prefetch: Boolean = false
+    val preLoad: Boolean = false
   )
 }

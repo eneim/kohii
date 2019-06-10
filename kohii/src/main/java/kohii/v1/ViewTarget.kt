@@ -20,21 +20,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.contains
 
-open class ViewTarget<CONTAINER : ViewGroup, OUTPUT : View>(val container: CONTAINER) : Target<CONTAINER, OUTPUT> {
+open class ViewTarget<CONTAINER : ViewGroup, RENDERER : View>(override val container: CONTAINER) :
+    Target<CONTAINER, RENDERER> {
 
-  override fun requireContainer(): CONTAINER {
-    return this.container
+  override fun attachRenderer(renderer: RENDERER) {
+    if (container === renderer || container::javaClass === renderer::javaClass) return
+    if (!container.contains(renderer)) container.addView(renderer)
   }
 
-  override fun attachOutputHolder(output: OUTPUT) {
-    if (container === output || container::javaClass === output::javaClass) return
-    if (!container.contains(output)) container.addView(output)
-  }
-
-  override fun detachOutputHolder(output: OUTPUT): Boolean {
-    if (container === output || container::javaClass === output::javaClass) return false
-    if (!container.contains(output)) return false
-    container.removeView(output)
+  override fun detachRenderer(renderer: RENDERER): Boolean {
+    if (container === renderer || container::javaClass === renderer::javaClass) return false
+    if (!container.contains(renderer)) return false
+    container.removeView(renderer)
     return true
   }
 }

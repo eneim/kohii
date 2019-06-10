@@ -20,10 +20,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
-import kohii.v1.OutputHolderCreator
+import kohii.v1.Playback
 import kohii.v1.R
+import kohii.v1.RendererCreator
 
-class PlayerViewCreator : OutputHolderCreator<ViewGroup, PlayerView> {
+class PlayerViewCreator : RendererCreator<PlayerView> {
 
   companion object {
     val instance = PlayerViewCreator()
@@ -33,16 +34,17 @@ class PlayerViewCreator : OutputHolderCreator<ViewGroup, PlayerView> {
     return if (media.mediaDrm != null) R.layout.kohii_player_surface_view else R.layout.kohii_player_textureview
   }
 
-  override fun createOutputHolder(
-    container: ViewGroup,
+  override fun <CONTAINER : Any> createRenderer(
+    playback: Playback<PlayerView>,
+    container: CONTAINER,
     type: Int
   ): PlayerView {
+    if (container !is ViewGroup) throw IllegalArgumentException("Need ViewGroup container.")
     require(
         type == R.layout.kohii_player_textureview ||
             type == R.layout.kohii_player_surface_view ||
             type == R.layout.kohii_player_spherical_view
-    ) { "Unknown type: $type" }
-
+    ) { "Unknown type: $type" } // just to demonstrate a good practice. we do not need them.
     return LayoutInflater.from(container.context).inflate(type, container, false) as PlayerView
   }
 }

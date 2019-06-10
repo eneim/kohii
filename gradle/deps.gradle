@@ -35,7 +35,7 @@ ext {
       ]
 
   buildConfig.version['name'] = //
-      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A06"
+      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A08"
 
   buildConfig.version['code'] = gitCommitCount
 
@@ -83,10 +83,17 @@ ext {
                   rvSelection: "androidx.recyclerview:recyclerview-selection:1.1.0-alpha05",
                   viewpager2: "androidx.viewpager2:viewpager2:1.0.0-alpha04",
                   constraintlayout: "androidx.constraintlayout:constraintlayout:2.0.0-alpha3",
-                  lifecycle: "androidx.lifecycle:lifecycle-extensions:2.1.0-beta01",
-                  lifecycleRuntime: "androidx.lifecycle:lifecycle-runtime:2.1.0-beta01",
-                  lifecycleService: "androidx.lifecycle:lifecycle-service:2.1.0-beta01",
-                  lifecycleCompiler: "androidx.lifecycle:lifecycle-compiler:2.1.0-beta01",
+
+                  lifecycle: "androidx.lifecycle:lifecycle-extensions:2.2.0-alpha01",
+                  livedataKtx: "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0-alpha01",
+                  viewModelKtx: "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-alpha01",
+                  lifecycleRuntime: "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0-alpha01",
+                  lifecycleService: "androidx.lifecycle:lifecycle-service:2.2.0-alpha01",
+                  lifecycleCompiler: "androidx.lifecycle:lifecycle-compiler:2.2.0-alpha01",
+
+                  pagingCommon: "androidx.paging:paging-common-ktx:2.1.0",
+                  pagingRuntime: "androidx.paging:paging-runtime-ktx:2.1.0",
+
                   coordinator: "androidx.coordinatorlayout:coordinatorlayout:1.1.0-alpha01", //
               ],
 

@@ -232,7 +232,7 @@ class Kohii(context: Context) {
       if (lifecycleOwner is LifecycleService) {
         throw IllegalArgumentException("Service is not supported yet.")
       } else {
-        return@getOrPut ViewPlaybackManager(this, managerGroup, provider)
+        return@getOrPut ViewPlaybackManager(this, provider, managerGroup, lifecycleOwner)
       }
     }
 
@@ -415,6 +415,19 @@ class Kohii(context: Context) {
     // 2. Promote the Manager
     manager.parent.promote(manager)
     manager.dispatchRefreshAll()
+  }
+
+  internal fun <OUTPUT : Any> cleanUpPool(
+    owner: LifecycleOwner,
+    rendererPool: RendererPool<OUTPUT>
+  ) {
+    this.managers[owner]?.apply {
+      parent.rendererPools.filter { it.value === rendererPool }
+          .forEach {
+            it.value.cleanUp()
+            parent.rendererPools.remove(it.key)
+          }
+    }
   }
 
   // [END] Public API

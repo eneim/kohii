@@ -56,7 +56,7 @@ fun setVideo(
   val rebinder = kohii.setUp(MediaItem(video.url, "mp4"))
       .with {
         tag = "${video.javaClass.canonicalName}::${video.url}"
-        prefetch = true
+        preLoad = true
         repeatMode = Playable.REPEAT_MODE_ONE
       }
       .bind(view)

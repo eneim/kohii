@@ -27,7 +27,10 @@ internal abstract class FbookItemHolder(
 
   interface OnClick {
 
-    fun onClick(receiver: View, holder: FbookItemHolder)
+    fun onClick(
+      receiver: View,
+      holder: FbookItemHolder
+    )
   }
 
   val textContainer = itemView.findViewById(R.id.textContainer) as ViewGroup

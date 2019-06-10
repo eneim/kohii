@@ -44,6 +44,7 @@ class MainFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     recyclerView.adapter = DemoItemsAdapter {
+      requireActivity().title = getString(it.title)
       fragmentManager?.also { fm ->
         fm.beginTransaction()
             .setReorderingAllowed(true) // Optimize for shared element transition
@@ -55,5 +56,10 @@ class MainFragment : BaseFragment() {
             .commit()
       }
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    requireActivity().title = getString(R.string.app_name)
   }
 }

@@ -32,6 +32,7 @@ import kohii.v1.Playable
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.Rebinder
+import kohii.v1.ViewTarget
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
@@ -100,7 +101,7 @@ internal class VideoItemHolder(
       if (host.selectionTracker?.isSelected(rebinder) == true) {
         this.playback = null
       } else {
-        binder.bind(playerView) { pk ->
+        binder.bind(ViewTarget(playerView)) { pk ->
           pk.addPlaybackEventListener(this@VideoItemHolder)
           this@VideoItemHolder.playback = pk
         }
@@ -119,7 +120,7 @@ internal class VideoItemHolder(
     Log.e("Kohii:VH", "beforePlay: $playback, $adapterPosition")
   }
 
-  override fun onPlaying(playback: Playback<*>) {
+  override fun onPlay(playback: Playback<*>) {
     videoImage.isVisible = false
   }
 
@@ -127,7 +128,7 @@ internal class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  override fun onCompleted(playback: Playback<*>) {
+  override fun onEnd(playback: Playback<*>) {
     videoImage.isVisible = true
   }
 

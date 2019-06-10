@@ -22,4 +22,7 @@
 
   <color name="shutter_color">#0a0a0a</color>
   <color name="red">#d50000</color>
+
+  <color name="card_dark_background">#FF424242</color>
+  <color name="card_light_background">#FFFFFFFF</color>
 </resources>

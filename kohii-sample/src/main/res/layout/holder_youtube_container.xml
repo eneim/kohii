@@ -15,20 +15,48 @@
   ~ limitations under the License.
   -->
 
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
-    app:cardCornerRadius="0dp"
-    app:cardElevation="1dp"
+    android:elevation="1dp"
     >
 
-  <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+  <FrameLayout
       android:id="@+id/container"
-      android:layout_width="match_parent"
-      android:layout_height="100dp"
-      app:resize_mode="fixed_width"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:layout_constraintDimensionRatio="16:9"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
       />
-</androidx.cardview.widget.CardView>
+
+  <androidx.appcompat.widget.AppCompatImageView
+      android:id="@+id/thumbnail"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:layout_constraintDimensionRatio="16:9"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      />
+
+  <androidx.appcompat.widget.AppCompatTextView
+      android:id="@+id/videoTitle"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:paddingStart="@dimen/activity_horizontal_margin"
+      android:paddingTop="@dimen/pager_horizontal_space_base"
+      android:paddingEnd="@dimen/activity_horizontal_margin"
+      android:paddingBottom="@dimen/pager_horizontal_space_base"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/container"
+      />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

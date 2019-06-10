@@ -117,14 +117,6 @@ class FbookFragment : BaseFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    // Trick to ensure the order of Playback binding.
-    // By doing this, the RecyclerView will finish its layout before the BigPlayerFragment being destroyed (if it exists before).
-    // Therefore, the ViewHolder will finish the binding before its Playable is released by the destruction of BigPlayerFragment
-    postponeEnterTransition()
-    recyclerView.doOnLayout {
-      startPostponedEnterTransition()
-    }
-
     kohii = Kohii[this]
     val manager = kohii.register(this)
     rvHost = manager.registerTargetHost(Builder(recyclerView))!!
@@ -174,7 +166,6 @@ class FbookFragment : BaseFragment(),
     recyclerView.adapter = adapter
 
     val savedBinder = savedInstanceState?.getParcelable(STATE_KEY_REBINDER) as Rebinder?
-
     if (savedBinder != null) {
       if (requireActivity().isLandscape()) {
         val info = OverlayPlayerInfo(OverlayPlayerInfo.MODE_DIALOG, savedBinder)
@@ -209,7 +200,7 @@ class FbookFragment : BaseFragment(),
   override fun onDestroy() {
     super.onDestroy()
     rebindAction = null
-    this.floatPlayerManager.exitPictureInPicture { /* do nothing */ }
+    this.floatPlayerManager.closeFloatPlayer { /* do nothing */ }
   }
 
   override fun showFloatPlayer(rebinder: Rebinder) {
@@ -237,8 +228,8 @@ class FbookFragment : BaseFragment(),
   }
 
   // PlaybackEventListener
-  override fun onCompleted(playback: Playback<*>) {
-    super.onCompleted(playback)
+  override fun onEnd(playback: Playback<*>) {
+    super.onEnd(playback)
     if (playback === latestPlayback) {
       latestPlayback = null
       latestRebinder = null
@@ -256,8 +247,12 @@ class FbookFragment : BaseFragment(),
     recyclerView.adapter?.apply {
       recyclerView.currentVisible<VideoViewHolder> { it.rebinder == rebinder }
           .also { if (it.isEmpty()) overlayPlayback?.unbind() }
-          .forEach {
+          .onEach {
             notifyItemChanged(it.adapterPosition)
+          }
+          .firstOrNull { it.rebinder == rebinder }
+          ?.also {
+            it.reclaimRebinder(rebinder)
           }
     }
     overlayPlayback = null
@@ -277,11 +272,11 @@ class FbookFragment : BaseFragment(),
   private fun openFloatPlayer(rebinder: Rebinder) {
     if (!floatPlayerManager.floating.get()) {
       rebindAction = {
-        floatPlayerManager.enterPictureInPicture { playerView ->
+        floatPlayerManager.openFloatPlayer { playerView ->
           rebinder.with { repeatMode = Playable.REPEAT_MODE_OFF }
               .rebind(kohii, playerView) { playback ->
                 playback.addPlaybackEventListener(object : PlaybackEventListener {
-                  override fun onCompleted(playback: Playback<*>) {
+                  override fun onEnd(playback: Playback<*>) {
                     playback.removePlaybackEventListener(this)
                     viewModel.overlayPlayerInfo.value = null
                   }
@@ -316,6 +311,6 @@ class FbookFragment : BaseFragment(),
   }
 
   private fun closeFloatPlayer(@Suppress("UNUSED_PARAMETER") rebinder: Rebinder) {
-    floatPlayerManager.exitPictureInPicture { }
+    floatPlayerManager.closeFloatPlayer { }
   }
 }

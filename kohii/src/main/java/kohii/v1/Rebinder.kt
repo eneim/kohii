@@ -26,7 +26,7 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class Rebinder(
   val tag: String,
-  val outputType: Class<*>
+  val rendererType: Class<*>
 ) : Parcelable {
 
   @IgnoredOnParcel
@@ -37,18 +37,31 @@ data class Rebinder(
     return this
   }
 
-  fun <CONTAINER : Any> rebind(
+  fun <RENDERER : Any> rebind(
     kohii: Kohii,
-    target: CONTAINER,
+    target: RENDERER,
     reset: Boolean = false,
     onDone: ((Playback<*>) -> Unit)? = null
   ): Rebinder {
+    val targetType = target::class.java
     val cache = kohii.mapTagToPlayable[this.tag]
     if (cache != null) {
-      val playable = if (this.outputType.isAssignableFrom(cache.second)) cache.first else null
+      // Eg: if rendererType is FrameLayout.class, then target can be a PlayerView, but not View
+      if (!this.rendererType.isAssignableFrom(targetType)) {
+        throw IllegalStateException("Incompatible type. Expect: $rendererType, Found: $targetType")
+      }
+
+      // cache.first -> cached Playable instance
+      // cache.second -> compatible renderer type of the Playable
+
+      // Also check type of Playable found in cache
+      val playable = if (this.rendererType.isAssignableFrom(cache.second)) cache.first else null
       check(playable != null) { "No Playable found for tag ${this.tag}" }
       if (reset) playable.reset()
-      playable.bind(target, this.params.createPlaybackConfig(), onDone)
+      @Suppress("UNCHECKED_CAST") // it should be safe, as we've checked target type above.
+      (playable as Playable<RENDERER>).bind(
+          IdenticalTarget(target), this.params.createPlaybackConfig(), onDone
+      )
     } else if (BuildConfig.DEBUG) {
       throw IllegalStateException("No Playable found for tag ${this.tag}.")
     }
@@ -56,22 +69,23 @@ data class Rebinder(
     return this
   }
 
-  fun <CONTAINER : Any> rebind(
+  /* fun rebind(
     kohii: Kohii,
-    target: Target<CONTAINER, *>,
+    target: Target<Any, Any>,
     reset: Boolean = false,
     onDone: ((Playback<*>) -> Unit)? = null
   ): Rebinder {
     val cache = kohii.mapTagToPlayable[this.tag]
     if (cache != null) {
-      val playable = if (this.outputType.isAssignableFrom(cache.second)) cache.first else null
+      val playable = if (this.rendererType.isAssignableFrom(cache.second)) cache.first else null
       check(playable != null) { "No Playable found for tag ${this.tag}" }
       if (reset) playable.reset()
-      playable.bind(target, this.params.createPlaybackConfig(), onDone)
+      @Suppress("UNCHECKED_CAST")
+      (playable as Playable<Any>).bind(target, this.params.createPlaybackConfig(), onDone)
     } else if (BuildConfig.DEBUG) {
       throw IllegalStateException("No Playable found for tag ${this.tag}.")
     }
     params = Params()
     return this
-  }
+  } */
 }

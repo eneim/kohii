@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.youtube
+package kohii.v1.yta
 
-import android.util.Log
 import com.google.android.exoplayer2.PlaybackParameters
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState.BUFFERING
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState.ENDED
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState.PAUSED
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState.PLAYING
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState.UNKNOWN
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -32,6 +34,7 @@ import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.BaseBridge
 import kohii.v1.Playable
+import kotlin.properties.Delegates
 
 class YouTubeBridge(
   private val media: Media
@@ -39,34 +42,42 @@ class YouTubeBridge(
 
   private var player: YouTubePlayer? = null
 
+  fun mapState(original: PlayerState): Int {
+    return when (original) {
+      PLAYING -> Playable.STATE_READY
+      BUFFERING -> Playable.STATE_BUFFERING
+      ENDED -> Playable.STATE_END
+      PAUSED -> Playable.STATE_READY
+      else -> Playable.STATE_IDLE
+    }
+  }
+
   private val tracker = PlayerTracker()
   private val playerListener = object : AbstractYouTubePlayerListener() {
     override fun onStateChange(
       youTubePlayer: YouTubePlayer,
       state: PlayerState
     ) {
-      Log.w("Kohii::YT", "state change to $state, media: ${media.uri}, tracker: ${tracker.videoId}")
-      eventListeners.onPlayerStateChanged(state == PLAYING, state.ordinal)
-    }
-
-    override fun onVideoId(
-      youTubePlayer: YouTubePlayer,
-      videoId: String
-    ) {
-      Log.w("Kohii::YT", "video change: $videoId")
+      eventListeners.onPlayerStateChanged(state == PLAYING, mapState(state))
     }
 
     override fun onError(
       youTubePlayer: YouTubePlayer,
       error: PlayerError
     ) {
-      Log.e("Kohii::YT", "error: $error")
       errorListeners.onError(RuntimeException(error.name))
     }
   }
 
-  private var _playbackInfo =
-    PlaybackInfo(0, 0, VolumeInfo()) // Backing field for PlaybackInfo set/get
+  private var _playbackInfo: PlaybackInfo by Delegates.observable(
+      PlaybackInfo(0, 0, VolumeInfo()),
+      onChange = { _, oldVal, newVal ->
+        // Note: we ignore volume setting here.
+        if (newVal.resumePosition != oldVal.resumePosition) {
+          player?.seekTo(newVal.resumePosition.toFloat())
+        }
+      }
+  )
 
   override var playerView: YouTubePlayerView? = null
     set(value) {
@@ -84,7 +95,6 @@ class YouTubeBridge(
     }
     set(value) {
       _playbackInfo = value
-      this.seekTo(_playbackInfo.resumePosition)
     }
 
   private fun updatePlaybackInfo() {
@@ -95,12 +105,17 @@ class YouTubeBridge(
     }
   }
 
+  private fun resetPlaybackInfo() {
+    _playbackInfo = PlaybackInfo()
+  }
+
   override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
-  override var repeatMode: Int = Playable.REPEAT_MODE_ONE
+  override var repeatMode: Int by Delegates.observable(Playable.REPEAT_MODE_OFF,
+      onChange = { _, _, _ -> /* youtube library doesn't have looping support */ })
 
   override val playbackState: Int
-    get() = tracker.state.ordinal
+    get() = mapState(tracker.state)
 
   override val isPlaying: Boolean
     get() = tracker.state === PLAYING
@@ -111,7 +126,8 @@ class YouTubeBridge(
     val playbackInfo = this.playbackInfo
     playbackInfo.resumePosition = positionMs
     playbackInfo.resumeWindow = 0
-    this.playbackInfo = playbackInfo
+    _playbackInfo = playbackInfo
+    player?.seekTo(positionMs.toFloat())
   }
 
   override fun prepare(loadSource: Boolean) {
@@ -147,7 +163,7 @@ class YouTubeBridge(
   override fun play() {
     if (tracker.state !== PLAYING || tracker.videoId != media.uri.toString()) {
       val player = this.player
-      if (tracker.videoId === media.uri.toString() && player != null) {
+      if (tracker.videoId == media.uri.toString() && player != null) {
         player.play()
       } else {
         player?.loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toFloat())
@@ -162,7 +178,7 @@ class YouTubeBridge(
   }
 
   override fun reset() {
-    this.playbackInfo = PlaybackInfo()
+    resetPlaybackInfo()
     player?.pause()
   }
 

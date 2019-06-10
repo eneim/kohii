@@ -22,18 +22,19 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.core.view.ViewCompat
+import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
 
 /**
  * @author eneim (2018/06/24).
  */
-open class ViewPlayback<V : View, OUTPUT : Any>(
+open class ViewPlayback<V : View, RENDERER : Any>(
   kohii: Kohii,
-  playable: Playable<OUTPUT>,
+  playable: Playable<RENDERER>,
   manager: PlaybackManager,
   target: V,
   options: Config
-) : Playback<OUTPUT>(
+) : Playback<RENDERER>(
     kohii,
     playable,
     manager,
@@ -41,7 +42,7 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
     options
 ) {
 
-  private val keepScreenOnListener by lazy {
+  private val keepScreenOnListener by lazy(NONE) {
     object : PlaybackEventListener {
 
       override fun beforePlay(playback: Playback<*>) {
@@ -52,7 +53,7 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
         target.keepScreenOn = false
       }
 
-      override fun onCompleted(playback: Playback<*>) {
+      override fun onEnd(playback: Playback<*>) {
         target.keepScreenOn = false
       }
     }
@@ -76,11 +77,11 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
         Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
       }
 
-      override fun onPlaying(playback: Playback<*>) {
+      override fun onPlay(playback: Playback<*>) {
         Log.d(TAG, "playing: ${this@ViewPlayback}")
       }
 
-      override fun onPaused(playback: Playback<*>) {
+      override fun onPause(playback: Playback<*>) {
         Log.w(TAG, "paused: ${this@ViewPlayback}")
       }
 
@@ -88,7 +89,7 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
         Log.w(TAG, "afterPause: ${this@ViewPlayback}")
       }
 
-      override fun onCompleted(playback: Playback<*>) {
+      override fun onEnd(playback: Playback<*>) {
         Log.d(TAG, "ended: ${this@ViewPlayback}")
       }
     }
@@ -160,8 +161,8 @@ open class ViewPlayback<V : View, OUTPUT : Any>(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override val outputHolder: OUTPUT?
-    get() = this.target as? OUTPUT
+  override val renderer: RENDERER?
+    get() = this.target as? RENDERER
 
   // Location on screen, with visible offset within target's parent.
   data class ViewToken constructor(
