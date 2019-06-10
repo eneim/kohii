@@ -101,7 +101,10 @@ android {
 }
 
 configurations {
-  all*.exclude group: 'com.google.guava', module: 'listenablefuture'
+  all {
+    exclude module: 'httpclient'
+    exclude group: 'com.google.guava', module: 'listenablefuture'
+  }
 }
 
 dependencies {

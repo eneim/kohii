@@ -17,13 +17,9 @@
 package kohii.v1.sample.ui.youtube1
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import kohii.v1.Kohii
