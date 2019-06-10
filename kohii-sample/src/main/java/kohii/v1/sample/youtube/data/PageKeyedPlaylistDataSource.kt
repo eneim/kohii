@@ -21,7 +21,6 @@ import androidx.paging.PageKeyedDataSource
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.PlaylistItem
 import com.google.api.services.youtube.model.Video
-import kohii.v1.sample.youtube.YouTubeViewModel
 import java.util.concurrent.Executor
 
 // Merely adopt: https://github.com/googlesamples/android-architecture-components/blob/master/PagingWithNetworkSample/app/
@@ -46,9 +45,9 @@ class PageKeyedPlaylistDataSource(
   val initialLoad = MutableLiveData<NetworkState>()
 
   private val request = youtube.playlistItems()
-      .list(YouTubeViewModel.YOUTUBE_PLAYLIST_PART)
+      .list(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_PART)
       .setPlaylistId(playlistId)
-      .setFields(YouTubeViewModel.YOUTUBE_PLAYLIST_FIELDS)
+      .setFields(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_FIELDS)
       .setMaxResults(pageSize)
       .setKey(apiKey)
 
@@ -74,8 +73,8 @@ class PageKeyedPlaylistDataSource(
     val videoIds = result.items.map<PlaylistItem, String> { it.snippet.resourceId.videoId }
         .toList()
     val videos = youtube.videos()
-        .list(YouTubeViewModel.YOUTUBE_VIDEOS_PART)
-        .setFields(YouTubeViewModel.YOUTUBE_VIDEOS_FIELDS)
+        .list(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART)
+        .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
         .setKey(apiKey)
         .setId(videoIds.joinToString(","))
         .execute()
@@ -96,8 +95,8 @@ class PageKeyedPlaylistDataSource(
     val videoIds = result.items.map<PlaylistItem, String> { it.snippet.resourceId.videoId }
         .toList()
     val videos = youtube.videos()
-        .list(YouTubeViewModel.YOUTUBE_VIDEOS_PART)
-        .setFields(YouTubeViewModel.YOUTUBE_VIDEOS_FIELDS)
+        .list(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART)
+        .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
         .setKey(apiKey)
         .setId(videoIds.joinToString(","))
         .execute()

@@ -25,7 +25,6 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.youtube.YouTube
 import kohii.v1.sample.BuildConfig
-import kohii.v1.sample.R
 import kohii.v1.sample.youtube.data.YouTubePlaylistRepository
 import java.util.concurrent.Executors
 
@@ -35,17 +34,6 @@ class YouTubeViewModel(application: Application) : AndroidViewModel(application)
     // Android & Play at Google I/O 2019
     const val YOUTUBE_PLAYLIST_ID = "PLWz5rJ2EKKc9FfSQIRXEWyWpHD6TtwxMM"
     const val YOUTUBE_PLAYLIST_MAX_RESULTS = 20L
-
-    // see: https://developers.google.com/youtube/v3/docs/playlistItems/list
-    const val YOUTUBE_PLAYLIST_PART = "snippet"
-    const val YOUTUBE_PLAYLIST_FIELDS =
-      "pageInfo,nextPageToken,items(id,snippet(resourceId/videoId))"
-    // see: https://developers.google.com/youtube/v3/docs/videos/list
-    const val YOUTUBE_VIDEOS_PART = "snippet,contentDetails"
-    // video resource properties that the response will include.
-    const val YOUTUBE_VIDEOS_FIELDS =
-      "items(id,snippet(title,description,thumbnails/medium,thumbnails/maxres,channelTitle))"
-    // selector specifying which fields to include in a partial response.
   }
 
   private val jsonFactory = GsonFactory.getDefaultInstance()

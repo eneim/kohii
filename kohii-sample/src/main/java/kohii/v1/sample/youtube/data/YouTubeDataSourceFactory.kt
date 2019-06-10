@@ -29,6 +29,24 @@ class YouTubeDataSourceFactory(
   private val executor: Executor,
   private val pageSize: Long
 ) : DataSource.Factory<String, Video>() {
+
+  companion object {
+    // Android & Play at Google I/O 2019
+    const val YOUTUBE_PLAYLIST_ID = "PLWz5rJ2EKKc9FfSQIRXEWyWpHD6TtwxMM"
+    const val YOUTUBE_PLAYLIST_MAX_RESULTS = 20L
+
+    // see: https://developers.google.com/youtube/v3/docs/playlistItems/list
+    const val YOUTUBE_PLAYLIST_PART = "snippet"
+    const val YOUTUBE_PLAYLIST_FIELDS =
+      "pageInfo,nextPageToken,items(id,snippet(resourceId/videoId))"
+    // see: https://developers.google.com/youtube/v3/docs/videos/list
+    const val YOUTUBE_VIDEOS_PART = "snippet,contentDetails"
+    // video resource properties that the response will include.
+    const val YOUTUBE_VIDEOS_FIELDS =
+      "items(id,snippet(title,description,thumbnails/medium,thumbnails/maxres,channelTitle))"
+    // selector specifying which fields to include in a partial response.
+  }
+
   val sourceLiveData = MutableLiveData<PageKeyedPlaylistDataSource>()
   override fun create(): DataSource<String, Video> {
     val source = PageKeyedPlaylistDataSource(apiKey, youtube, playlistId, executor, pageSize)
