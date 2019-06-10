@@ -25,6 +25,7 @@ import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import com.google.android.youtube.player.YouTubePlayer.OnInitializedListener
 import com.google.android.youtube.player.YouTubePlayerContainerView
+import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 
@@ -91,9 +92,8 @@ class YouTubePlayerFragment : BaseFragment() {
   private var initializedListener: OnInitializedListener? = null
 
   fun initialize(initializedListener: OnInitializedListener) {
-    val key = getString(R.string.yt_api_key)
     if (::containerView.isInitialized) {
-      containerView.initialize(key, initializedListener)
+      containerView.initialize(BuildConfig.YT_API_KEY, initializedListener)
       this.initializedListener = null
     } else {
       this.initializedListener = initializedListener

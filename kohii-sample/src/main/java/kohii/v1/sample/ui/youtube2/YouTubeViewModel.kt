@@ -54,10 +54,9 @@ class YouTubeViewModel(application: Application) : AndroidViewModel(application)
       .setApplicationName("Kohii + Youtube, " + BuildConfig.VERSION_NAME)
       .build()
 
-  private val apiKey = application.getString(R.string.yt_api_key)
   private val repository =
     YouTubePlaylistRepository(
-        apiKey, youtube, Executors.newSingleThreadExecutor()
+        BuildConfig.YT_API_KEY, youtube, Executors.newSingleThreadExecutor()
     )
 
   private val playlistId = MutableLiveData<String>()

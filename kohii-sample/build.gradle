@@ -62,6 +62,8 @@ android {
         fabric_api_key: "${fabric_api_key}"
     ]
 
+    buildConfigField("String", "YT_API_KEY", "\"${kohii_yt_api_key}\"")
+
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     testApplicationId 'kohii.v1.sample.test'
   }
