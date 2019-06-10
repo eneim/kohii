@@ -30,7 +30,6 @@ import com.google.android.youtube.player.YouTubePlayer.ErrorReason
 import com.google.android.youtube.player.YouTubePlayer.OnInitializedListener
 import com.google.android.youtube.player.YouTubePlayer.PlaybackEventListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStateChangeListener
-import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.DEFAULT
 import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.MINIMAL
 import com.google.android.youtube.player.YouTubePlayer.Provider
 import kohii.media.Media
@@ -262,11 +261,9 @@ class YouTubeBridge(
   // [BEGIN] PlayerStateChangeListener
 
   override fun onAdStarted() {
-
   }
 
   override fun onLoading() {
-
   }
 
   override fun onVideoStarted() {

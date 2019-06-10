@@ -36,11 +36,11 @@ class YouTubeViewModel(application: Application) : AndroidViewModel(application)
     const val YOUTUBE_PLAYLIST_ID = "PLWz5rJ2EKKc9FfSQIRXEWyWpHD6TtwxMM"
     const val YOUTUBE_PLAYLIST_MAX_RESULTS = 20L
 
-    //see: https://developers.google.com/youtube/v3/docs/playlistItems/list
+    // see: https://developers.google.com/youtube/v3/docs/playlistItems/list
     const val YOUTUBE_PLAYLIST_PART = "snippet"
     const val YOUTUBE_PLAYLIST_FIELDS =
       "pageInfo,nextPageToken,items(id,snippet(resourceId/videoId))"
-    //see: https://developers.google.com/youtube/v3/docs/videos/list
+    // see: https://developers.google.com/youtube/v3/docs/videos/list
     const val YOUTUBE_VIDEOS_PART = "snippet,contentDetails"
     // video resource properties that the response will include.
     const val YOUTUBE_VIDEOS_FIELDS =

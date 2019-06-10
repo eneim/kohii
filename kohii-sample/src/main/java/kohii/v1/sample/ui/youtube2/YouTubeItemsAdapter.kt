@@ -27,7 +27,6 @@ import kohii.v1.ViewTarget
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
-import kohii.v1.ytb.YouTubePlayerFragment
 
 class YouTubeItemsAdapter(
   private val creator: PlayableCreator<YouTubePlayerView>,

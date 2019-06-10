@@ -77,10 +77,10 @@ class PlayerViewPlayableCreator(
 
       is ViewGroup -> {
         val rendererPool =
-          manager.fetchRendererPool(PlayerView::class.java) ?: //
-          DefaultRendererPool(kohii, creator = rendererCreator).also {
-            manager.registerRendererPool(PlayerView::class.java, it)
-          }
+          manager.fetchRendererPool(PlayerView::class.java)
+              ?: DefaultRendererPool(kohii, creator = rendererCreator).also {
+                manager.registerRendererPool(PlayerView::class.java, it)
+              }
 
         @Suppress("UNCHECKED_CAST")
         LazyViewPlayback(
