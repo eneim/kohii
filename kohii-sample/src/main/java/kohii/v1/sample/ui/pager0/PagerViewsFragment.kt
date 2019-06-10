@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 import kohii.v1.Kohii
 import kohii.v1.Playable
+import kohii.v1.ViewTarget
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -57,18 +58,21 @@ class PagerViewsFragment : BaseFragment() {
       container: ViewGroup,
       position: Int
     ): Any {
+      // Normal creation
       val view = LayoutInflater.from(container.context)
           .inflate(R.layout.widget_video_container, container, false)
       container.addView(view)
+      // Now bind the content
       val video = videos[position % videos.size].playlist.first()
           .sources.first()
       val itemTag = "$javaClass::$position::${video.file}"
       kohii.setUp(video.file)
           .with {
             tag = itemTag
+            preLoad = true
             repeatMode = Playable.REPEAT_MODE_ONE
           }
-          .bind(view.videoFrame)
+          .bind(ViewTarget(view.videoFrame))
       return view
     }
 

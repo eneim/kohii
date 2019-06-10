@@ -20,8 +20,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
 import kohii.v1.Kohii
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
@@ -31,6 +32,8 @@ class YouTubeFragment : BaseFragment() {
   companion object {
     fun newInstance() = YouTubeFragment()
   }
+
+  private val viewModel: YouTubeViewModel by viewModels()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -45,8 +48,30 @@ class YouTubeFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Kohii[this].also { it.register(this, recyclerView) }
-    val creator = (requireActivity().application as DemoApp).youTubePlayableCreator
-    recyclerView.adapter = YouTubeItemsAdapter(creator)
+    val kh = Kohii[this].also { it.register(this, recyclerView) }
+    // val creator = (requireActivity().application as DemoApp).youTubePlayableCreator
+    val creator = kohii.v1.ytb.YouTubePlayableCreator(kh)
+    // val creator = YouTubePlayableCreator(kohii)
+    val adapter = YouTubeItemsAdapter(creator, childFragmentManager)
+    recyclerView.adapter = adapter
+
+    viewModel.posts.observe(viewLifecycleOwner) {
+      adapter.submitList(it)
+    }
+
+    viewModel.networkState.observe(viewLifecycleOwner) {
+      adapter.setNetworkState(it)
+    }
+
+    viewModel.refreshState.observe(viewLifecycleOwner) {
+      adapter.setNetworkState(it)
+    }
+
+    viewModel.loadPlaylist(YouTubeViewModel.YOUTUBE_PLAYLIST_ID)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    recyclerView.adapter = null
   }
 }

@@ -16,7 +16,6 @@
 
 package kohii.v1
 
-import android.util.Log
 import androidx.annotation.CallSuper
 import com.google.android.exoplayer2.PlaybackParameters
 import kohii.media.PlaybackInfo
@@ -35,13 +34,13 @@ import java.util.concurrent.CopyOnWriteArraySet
  *
  * @author eneim (2018/06/24).
  */
-abstract class Playback<OUTPUT : Any> internal constructor(
+abstract class Playback<RENDERER : Any> internal constructor(
   internal val kohii: Kohii,
-  internal val playable: Playable<OUTPUT>,
+  internal val playable: Playable<RENDERER>,
   val manager: PlaybackManager,
   val target: Any,
   internal val config: Config
-) {
+) : PlayerEventListener {
 
   companion object {
     const val TAG = "Kohii::PB"
@@ -104,7 +103,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   // Token is comparable.
   internal abstract val token: Token
 
-  internal abstract val outputHolder: OUTPUT?
+  internal abstract val renderer: RENDERER?
 
   // [BEGIN] Public API
 
@@ -116,10 +115,10 @@ abstract class Playback<OUTPUT : Any> internal constructor(
         STATE_BUFFERING ->
           listener.onBuffering(this@Playback, playable.isPlaying)
         STATE_READY ->
-          if (playable.isPlaying) listener.onPlaying(
+          if (playable.isPlaying) listener.onPlay(
               this@Playback
-          ) else listener.onPaused(this@Playback)
-        STATE_END -> listener.onCompleted(this@Playback)
+          ) else listener.onPause(this@Playback)
+        STATE_END -> listener.onEnd(this@Playback)
       }
     }
   }
@@ -183,6 +182,14 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   val playbackState: Int
     get() = playable.playbackState
 
+  fun play() {
+    playable.play()
+  }
+
+  fun pause() {
+    playable.pause()
+  }
+
   fun rewind() {
     playable.reset()
   }
@@ -210,7 +217,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   }
 
   // Used by subclasses to dispatch internal event listeners
-  internal fun onPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
+  override fun onPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
     when (playbackState) {
       STATE_IDLE -> {
       }
@@ -218,32 +225,32 @@ abstract class Playback<OUTPUT : Any> internal constructor(
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       STATE_READY ->
         listeners.forEach {
-          if (playWhenReady) it.onPlaying(
+          if (playWhenReady) it.onPlay(
               this@Playback
-          ) else it.onPaused(this@Playback)
+          ) else it.onPause(this@Playback)
         }
       STATE_END ->
-        listeners.forEach { it.onCompleted(this@Playback) }
+        listeners.forEach { it.onEnd(this@Playback) }
     }
   }
 
-  internal fun onFirstFrameRendered() {
+  override fun onRenderedFirstFrame() {
     listeners.forEach { it.onFirstFrameRendered(this@Playback) }
   }
 
-  internal fun play() {
+  internal fun playInternal() {
     this.beforePlayInternal()
-    playable.play()
+    this.play()
   }
 
-  internal fun pause() {
-    playable.pause()
+  internal fun pauseInternal() {
+    this.pause()
     this.afterPauseInternal()
   }
 
   internal fun release() {
-    Log.w("Kohii::X", "release ${this.tag}, manager: $manager")
     playable.release()
+    kohii.mapPlayableTagToInfo.remove(playable.tag)
   }
 
   protected open fun beforePlayInternal() {
@@ -278,7 +285,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     for (callback in this.callbacks) {
       callback.onActive(this)
     }
-    val player = this.outputHolder
+    val player = this.renderer
     if (player != null && player === this.target) {
       this.playable.onPlayerActive(this, player)
     }
@@ -294,7 +301,7 @@ abstract class Playback<OUTPUT : Any> internal constructor(
     for (callback in this.callbacks) {
       callback.onInActive(this)
     }
-    val player = this.outputHolder
+    val player = this.renderer
     if (player === this.target) {
       this.playable.onPlayerInActive(this, player)
     }
@@ -327,12 +334,17 @@ abstract class Playback<OUTPUT : Any> internal constructor(
   }
 
   interface Callback {
+
+    /** Called when the Playback is added to the PlaybackManager */
     fun onAdded(playback: Playback<*>) {}
 
+    /** Called when the Playback becomes active. It is equal to that the target PlayerView is attached to the Window */
     fun onActive(playback: Playback<*>) {}
 
+    /** Called when the Playback becomes inactive. It is equal to that the target PlayerView is detached from the Window */
     fun onInActive(playback: Playback<*>) {}
 
+    /** Called when the Playback is removed from the PlaybackManager */
     fun onRemoved(playback: Playback<*>) {}
   }
 

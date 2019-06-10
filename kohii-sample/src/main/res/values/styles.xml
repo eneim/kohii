@@ -34,7 +34,7 @@
   <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">
   </style>
 
-  <style name="Kohii.Dialog.Infinity" parent="Theme.AppCompat.Light.DialogWhenLarge">
+  <style name="Kohii.Dialog.Infinity" parent="Theme.MaterialComponents.Light.DialogWhenLarge">
   </style>
 
   <style name="Kohii.Dialog.Infinity.NoTitle">

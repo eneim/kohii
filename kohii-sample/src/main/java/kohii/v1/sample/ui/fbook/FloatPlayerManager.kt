@@ -46,6 +46,7 @@ class FloatPlayerManager(val activity: Activity) {
 
   val floatParams by lazy {
     val params = WindowManager.LayoutParams()
+    @Suppress("DEPRECATION")
     params.type = if (VERSION.SDK_INT >= VERSION_CODES.O)
       WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
     else
@@ -126,7 +127,7 @@ class FloatPlayerManager(val activity: Activity) {
 
   val floating = AtomicBoolean(false)
 
-  inline fun enterPictureInPicture(crossinline callback: (PlayerView) -> Unit) {
+  inline fun openFloatPlayer(crossinline callback: (PlayerView) -> Unit) {
     if (floating.compareAndSet(false, true)) {
       activity.runOnUiThread {
         if (!activity.isFinishing) {
@@ -139,7 +140,7 @@ class FloatPlayerManager(val activity: Activity) {
     }
   }
 
-  inline fun exitPictureInPicture(crossinline callback: () -> Unit) {
+  inline fun closeFloatPlayer(crossinline callback: () -> Unit) {
     if (floating.compareAndSet(true, false)) {
       activity.runOnUiThread {
         floatView.setOnTouchListener(null)

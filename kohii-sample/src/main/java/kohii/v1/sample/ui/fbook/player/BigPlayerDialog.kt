@@ -17,7 +17,6 @@
 package kohii.v1.sample.ui.fbook.player
 
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +30,7 @@ import kohii.v1.Rebinder
 import kohii.v1.exo.DefaultControlDispatcher
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InfinityDialogFragment
+import kohii.v1.sample.common.isLandscape
 import kohii.v1.sample.common.requireWindow
 import kotlinx.android.synthetic.main.fragment_fbook_player.minimizeButton
 import kotlinx.android.synthetic.main.fragment_fbook_player.playerContainer
@@ -121,7 +121,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     }
 
     val decorView = requireWindow().decorView
-    if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+    if (requireActivity().isLandscape()) {
       val currentUiOptions = decorView.systemUiVisibility
       decorView.systemUiVisibility = (
           currentUiOptions
@@ -146,7 +146,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
         }
         .rebind(kohii, playerView) {
           it.addPlaybackEventListener(object : PlaybackEventListener {
-            override fun onCompleted(playback: Playback<*>) {
+            override fun onEnd(playback: Playback<*>) {
               playback.removePlaybackEventListener(this)
               dismissAllowingStateLoss()
             }
@@ -164,8 +164,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
   }
 
   override fun onInActive(playback: Playback<*>) {
-    (requireActivity() as AppCompatActivity).also {
-      // check previous rotation
+    requireActivity().also {
       val decorView = it.window.decorView
       decorView.systemUiVisibility = systemUiOptions.get()
     }

@@ -69,23 +69,23 @@ class VideoItemsAdapter(
 
     // Create a target that contains a thumbnail.
     val target = object : ViewTarget<ViewGroup, PlayerView>(holder.playerContainer) {
-      override fun attachOutputHolder(output: PlayerView) {
+      override fun attachRenderer(renderer: PlayerView) {
         container.findViewById<ImageView>(R.id.thumbnail)
             .isVisible = false
-        super.attachOutputHolder(output)
+        super.attachRenderer(renderer)
       }
 
-      override fun detachOutputHolder(output: PlayerView): Boolean {
+      override fun detachRenderer(renderer: PlayerView): Boolean {
         container.findViewById<ImageView>(R.id.thumbnail)
             .isVisible = true
-        return super.detachOutputHolder(output)
+        return super.detachRenderer(renderer)
       }
     }
 
     holder.rebinder = kohii.setUp(mediaItem)
         .with {
           tag = itemTag
-          prefetch = false
+          preLoad = false
           repeatMode = Playable.REPEAT_MODE_ONE
         }
         .bind(target) {

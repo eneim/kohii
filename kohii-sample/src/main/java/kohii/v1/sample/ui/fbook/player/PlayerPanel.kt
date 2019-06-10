@@ -28,11 +28,13 @@ interface PlayerPanel {
     fun onPlayerActive(
       player: PlayerPanel,
       playback: Playback<*>
-    ) {}
+    ) {
+    }
 
     fun onPlayerInActive(
       player: PlayerPanel,
       playback: Playback<*>
-    ) {}
+    ) {
+    }
   }
 }

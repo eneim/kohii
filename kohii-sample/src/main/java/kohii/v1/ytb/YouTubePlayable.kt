@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.ytb
 
 import kohii.media.Media
+import kohii.v1.BasePlayable
+import kohii.v1.Bridge
+import kohii.v1.Kohii
+import kohii.v1.Playable.Config
+import kohii.v1.PlaybackCreator
 
-// In theory, instance of this interface doesn't need to be scoped in Activity lifecycle.
-interface OutputHolderCreator<CONTAINER : Any, OUTPUT : Any> {
-
-  // Return output type for a Media object, as an integer.
-  // This value will be used to cache the Output Holder used for this Media object.
-  // Same type Media object will use same type Output Holder.
-  fun getMediaType(media: Media): Int = R.layout.kohii_player_surface_view
-
-  fun createOutputHolder(
-    container: CONTAINER,
-    type: Int
-  ): OUTPUT
-}
+class YouTubePlayable(
+  kohii: Kohii,
+  media: Media,
+  config: Config,
+  bridge: Bridge<YouTubePlayerFragment>,
+  playbackCreator: PlaybackCreator<YouTubePlayerFragment>
+) : BasePlayable<YouTubePlayerFragment>(kohii, media, config, bridge, playbackCreator)

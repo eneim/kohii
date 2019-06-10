@@ -24,17 +24,18 @@ import kohii.media.PlaybackInfo
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Controller
+import kotlin.LazyThreadSafetyMode.NONE
 
-class Binder<OUTPUT : Any>(
+class Binder<RENDERER : Any>(
   private val kohii: Kohii,
   private val media: Media,
-  private val playableCreator: PlayableCreator<OUTPUT>
+  private val playableCreator: PlayableCreator<RENDERER>
 ) {
 
   data class Params(
       // Playable.Config
     var tag: String? = null,
-    var prefetch: Boolean = false,
+    var preLoad: Boolean = false,
     @RepeatMode var repeatMode: Int = Playable.REPEAT_MODE_OFF,
     var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
 
@@ -51,7 +52,7 @@ class Binder<OUTPUT : Any>(
   ) {
 
     internal fun createPlayableConfig(): Playable.Config {
-      return Playable.Config(this.tag, this.prefetch)
+      return Playable.Config(this.tag, this.preLoad)
     }
 
     internal fun createPlaybackConfig(): Playback.Config {
@@ -64,50 +65,46 @@ class Binder<OUTPUT : Any>(
   @RestrictTo(LIBRARY) // don't touch this.
   val params = Params()
 
-  inline fun with(params: Params.() -> Unit): Binder<OUTPUT> {
+  inline fun with(params: Params.() -> Unit): Binder<RENDERER> {
     this.params.apply(params)
     return this
   }
 
   fun <CONTAINER : Any> bind(
-    target: Target<CONTAINER, OUTPUT>,
-    onDone: ((Playback<OUTPUT>) -> Unit)? = null
+    target: Target<CONTAINER, RENDERER>,
+    onDone: ((Playback<RENDERER>) -> Unit)? = null
   ): Rebinder? {
     val tag = this.params.tag
-    val playable = requestPlayable()
+    val playable = requestPlayable(this.params.createPlayableConfig())
     playable.bind(target, this.params.createPlaybackConfig(), onDone)
-    return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
+    return if (tag != null) Rebinder(tag, playableCreator.rendererType) else null
   }
 
-  fun <CONTAINER : Any> bind(
-    target: CONTAINER,
-    callback: ((Playback<OUTPUT>) -> Unit)? = null
+  fun bind(
+    target: RENDERER,
+    callback: ((Playback<RENDERER>) -> Unit)? = null
   ): Rebinder? {
-    val tag = this.params.tag
-    val playable = requestPlayable()
-    playable.bind(target, this.params.createPlaybackConfig(), callback)
-    return if (tag != null) Rebinder(tag, playableCreator.outputHolderType) else null
+    return this.bind(IdenticalTarget(target), callback)
   }
 
-  private fun requestPlayable(): Playable<OUTPUT> {
-    val config = this.params.createPlayableConfig()
+  private fun requestPlayable(config: Playable.Config): Playable<RENDERER> {
     val tag = config.tag
-    val toCreate: Playable<OUTPUT> by lazy {
-      this.playableCreator.createPlayable(kohii, media, this.params.createPlayableConfig())
+    val toCreate: Playable<RENDERER> by lazy(NONE) {
+      this.playableCreator.createPlayable(kohii, media, config)
     }
 
     val playable =
       if (tag != null) {
         val cache = kohii.mapTagToPlayable[tag]
-        if (cache?.second !== playableCreator.outputHolderType) {
+        if (cache?.second !== playableCreator.rendererType) {
           // cached Playable of different output type will be replaced.
           toCreate.also {
-            kohii.mapTagToPlayable[tag] = Pair(it, playableCreator.outputHolderType)
+            kohii.mapTagToPlayable[tag] = Pair(it, playableCreator.rendererType)
             cache?.first?.release()
           }
         } else {
           @Suppress("UNCHECKED_CAST")
-          cache.first as Playable<OUTPUT>
+          cache.first as Playable<RENDERER>
         }
       } else {
         toCreate
