@@ -91,7 +91,6 @@ abstract class PlaybackManager(
   @CallSuper
   @OnLifecycleEvent(ON_CREATE)
   protected open fun onOwnerCreate(owner: LifecycleOwner) {
-    this.onAttached()
   }
 
   @CallSuper
@@ -148,8 +147,6 @@ abstract class PlaybackManager(
           kohii.mapPlayableToManager.remove(it.key, it.value)
         }
 
-    this.onDetached()
-
     this.commonTargetHosts.onEach { it.onRemoved() }
         .clear()
     this.stickyTargetHosts.onEach { it.onRemoved() }
@@ -161,18 +158,11 @@ abstract class PlaybackManager(
     kohii.managers.remove(owner)
 
     if (this.selectionCallbacks.isInitialized()) this.selectionCallbacks.value.clear()
+
     // If this is the last Manager, and it is not a config change, clean everything.
     if (kohii.managers.isEmpty) {
       if (!configChange) kohii.cleanUp()
     }
-  }
-
-  protected open fun onAttached() {
-    // no-ops
-  }
-
-  protected open fun onDetached() {
-    // no-ops
   }
 
   override fun compareTo(other: PlaybackManager): Int {
@@ -279,6 +269,7 @@ abstract class PlaybackManager(
   }
 
   // Bind the Playable for a Target in this PlaybackManager.
+  // This will create Playback on demand, and add it to Manager.
   internal fun <CONTAINER : Any, RENDERER : Any> performBindPlayable(
     playable: Playable<RENDERER>,
     target: Target<CONTAINER, RENDERER>,

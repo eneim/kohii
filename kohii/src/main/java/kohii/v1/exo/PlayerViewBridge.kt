@@ -263,6 +263,7 @@ internal open class PlayerViewBridge(
       mediaSource = mediaSourceFactory.createMediaSource(this.media.uri)
     }
 
+    // Player is reset, need to prepare again.
     if (player?.playbackState == Player.STATE_IDLE) {
       sourcePrepared.set(false)
     }

@@ -208,6 +208,36 @@ class Kohii(context: Context) : PlayableManager {
         .clear()
   }
 
+  internal fun findManagerForContainer(container: Any): PlaybackManager? {
+    return managers.values.firstOrNull { it.findHostForContainer(container) != null }
+  }
+
+  internal fun <OUTPUT : Any> cleanUpPool(
+    owner: LifecycleOwner,
+    rendererPool: RendererPool<OUTPUT>
+  ) {
+    this.managers[owner]?.apply {
+      parent.rendererPools.filter { it.value === rendererPool }
+          .forEach {
+            it.value.cleanUp()
+            parent.rendererPools.remove(it.key)
+          }
+    }
+  }
+
+  internal fun trySavePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
+    }
+  }
+
+  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
+      if (info != null) playback.playable.playbackInfo = info
+    }
+  }
+
   // [BEGIN] Public API
 
   // Expose to client.
@@ -255,36 +285,6 @@ class Kohii(context: Context) : PlayableManager {
   fun setUp(url: String) = this.setUp(url.toUri())
 
   fun setUp(media: Media) = defaultPlayableCreator.setUp(media)
-
-  internal fun findManagerForContainer(container: Any): PlaybackManager? {
-    return managers.values.firstOrNull { it.findHostForContainer(container) != null }
-  }
-
-  internal fun <OUTPUT : Any> cleanUpPool(
-    owner: LifecycleOwner,
-    rendererPool: RendererPool<OUTPUT>
-  ) {
-    this.managers[owner]?.apply {
-      parent.rendererPools.filter { it.value === rendererPool }
-          .forEach {
-            it.value.cleanUp()
-            parent.rendererPools.remove(it.key)
-          }
-    }
-  }
-
-  internal fun trySavePlaybackInfo(playback: Playback<*>) {
-    if (playback.playable.tag != Playable.NO_TAG) {
-      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
-    }
-  }
-
-  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
-    if (playback.playable.tag != Playable.NO_TAG) {
-      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
-      if (info != null) playback.playable.playbackInfo = info
-    }
-  }
 
   /**
    * Manually pause an object in a specific scope. After Playbacks of a Scope is paused by this method,
@@ -443,5 +443,6 @@ class Kohii(context: Context) : PlayableManager {
     manager.parent.promote(manager)
     manager.dispatchRefreshAll()
   }
+
   // [END] Public API
 }
