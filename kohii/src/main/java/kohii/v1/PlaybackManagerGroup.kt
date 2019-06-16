@@ -134,7 +134,9 @@ class PlaybackManagerGroup(
           // detachPlaybackManager(it) <-- will be called by it.onOwnerDestroy(it.owner)
         }
         .clear()
-    promotedManager?.let { this.detachPlaybackManager(it) }
+    // promotedManager?.let { this.detachPlaybackManager(it) }
+    stickyManagers.clear()
+    commonManagers.clear()
     promotedManager = null
 
     this.rendererPools.onEach { it.value.cleanUp() }
