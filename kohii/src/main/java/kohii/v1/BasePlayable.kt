@@ -27,9 +27,8 @@ abstract class BasePlayable<RENDERER : Any>(
   protected val kohii: Kohii,
   override val media: Media,
   protected val config: Playable.Config,
-  protected val bridge: Bridge<RENDERER>,
-  @Suppress("MemberVisibilityCanBePrivate")
-  protected val playbackCreator: PlaybackCreator<RENDERER>
+  internal val bridge: Bridge<RENDERER>,
+  private val playbackCreator: PlaybackCreator<RENDERER>
 ) : Playable<RENDERER> {
 
   override fun onAdded(playback: Playback<*>) {

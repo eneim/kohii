@@ -50,11 +50,12 @@ import kohii.v1.exo.PlayerViewBridgeProvider
 import kohii.v1.exo.PlayerViewPlayableCreator
 import java.io.File
 import java.util.WeakHashMap
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * @author eneim (2018/06/24).
  */
-class Kohii(context: Context) {
+class Kohii(context: Context) : PlayableManager {
 
   val app = context.applicationContext as Application
 
@@ -62,7 +63,7 @@ class Kohii(context: Context) {
   internal val managers = ArrayMap<LifecycleOwner, PlaybackManager>()
 
   // Which Playable is managed by which Manager
-  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlaybackManager?>()
+  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlayableManager?>()
   // Map the playback state of Playable made by client (manually)
   // true = the Playable is started by Client/User, not by Kohii.
   internal val manualPlayableState = WeakHashMap<Playable<*>, Boolean>()
@@ -75,7 +76,7 @@ class Kohii(context: Context) {
   // !Playable Tag is globally unique.
   internal val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
-  internal val defaultBridgeProvider by lazy {
+  internal val defaultBridgeProvider by lazy(NONE) {
     val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
     val bandwidthMeter = DefaultBandwidthMeter()
     val httpDataSource = DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
@@ -98,12 +99,12 @@ class Kohii(context: Context) {
     PlayerViewBridgeProvider(this, playerProvider, mediaSourceFactoryProvider)
   }
 
-  private val defaultPlayableCreator by lazy { PlayerViewPlayableCreator(this) }
+  private val defaultPlayableCreator by lazy(NONE) { PlayerViewPlayableCreator(this) }
 
   @Suppress("SpellCheckingInspection")
   internal val cleanables = HashSet<Cleanable>()
 
-  private val screenStateReceiver by lazy {
+  private val screenStateReceiver by lazy(NONE) {
     ScreenStateReceiver()
   }
 
@@ -257,6 +258,19 @@ class Kohii(context: Context) {
 
   internal fun findManagerForContainer(container: Any): PlaybackManager? {
     return managers.values.firstOrNull { it.findHostForContainer(container) != null }
+  }
+
+  internal fun <OUTPUT : Any> cleanUpPool(
+    owner: LifecycleOwner,
+    rendererPool: RendererPool<OUTPUT>
+  ) {
+    this.managers[owner]?.apply {
+      parent.rendererPools.filter { it.value === rendererPool }
+          .forEach {
+            it.value.cleanUp()
+            parent.rendererPools.remove(it.key)
+          }
+    }
   }
 
   internal fun trySavePlaybackInfo(playback: Playback<*>) {
@@ -429,19 +443,5 @@ class Kohii(context: Context) {
     manager.parent.promote(manager)
     manager.dispatchRefreshAll()
   }
-
-  internal fun <OUTPUT : Any> cleanUpPool(
-    owner: LifecycleOwner,
-    rendererPool: RendererPool<OUTPUT>
-  ) {
-    this.managers[owner]?.apply {
-      parent.rendererPools.filter { it.value === rendererPool }
-          .forEach {
-            it.value.cleanUp()
-            parent.rendererPools.remove(it.key)
-          }
-    }
-  }
-
   // [END] Public API
 }

@@ -42,7 +42,7 @@ abstract class PlaybackManager(
   val provider: Any,
   internal val parent: PlaybackManagerGroup,
   internal val owner: LifecycleOwner
-) : LifecycleObserver, Comparable<PlaybackManager> {
+) : LifecycleObserver, PlayableManager, Comparable<PlaybackManager> {
 
   companion object {
     val PRESENT = Any() // Use for mapping.
@@ -85,8 +85,6 @@ abstract class PlaybackManager(
   // Flag that is when false, no Playback should be played in any situation.
   internal val lock = AtomicBoolean(false)
   internal var volumeInfo = VolumeInfo()
-
-  internal val rendererPools = HashMap<Class<*>, DefaultRendererPool<*>>()
 
   // [BEGIN] Internal API
 
@@ -137,9 +135,12 @@ abstract class PlaybackManager(
   @CallSuper
   @OnLifecycleEvent(ON_DESTROY)
   internal open fun onOwnerDestroy(owner: LifecycleOwner) {
+    val configChange = parent.activity.isChangingConfigurations
     // Wrap by an ArrayList because we also remove entry while iterating by performRemovePlayback
     (ArrayList(mapTargetToPlayback.values).apply {
-      this.forEach { performRemovePlayback(it) }
+      this.forEach {
+        performRemovePlayback(it)
+      }
     }).clear()
 
     kohii.mapPlayableToManager.filter { it.value === this }
@@ -160,8 +161,6 @@ abstract class PlaybackManager(
     kohii.managers.remove(owner)
 
     if (this.selectionCallbacks.isInitialized()) this.selectionCallbacks.value.clear()
-
-    val configChange = parent.activity.isChangingConfigurations
     // If this is the last Manager, and it is not a config change, clean everything.
     if (kohii.managers.isEmpty) {
       if (!configChange) kohii.cleanUp()
@@ -298,7 +297,7 @@ abstract class PlaybackManager(
         creator.createPlayback(this, target, playable, config)
             .also {
               if (config.callback != null) it.addCallback(config.callback)
-              it.onCreated()
+              // it.onCreated()
             }
       }
 
@@ -385,7 +384,7 @@ abstract class PlaybackManager(
           detachedPlaybacks.remove(it)
           if (toInActive) it.onInActive()
           it.onRemoved()
-          it.onDestroyed()
+          // it.onDestroyed()
           it.removeCallback(parent)
         }
   }

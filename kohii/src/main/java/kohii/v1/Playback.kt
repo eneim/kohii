@@ -212,11 +212,13 @@ abstract class Playback<RENDERER : Any> internal constructor(
     return 0
   }
 
+  @CallSuper
   internal open fun unbindInternal() {
     manager.onTargetInActive(this.target)
   }
 
   // Used by subclasses to dispatch internal event listeners
+  @CallSuper
   override fun onPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
     when (playbackState) {
       STATE_IDLE -> {
@@ -234,6 +236,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
     }
   }
 
+  @CallSuper
   override fun onRenderedFirstFrame() {
     listeners.forEach { it.onFirstFrameRendered(this@Playback) }
   }
@@ -253,17 +256,14 @@ abstract class Playback<RENDERER : Any> internal constructor(
     kohii.mapPlayableTagToInfo.remove(playable.tag)
   }
 
+  @CallSuper
   protected open fun beforePlayInternal() {
     listeners.forEach { it.beforePlay(this@Playback) }
   }
 
+  @CallSuper
   protected open fun afterPauseInternal() {
     listeners.forEach { it.afterPause(this@Playback) }
-  }
-
-  @CallSuper
-  internal open fun onCreated() {
-    // no-ops
   }
 
   // Being added to Manager
@@ -319,11 +319,6 @@ abstract class Playback<RENDERER : Any> internal constructor(
     targetHost.detachTarget(target)
     this.callbacks.clear()
     this.listeners.clear()
-  }
-
-  @CallSuper
-  internal open fun onDestroyed() {
-    // no-ops
   }
 
   override fun toString(): String {

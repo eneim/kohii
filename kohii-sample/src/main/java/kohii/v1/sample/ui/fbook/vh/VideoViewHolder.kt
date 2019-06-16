@@ -49,6 +49,8 @@ internal class VideoViewHolder(
   private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
   private val playAgain = itemView.findViewById(R.id.playerAgain) as Button
 
+  private var video: Video? = null
+  private var videoImage: String? = null
   private var videoSources: Sources? = null
   private var playback: Playback<*>? = null
 
@@ -78,8 +80,10 @@ internal class VideoViewHolder(
   override fun bind(item: Any?) {
     super.bind(item)
     (item as? Video)?.also {
+      this.video = it
       this.videoSources = it.playlist.first()
           .also { pl ->
+            videoImage = pl.image
             Glide.with(itemView)
                 .load(pl.image)
                 .into(thumbnail)
@@ -135,5 +139,13 @@ internal class VideoViewHolder(
     }
 
     playAgain.isVisible = playback?.playbackState == Player.STATE_ENDED
+  }
+
+  override fun onRecycled(success: Boolean) {
+    super.onRecycled(success)
+    video = null
+    videoSources = null
+    videoImage = null
+    playback = null
   }
 }

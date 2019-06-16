@@ -57,7 +57,14 @@ class Binder<RENDERER : Any>(
 
     internal fun createPlaybackConfig(): Playback.Config {
       return Playback.Config(
-          delay, threshold, controller, playbackInfo, repeatMode, parameters, keepScreenOn, callback
+          delay,
+          threshold,
+          controller,
+          playbackInfo,
+          repeatMode,
+          parameters,
+          keepScreenOn,
+          callback
       )
     }
   }
