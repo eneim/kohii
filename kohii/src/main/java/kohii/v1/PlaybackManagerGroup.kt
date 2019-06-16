@@ -26,7 +26,6 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
-import kohii.plusNotNull
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -95,12 +94,11 @@ class PlaybackManagerGroup(
 
   // Called by PlaybackManager
   internal fun detachPlaybackManager(playbackManager: PlaybackManager) {
-    val handled = if (playbackManager.provider is Prioritized) {
-      stickyManagers.remove(playbackManager)
-    } else commonManagers.remove(playbackManager)
+    val handled = stickyManagers.remove(playbackManager) or commonManagers.remove(playbackManager)
 
     if (promotedManager === playbackManager) promotedManager = null
 
+    kohii.managers.remove(playbackManager.owner)
     if (handled) {
       if (kohii.managers.isEmpty) kohii.onLastManagerOffline()
     }
@@ -109,24 +107,6 @@ class PlaybackManagerGroup(
   internal fun onManagerRefresh() {
     // Will dispatch with a small delay, to prevent aggressive pushing.
     dispatcher.dispatchRefresh()
-  }
-
-  internal fun findManagerForContainer(container: Any): PlaybackManager? {
-    return this.managers()
-        .firstOrNull { it.findHostForContainer(container) != null }
-  }
-
-  internal fun trySavePlaybackInfo(playback: Playback<*>) {
-    if (playback.playable.tag != Playable.NO_TAG) {
-      kohii.mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
-    }
-  }
-
-  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
-    if (playback.playable.tag != Playable.NO_TAG) {
-      val info = kohii.mapPlayableTagToInfo.remove(playback.playable.tag)
-      if (info != null) playback.playable.playbackInfo = info
-    }
   }
 
   @OnLifecycleEvent(ON_CREATE)
@@ -150,7 +130,8 @@ class PlaybackManagerGroup(
     // Each operation will also modify the related Set.
     this.managers()
         .onEach {
-          detachPlaybackManager(it)
+          it.onOwnerDestroy(it.owner)
+          // detachPlaybackManager(it) <-- will be called by it.onOwnerDestroy(it.owner)
         }
         .clear()
     promotedManager?.let { this.detachPlaybackManager(it) }
@@ -242,8 +223,11 @@ class PlaybackManagerGroup(
   }
 
   internal fun managers(): MutableSet<PlaybackManager> =
-    (this.stickyManagers + this.commonManagers)
-        .plusNotNull(this.promotedManager) as MutableSet<PlaybackManager> // Order is important.
+    mutableSetOf<PlaybackManager>().apply {
+      promotedManager?.also { add(it) }
+      addAll(stickyManagers)
+      addAll(commonManagers)
+    }
 
   override fun toString(): String {
     return "Root::${Integer.toHexString(hashCode())}::$activity"

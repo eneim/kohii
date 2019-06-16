@@ -102,7 +102,7 @@ abstract class PlaybackManager(
     attachedPlaybacks.forEach {
       if (kohii.mapPlayableToManager[it.playable] == null) {
         kohii.mapPlayableToManager[it.playable] = this
-        parent.tryRestorePlaybackInfo(it)
+        kohii.tryRestorePlaybackInfo(it)
         it.onActive()
         if (it.token.shouldPrepare()) it.playable.prepare()
       }
@@ -126,7 +126,7 @@ abstract class PlaybackManager(
       // anything else when the Activity is destroyed and to be recreated (config change).
       if (!configChange && kohii.mapPlayableToManager[playable] === this) {
         it.pauseInternal()
-        parent.trySavePlaybackInfo(it)
+        kohii.trySavePlaybackInfo(it)
         it.release()
         // There is no recreation. If this manager is managing the playable, unload the Playable.
         kohii.mapPlayableToManager[playable] = null
@@ -136,7 +136,7 @@ abstract class PlaybackManager(
 
   @CallSuper
   @OnLifecycleEvent(ON_DESTROY)
-  protected open fun onOwnerDestroy(owner: LifecycleOwner) {
+  internal open fun onOwnerDestroy(owner: LifecycleOwner) {
     // Wrap by an ArrayList because we also remove entry while iterating by performRemovePlayback
     (ArrayList(mapTargetToPlayback.values).apply {
       this.forEach { performRemovePlayback(it) }
@@ -400,7 +400,7 @@ abstract class PlaybackManager(
       attachedPlaybacks.add(it)
       detachedPlaybacks.remove(it)
       if (kohii.mapPlayableToManager[it.playable] === this) { // added 20190115, check this.
-        parent.tryRestorePlaybackInfo(it)
+        kohii.tryRestorePlaybackInfo(it)
         if (it.token.shouldPrepare()) it.playable.prepare()
         it.onActive()
       }
@@ -423,7 +423,7 @@ abstract class PlaybackManager(
         // Become inactive in this Manager.
         // Only pause and release if this Manager manages the Playable.
         it.pauseInternal()
-        parent.trySavePlaybackInfo(it)
+        kohii.trySavePlaybackInfo(it)
         it.release()
       }
     }

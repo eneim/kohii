@@ -256,7 +256,20 @@ class Kohii(context: Context) {
   fun setUp(media: Media) = defaultPlayableCreator.setUp(media)
 
   internal fun findManagerForContainer(container: Any): PlaybackManager? {
-    return groups.values.takeFirstOrNull({ it.findManagerForContainer(container) })
+    return managers.values.firstOrNull { it.findHostForContainer(container) != null }
+  }
+
+  internal fun trySavePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
+    }
+  }
+
+  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
+      if (info != null) playback.playable.playbackInfo = info
+    }
   }
 
   /**
