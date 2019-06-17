@@ -16,9 +16,15 @@
 
 package kohii.v1
 
-internal interface PlayableManager
+import android.os.Parcelable
+import androidx.annotation.StringRes
+import kotlinx.android.parcel.Parcelize
 
-internal interface HeadlessPlayback {
-
-  fun dismiss()
-}
+@Parcelize
+data class HeadlessPlaybackParams(
+  val mediaTitle: String,
+  val mediaText: String,
+  val channelId: String = "Kohii",
+  @StringRes val channelName: Int = R.string.app_name,
+  val notificationId: Int = "Kohii".hashCode()
+) : Parcelable

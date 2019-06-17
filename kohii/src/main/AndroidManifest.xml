@@ -30,5 +30,10 @@
         <action android:name="android.intent.action.SCREEN_OFF"/>
       </intent-filter>
     </receiver>
+
+    <service
+        android:name="kohii.internal.HeadlessPlaybackService"
+        android:enabled="true"
+        android:exported="false"/>
   </application>
 </manifest>

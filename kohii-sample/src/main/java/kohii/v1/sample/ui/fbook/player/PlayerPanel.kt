@@ -36,5 +36,7 @@ interface PlayerPanel {
       playback: Playback<*>
     ) {
     }
+
+    fun requestDismiss(panel: PlayerPanel)
   }
 }

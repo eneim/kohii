@@ -16,6 +16,7 @@
 
 package kohii.v1
 
+import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.collection.ArraySet
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -102,14 +103,14 @@ abstract class PlaybackManager(
       ) {
         kohii.mapPlayableToManager[it.playable] = this
       }
-
       if (kohii.mapPlayableToManager[it.playable] === this) {
         kohii.tryRestorePlaybackInfo(it)
         it.onActive()
         if (it.token.shouldPrepare()) it.playable.prepare()
       }
     }
-
+    kohii.getHeadlessPlayback()
+        ?.dismiss()
     this.dispatchRefreshAll()
   }
 
@@ -129,9 +130,9 @@ abstract class PlaybackManager(
       if (!configChange && kohii.mapPlayableToManager[playable] === this) {
         it.pauseInternal()
         kohii.trySavePlaybackInfo(it)
-        it.release()
+        // it.release()
         // There is no recreation. If this manager is managing the playable, unload the Playable.
-        kohii.mapPlayableToManager[playable] = null
+        // kohii.mapPlayableToManager[playable] = null
       }
     }
   }
@@ -140,9 +141,13 @@ abstract class PlaybackManager(
   @OnLifecycleEvent(ON_DESTROY)
   internal open fun onOwnerDestroy(owner: LifecycleOwner) {
     val configChange = parent.activity.isChangingConfigurations
+    Log.e("Kohii::HDL", "destroy: ${parent.activity}, $configChange, ${this.provider}")
     // Wrap by an ArrayList because we also remove entry while iterating by performRemovePlayback
     (ArrayList(mapTargetToPlayback.values).apply {
       this.forEach {
+        if (!configChange && kohii.mapPlayableToManager[it.playable] === this@PlaybackManager) {
+          it.release()
+        }
         performRemovePlayback(it)
       }
     }).clear()

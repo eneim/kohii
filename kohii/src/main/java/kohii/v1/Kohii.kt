@@ -23,6 +23,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.view.View
 import androidx.collection.ArrayMap
 import androidx.core.net.toUri
@@ -36,6 +37,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
+import kohii.internal.HeadlessPlaybackService
 import kohii.internal.ViewPlaybackManager
 import kohii.media.Media
 import kohii.media.MediaItem
@@ -50,6 +52,7 @@ import kohii.v1.exo.PlayerViewBridgeProvider
 import kohii.v1.exo.PlayerViewPlayableCreator
 import java.io.File
 import java.util.WeakHashMap
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
@@ -76,6 +79,10 @@ class Kohii(context: Context) : PlayableManager {
   // In critical situation, this map may hold a lot of entries, so use HashMap.
   // !Playable Tag is globally unique.
   internal val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
+
+  private val headlessPlayback by lazy(NONE) {
+    AtomicReference<HeadlessPlayback?>(null)
+  }
 
   internal val defaultBridgeProvider by lazy(NONE) {
     val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
@@ -142,6 +149,26 @@ class Kohii(context: Context) : PlayableManager {
   }
 
   // instance methods
+
+  internal fun setHeadlessPlayback(headlessPlayback: HeadlessPlayback?) {
+    this.headlessPlayback.set(headlessPlayback)
+  }
+
+  internal fun getHeadlessPlayback(): HeadlessPlayback? = this.headlessPlayback.get()
+
+  internal fun enterHeadlessPlayback(
+    playback: Playback<*>,
+    params: HeadlessPlaybackParams
+  ) {
+    mapPlayableToManager[playback.playable] = this
+    val intent = Intent(app, HeadlessPlaybackService::class.java)
+    val extras = Bundle().apply {
+      putString(HeadlessPlaybackService.KEY_PLAYABLE, playback.tag.toString())
+      putParcelable(HeadlessPlaybackService.KEY_PARAMS, params)
+    }
+    intent.putExtras(extras)
+    app.startService(intent)
+  }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
   // Always get called after playback.release()
