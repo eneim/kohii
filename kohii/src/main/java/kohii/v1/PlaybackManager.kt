@@ -97,8 +97,13 @@ abstract class PlaybackManager(
   @OnLifecycleEvent(ON_START)
   protected open fun onOwnerStart(owner: LifecycleOwner) {
     attachedPlaybacks.forEach {
-      if (kohii.mapPlayableToManager[it.playable] == null) {
+      if (kohii.mapPlayableToManager[it.playable] == null ||
+          kohii.mapPlayableToManager[it.playable] === kohii // take it from background
+      ) {
         kohii.mapPlayableToManager[it.playable] = this
+      }
+
+      if (kohii.mapPlayableToManager[it.playable] === this) {
         kohii.tryRestorePlaybackInfo(it)
         it.onActive()
         if (it.token.shouldPrepare()) it.playable.prepare()

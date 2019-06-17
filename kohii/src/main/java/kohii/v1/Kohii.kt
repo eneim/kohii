@@ -64,6 +64,7 @@ class Kohii(context: Context) : PlayableManager {
 
   // Which Playable is managed by which Manager
   internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlayableManager?>()
+
   // Map the playback state of Playable made by client (manually)
   // true = the Playable is started by Client/User, not by Kohii.
   internal val manualPlayableState = WeakHashMap<Playable<*>, Boolean>()

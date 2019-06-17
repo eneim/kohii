@@ -21,7 +21,6 @@ import androidx.collection.ArraySet
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
@@ -95,7 +94,6 @@ class PlaybackManagerGroup(
   // Called by PlaybackManager
   internal fun detachPlaybackManager(playbackManager: PlaybackManager) {
     val handled = stickyManagers.remove(playbackManager) or commonManagers.remove(playbackManager)
-
     if (promotedManager === playbackManager) promotedManager = null
 
     kohii.managers.remove(playbackManager.owner)
@@ -114,11 +112,6 @@ class PlaybackManagerGroup(
     playbackDispatcher.onAttached()
   }
 
-  @OnLifecycleEvent(ON_STOP)
-  fun onOwnerStop() {
-    selection.clear()
-  }
-
   @OnLifecycleEvent(ON_DESTROY)
   fun onOwnerDestroy(owner: LifecycleOwner) {
     playbackDispatcher.onDetached()
@@ -134,7 +127,7 @@ class PlaybackManagerGroup(
           // detachPlaybackManager(it) <-- will be called by it.onOwnerDestroy(it.owner)
         }
         .clear()
-    // promotedManager?.let { this.detachPlaybackManager(it) }
+    // promotedManager?.let { this.detachPlaybackManager(it) } <-- handled above
     stickyManagers.clear()
     commonManagers.clear()
     promotedManager = null
