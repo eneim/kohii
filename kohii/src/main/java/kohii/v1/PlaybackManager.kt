@@ -119,7 +119,7 @@ abstract class PlaybackManager(
     val configChange = parent.activity.isChangingConfigurations
     attachedPlaybacks.forEach {
       it.onInActive()
-      parent.selection.remove(it)
+      val removed = parent.selection.remove(it)
       val playable = it.playable
       // Only pause this playback if
       // - [1] config change is not happening and
