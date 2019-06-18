@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.overlay
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
@@ -59,7 +58,7 @@ internal class VideoItemHolder(
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
   val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
-  val playerContainer = itemView.findViewById(R.id.playerContainer) as View
+  // val playerContainer = itemView.findViewById(R.id.playerContainer) as View
 
   var playback: Playback<PlayerView>? = null
   var binder: Binder<PlayerView>? = null
@@ -113,14 +112,10 @@ internal class VideoItemHolder(
     super.onRecycled(success)
     this.videoSources = null
     videoImage.isVisible = true
+    playback?.removePlaybackEventListener(this@VideoItemHolder)
   }
 
   override fun beforePlay(playback: Playback<*>) {
-    videoImage.isVisible = false
-    Log.e("Kohii:VH", "beforePlay: $playback, $adapterPosition")
-  }
-
-  override fun onPlay(playback: Playback<*>) {
     videoImage.isVisible = false
   }
 

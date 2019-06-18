@@ -76,12 +76,13 @@ abstract class Playback<RENDERER : Any> internal constructor(
       // to start a playback.
       // In ViewPlayback, this is equal to visible area offset of the video container View.
     val threshold: Float = 0.65F,
-    val controller: Controller? = null,
+    val controller: Controller? = null, // stateful, can leak
     val playbackInfo: PlaybackInfo? = null,
     @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
-    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
+    val parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
     val keepScreenOn: Boolean = true,
-    val callback: Callback? = null
+    val callback: Callback? = null, // stateful, can leak
+    val headlessPlaybackParams: HeadlessPlaybackParams? = null
   )
 
   // Listeners for Playable. Playable will access these filed on demand.

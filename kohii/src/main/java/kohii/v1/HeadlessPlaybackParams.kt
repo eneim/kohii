@@ -22,6 +22,7 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class HeadlessPlaybackParams(
+  val enabled: Boolean = true,
   val mediaTitle: String,
   val mediaText: String,
   val channelId: String = "Kohii",

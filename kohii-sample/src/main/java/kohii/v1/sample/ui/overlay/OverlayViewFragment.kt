@@ -158,14 +158,14 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
           // When the overlay panel is dismissed, it is equal to that the overlay Playback also disappears.
           // In that case, if the ViewHolder of the same Video does not present on the screen,
           //   We need to unbind the Playback, so that the list can refresh the Videos and start new Playbacks.
-          // If that ViewHolder still presents, not that the call to "clearSelection" will ask the
+          // If that ViewHolder still presents, note that the call to "clearSelection" will ask the
           // Adapter to update its content, which will rebind the Video to its PlayerView. After that,
           // we can see that the list is back to normal playback.
           selectionTracker.clearSelection()
           rebinder?.also {
             val pos = keyProvider.getPosition(it)
             val vh = recyclerView.findViewHolderForAdapterPosition(pos)
-            if (vh == null) playback?.unbind()
+            if (vh == null) playback?.unbind() // the VH is out of viewport.
           }
           rebinder = null
           playback = null
@@ -181,7 +181,6 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         if (selected && key !== rebinder) {
           rebinder = key
           key.rebind(kohii, overlayPlayerView) {
-            Log.w("Kohii::RX", "rebind: $it, ${key.tag}")
             kohii.promote(it)
             playback = it
             sheet.state = STATE_EXPANDED

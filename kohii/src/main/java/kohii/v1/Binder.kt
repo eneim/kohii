@@ -48,7 +48,8 @@ class Binder<RENDERER : Any>(
     var controller: Controller? = null,
     var playbackInfo: PlaybackInfo? = null,
     var keepScreenOn: Boolean = true,
-    var callback: Callback? = null
+    var callback: Callback? = null,
+    var headlessPlaybackParams: HeadlessPlaybackParams? = null
   ) {
 
     internal fun createPlayableConfig(): Playable.Config {
@@ -64,7 +65,8 @@ class Binder<RENDERER : Any>(
           repeatMode,
           parameters,
           keepScreenOn,
-          callback
+          callback,
+          headlessPlaybackParams
       )
     }
   }
@@ -117,7 +119,7 @@ class Binder<RENDERER : Any>(
         toCreate
       }
 
-    kohii.mapPlayableToManager[playable] = null
+    kohii.mapPlayableToManager.remove(playable)
     return playable
   }
 }

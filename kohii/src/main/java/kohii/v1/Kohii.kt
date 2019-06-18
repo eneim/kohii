@@ -66,7 +66,7 @@ class Kohii(context: Context) : PlayableManager {
   internal val managers = ArrayMap<LifecycleOwner, PlaybackManager>()
 
   // Which Playable is managed by which Manager
-  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlayableManager?>()
+  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlayableManager>()
 
   // Map the playback state of Playable made by client (manually)
   // true = the Playable is started by Client/User, not by Kohii.
@@ -228,6 +228,10 @@ class Kohii(context: Context) : PlayableManager {
       manualPlayables.remove(playback.playable)
     }
     playback.manager.dispatchRefreshAll()
+  }
+
+  internal fun canCleanUp(): Boolean {
+    return this.managers.isEmpty && this.mapPlayableToManager.isEmpty()
   }
 
   // Gat called when Kohii should free all resources.

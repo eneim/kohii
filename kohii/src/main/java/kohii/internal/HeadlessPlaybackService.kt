@@ -121,10 +121,18 @@ class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
     super.onDestroy()
     if (::playable.isInitialized) {
       if (kohii.mapPlayableToManager[playable] == kohii) {
-        kohii.mapPlayableToManager[playable] = null
+        kohii.mapPlayableToManager.remove(playable)
+      }
+
+      if (kohii.mapPlayableToManager[playable] == null) {
+        playable.release()
+        kohii.releasePlayable(playable.tag, playable)
       }
     }
     playerNotificationManager?.setPlayer(null)
+    if (kohii.canCleanUp()) {
+      kohii.cleanUp()
+    }
     kohii.setHeadlessPlayback(null)
   }
 
