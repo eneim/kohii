@@ -105,4 +105,14 @@ internal class FbookAdapter(
     super.onViewAttachedToWindow(holder)
     (holder as? VideoViewHolder)?.dispatchBindVideo()
   }
+
+  override fun onViewRecycled(holder: FbookItemHolder) {
+    super.onViewRecycled(holder)
+    holder.onRecycled(true)
+  }
+
+  override fun onFailedToRecycleView(holder: FbookItemHolder): Boolean {
+    holder.onRecycled(false)
+    return super.onFailedToRecycleView(holder)
+  }
 }

@@ -14,29 +14,18 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.fbook.player
+package kohii.v1
 
-import kohii.v1.Playback
-import kohii.v1.Rebinder
+import android.os.Parcelable
+import androidx.annotation.StringRes
+import kotlinx.android.parcel.Parcelize
 
-interface PlayerPanel {
-
-  val rebinder: Rebinder
-
-  interface Callback {
-
-    fun onPlayerActive(
-      player: PlayerPanel,
-      playback: Playback<*>
-    ) {
-    }
-
-    fun onPlayerInActive(
-      player: PlayerPanel,
-      playback: Playback<*>
-    ) {
-    }
-
-    fun requestDismiss(panel: PlayerPanel)
-  }
-}
+@Parcelize
+data class HeadlessPlaybackParams(
+  val enabled: Boolean = true,
+  val mediaTitle: String,
+  val mediaText: String,
+  val channelId: String = "Kohii",
+  @StringRes val channelName: Int = R.string.app_name,
+  val notificationId: Int = "Kohii".hashCode()
+) : Parcelable

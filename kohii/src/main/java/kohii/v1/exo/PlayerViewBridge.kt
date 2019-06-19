@@ -84,8 +84,8 @@ internal open class PlayerViewBridge(
   private var _repeatMode = Playable.REPEAT_MODE_OFF // Backing field
   private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
 
-  protected var mediaSource: MediaSource? = null
-  protected var player: Player? = null
+  internal var mediaSource: MediaSource? = null
+  internal var player: Player? = null
 
   private var lastSeenTrackGroupArray: TrackGroupArray? = null
   private var inErrorState = false
@@ -261,6 +261,11 @@ internal open class PlayerViewBridge(
     if (mediaSource == null) {
       sourcePrepared.set(false)
       mediaSource = mediaSourceFactory.createMediaSource(this.media.uri)
+    }
+
+    // Player is reset, need to prepare again.
+    if (player?.playbackState == Player.STATE_IDLE) {
+      sourcePrepared.set(false)
     }
 
     if (!sourcePrepared.get()) {

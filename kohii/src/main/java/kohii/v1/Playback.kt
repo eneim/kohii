@@ -76,12 +76,13 @@ abstract class Playback<RENDERER : Any> internal constructor(
       // to start a playback.
       // In ViewPlayback, this is equal to visible area offset of the video container View.
     val threshold: Float = 0.65F,
-    val controller: Controller? = null,
+    val controller: Controller? = null, // stateful, can leak
     val playbackInfo: PlaybackInfo? = null,
     @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
-    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
+    val parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
     val keepScreenOn: Boolean = true,
-    val callback: Callback? = null
+    val callback: Callback? = null, // stateful, can leak
+    val headlessPlaybackParams: HeadlessPlaybackParams? = null
   )
 
   // Listeners for Playable. Playable will access these filed on demand.
@@ -212,11 +213,13 @@ abstract class Playback<RENDERER : Any> internal constructor(
     return 0
   }
 
+  @CallSuper
   internal open fun unbindInternal() {
     manager.onTargetInActive(this.target)
   }
 
   // Used by subclasses to dispatch internal event listeners
+  @CallSuper
   override fun onPlayerStateChanged(playWhenReady: Boolean, @State playbackState: Int) {
     when (playbackState) {
       STATE_IDLE -> {
@@ -234,6 +237,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
     }
   }
 
+  @CallSuper
   override fun onRenderedFirstFrame() {
     listeners.forEach { it.onFirstFrameRendered(this@Playback) }
   }
@@ -253,17 +257,14 @@ abstract class Playback<RENDERER : Any> internal constructor(
     kohii.mapPlayableTagToInfo.remove(playable.tag)
   }
 
+  @CallSuper
   protected open fun beforePlayInternal() {
     listeners.forEach { it.beforePlay(this@Playback) }
   }
 
+  @CallSuper
   protected open fun afterPauseInternal() {
     listeners.forEach { it.afterPause(this@Playback) }
-  }
-
-  @CallSuper
-  internal open fun onCreated() {
-    // no-ops
   }
 
   // Being added to Manager
@@ -319,11 +320,6 @@ abstract class Playback<RENDERER : Any> internal constructor(
     targetHost.detachTarget(target)
     this.callbacks.clear()
     this.listeners.clear()
-  }
-
-  @CallSuper
-  internal open fun onDestroyed() {
-    // no-ops
   }
 
   override fun toString(): String {

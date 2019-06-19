@@ -23,6 +23,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.view.View
 import androidx.collection.ArrayMap
 import androidx.core.net.toUri
@@ -36,6 +37,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
+import kohii.internal.HeadlessPlaybackService
 import kohii.internal.ViewPlaybackManager
 import kohii.media.Media
 import kohii.media.MediaItem
@@ -50,11 +52,13 @@ import kohii.v1.exo.PlayerViewBridgeProvider
 import kohii.v1.exo.PlayerViewPlayableCreator
 import java.io.File
 import java.util.WeakHashMap
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * @author eneim (2018/06/24).
  */
-class Kohii(context: Context) {
+class Kohii(context: Context) : PlayableManager {
 
   val app = context.applicationContext as Application
 
@@ -62,7 +66,8 @@ class Kohii(context: Context) {
   internal val managers = ArrayMap<LifecycleOwner, PlaybackManager>()
 
   // Which Playable is managed by which Manager
-  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlaybackManager?>()
+  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlayableManager>()
+
   // Map the playback state of Playable made by client (manually)
   // true = the Playable is started by Client/User, not by Kohii.
   internal val manualPlayableState = WeakHashMap<Playable<*>, Boolean>()
@@ -75,7 +80,11 @@ class Kohii(context: Context) {
   // !Playable Tag is globally unique.
   internal val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
-  internal val defaultBridgeProvider by lazy {
+  private val headlessPlayback by lazy(NONE) {
+    AtomicReference<HeadlessPlayback?>(null)
+  }
+
+  internal val defaultBridgeProvider by lazy(NONE) {
     val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
     val bandwidthMeter = DefaultBandwidthMeter()
     val httpDataSource = DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
@@ -98,12 +107,12 @@ class Kohii(context: Context) {
     PlayerViewBridgeProvider(this, playerProvider, mediaSourceFactoryProvider)
   }
 
-  private val defaultPlayableCreator by lazy { PlayerViewPlayableCreator(this) }
+  private val defaultPlayableCreator by lazy(NONE) { PlayerViewPlayableCreator(this) }
 
   @Suppress("SpellCheckingInspection")
   internal val cleanables = HashSet<Cleanable>()
 
-  private val screenStateReceiver by lazy {
+  private val screenStateReceiver by lazy(NONE) {
     ScreenStateReceiver()
   }
 
@@ -140,6 +149,26 @@ class Kohii(context: Context) {
   }
 
   // instance methods
+
+  internal fun setHeadlessPlayback(headlessPlayback: HeadlessPlayback?) {
+    this.headlessPlayback.set(headlessPlayback)
+  }
+
+  internal fun getHeadlessPlayback(): HeadlessPlayback? = this.headlessPlayback.get()
+
+  internal fun enterHeadlessPlayback(
+    playback: Playback<*>,
+    params: HeadlessPlaybackParams
+  ) {
+    mapPlayableToManager[playback.playable] = this
+    val intent = Intent(app, HeadlessPlaybackService::class.java)
+    val extras = Bundle().apply {
+      putString(HeadlessPlaybackService.KEY_PLAYABLE, playback.tag.toString())
+      putParcelable(HeadlessPlaybackService.KEY_PARAMS, params)
+    }
+    intent.putExtras(extras)
+    app.startService(intent)
+  }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
   // Always get called after playback.release()
@@ -201,10 +230,44 @@ class Kohii(context: Context) {
     playback.manager.dispatchRefreshAll()
   }
 
+  internal fun canCleanUp(): Boolean {
+    return this.managers.isEmpty && this.mapPlayableToManager.isEmpty()
+  }
+
   // Gat called when Kohii should free all resources.
   internal fun cleanUp() {
     cleanables.onEach { it.cleanUp() }
         .clear()
+  }
+
+  internal fun findManagerForContainer(container: Any): PlaybackManager? {
+    return managers.values.firstOrNull { it.findHostForContainer(container) != null }
+  }
+
+  internal fun <OUTPUT : Any> cleanUpPool(
+    owner: LifecycleOwner,
+    rendererPool: RendererPool<OUTPUT>
+  ) {
+    this.managers[owner]?.apply {
+      parent.rendererPools.filter { it.value === rendererPool }
+          .forEach {
+            it.value.cleanUp()
+            parent.rendererPools.remove(it.key)
+          }
+    }
+  }
+
+  internal fun trySavePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
+    }
+  }
+
+  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
+    if (playback.playable.tag != Playable.NO_TAG) {
+      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
+      if (info != null) playback.playable.playbackInfo = info
+    }
   }
 
   // [BEGIN] Public API
@@ -254,10 +317,6 @@ class Kohii(context: Context) {
   fun setUp(url: String) = this.setUp(url.toUri())
 
   fun setUp(media: Media) = defaultPlayableCreator.setUp(media)
-
-  internal fun findManagerForContainer(container: Any): PlaybackManager? {
-    return groups.values.takeFirstOrNull({ it.findManagerForContainer(container) })
-  }
 
   /**
    * Manually pause an object in a specific scope. After Playbacks of a Scope is paused by this method,
@@ -415,19 +474,6 @@ class Kohii(context: Context) {
     // 2. Promote the Manager
     manager.parent.promote(manager)
     manager.dispatchRefreshAll()
-  }
-
-  internal fun <OUTPUT : Any> cleanUpPool(
-    owner: LifecycleOwner,
-    rendererPool: RendererPool<OUTPUT>
-  ) {
-    this.managers[owner]?.apply {
-      parent.rendererPools.filter { it.value === rendererPool }
-          .forEach {
-            it.value.cleanUp()
-            parent.rendererPools.remove(it.key)
-          }
-    }
   }
 
   // [END] Public API

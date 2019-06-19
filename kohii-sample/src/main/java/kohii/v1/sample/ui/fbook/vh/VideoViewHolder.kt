@@ -24,6 +24,9 @@ import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.Binder
+import kohii.v1.Binder.Params
+import kohii.v1.HeadlessPlaybackParams
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
@@ -49,11 +52,25 @@ internal class VideoViewHolder(
   private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
   private val playAgain = itemView.findViewById(R.id.playerAgain) as Button
 
+  private var video: Video? = null
+  private var videoImage: String? = null
   private var videoSources: Sources? = null
-  private var playback: Playback<*>? = null
 
   private val videoTag: String?
     get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
+
+  private val params: Params.() -> Unit
+    get() = {
+      tag = videoTag
+      headlessPlaybackParams = HeadlessPlaybackParams(
+          enabled = true, // TODO dynamic condition, eg: network.
+          mediaTitle = video?.title ?: "Unknown",
+          mediaText = video?.description ?: "Unknown"
+      )
+    }
+
+  private var binder: Binder<PlayerView>? = null
+  private var playback: Playback<*>? = null
 
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
   // be useful in some verifications.
@@ -67,7 +84,7 @@ internal class VideoViewHolder(
       if (!playAgain.isVisible) return@setOnClickListener
       // Once completed, a Playback needs to be reset to starting position.
       playback?.rewind()
-      rebinder?.rebind(kohii, playerView) { playback ->
+      binder?.bind(playerView) { playback ->
         playback.addPlaybackEventListener(this@VideoViewHolder)
         volume.isSelected = !playback.volumeInfo.mute
         this@VideoViewHolder.playback = playback
@@ -78,14 +95,18 @@ internal class VideoViewHolder(
   override fun bind(item: Any?) {
     super.bind(item)
     (item as? Video)?.also {
+      this.video = it
       this.videoSources = it.playlist.first()
           .also { pl ->
+            videoImage = pl.image
             Glide.with(itemView)
                 .load(pl.image)
                 .into(thumbnail)
           }
           .sources.first()
 
+      binder = kohii.setUp(videoSources!!.file)
+          .with(params)
       // We suppose to do this here, but for a specific scenario of this demo, we need to
       // do it when the VideoHolder is attached via adapter#onViewAttachedToWindow.
       // dispatchBindVideo()
@@ -119,15 +140,9 @@ internal class VideoViewHolder(
   }
 
   internal fun dispatchBindVideo() {
-    val source = videoSources ?: return
-    val binder = kohii.setUp(source.file)
-        .with {
-          tag = videoTag
-        }
-
     if (shouldBind(this.rebinder)) {
       // bind the Video to PlayerView
-      binder.bind(playerView) { playback ->
+      binder?.bind(playerView) { playback ->
         playback.addPlaybackEventListener(this@VideoViewHolder)
         volume.isSelected = !playback.volumeInfo.mute
         this@VideoViewHolder.playback = playback
@@ -135,5 +150,14 @@ internal class VideoViewHolder(
     }
 
     playAgain.isVisible = playback?.playbackState == Player.STATE_ENDED
+  }
+
+  override fun onRecycled(success: Boolean) {
+    super.onRecycled(success)
+    video = null
+    videoSources = null
+    videoImage = null
+    playback = null
+    binder = null
   }
 }

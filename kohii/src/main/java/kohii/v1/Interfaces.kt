@@ -14,29 +14,11 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.fbook.player
+package kohii.v1
 
-import kohii.v1.Playback
-import kohii.v1.Rebinder
+internal interface PlayableManager
 
-interface PlayerPanel {
+internal interface HeadlessPlayback {
 
-  val rebinder: Rebinder
-
-  interface Callback {
-
-    fun onPlayerActive(
-      player: PlayerPanel,
-      playback: Playback<*>
-    ) {
-    }
-
-    fun onPlayerInActive(
-      player: PlayerPanel,
-      playback: Playback<*>
-    ) {
-    }
-
-    fun requestDismiss(panel: PlayerPanel)
-  }
+  fun dismiss()
 }

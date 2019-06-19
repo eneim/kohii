@@ -26,6 +26,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import kohii.media.VolumeInfo
 import kohii.v1.Kohii
@@ -224,6 +225,12 @@ class FbookFragment : BaseFragment(),
       // Not a 'close Dialog player after opening Float player' action
       // = this is a natural Dialog closing due to a back-press or other User interactions
       viewModel.overlayPlayerInfo.value = null
+    }
+  }
+
+  override fun requestDismiss(panel: PlayerPanel) {
+    view?.doOnLayout {
+      if (panel is DialogFragment) panel.dismissAllowingStateLoss()
     }
   }
 
