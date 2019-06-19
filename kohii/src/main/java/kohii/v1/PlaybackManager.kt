@@ -16,7 +16,6 @@
 
 package kohii.v1
 
-import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.collection.ArraySet
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
