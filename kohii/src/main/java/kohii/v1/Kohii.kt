@@ -230,7 +230,7 @@ class Kohii(context: Context) : PlayableManager {
     playback.manager.dispatchRefreshAll()
   }
 
-  internal fun canCleanUp(): Boolean {
+  internal fun shouldCleanUp(): Boolean {
     return this.managers.isEmpty && this.mapPlayableToManager.isEmpty()
   }
 

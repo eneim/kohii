@@ -67,7 +67,6 @@ class FbookFragment : BaseFragment(),
     fun newInstance() = FbookFragment()
   }
 
-  // Will use host Activity's ViewModel
   private val viewModel: FbookViewModel by viewModels()
 
   private lateinit var kohii: Kohii
@@ -80,7 +79,6 @@ class FbookFragment : BaseFragment(),
   private val floatPlayerManager by lazy { FloatPlayerManager(requireActivity()) }
   private var rebindAction: (() -> Unit)? = null
   private var overlayPlayback: Playback<*>? = null
-  private var overlayRebinder: Rebinder? = null
 
   internal var currentPlayerInfo
       by Delegates.observable<OverlayPlayerInfo?>(null) { _, oldVal, newVal ->
@@ -92,7 +90,6 @@ class FbookFragment : BaseFragment(),
           }
         } else {
           val (mode, rebinder) = newVal
-          overlayRebinder = rebinder
           when (mode) {
             OverlayPlayerInfo.MODE_DIALOG -> {
               openDialogPlayer(rebinder)
@@ -229,6 +226,7 @@ class FbookFragment : BaseFragment(),
   }
 
   override fun requestDismiss(panel: PlayerPanel) {
+    // Wait for the RecyclerView to finish its first layout.
     view?.doOnLayout {
       if (panel is DialogFragment) panel.dismissAllowingStateLoss()
     }
@@ -257,13 +255,11 @@ class FbookFragment : BaseFragment(),
           .onEach {
             notifyItemChanged(it.adapterPosition)
           }
-          .firstOrNull { it.rebinder == rebinder }
-          ?.also {
-            it.reclaimRebinder(rebinder)
-          }
+          .firstOrNull()
+          ?.reclaimRebinder(rebinder)
     }
+
     overlayPlayback = null
-    overlayRebinder = null
   }
 
   private fun openDialogPlayer(rebinder: Rebinder) {

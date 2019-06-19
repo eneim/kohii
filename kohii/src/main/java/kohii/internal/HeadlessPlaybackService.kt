@@ -33,6 +33,7 @@ import kohii.v1.Playable
 import kohii.v1.exo.PlayerViewBridge
 import kohii.v1.exo.PlayerViewPlayable
 
+// TODO support Bitmap.
 class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
 
   companion object {
@@ -130,7 +131,7 @@ class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
       }
     }
     playerNotificationManager?.setPlayer(null)
-    if (kohii.canCleanUp()) {
+    if (kohii.shouldCleanUp()) {
       kohii.cleanUp()
     }
     kohii.setHeadlessPlayback(null)

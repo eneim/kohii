@@ -35,6 +35,7 @@ import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
+import kotlin.LazyThreadSafetyMode.NONE
 
 internal class VideoViewHolder(
   parent: ViewGroup,
@@ -72,6 +73,15 @@ internal class VideoViewHolder(
   private var binder: Binder<PlayerView>? = null
   private var playback: Playback<*>? = null
 
+  @Suppress("RemoveExplicitTypeArguments")
+  private val onBound: (Playback<*>) -> Unit by lazy<(Playback<*>) -> Unit>(NONE) {
+    { playback ->
+      playback.addPlaybackEventListener(this@VideoViewHolder)
+      volume.isSelected = !playback.volumeInfo.mute
+      this@VideoViewHolder.playback = playback
+    }
+  }
+
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
   // be useful in some verifications.
   internal val rebinder: Rebinder?
@@ -84,11 +94,7 @@ internal class VideoViewHolder(
       if (!playAgain.isVisible) return@setOnClickListener
       // Once completed, a Playback needs to be reset to starting position.
       playback?.rewind()
-      binder?.bind(playerView) { playback ->
-        playback.addPlaybackEventListener(this@VideoViewHolder)
-        volume.isSelected = !playback.volumeInfo.mute
-        this@VideoViewHolder.playback = playback
-      }
+      binder?.bind(playerView, onBound)
     }
   }
 
@@ -131,22 +137,14 @@ internal class VideoViewHolder(
   // Called by FbookFragment to immediately reclaim the Rebinder, prevent the Playback to be removed.
   internal fun reclaimRebinder(rebinder: Rebinder) {
     if (shouldBind(rebinder)) {
-      rebinder.rebind(kohii, playerView) { playback ->
-        playback.addPlaybackEventListener(this@VideoViewHolder)
-        volume.isSelected = !playback.volumeInfo.mute
-        this@VideoViewHolder.playback = playback
-      }
+      binder?.bind(playerView, onBound)
     }
   }
 
   internal fun dispatchBindVideo() {
     if (shouldBind(this.rebinder)) {
       // bind the Video to PlayerView
-      binder?.bind(playerView) { playback ->
-        playback.addPlaybackEventListener(this@VideoViewHolder)
-        volume.isSelected = !playback.volumeInfo.mute
-        this@VideoViewHolder.playback = playback
-      }
+      binder?.bind(playerView, onBound)
     }
 
     playAgain.isVisible = playback?.playbackState == Player.STATE_ENDED
@@ -157,6 +155,7 @@ internal class VideoViewHolder(
     video = null
     videoSources = null
     videoImage = null
+    playback?.removePlaybackEventListener(this@VideoViewHolder)
     playback = null
     binder = null
   }

@@ -145,7 +145,6 @@ abstract class PlaybackManager(
   @OnLifecycleEvent(ON_DESTROY)
   internal open fun onOwnerDestroy(owner: LifecycleOwner) {
     val configChange = parent.activity.isChangingConfigurations
-    Log.e("Kohii::HDL", "destroy: ${parent.activity}, $configChange, ${this.provider}")
     // Wrap by an ArrayList because we also remove entry while iterating by performRemovePlayback
     (ArrayList(mapTargetToPlayback.values).apply {
       this.forEach {
@@ -174,7 +173,7 @@ abstract class PlaybackManager(
     if (this.selectionCallbacks.isInitialized()) this.selectionCallbacks.value.clear()
 
     // If this is the last Manager, and it is not a config change, clean everything.
-    if (kohii.canCleanUp()) {
+    if (kohii.shouldCleanUp()) {
       if (!configChange) kohii.cleanUp()
     }
   }

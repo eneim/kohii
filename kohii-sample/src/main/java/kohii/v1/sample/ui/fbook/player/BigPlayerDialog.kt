@@ -136,7 +136,6 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
           )
     } else {
       decorView.systemUiVisibility = 0
-      // dismissAllowingStateLoss()
       playerCallback?.requestDismiss(this) ?: dismissAllowingStateLoss()
     }
 
