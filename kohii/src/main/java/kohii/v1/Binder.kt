@@ -45,6 +45,7 @@ class Binder<RENDERER : Any>(
       // to start a playback.
       // In ViewPlayback, this is equal to visible area offset of the video container View.
     var threshold: Float = 0.65F,
+    var disabled: Boolean = false,
     var controller: Controller? = null,
     var playbackInfo: PlaybackInfo? = null,
     var keepScreenOn: Boolean = true,
@@ -60,6 +61,7 @@ class Binder<RENDERER : Any>(
       return Playback.Config(
           delay,
           threshold,
+          disabled,
           controller,
           playbackInfo,
           repeatMode,

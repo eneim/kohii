@@ -208,7 +208,7 @@ class PlaybackManagerGroup(
     if (lock.get()) {
       (toPause + toPlay).forEach { playbackDispatcher.pause(it) }
     } else {
-      val selected = selector.invoke(toPlay)
+      val selected = selector(toPlay)
       this.selection.addAll(selected)
       (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
       selected.forEach { playbackDispatcher.play(it) }
