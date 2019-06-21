@@ -93,7 +93,7 @@ internal abstract class BaseTargetHost<V : Any>(
     candidates: Collection<Playback<*>>,
     orientation: Int
   ): Collection<Playback<*>> {
-    val grouped = candidates.filter { !it.config.disabled } // ignore those are disabled.
+    val grouped = candidates.filter { !it.config.disabled() } // ignore those are disabled.
         .groupBy { it.controller != null }
         .withDefault { emptyList() }
 

@@ -76,7 +76,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
       // to start a playback.
       // In ViewPlayback, this is equal to visible area offset of the video container View.
     val threshold: Float = 0.65F,
-    val disabled: Boolean = false, // If false, do not care about this Playback.
+    val disabled: () -> Boolean = { false }, // If false, do not care about this Playback. Stateful, can leak
     val controller: Controller? = null, // stateful, can leak
     val playbackInfo: PlaybackInfo? = null,
     @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
