@@ -35,23 +35,21 @@ import kotlin.LazyThreadSafetyMode.NONE
 @Suppress("unused")
 class DemoApp : Application() {
 
+  val moshi: Moshi = Moshi.Builder()
+      .add(KotlinJsonAdapterFactory())
+      .build()
+
   // shared between demos
   val videos by lazy(NONE) {
     val asset = assets
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
     val jsonAdapter: JsonAdapter<List<Video>> =
       moshi.adapter(Types.newParameterizedType(List::class.java, Video::class.java))
     jsonAdapter.fromJson(asset.open("caminandes.json").source().buffer()) ?: emptyList()
   }
 
-  val exoItems: List<Item> by lazy {
+  val exoItems: List<Item> by lazy(NONE) {
     val asset = assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
     adapter.fromJson(asset.open("medias.json").source().buffer()) ?: emptyList()
   }

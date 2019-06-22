@@ -34,7 +34,7 @@ import kohii.v1.exo.PlayerViewBridge
 import kohii.v1.exo.PlayerViewPlayable
 
 // TODO support Bitmap.
-class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
+internal class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
 
   companion object {
     const val KEY_PARAMS = "kohii::v1::service::params"
