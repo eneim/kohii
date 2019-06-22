@@ -17,9 +17,11 @@
 package kohii
 
 import android.view.View
+import android.view.View.OnAttachStateChangeListener
 import androidx.collection.SparseArrayCompat
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.Pools.Pool
+import androidx.core.view.ViewCompat
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
@@ -91,7 +93,7 @@ inline fun <T, R> Iterable<T>.takeFirstOrNull(
   return null
 }
 
-// Find a CoordinatorLayout parent
+// Return a View that is ancestor of target, and has direct parent is a CoordinatorLayout
 @Suppress("unused")
 fun findSuitableParent(
   root: View,
@@ -112,6 +114,40 @@ fun findSuitableParent(
     }
   } while (view != null)
   return null
+}
+
+internal inline fun View.doOnAttach(crossinline action: (View) -> Unit) {
+  if (ViewCompat.isAttachedToWindow(this)) {
+    action(this)
+  } else {
+    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+      override fun onViewDetachedFromWindow(v: View?) {
+        // ignore
+      }
+
+      override fun onViewAttachedToWindow(v: View?) {
+        v?.removeOnAttachStateChangeListener(this)
+        action(this@doOnAttach)
+      }
+    })
+  }
+}
+
+internal inline fun View.doOnDetach(crossinline action: (View) -> Unit) {
+  if (!ViewCompat.isAttachedToWindow(this)) {
+    action(this)
+  } else {
+    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+      override fun onViewDetachedFromWindow(v: View?) {
+        v?.removeOnAttachStateChangeListener(this)
+        action(this@doOnDetach)
+      }
+
+      override fun onViewAttachedToWindow(v: View?) {
+        // ignore
+      }
+    })
+  }
 }
 
 inline fun <E> SparseArrayCompat<E>.getOrPut(

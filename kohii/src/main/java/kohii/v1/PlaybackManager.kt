@@ -127,8 +127,9 @@ abstract class PlaybackManager(
       // FYI: The Playable instances holds the actual playback resource. It is not managed by
       // anything else when the Activity is destroyed and to be recreated (config change).
       if (!configChange && kohii.mapPlayableToManager[playable] === this) {
-        if (removed && it.config.headlessPlaybackParams != null && it.config.headlessPlaybackParams.enabled) {
-          kohii.enterHeadlessPlayback(it, it.config.headlessPlaybackParams)
+        val params = it.config.headlessPlaybackParams
+        if (removed && params != null && params.enabled) {
+          kohii.enterHeadlessPlayback(it, params)
         } else {
           it.pauseInternal()
           kohii.trySavePlaybackInfo(it)

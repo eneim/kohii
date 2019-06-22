@@ -19,6 +19,9 @@ package kohii.internal
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
+import kohii.doOnAttach
+import kohii.doOnDetach
+import kohii.findSuitableParent
 import kohii.media.VolumeInfo
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
@@ -44,12 +47,23 @@ internal abstract class BaseTargetHost<V : Any>(
 
   override fun onAdded() {
     super.onAdded()
-    val param = (host as? View)?.let {
-      it.layoutParams as? CoordinatorLayout.LayoutParams
-    }
+    (host as? View)?.apply {
+      doOnAttach {
+        val foundParent = findSuitableParent(manager.parent.activity.window.peekDecorView(), it)
+        val param = foundParent?.layoutParams as? CoordinatorLayout.LayoutParams
+        if (param != null && param.behavior != null) {
+          val behaviorWrapper = BehaviorWrapper(param.behavior!!, manager)
+          param.behavior = behaviorWrapper
+        }
+      }
 
-    if (param != null) {
-      // TODO deal with CoordinatorLayout?
+      doOnDetach {
+        val foundParent = findSuitableParent(manager.parent.activity.window.peekDecorView(), it)
+        val param = foundParent?.layoutParams as? CoordinatorLayout.LayoutParams
+        if (param != null && param.behavior is BehaviorWrapper) {
+          (param.behavior as BehaviorWrapper).onDetach()
+        }
+      }
     }
   }
 

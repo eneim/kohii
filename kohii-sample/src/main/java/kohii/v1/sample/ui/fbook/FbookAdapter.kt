@@ -52,8 +52,8 @@ internal class FbookAdapter(
 
   override fun getItemViewType(position: Int): Int {
     val key = position % 5
-    return if (key == 0 || key == 4) TYPE_VIDEO
-    else if (key == 1 || key == 2) TYPE_TEXT
+    return if (key == 0 || key == 1 || key == 4) TYPE_TEXT
+    else if (key == 2) TYPE_VIDEO
     else TYPE_PHOTO
   }
 
