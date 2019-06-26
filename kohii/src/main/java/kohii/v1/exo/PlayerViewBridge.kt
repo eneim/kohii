@@ -177,7 +177,9 @@ internal open class PlayerViewBridge(
   }
 
   override val isPlaying: Boolean
-    get() = player?.playWhenReady ?: false
+    get() = player?.let {
+      it.playbackState in 2..3 && it.playWhenReady
+    } ?: false
 
   override val volumeInfo: VolumeInfo
     get() = this.playbackInfo.volumeInfo // this will first update the PlaybackInfo via getter.

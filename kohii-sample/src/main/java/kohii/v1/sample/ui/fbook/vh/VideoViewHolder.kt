@@ -63,6 +63,10 @@ internal class VideoViewHolder(
   private val params: Params.() -> Unit
     get() = {
       tag = videoTag
+      cover = Glide.with(itemView.context.applicationContext)
+          .asBitmap()
+          .load(videoImage ?: R.drawable.ic_kohii)
+          .submit()
       headlessPlaybackParams = HeadlessPlaybackParams(
           enabled = true, // TODO dynamic condition, eg: network.
           mediaTitle = video?.title ?: "Unknown",

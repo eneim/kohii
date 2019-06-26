@@ -128,7 +128,7 @@ abstract class PlaybackManager(
       // anything else when the Activity is destroyed and to be recreated (config change).
       if (!configChange && kohii.mapPlayableToManager[playable] === this) {
         val params = it.config.headlessPlaybackParams
-        if (removed && params != null && params.enabled) {
+        if (it.playable.isPlaying && removed && params != null && params.enabled) {
           kohii.enterHeadlessPlayback(it, params)
         } else {
           it.pauseInternal()

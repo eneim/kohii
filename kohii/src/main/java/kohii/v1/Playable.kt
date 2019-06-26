@@ -16,11 +16,13 @@
 
 package kohii.v1
 
+import android.graphics.Bitmap
 import androidx.annotation.IntDef
 import com.google.android.exoplayer2.Player
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
+import java.util.concurrent.Future
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
@@ -64,6 +66,8 @@ interface Playable<OUTPUT : Any> {
   var repeatMode: Int
 
   val isPlaying: Boolean
+
+  val config: Config
 
   fun <CONTAINER : Any> bind(
     target: Target<CONTAINER, OUTPUT>,
@@ -116,6 +120,7 @@ interface Playable<OUTPUT : Any> {
   // data class for copying convenience.
   data class Config(
     val tag: String? = null,
-    val preLoad: Boolean = false
+    val preLoad: Boolean = false,
+    val cover: Future<Bitmap?>? = null
   )
 }

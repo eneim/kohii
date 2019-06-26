@@ -34,17 +34,21 @@ import kohii.v1.exo.PlayerViewBridge
 import kohii.v1.exo.PlayerViewPlayable
 
 // TODO support Bitmap.
-internal class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
+internal class HeadlessPlaybackService : LifecycleService(),
+    HeadlessPlayback,
+    NotificationListener {
 
   companion object {
     const val KEY_PARAMS = "kohii::v1::service::params"
     const val KEY_PLAYABLE = "kohii::v1::service::playable"
   }
 
-  lateinit var kohii: Kohii
-  lateinit var playable: Playable<*>
+  internal lateinit var kohii: Kohii
+  internal lateinit var playable: Playable<*>
 
   private var playerNotificationManager: PlayerNotificationManager? = null
+  private var bitmapAsyncTask: BitmapAsyncTask? = null
+  internal var bitmapCallback: BitmapCallback? = null
 
   override fun onCreate() {
     super.onCreate()
@@ -95,24 +99,13 @@ internal class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
               player: Player?,
               callback: BitmapCallback?
             ): Bitmap? {
+              bitmapCallback = callback
               return null
             }
           }
       )
 
-      playerNotificationManager?.setNotificationListener(object : NotificationListener {
-        override fun onNotificationCancelled(notificationId: Int) {
-          stopSelf()
-        }
-
-        override fun onNotificationStarted(
-          notificationId: Int,
-          notification: Notification?
-        ) {
-          startForeground(notificationId, notification)
-        }
-      })
-
+      playerNotificationManager?.setNotificationListener(this)
       playerNotificationManager?.setPlayer(bridge.player)
     }
     return super.onStartCommand(intent, flags, startId)
@@ -120,6 +113,7 @@ internal class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
 
   override fun onDestroy() {
     super.onDestroy()
+    bitmapAsyncTask?.cancel(true)
     if (::playable.isInitialized) {
       if (kohii.mapPlayableToManager[playable] == kohii) {
         kohii.mapPlayableToManager.remove(playable)
@@ -139,5 +133,23 @@ internal class HeadlessPlaybackService : LifecycleService(), HeadlessPlayback {
 
   override fun dismiss() {
     stopSelf()
+  }
+
+  // NotificationListener
+
+  override fun onNotificationCancelled(notificationId: Int) {
+    stopSelf()
+  }
+
+  override fun onNotificationStarted(
+    notificationId: Int,
+    notification: Notification?
+  ) {
+    startForeground(notificationId, notification)
+    playable.config.cover?.let { lazyBitmap ->
+      bitmapAsyncTask = BitmapAsyncTask(lazyBitmap, bitmapCallback).also {
+        it.executeOnExecutor(BitmapAsyncTask.SINGLE_THREAD_EXECUTOR)
+      }
+    }
   }
 }

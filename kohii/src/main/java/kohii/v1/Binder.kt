@@ -16,6 +16,7 @@
 
 package kohii.v1
 
+import android.graphics.Bitmap
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY
 import com.google.android.exoplayer2.PlaybackParameters
@@ -24,9 +25,10 @@ import kohii.media.PlaybackInfo
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Controller
+import java.util.concurrent.Future
 import kotlin.LazyThreadSafetyMode.NONE
 
-class Binder<RENDERER : Any>(
+open class Binder<RENDERER : Any> internal constructor(
   private val kohii: Kohii,
   private val media: Media,
   private val playableCreator: PlayableCreator<RENDERER>
@@ -36,6 +38,7 @@ class Binder<RENDERER : Any>(
       // Playable.Config
     var tag: String? = null,
     var preLoad: Boolean = false,
+    var cover: Future<Bitmap?>? = null,
     @RepeatMode var repeatMode: Int = Playable.REPEAT_MODE_OFF,
     var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
 
@@ -54,7 +57,7 @@ class Binder<RENDERER : Any>(
   ) {
 
     internal fun createPlayableConfig(): Playable.Config {
-      return Playable.Config(this.tag, this.preLoad)
+      return Playable.Config(this.tag, this.preLoad, this.cover)
     }
 
     internal fun createPlaybackConfig(): Playback.Config {
