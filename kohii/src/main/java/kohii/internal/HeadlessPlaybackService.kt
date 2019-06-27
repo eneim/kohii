@@ -33,7 +33,6 @@ import kohii.v1.Playable
 import kohii.v1.exo.PlayerViewBridge
 import kohii.v1.exo.PlayerViewPlayable
 
-// TODO support Bitmap.
 internal class HeadlessPlaybackService : LifecycleService(),
     HeadlessPlayback,
     NotificationListener {
