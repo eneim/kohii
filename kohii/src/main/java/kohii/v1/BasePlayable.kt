@@ -26,7 +26,7 @@ import kohii.v1.Playback.Config
 abstract class BasePlayable<RENDERER : Any>(
   protected val kohii: Kohii,
   override val media: Media,
-  protected val config: Playable.Config,
+  override val config: Playable.Config,
   internal val bridge: Bridge<RENDERER>,
   private val playbackCreator: PlaybackCreator<RENDERER>
 ) : Playable<RENDERER> {

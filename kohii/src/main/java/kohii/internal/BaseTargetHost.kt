@@ -19,6 +19,7 @@ package kohii.internal
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
+import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
 import kohii.doOnAttach
 import kohii.doOnDetach
 import kohii.findSuitableParent
@@ -51,7 +52,7 @@ internal abstract class BaseTargetHost<V : Any>(
       doOnAttach {
         val foundParent = findSuitableParent(manager.parent.activity.window.peekDecorView(), it)
         val param = foundParent?.layoutParams as? CoordinatorLayout.LayoutParams
-        if (param != null && param.behavior != null) {
+        if (param != null && param.behavior is ScrollingViewBehavior) {
           val behaviorWrapper = BehaviorWrapper(param.behavior!!, manager)
           param.behavior = behaviorWrapper
         }

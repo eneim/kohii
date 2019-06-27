@@ -30,10 +30,9 @@ import kohii.v1.PlaybackManager
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
-// TODO use handler to catch scroll/touch event.
 internal class BehaviorWrapper<V : View>(
   private val delegate: Behavior<in V>,
-  val manager: PlaybackManager
+  manager: PlaybackManager
 ) : Behavior<V>(null, null), Handler.Callback {
 
   companion object {
@@ -45,7 +44,7 @@ internal class BehaviorWrapper<V : View>(
 
   private val scrollConsumed = AtomicBoolean(false)
   private val handler = Handler(this)
-  private val managerRef = WeakReference(manager)
+  private var managerRef = WeakReference(manager)
 
   override fun handleMessage(msg: Message?): Boolean {
     when (msg?.what) {
