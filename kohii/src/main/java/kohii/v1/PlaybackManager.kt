@@ -157,7 +157,7 @@ abstract class PlaybackManager(
 
     kohii.mapPlayableToManager.filter { it.value === this }
         .forEach {
-          kohii.mapPlayableToManager.remove(it.key, it.value)
+          kohii.mapPlayableToManager.remove(it.key)
         }
 
     this.commonTargetHosts.onEach { it.onRemoved() }
