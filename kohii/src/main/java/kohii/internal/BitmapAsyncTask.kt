@@ -23,6 +23,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.LazyThreadSafetyMode.NONE
 
 internal class BitmapAsyncTask(
   private val lazyBitmap: Future<Bitmap?>,
@@ -30,15 +31,19 @@ internal class BitmapAsyncTask(
 ) : AsyncTask<Void, Void, Bitmap?>() {
 
   companion object {
-    private val threadFactory = object : ThreadFactory {
-      private val mCount = AtomicInteger(1)
+    private val threadFactory by lazy(NONE) {
+      object : ThreadFactory {
+        private val mCount = AtomicInteger(1)
 
-      override fun newThread(r: Runnable): Thread {
-        return Thread(r, "BitmapAsyncTask #" + mCount.getAndIncrement())
+        override fun newThread(r: Runnable): Thread {
+          return Thread(r, "BitmapAsyncTask #" + mCount.getAndIncrement())
+        }
       }
     }
 
-    internal val SINGLE_THREAD_EXECUTOR = Executors.newSingleThreadExecutor(threadFactory)
+    internal val SINGLE_THREAD_EXECUTOR by lazy(NONE) {
+      Executors.newSingleThreadExecutor(threadFactory)
+    }
   }
 
   override fun doInBackground(vararg params: Void?): Bitmap? {
