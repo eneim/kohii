@@ -35,7 +35,7 @@ ext {
       ]
 
   buildConfig.version['name'] = //
-      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A09"
+      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A10"
 
   buildConfig.version['code'] = gitCommitCount
 
