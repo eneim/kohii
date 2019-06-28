@@ -30,7 +30,7 @@ import kohii.v1.TargetHost
 import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
-internal abstract class BaseTargetHost<V : Any>(
+abstract class BaseTargetHost<V : Any>(
   protected val actualHost: V,
   manager: PlaybackManager
 ) : TargetHost(actualHost, manager), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
