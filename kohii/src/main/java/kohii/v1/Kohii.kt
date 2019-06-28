@@ -382,7 +382,7 @@ class Kohii(context: Context) : PlayableManager {
       scope === Scope.HOST ->
         when (receiver) {
           is TargetHost -> {
-            receiver.lock.set(true)
+            receiver.lock = true
             receiver.manager.dispatchRefreshAll()
           }
           is Playback<*> -> this.pause(receiver.targetHost, Scope.HOST)
@@ -432,7 +432,7 @@ class Kohii(context: Context) : PlayableManager {
       scope === Scope.HOST ->
         when (receiver) {
           is TargetHost -> {
-            receiver.lock.set(false)
+            receiver.lock = false
             receiver.manager.dispatchRefreshAll()
           }
           is Playback<*> -> this.resume(receiver.targetHost, Scope.HOST)
