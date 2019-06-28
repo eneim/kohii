@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,14 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused")
+package kohii.v1.exo
 
-package kohii
+import com.google.android.exoplayer2.source.MediaSource
+import kohii.ExoPlayer
+import kohii.media.Media
 
-import kotlin.annotation.AnnotationRetention.SOURCE
-
-/**
- * @author eneim (2018/07/30).
- */
-
-@Retention(SOURCE)
-annotation class Draft(val message: String = "")
-
-@Retention(SOURCE)
-annotation class Experiment
-
-@Retention(SOURCE)
-annotation class Beta(val message: String = "")
-
-@Retention(SOURCE)
-annotation class Release
-
-// Indicate that a resource is for use with ExoPlayer only.
-@Retention(SOURCE)
-annotation class ExoPlayer
+@ExoPlayer
+class HybridMediaItem(
+  val media: Media,
+  val mediaSource: MediaSource
+) : Media by media, MediaSource by mediaSource

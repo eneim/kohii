@@ -32,11 +32,14 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleService
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo.VERSION_SLASHY
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
+import kohii.Beta
+import kohii.ExoPlayer
 import kohii.internal.HeadlessPlaybackService
 import kohii.internal.ViewPlaybackManager
 import kohii.media.Media
@@ -48,6 +51,8 @@ import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
 import kohii.v1.exo.DefaultExoPlayerProvider
 import kohii.v1.exo.DefaultMediaSourceFactoryProvider
+import kohii.v1.exo.ExoPlayerProvider
+import kohii.v1.exo.MediaSourceFactoryProvider
 import kohii.v1.exo.PlayerViewBridgeProvider
 import kohii.v1.exo.PlayerViewPlayableCreator
 import java.io.File
@@ -84,7 +89,8 @@ class Kohii(context: Context) : PlayableManager {
     AtomicReference<HeadlessPlayback?>(null)
   }
 
-  internal val defaultBridgeProvider by lazy(NONE) {
+  @ExoPlayer
+  private val providers: Pair<ExoPlayerProvider, MediaSourceFactoryProvider> by lazy(NONE) {
     val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
     val bandwidthMeter = DefaultBandwidthMeter()
     val httpDataSource = DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
@@ -103,10 +109,15 @@ class Kohii(context: Context) : PlayableManager {
     val mediaCache = SimpleCache(contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE))
     val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
     val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
-
-    PlayerViewBridgeProvider(this, playerProvider, mediaSourceFactoryProvider)
+    playerProvider to mediaSourceFactoryProvider
   }
 
+  @ExoPlayer
+  internal val defaultBridgeProvider by lazy(NONE) {
+    PlayerViewBridgeProvider(this, providers.first, providers.second)
+  }
+
+  @ExoPlayer
   private val defaultPlayableCreator by lazy(NONE) { PlayerViewPlayableCreator(this) }
 
   @Suppress("SpellCheckingInspection")
@@ -312,11 +323,21 @@ class Kohii(context: Context) : PlayableManager {
     return manager
   }
 
+  @ExoPlayer
   fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
 
+  @ExoPlayer
   fun setUp(url: String) = this.setUp(url.toUri())
 
+  @ExoPlayer
   fun setUp(media: Media) = defaultPlayableCreator.setUp(media)
+
+  @ExoPlayer
+  @Beta(message = "Helper method to help build MediaSource from a Media instance.")
+  fun createMediaSource(media: Media): MediaSource {
+    return providers.second.provideMediaSourceFactory(media)
+        .createMediaSource(media.uri)
+  }
 
   /**
    * Manually pause an object in a specific scope. After Playbacks of a Scope is paused by this method,
