@@ -32,7 +32,6 @@ import kohii.media.VolumeInfo
 import kohii.v1.Playback.Companion.BOTH_AXIS_COMPARATOR
 import kohii.v1.Playback.Companion.HORIZONTAL_COMPARATOR
 import kohii.v1.Playback.Companion.VERTICAL_COMPARATOR
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A TargetHost is the representation of a View in Kohii. A TargetHost wraps a View and provides it
@@ -43,7 +42,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 abstract class TargetHost(
   val host: Any,
-  val manager: PlaybackManager
+  val manager: PlaybackManager,
+  val selector: Selector? = null
 ) /* : Comparable<TargetHost> */ {
 
   companion object {
@@ -62,20 +62,21 @@ abstract class TargetHost(
 
     internal fun createTargetHost(
       host: Any,
-      manager: PlaybackManager
+      manager: PlaybackManager,
+      selector: Selector? = null
     ): TargetHost? {
       return when (host) {
         is RecyclerView ->
-          RecyclerViewTargetHost(host, manager)
+          RecyclerViewTargetHost(host, manager, selector)
         is NestedScrollView ->
-          NestedScrollViewTargetHost(host, manager)
+          NestedScrollViewTargetHost(host, manager, selector)
         is ViewPager ->
-          ViewPagerTargetHost(host, manager)
+          ViewPagerTargetHost(host, manager, selector)
         is ViewPager2 ->
-          ViewPager2TargetHost(host, manager)
+          ViewPager2TargetHost(host, manager, selector)
         is ViewGroup ->
-          if (Build.VERSION.SDK_INT >= 23) ViewGroupTargetHostV23(host, manager)
-          else ViewGroupTargetHostBase(host, manager)
+          if (Build.VERSION.SDK_INT >= 23) ViewGroupTargetHostV23(host, manager, selector)
+          else ViewGroupTargetHostBase(host, manager, selector)
         else -> null
       }
     }
@@ -97,7 +98,7 @@ abstract class TargetHost(
   }
 
   // state
-  internal abstract val lock: AtomicBoolean
+  internal abstract var lock: Boolean
 
   internal abstract var volumeInfo: VolumeInfo
 
@@ -110,24 +111,31 @@ abstract class TargetHost(
   internal abstract fun <T> detachTarget(target: T)
 
   /**
-   * Returns true if this TargetHost accepts a container. When a TargetHost accepts a container, it keeps track
-   * of that container's state and send signal to the PlaybackManager when needed. A PlaybackManager has the
-   * power to change a container's Host base on certain situation.
+   * Returns true if this TargetHost accepts a target. When a TargetHost accepts a target, it keeps track
+   * of that target's state and send signal to the PlaybackManager when needed. A PlaybackManager has the
+   * power to change a target's Host base on certain situation.
    */
-  internal abstract fun accepts(container: Any): Boolean
+  internal abstract fun accepts(target: Any): Boolean
 
   // Must contain and allow it to play.
   internal abstract fun allowsToPlay(playback: Playback<*>): Boolean
 
   internal open fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    if (selector != null) return selector.select(candidates)
     return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
+  }
+
+  interface Selector {
+
+    fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>>
   }
 
   data class Builder(
     val host: Any,
-    val volumeInfo: VolumeInfo? = null
+    val volumeInfo: VolumeInfo? = null,
+    val selector: Selector? = null
   ) {
 
-    internal fun build(manager: PlaybackManager) = createTargetHost(this.host, manager)
+    internal fun build(manager: PlaybackManager) = createTargetHost(this.host, manager, selector)
   }
 }

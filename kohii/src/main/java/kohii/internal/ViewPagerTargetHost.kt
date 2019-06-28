@@ -24,8 +24,9 @@ import kohii.v1.PlaybackManager
 
 internal class ViewPagerTargetHost(
   host: ViewPager,
-  manager: PlaybackManager
-) : BaseTargetHost<ViewPager>(host, manager), OnPageChangeListener {
+  manager: PlaybackManager,
+  selector: Selector? = null
+) : BaseTargetHost<ViewPager>(host, manager, selector), OnPageChangeListener {
 
   override fun onAdded() {
     super.onAdded()
@@ -58,9 +59,9 @@ internal class ViewPagerTargetHost(
     return playback.token.shouldPlay()
   }
 
-  override fun accepts(container: Any): Boolean {
-    return if (container is View) {
-      var view = container
+  override fun accepts(target: Any): Boolean {
+    return if (target is View) {
+      var view = target
       var parent = view.parent
       while (parent != null && parent !== this.host && parent is View) {
         @Suppress("USELESS_CAST")
@@ -72,6 +73,7 @@ internal class ViewPagerTargetHost(
   }
 
   override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    if (selector != null) return selector.select(candidates)
     return super.selectByOrientation(candidates, HORIZONTAL)
   }
 }

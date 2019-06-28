@@ -82,6 +82,7 @@ open class KohiiPlayer(
     if (changed) {
       this._volumeInfo.setTo(volumeInfo.mute, volumeInfo.volume)
       super.setVolume(if (volumeInfo.mute) 0F else volumeInfo.volume)
+      super.setAudioAttributes(super.getAudioAttributes(), !volumeInfo.mute)
       this.volumeChangedListeners.onVolumeChanged(volumeInfo)
     }
     return changed

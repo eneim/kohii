@@ -51,6 +51,7 @@ fun Player.setVolumeInfo(volume: VolumeInfo) {
       } else {
         this.volume = volume.volume
       }
+      this.setAudioAttributes(this.audioAttributes, !volume.mute)
     }
     else -> throw UnsupportedOperationException(javaClass.name + " doesn't support this.")
   }

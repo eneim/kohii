@@ -25,8 +25,9 @@ import kohii.v1.PlaybackManager
 @RequiresApi(23)
 internal open class ViewGroupTargetHostV23(
   host: ViewGroup,
-  manager: PlaybackManager
-) : ViewGroupTargetHostBase(host, manager), OnScrollChangeListener {
+  manager: PlaybackManager,
+  selector: Selector? = null
+) : ViewGroupTargetHostBase(host, manager, selector), OnScrollChangeListener {
 
   override fun onAdded() {
     super.onAdded()

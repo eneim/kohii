@@ -16,6 +16,7 @@
 
 package kohii.internal
 
+import android.view.View
 import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import kohii.v1.Playback
@@ -24,8 +25,9 @@ import java.lang.ref.WeakReference
 
 internal class ViewPager2TargetHost(
   host: ViewPager2,
-  manager: PlaybackManager
-) : BaseTargetHost<ViewPager2>(host, manager) {
+  manager: PlaybackManager,
+  selector: Selector? = null
+) : BaseTargetHost<ViewPager2>(host, manager, selector) {
 
   private val pageChangeCallback by lazy { SimpleOnPageChangeCallback(manager) }
 
@@ -44,11 +46,21 @@ internal class ViewPager2TargetHost(
     return playback.token.shouldPlay()
   }
 
-  override fun accepts(container: Any): Boolean {
-    return false
+  override fun accepts(target: Any): Boolean {
+    return if (target is View) {
+      var view = target
+      var parent = view.parent
+      while (parent != null && parent !== this.host && parent is View) {
+        @Suppress("USELESS_CAST")
+        view = parent as View
+        parent = view.parent
+      }
+      parent === this.host
+    } else false
   }
 
   override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    if (selector != null) return selector.select(candidates)
     return super.selectByOrientation(candidates, actualHost.orientation)
   }
 

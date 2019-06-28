@@ -23,8 +23,9 @@ import kohii.v1.PlaybackManager
 
 internal open class ViewGroupTargetHostBase(
   host: ViewGroup,
-  manager: PlaybackManager
-) : BaseTargetHost<ViewGroup>(host, manager) {
+  manager: PlaybackManager,
+  selector: Selector? = null
+) : BaseTargetHost<ViewGroup>(host, manager, selector) {
 
   override fun onAdded() {
     super.onAdded()
@@ -35,9 +36,9 @@ internal open class ViewGroupTargetHostBase(
     return playback.token.shouldPlay()
   }
 
-  override fun accepts(container: Any): Boolean {
-    return if (container is View) {
-      var view = container
+  override fun accepts(target: Any): Boolean {
+    return if (target is View) {
+      var view = target
       var parent = view.parent
       while (parent != null && parent !== this.host && parent is View) {
         @Suppress("USELESS_CAST")
@@ -49,6 +50,7 @@ internal open class ViewGroupTargetHostBase(
   }
 
   override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    if (selector != null) return selector.select(candidates)
     return super.selectByOrientation(candidates, NONE_AXIS)
   }
 }

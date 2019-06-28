@@ -22,6 +22,6 @@ import kohii.media.VolumeInfo
 
 class VolumeViewModel : ViewModel() {
 
-  val recyclerViewVolume = MutableLiveData<VolumeInfo>(VolumeInfo())
-  val overlayVolume = MutableLiveData<VolumeInfo>(VolumeInfo())
+  val recyclerViewVolume = MutableLiveData(VolumeInfo(true, 1F))
+  val overlayVolume = MutableLiveData(VolumeInfo(false, 1F))
 }
