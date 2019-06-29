@@ -32,16 +32,17 @@ android {
     versionCode buildConfig.version.code
     versionName buildConfig.version.name
 
-    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
     buildConfigField("String", "LIB_NAME", "\"" + "Kohii, v" + versionName + "\"")
+
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    consumerProguardFiles 'consumer-rules.pro'
   }
 
   buildTypes {
     release {
       zipAlignEnabled true
-      minifyEnabled false
-      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
 
