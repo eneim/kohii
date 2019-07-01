@@ -67,9 +67,8 @@ configurations {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation libraries.exoplayer.all
-  // implementation libraries.exoplayer.snapshot
-  // implementation libraries.exoplayer.mediasession
+
+  implementation Libs.ExoPlayer.all
 
   implementation Libs.Kotlin.stdlibJdk7
   implementation Libs.AndroidX.appcompat
@@ -88,13 +87,13 @@ dependencies {
   // implementation "androidx.leanback:leanback:1.1.0-alpha01"
 
   // Required -- JUnit 4 framework
-  testImplementation 'junit:junit:4.12'
+  testImplementation Libs.Common.junit
   // Optional -- Mockito framework
   // testImplementation 'org.mockito:mockito-core:2.24.0'
-  testImplementation "org.robolectric:robolectric:4.2.1"
-  testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+  testImplementation Libs.Common.robolectric
+  testImplementation Libs.Common.mockitoKotlin
 
-  // Core library
+  // Common library
   androidTestImplementation Libs.Kotlin.stdlibJdk7
   androidTestImplementation Libs.AndroidX.recyclerView
   androidTestImplementation Libs.AndroidX.Test.core

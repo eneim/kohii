@@ -46,10 +46,14 @@ object BuildConfig {
 @Suppress("MayBeConstant", "unused")
 object Libs {
 
-  object Core {
+  object Common {
     const val androidGradlePlugin = "com.android.tools.build:gradle:3.5.0-beta05"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.8.6"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:7.2.1"
+
+    val junit = "junit:junit:4.12"
+    val robolectric = "org.robolectric:robolectric:4.3"
+    val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
 
   object Kotlin {

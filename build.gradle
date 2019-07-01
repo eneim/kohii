@@ -31,12 +31,12 @@ buildscript {
 
   dependencies {
     //noinspection GradleDependency
-    classpath Libs.Core.androidGradlePlugin
+    classpath Libs.Common.androidGradlePlugin
     classpath Libs.Kotlin.gradlePlugin
-    classpath Libs.Core.dexcountGradlePlugin
+    classpath Libs.Common.dexcountGradlePlugin
     classpath Libs.Google.fabricPlugin
     classpath Libs.Google.gmsGoogleServices
-    classpath Libs.Core.ktLintPlugin
+    classpath Libs.Common.ktLintPlugin
   }
 }
 
