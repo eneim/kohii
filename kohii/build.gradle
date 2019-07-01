@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
+import kohii.BuildConfig
+import kohii.Libs
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
-androidExtensions {
-  experimental = true
-}
+//androidExtensions {
+//  experimental = true
+//}
 
 android {
-  compileSdkVersion buildConfig.compileSdk
+  compileSdkVersion BuildConfig.compileSdkVersion
 
   defaultConfig {
-    minSdkVersion buildConfig.minSdk
-    targetSdkVersion buildConfig.targetSdk
-    versionCode buildConfig.version.code
-    versionName buildConfig.version.name
+    minSdkVersion BuildConfig.minSdkVersion
+    targetSdkVersion BuildConfig.targetSdkVersion
+    versionCode BuildConfig.releaseVersionCode
+    versionName BuildConfig.releaseVersionName
 
     buildConfigField("String", "LIB_NAME", "\"" + "Kohii, v" + versionName + "\"")
 
@@ -68,17 +71,18 @@ dependencies {
   // implementation libraries.exoplayer.snapshot
   // implementation libraries.exoplayer.mediasession
 
-  implementation libraries.kotlin.stdlib
-  implementation libraries.androidx.core
-  implementation libraries.androidx.collectionktx
-  implementation libraries.androidx.fragmentktx
-  implementation libraries.androidx.viewpager2
-  implementation libraries.androidx.appcompat
-  implementation libraries.androidx.recyclerview
-  implementation libraries.androidx.material
-  implementation libraries.androidx.lifecycle
-  implementation libraries.androidx.lifecycleService
-  kapt libraries.androidx.lifecycleCompiler
+  implementation Libs.Kotlin.stdlibJdk7
+  implementation Libs.AndroidX.appcompat
+  implementation Libs.AndroidX.coreKtx
+  implementation Libs.AndroidX.collectionKtx
+  implementation Libs.AndroidX.Fragment.fragmentKtx
+  implementation Libs.AndroidX.recyclerView
+  implementation Libs.AndroidX.viewPager
+  implementation Libs.AndroidX.viewPager2
+  implementation Libs.Google.material
+  implementation Libs.AndroidX.Lifecycle.extensions
+  implementation Libs.AndroidX.Lifecycle.service
+  kapt Libs.AndroidX.Lifecycle.compiler
 
   // implementation "androidx.media2:media2:1.0.0-alpha04"
   // implementation "androidx.leanback:leanback:1.1.0-alpha01"
@@ -91,13 +95,13 @@ dependencies {
   testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
 
   // Core library
-  androidTestImplementation libraries.kotlin.stdlib
-  androidTestImplementation libraries.androidx.recyclerview
-  androidTestImplementation 'androidx.test:core:1.2.0'
+  androidTestImplementation Libs.Kotlin.stdlibJdk7
+  androidTestImplementation Libs.AndroidX.recyclerView
+  androidTestImplementation Libs.AndroidX.Test.core
 
   // AndroidJUnitRunner and JUnit Rules
-  androidTestImplementation 'androidx.test:runner:1.2.0'
-  androidTestImplementation 'androidx.test:rules:1.2.0'
+  androidTestImplementation Libs.AndroidX.Test.runner
+  androidTestImplementation Libs.AndroidX.Test.rules
 
   // Assertions
   androidTestImplementation 'androidx.test.ext:junit:1.1.1'
