@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import kohii.Libs
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -108,55 +110,53 @@ configurations {
 dependencies {
   implementation fileTree(include: ['*.jar'], dir: 'libs')
   implementation project(':kohii')
-  implementation libraries.exoplayer.all
-  // implementation libraries.exoplayer.snapshot
 
-  implementation libraries.kotlin.stdlib
-  implementation libraries.androidx.core
-  implementation libraries.androidx.fragmentktx
-  implementation libraries.androidx.appcompat
-  implementation libraries.androidx.recyclerview
-  implementation libraries.androidx.rvSelection
-  implementation libraries.androidx.material
-  implementation libraries.androidx.constraintlayout
-  implementation libraries.androidx.lifecycle
-  implementation libraries.androidx.livedataKtx
-  implementation libraries.androidx.viewModelKtx
-  implementation libraries.androidx.lifecycleRuntime
-  implementation libraries.androidx.pagingCommon
-  implementation libraries.androidx.pagingRuntime
-  implementation libraries.androidx.viewpager2
+  implementation Libs.ExoPlayer.all
 
-  testImplementation libraries.junit
-  androidTestImplementation libraries.xtest.runner
-  androidTestImplementation libraries.xtest.espresso.core
+  implementation Libs.Kotlin.stdlibJdk7
+  implementation Libs.Kotlin.reflect
 
-  implementation 'com.squareup.moshi:moshi:1.8.0'
-  implementation("com.squareup.moshi:moshi-kotlin:1.8.0") {
-    exclude group: "org.jetbrains.kotlin", module: "kotlin-reflect"
-  }
-  implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.40"
-  implementation "com.squareup.okio:okio:2.2.2"
+  implementation Libs.AndroidX.coreKtx
+  implementation Libs.AndroidX.Fragment.fragmentKtx
+  implementation Libs.AndroidX.appcompat
+  implementation Libs.AndroidX.recyclerView
+  implementation Libs.AndroidX.recyclerViewSelection
+  implementation Libs.AndroidX.constraintLayout
+  implementation Libs.Google.material
 
-  implementation "com.github.bumptech.glide:glide:4.9.0"
-  kapt "com.github.bumptech.glide:compiler:4.9.0"
-  implementation 'com.caverock:androidsvg-aar:1.4'
+  implementation Libs.AndroidX.Lifecycle.extensions
+  implementation Libs.AndroidX.Lifecycle.runtime
+  implementation Libs.AndroidX.Lifecycle.viewModel
+  implementation Libs.AndroidX.Lifecycle.liveData
 
-  // debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
-  // releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
-  // Optional, if you use support library fragments:
-  // debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.3'
-  debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.0-alpha-2'
+  implementation Libs.AndroidX.Paging.common
+  implementation Libs.AndroidX.Paging.runtime
 
-  implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
+  implementation Libs.AndroidX.viewPager2
+
+  testImplementation Libs.Common.junit
+  androidTestImplementation Libs.AndroidX.Test.core
+  androidTestImplementation Libs.AndroidX.Test.espressoCore
+
+  implementation Libs.Square.moshi
+  implementation Libs.Square.moshiKotlin
+  implementation Libs.Square.okio
+
+  implementation Libs.Glide.glide
+  kapt Libs.Glide.compiler
+  implementation Libs.Other.androidSvg
+
+  debugImplementation Libs.Square.leakCanary
+
+  implementation(Libs.Google.crashlytics) {
     transitive = true
   }
 
-  implementation "com.google.apis:google-api-services-youtube:v3-rev212-1.25.0"
-  implementation "com.google.http-client:google-http-client-android:1.29.1"
-  implementation "com.google.api-client:google-api-client-android:1.29.0"
-  implementation "com.google.api-client:google-api-client-gson:1.29.0"
+  implementation Libs.Google.youtubeApi
+  implementation Libs.Google.httpClientAndroid
+  implementation Libs.Google.apiClientAndroid
+  implementation Libs.Google.apiClientGson
 
-  implementation 'com.google.firebase:firebase-core:17.0.0'
-  implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.3'
+  implementation Libs.Google.firebaseCore
+  implementation Libs.Other.youtubePlayer
 }

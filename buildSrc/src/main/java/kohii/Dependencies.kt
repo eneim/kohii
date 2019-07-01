@@ -109,8 +109,8 @@ object Libs {
 
     object Paging {
       private const val version = "2.1.0"
-      val common = "androidx.paging:paging-common:$version"
-      val runtime = "androidx.paging:paging-runtime:$version"
+      val common = "androidx.paging:paging-common-ktx:$version"
+      val runtime = "androidx.paging:paging-runtime-ktx:$version"
     }
 
     val preference = "androidx.preference:preference:1.1.0-beta01"
@@ -124,6 +124,8 @@ object Libs {
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
+      val runtime = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
+      val liveData = "androidx.lifecycle:lifecycle-livedata-ktx:$version"
       val viewModel = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
       val service = "androidx.lifecycle:lifecycle-service:$version"
     }
@@ -171,6 +173,12 @@ object Libs {
     val firebaseCore = "com.google.firebase:firebase-core:17.0.0"
     val fabricPlugin = "io.fabric.tools:gradle:1.29.0"
     val crashlytics = "com.crashlytics.sdk.android:crashlytics:2.10.1"
+
+    private const val apiVersion = "1.30.1"
+    val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20190513-$apiVersion"
+    val httpClientAndroid = "com.google.http-client:google-http-client-android:$apiVersion"
+    val apiClientAndroid = "com.google.http-client:google-http-client-android:$apiVersion"
+    val apiClientGson = "com.google.api-client:google-api-client-gson:$apiVersion"
   }
 
   object Dagger {
@@ -181,9 +189,21 @@ object Libs {
     val androidProcessor = "com.google.dagger:dagger-android-processor:$version"
   }
 
+  object Square {
+    val moshi = "com.squareup.moshi:moshi:1.8.0"
+    val moshiKotlin = "com.squareup.moshi:moshi-kotlin:1.8.0"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-alpha-2"
+    val okio = "com.squareup.okio:okio:2.2.2"
+  }
+
   object Glide {
     private const val version = "4.9.0"
     val glide = "com.github.bumptech.glide:glide:$version"
     val compiler = "com.github.bumptech.glide:compiler:$version"
+  }
+
+  object Other {
+    val androidSvg = "com.caverock:androidsvg-aar:1.4"
+    val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.3"
   }
 }

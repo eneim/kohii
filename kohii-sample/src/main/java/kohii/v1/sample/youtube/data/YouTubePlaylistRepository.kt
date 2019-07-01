@@ -23,6 +23,7 @@ import com.google.api.services.youtube.model.Video
 import java.util.concurrent.Executor
 
 class YouTubePlaylistRepository(
+  @Suppress("MemberVisibilityCanBePrivate")
   val apiKey: String,
   val youtube: YouTube,
   private val executor: Executor
