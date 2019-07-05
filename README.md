@@ -15,6 +15,12 @@ Kohii is a high level Video playback library, built from the experience creating
 
 *This library would not deprecate toro anytime soon.*
 
+## Demo
+
+|Background playback|Seamless fullscreen|
+| :--- | :--- |
+|<img src="/art/kohii_demo_1.gif" width="180"/>|<img src="/art/kohii_demo_1.gif" width="180"/>|
+
 ## Setup
 
 Add to your module's build.gradle dependencies
