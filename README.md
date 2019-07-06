@@ -17,9 +17,9 @@ Kohii is a high level Video playback library, built from the experience creating
 
 ## Demo
 
-|Background playback|Seamless fullscreen|
-| :--- | :--- |
-|<img src="/art/kohii_demo_1.gif" height="400"/>|<img src="/art/kohii_demo_3.gif" height="400"/>|
+|Automatic playback|Background playback|Playback continuity (Seamless fullscreen)|
+| :--- | :--- | :--- |
+|<img src="/art/kohii_demo_2.gif" height="400"/>|<img src="/art/kohii_demo_1.gif" height="400"/>|<img src="/art/kohii_demo_3.gif" height="400"/>|
 
 ## Setup
 
