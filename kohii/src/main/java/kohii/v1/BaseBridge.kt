@@ -18,11 +18,11 @@ package kohii.v1
 
 import kotlin.LazyThreadSafetyMode.NONE
 
-abstract class BaseBridge<OUTPUT : Any> : Bridge<OUTPUT> {
+abstract class BaseBridge<RENDERER : Any> : Bridge<RENDERER> {
 
-  protected val eventListeners by lazy(NONE) { PlayerEventListeners() } // Set, so no duplicated
-  protected val volumeListeners by lazy(NONE) { VolumeChangedListeners() } // Set, so no duplicated
-  protected val errorListeners by lazy(NONE) { ErrorListeners() } // Set, so no duplicated
+  protected val eventListeners by lazy(NONE) { PlayerEventListeners() }
+  protected val volumeListeners by lazy(NONE) { VolumeChangedListeners() }
+  protected val errorListeners by lazy(NONE) { ErrorListeners() }
 
   override fun addEventListener(listener: PlayerEventListener) {
     this.eventListeners.add(listener)
