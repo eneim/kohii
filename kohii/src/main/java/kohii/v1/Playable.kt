@@ -62,12 +62,12 @@ interface Playable<OUTPUT : Any> {
 
   val media: Media
 
-  @RepeatMode
-  var repeatMode: Int
-
   val isPlaying: Boolean
 
   val config: Config
+
+  @RepeatMode
+  var repeatMode: Int
 
   fun <CONTAINER : Any> bind(
     target: Target<CONTAINER, OUTPUT>,
