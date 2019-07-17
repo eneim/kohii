@@ -49,7 +49,7 @@ class VideoViewHolder(
   val playerContainer = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
-  var rebinder: Rebinder? = null
+  var rebinder: Rebinder<PlayerView>? = null
   var playback: Playback<PlayerView>? = null
   var payload: InitData? = null
 

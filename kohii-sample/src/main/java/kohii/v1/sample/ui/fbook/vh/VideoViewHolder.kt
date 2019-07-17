@@ -41,7 +41,7 @@ internal class VideoViewHolder(
   parent: ViewGroup,
   val kohii: Kohii,
   val manager: PlaybackManager,
-  val shouldBind: (Rebinder?) -> Boolean
+  val shouldBind: (Rebinder<*>?) -> Boolean
 ) : FbookItemHolder(parent), PlaybackEventListener {
 
   init {
@@ -88,7 +88,7 @@ internal class VideoViewHolder(
 
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
   // be useful in some verifications.
-  internal val rebinder: Rebinder?
+  internal val rebinder: Rebinder<PlayerView>?
     get() = this.videoTag?.let { Rebinder(it, PlayerView::class.java) }
 
   override fun setupOnClick(onClick: OnClick) {
@@ -117,8 +117,10 @@ internal class VideoViewHolder(
 
       binder = kohii.setUp(videoSources!!.file)
           .with(params)
-      // We suppose to do this here, but for a specific scenario of this demo, we need to
-      // do it when the VideoHolder is attached via adapter#onViewAttachedToWindow.
+      /*
+      We suppose to do this here, but for a specific scenario of this demo, we need to
+      do it when the VideoHolder is attached via adapter#onViewAttachedToWindow.
+      */
       // dispatchBindVideo()
     }
   }
@@ -139,7 +141,7 @@ internal class VideoViewHolder(
   }
 
   // Called by FbookFragment to immediately reclaim the Rebinder, prevent the Playback to be removed.
-  internal fun reclaimRebinder(rebinder: Rebinder) {
+  internal fun reclaimRebinder(rebinder: Rebinder<*>) {
     if (shouldBind(rebinder)) {
       binder?.bind(playerView, onBound)
     }
