@@ -26,6 +26,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.collection.ArrayMap
+import androidx.collection.ArraySet
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -51,12 +52,9 @@ import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
 import kohii.v1.exo.DefaultExoPlayerProvider
 import kohii.v1.exo.DefaultMediaSourceFactoryProvider
-import kohii.v1.exo.ExoPlayerProvider
-import kohii.v1.exo.MediaSourceFactoryProvider
 import kohii.v1.exo.PlayerViewBridgeProvider
 import kohii.v1.exo.PlayerViewPlayableCreator
 import java.io.File
-import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -67,17 +65,18 @@ class Kohii(context: Context) : PlayableManager {
 
   val app = context.applicationContext as Application
 
+  // Don't be scared. I clean this thing properly.
   internal val groups = ArrayMap<Activity, PlaybackManagerGroup>(2)
   internal val managers = ArrayMap<LifecycleOwner, PlaybackManager>()
 
   // Which Playable is managed by which Manager
-  internal val mapPlayableToManager = WeakHashMap<Playable<*>, PlayableManager>()
+  internal val mapPlayableToManager = HashMap<Playable<*>, PlayableManager>()
 
   // Map the playback state of Playable made by client (manually)
   // true = the Playable is started by Client/User, not by Kohii.
-  internal val manualPlayableState = WeakHashMap<Playable<*>, Boolean>()
+  internal val manualPlayableRecord = HashMap<Playable<*>, Boolean>()
   // To mark a Playable as high priority once it is started manually.
-  internal val manualPlayables = ArrayMap<Playable<*>, Any>()
+  internal val manualPlayables = ArraySet<Playable<*>>()
 
   // Store playable whose tag is available. Non tagged playable are always ignored.
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Pair<Playable<*>, Class<*>>>()
@@ -90,7 +89,7 @@ class Kohii(context: Context) : PlayableManager {
   }
 
   @ExoPlayer
-  private val providers: Pair<ExoPlayerProvider, MediaSourceFactoryProvider> by lazy(NONE) {
+  internal val defaultBridgeProvider by lazy(NONE) {
     val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
     val bandwidthMeter = DefaultBandwidthMeter()
     val httpDataSource = DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
@@ -109,16 +108,15 @@ class Kohii(context: Context) : PlayableManager {
     val mediaCache = SimpleCache(contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE))
     val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
     val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
-    playerProvider to mediaSourceFactoryProvider
+    PlayerViewBridgeProvider(playerProvider, mediaSourceFactoryProvider).also {
+      cleanables.add(it)
+    }
   }
 
   @ExoPlayer
-  internal val defaultBridgeProvider by lazy(NONE) {
-    PlayerViewBridgeProvider(this, providers.first, providers.second)
+  private val defaultPlayableCreator by lazy(NONE) {
+    PlayerViewPlayableCreator(this, bridgeProvider = this.defaultBridgeProvider)
   }
-
-  @ExoPlayer
-  private val defaultPlayableCreator by lazy(NONE) { PlayerViewPlayableCreator(this) }
 
   @Suppress("SpellCheckingInspection")
   internal val cleanables = HashSet<Cleanable>()
@@ -130,7 +128,6 @@ class Kohii(context: Context) : PlayableManager {
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
     private const val CACHE_SIZE = 32 * 1024 * 1024L // 32 Megabytes
-    internal val PRESENT = Any()
 
     @Volatile private var kohii: Kohii? = null
 
@@ -171,6 +168,7 @@ class Kohii(context: Context) : PlayableManager {
     playback: Playback<*>,
     params: HeadlessPlaybackParams
   ) {
+    // A HeadlessPlayback will be managed by Kohii.
     mapPlayableToManager[playback.playable] = this
     val intent = Intent(app, HeadlessPlaybackService::class.java)
     val extras = Bundle().apply {
@@ -210,7 +208,7 @@ class Kohii(context: Context) : PlayableManager {
     app.unregisterReceiver(screenStateReceiver)
   }
 
-  // Only used from ControlDispatcher
+  // Called by ControlDispatcher only
   internal fun play(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
@@ -223,19 +221,19 @@ class Kohii(context: Context) : PlayableManager {
       }
       if (playback.token.shouldPrepare()) playback.playable.prepare()
 
-      manualPlayableState[playback.playable] = true
+      manualPlayableRecord[playback.playable] = true
       if (!controller.pauseBySystem()) {
-        manualPlayables[playback.playable] = PRESENT
+        manualPlayables.add(playback.playable)
       }
     }
     playback.manager.dispatchRefreshAll()
   }
 
-  // only used from ControlDispatcher
+  // Called by ControlDispatcher only
   internal fun pause(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
-      manualPlayableState[playback.playable] = false
+      manualPlayableRecord[playback.playable] = false
       manualPlayables.remove(playback.playable)
     }
     playback.manager.dispatchRefreshAll()
@@ -252,7 +250,8 @@ class Kohii(context: Context) : PlayableManager {
   }
 
   internal fun findManagerForContainer(container: Any): PlaybackManager? {
-    return managers.values.firstOrNull { it.findHostForContainer(container) != null }
+    return managers.values.filter { it.findHostForContainer(container) != null }
+        .max() // Manager with highest priority.
   }
 
   internal fun <OUTPUT : Any> cleanUpPool(
@@ -335,8 +334,7 @@ class Kohii(context: Context) : PlayableManager {
   @ExoPlayer
   @Beta(message = "Helper method to help build MediaSource from a Media instance.")
   fun createMediaSource(media: Media): MediaSource {
-    return providers.second.provideMediaSourceFactory(media)
-        .createMediaSource(media.uri)
+    return defaultBridgeProvider.createMediaSource(media)
   }
 
   /**
@@ -447,7 +445,7 @@ class Kohii(context: Context) : PlayableManager {
       scope === Scope.PLAYBACK ->
         (receiver as? Playback<*>)?.let {
           if (it.controller != null) { // has manual controller
-            manualPlayableState[it.playable] = null // TODO consider to not do this?
+            manualPlayableRecord.remove(it.playable) // TODO consider to not do this?
             it.manager.dispatchRefreshAll()
           }
         } ?: throw IllegalArgumentException("Receiver for scope $scope must be a Playback")
@@ -464,27 +462,16 @@ class Kohii(context: Context) : PlayableManager {
       is TargetHost -> receiver.manager.applyVolumeInfo(volumeInfo, receiver, scope)
       is PlaybackManager -> receiver.applyVolumeInfo(volumeInfo, receiver, scope)
       is PlaybackManagerGroup -> receiver.managers().forEach {
-        it.applyVolumeInfo(
-            volumeInfo, receiver, scope
-        )
+        it.applyVolumeInfo(volumeInfo, receiver, scope)
       }
       else -> throw IllegalArgumentException("Unsupported receiver: $receiver")
     }
   }
 
-  fun fetchRebinder(tag: Any?): Rebinder? {
+  fun fetchRebinder(tag: Any?): Rebinder<*>? {
     val cache = if (tag is String) this.mapTagToPlayable[tag] else null
     return if (cache != null) {
       Rebinder(tag as String, cache.second)
-    } else null
-  }
-
-  @Suppress("unused")
-  fun fetchPlayback(rebinder: Rebinder): Playback<*>? {
-    val cache = this.mapTagToPlayable[rebinder.tag]
-    return if (cache != null) {
-      this.managers.values.map { it.findPlaybackForPlayable(cache.first) }
-          .firstOrNull()
     } else null
   }
 

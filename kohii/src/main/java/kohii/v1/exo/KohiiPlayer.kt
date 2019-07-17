@@ -18,7 +18,6 @@ package kohii.v1.exo
 
 import android.content.Context
 import android.os.Looper
-import android.util.Log
 import androidx.annotation.CallSuper
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
@@ -27,12 +26,11 @@ import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.upstream.BandwidthMeter
+import kohii.logInfo
 import kohii.media.VolumeInfo
-import kohii.v1.BuildConfig
 import kohii.v1.VolumeChangedListener
 import kohii.v1.VolumeChangedListeners
 import kohii.v1.VolumeInfoController
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
@@ -59,11 +57,11 @@ open class KohiiPlayer(
 ), VolumeInfoController {
 
   companion object {
-    val instanceCount = AtomicInteger(0)
+    var instanceCount = 0
   }
 
   init {
-    if (BuildConfig.DEBUG) Log.e("Kohii::Count", "player: ${instanceCount.incrementAndGet()}")
+    "Player: ${++instanceCount}".logInfo()
   }
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }

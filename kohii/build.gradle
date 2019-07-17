@@ -22,9 +22,9 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
-//androidExtensions {
-//  experimental = true
-//}
+androidExtensions {
+  experimental = true
+}
 
 android {
   compileSdkVersion BuildConfig.compileSdkVersion
@@ -69,6 +69,13 @@ dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
 
   implementation Libs.ExoPlayer.all
+  implementation Libs.ExoPlayer.cast
+  implementation Libs.ExoPlayer.ima
+
+  implementation Libs.AndroidX.Media.common
+  implementation Libs.AndroidX.Media.player
+  implementation Libs.AndroidX.Media.session
+  implementation Libs.AndroidX.Media.widget
 
   implementation Libs.Kotlin.stdlibJdk7
   implementation Libs.AndroidX.appcompat

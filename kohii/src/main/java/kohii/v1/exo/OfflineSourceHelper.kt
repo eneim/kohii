@@ -25,4 +25,7 @@ interface OfflineSourceHelper {
   val downloadCache: Cache
 
   fun offlineStreamKeys(uri: Uri): List<StreamKey>
+
+  // if empty uris --> purge all downloaded content.
+  fun purge(vararg uris: Uri)
 }

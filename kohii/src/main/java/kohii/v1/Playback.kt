@@ -43,7 +43,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
 ) : PlayerEventListener {
 
   companion object {
-    const val TAG = "Kohii::PB"
+    const val TAG = BuildConfig.LIBRARY_PACKAGE_NAME
     const val DELAY_INFINITE = -1L
 
     val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->

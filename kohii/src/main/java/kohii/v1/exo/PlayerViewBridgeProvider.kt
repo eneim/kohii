@@ -16,25 +16,24 @@
 
 package kohii.v1.exo
 
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.ExoPlayer
 import kohii.media.Media
 import kohii.v1.Bridge
 import kohii.v1.BridgeProvider
+import kohii.v1.Cleanable
 import kohii.v1.Kohii
 import kohii.v1.Playable
 
 /**
  * @author eneim (2018/10/28).
  */
+@ExoPlayer
 class PlayerViewBridgeProvider(
-  kohii: Kohii,
   private val playerProvider: ExoPlayerProvider,
   private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
-) : BridgeProvider<PlayerView> {
-
-  init {
-    kohii.cleanables.add(this)
-  }
+) : BridgeProvider<PlayerView>, Cleanable {
 
   override fun provideBridge(
     kohii: Kohii,
@@ -47,6 +46,11 @@ class PlayerViewBridgeProvider(
         playerProvider,
         mediaSourceFactoryProvider
     )
+  }
+
+  fun createMediaSource(media: Media): MediaSource {
+    return mediaSourceFactoryProvider.provideMediaSourceFactory(media)
+        .createMediaSource(media.uri)
   }
 
   override fun cleanUp() {

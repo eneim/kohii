@@ -23,6 +23,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.forceCast
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
@@ -44,7 +46,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     private const val KEY_RATIO = "kohii:fragment:player:ratio"
 
     fun newInstance(
-      rebinder: Rebinder,
+      rebinder: Rebinder<PlayerView>,
       ratio: Float
     ) = BigPlayerDialog().also {
       val args = Bundle()
@@ -55,9 +57,11 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
   }
 
   lateinit var kohii: Kohii
-  private lateinit var rebinderFromArgs: Rebinder
+  private lateinit var rebinderFromArgs: Rebinder<PlayerView>
 
+  @Suppress("MemberVisibilityCanBePrivate")
   var floatPlayerController: FloatPlayerController? = null
+  @Suppress("MemberVisibilityCanBePrivate")
   var playerCallback: PlayerPanel.Callback? = null
 
   private val systemUiOptions by lazy {
@@ -66,7 +70,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     )
   }
 
-  override val rebinder: Rebinder
+  override val rebinder: Rebinder<PlayerView>
     get() = this.rebinderFromArgs
 
   override fun onAttach(context: Context) {
@@ -110,7 +114,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     val manager = kohii.register(this, playerContainer)
 
     requireArguments().apply {
-      rebinderFromArgs = getParcelable(KEY_REBINDER) as Rebinder
+      rebinderFromArgs = (getParcelable(KEY_REBINDER) as Rebinder<*>).forceCast()
       val ratio = getFloat(KEY_RATIO, 16 / 9.toFloat())
       val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
       container.setAspectRatio(ratio)

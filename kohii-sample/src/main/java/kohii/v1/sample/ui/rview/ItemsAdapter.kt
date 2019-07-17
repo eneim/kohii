@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Rebinder
 import kohii.v1.sample.PlayerInfo
@@ -42,8 +43,6 @@ class ItemsAdapter(
   private val dp2Px: (Int) -> Int
 ) : Adapter<BaseViewHolder>() {
 
-  private var inflater: LayoutInflater? = null
-
   init {
     setHasStableIds(true)
   }
@@ -52,14 +51,12 @@ class ItemsAdapter(
     parent: ViewGroup,
     viewType: Int
   ): BaseViewHolder {
-    if (inflater == null || inflater!!.context != parent.context) {
-      inflater = LayoutInflater.from(parent.context)
-    }
-
     return when (viewType) {
-      R.layout.holder_text_view -> TextViewHolder(inflater!!, parent, this.dp2Px)
+      R.layout.holder_text_view -> TextViewHolder(
+          LayoutInflater.from(parent.context), parent, this.dp2Px
+      )
       R.layout.holder_player_view -> VideoViewHolder(
-          inflater!!, parent, kohii, VideoClickImpl(fragment)
+          LayoutInflater.from(parent.context), parent, kohii, VideoClickImpl(fragment)
       )
       else -> throw RuntimeException("Unknown type: $viewType")
     }
@@ -111,7 +108,7 @@ class ItemsAdapter(
       if (transView == null) return
       val transName = ViewCompat.getTransitionName(transView) ?: return
       @Suppress("UNCHECKED_CAST")
-      val data = payload as? Pair<Rebinder, InitData> ?: return
+      val data = payload as? Pair<Rebinder<PlayerView>, InitData> ?: return
       val initData = data.second
 
       fragment.recordPlayerInfo(PlayerInfo(adapterPos, itemView.top))

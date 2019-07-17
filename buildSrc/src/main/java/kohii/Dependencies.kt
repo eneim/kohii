@@ -57,7 +57,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.3.40"
+    private const val version = "1.3.41"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
@@ -79,6 +79,14 @@ object Libs {
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
     val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-alpha05"
+
+    object Media {
+
+      val widget = "androidx.media2:media2-widget:1.0.0-beta01"
+      val common = "androidx.media2:media2-common:1.0.0-rc01"
+      val player = "androidx.media2:media2-player:1.0.0-rc01"
+      val session = "androidx.media2:media2-session:1.0.0-rc01"
+    }
 
     object Navigation {
       private const val version = "2.1.0-alpha05"
@@ -162,9 +170,13 @@ object Libs {
     val hls = subLib("hls")
     val smoothStreaming = subLib("smoothstreaming")
 
+    val mediaSession = extLib("mediasession")
     val okhttpExtension = extLib("okhttp")
     val imaExtension = extLib("ima")
     val rtmpExtension = extLib("rtmp")
+
+    val ima = extLib("ima")
+    val cast = extLib("cast")
   }
 
   object Google {

@@ -25,7 +25,7 @@ data class HeadlessPlaybackParams(
   val enabled: Boolean = true,
   val mediaTitle: String,
   val mediaText: String,
-  val channelId: String = "Kohii",
+  val channelId: String = BuildConfig.LIB_NAME,
   @StringRes val channelName: Int = R.string.app_name,
-  val notificationId: Int = "Kohii".hashCode()
+  val notificationId: Int = BuildConfig.LIB_NAME.hashCode()
 ) : Parcelable
