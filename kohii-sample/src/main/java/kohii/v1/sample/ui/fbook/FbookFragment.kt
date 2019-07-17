@@ -28,7 +28,10 @@ import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.forceCast
 import kohii.media.VolumeInfo
+import kohii.safeCast
 import kohii.v1.Kohii
 import kohii.v1.OnSelectionCallback
 import kohii.v1.Playable
@@ -72,7 +75,7 @@ class FbookFragment : BaseFragment(),
   private lateinit var kohii: Kohii
   private lateinit var rvHost: TargetHost
 
-  private var latestRebinder: Rebinder? = null
+  private var latestRebinder: Rebinder<PlayerView>? = null
   private var latestPlayback: Playback<*>? = null
 
   // Floating View
@@ -127,6 +130,7 @@ class FbookFragment : BaseFragment(),
         }
         if (picked != null) {
           latestRebinder = kohii.fetchRebinder(picked.tag)
+              .forceCast()
           picked.addPlaybackEventListener(this@FbookFragment)
         }
       }
@@ -137,7 +141,7 @@ class FbookFragment : BaseFragment(),
         kohii.applyVolumeInfo(it, rvHost, Scope.HOST)
         val adapter = recyclerView.adapter
         if (adapter != null) {
-          recyclerView.currentVisible<VideoViewHolder>()
+          recyclerView.filterVisibleHolder<VideoViewHolder>()
               .forEach { vh -> adapter.notifyItemChanged(vh.adapterPosition, it) }
         }
       }
@@ -163,7 +167,8 @@ class FbookFragment : BaseFragment(),
     recyclerView.setHasFixedSize(true)
     recyclerView.adapter = adapter
 
-    val savedBinder = savedInstanceState?.getParcelable(STATE_KEY_REBINDER) as Rebinder?
+    val savedBinder =
+      (savedInstanceState?.getParcelable(STATE_KEY_REBINDER) as Rebinder<*>?).safeCast<PlayerView>()
     if (savedBinder != null) {
       if (requireActivity().isLandscape()) {
         val info = OverlayPlayerInfo(OverlayPlayerInfo.MODE_DIALOG, savedBinder)
@@ -201,7 +206,7 @@ class FbookFragment : BaseFragment(),
     this.floatPlayerManager.closeFloatPlayer { /* do nothing */ }
   }
 
-  override fun showFloatPlayer(rebinder: Rebinder) {
+  override fun showFloatPlayer(rebinder: Rebinder<PlayerView>) {
     val overlayPlayerInfo = OverlayPlayerInfo(OverlayPlayerInfo.MODE_FLOAT, rebinder)
     viewModel.overlayPlayerInfo.value = overlayPlayerInfo
   }
@@ -248,10 +253,10 @@ class FbookFragment : BaseFragment(),
     } else false
   }
 
-  private fun clearPlayerSelection(rebinder: Rebinder) {
+  private fun clearPlayerSelection(rebinder: Rebinder<PlayerView>) {
     recyclerView.adapter?.apply {
-      recyclerView.currentVisible<VideoViewHolder> { it.rebinder == rebinder }
-          .also { if (it.isEmpty()) overlayPlayback?.unbind() }
+      recyclerView.filterVisibleHolder<VideoViewHolder> { it.rebinder == rebinder }
+          .also { if (it.isEmpty()) overlayPlayback?.unbind() } // No visible Player --> unbind.
           .onEach {
             notifyItemChanged(it.adapterPosition)
           }
@@ -262,17 +267,17 @@ class FbookFragment : BaseFragment(),
     overlayPlayback = null
   }
 
-  private fun openDialogPlayer(rebinder: Rebinder) {
+  private fun openDialogPlayer(rebinder: Rebinder<PlayerView>) {
     val player = BigPlayerDialog.newInstance(rebinder, 16 / 9.toFloat())
     player.show(childFragmentManager, rebinder.tag)
   }
 
-  private fun closeDialogPlayer(rebinder: Rebinder) {
+  private fun closeDialogPlayer(rebinder: Rebinder<PlayerView>) {
     val dialog = childFragmentManager.findFragmentByTag(rebinder.tag)
     if (dialog is BigPlayerDialog) dialog.dismissAllowingStateLoss()
   }
 
-  private fun openFloatPlayer(rebinder: Rebinder) {
+  private fun openFloatPlayer(rebinder: Rebinder<PlayerView>) {
     if (!floatPlayerManager.floating.get()) {
       rebindAction = {
         floatPlayerManager.openFloatPlayer { playerView ->
@@ -313,7 +318,7 @@ class FbookFragment : BaseFragment(),
     }
   }
 
-  private fun closeFloatPlayer(@Suppress("UNUSED_PARAMETER") rebinder: Rebinder) {
+  private fun closeFloatPlayer(@Suppress("UNUSED_PARAMETER") rebinder: Rebinder<PlayerView>) {
     floatPlayerManager.closeFloatPlayer { }
   }
 }

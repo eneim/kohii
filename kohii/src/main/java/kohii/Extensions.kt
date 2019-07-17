@@ -16,6 +16,7 @@
 
 package kohii
 
+import android.util.Log
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import androidx.collection.SparseArrayCompat
@@ -25,7 +26,9 @@ import androidx.core.view.ViewCompat
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
+import kohii.v1.BuildConfig
 import kohii.v1.PlayerEventListener
+import kohii.v1.Rebinder
 import kohii.v1.VolumeInfoController
 
 /**
@@ -71,6 +74,18 @@ fun Player.removeEventListener(listener: PlayerEventListener?) {
   this.audioComponent?.removeAudioListener(listener)
   this.textComponent?.removeTextOutput(listener)
   this.metadataComponent?.removeMetadataOutput(listener)
+}
+
+inline fun <reified RENDERER : Any> Rebinder<*>?.safeCast(): Rebinder<RENDERER>? {
+  @Suppress("UNCHECKED_CAST")
+  if (this?.rendererType !== RENDERER::class.java) return this as Rebinder<RENDERER>
+  return null
+}
+
+inline fun <reified RENDERER : Any> Rebinder<*>?.forceCast(): Rebinder<RENDERER> {
+  require(this != null && this.rendererType === RENDERER::class.java)
+  @Suppress("UNCHECKED_CAST")
+  return this as Rebinder<RENDERER>
 }
 
 inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
@@ -177,4 +192,23 @@ inline fun <E> SparseArrayCompat<E>.forEach(actor: (E, Int) -> Unit) {
 fun <T> Set<T>.plusNotNull(element: T?): Set<T> {
   if (element != null) return this + element
   return this
+}
+
+// Because I want to compose the message first, then log it.
+internal fun String.logDebug(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+  if (BuildConfig.DEBUG) {
+    Log.d(tag, this)
+  }
+}
+
+internal fun String.logInfo(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+  if (BuildConfig.DEBUG) {
+    Log.i(tag, this)
+  }
+}
+
+internal fun String.logWarn(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+  if (BuildConfig.DEBUG) {
+    Log.w(tag, this)
+  }
 }
