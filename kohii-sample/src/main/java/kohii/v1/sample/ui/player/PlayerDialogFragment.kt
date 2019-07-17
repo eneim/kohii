@@ -25,6 +25,7 @@ import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.Playback.Callback
@@ -40,7 +41,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     private const val KEY_REBINDER = "kohii:player:dialog:rebinder"
 
     fun newInstance(
-      rebinder: Rebinder,
+      rebinder: Rebinder<PlayerView>,
       initData: InitData
     ): PlayerDialogFragment {
       val bundle = Bundle().also {
@@ -56,10 +57,10 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
 
     fun onDialogActive()
 
-    fun onDialogInActive(rebinder: Rebinder)
+    fun onDialogInActive(rebinder: Rebinder<PlayerView>)
   }
 
-  var rebinder: Rebinder? = null
+  var rebinder: Rebinder<PlayerView>? = null
   var playback: Playback<*>? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
