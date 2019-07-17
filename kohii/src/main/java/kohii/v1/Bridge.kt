@@ -22,12 +22,12 @@ import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.RepeatMode
 
-interface Bridge<OUTPUT : Any> {
+interface Bridge<RENDERER : Any> {
 
   val playbackState: Int
 
   //  set/get
-  var playerView: OUTPUT?
+  var playerView: RENDERER?
 
   // set/get
   var playbackInfo: PlaybackInfo
