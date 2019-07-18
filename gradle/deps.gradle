@@ -15,100 +15,120 @@
  */
 
 ext {
-  buildConfig = //
-      [//
-       compileSdk: 27,
-       minSdk    : 16,
-       targetSdk : 27,
-       'version' : //
-           [//
-            'major': 1,
-            'minor': 0,
-            'patch': 0, // ExoPlayer version number.
-            'build': 2801, //
-           ], //
+  // query git for the SHA, Tag and commit count. Use these to automate versioning.
+  gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+  gitCommitCount =
+      100 + Integer.parseInt('git rev-list --count HEAD'.execute([], project.rootDir).text.trim())
+
+  buildConfig =
+      [
+          compileSdk: 28,
+          minSdk: 19,
+          targetSdk: 28,
+          'version':
+              [
+                  'major': 1,
+                  'minor': 0,
+                  'patch': 0,
+                  'build': 2906, // ExoPlayer version number.
+              ],
       ]
 
   buildConfig.version['name'] = //
-      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}"
+      "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${buildConfig.version.build}-A10"
 
-  buildConfig.version['code'] = //
-      /* eg: 1 * 100000000 + 9 * 1000000 + 9 * 10000 + 2801 --> 109,092,801 */
-      buildConfig.version.major * 100000000 + //
-          buildConfig.version.minor * 1000000 + //
-          buildConfig.version.patch * 10000 + //
-          buildConfig.version.build
+  buildConfig.version['code'] = gitCommitCount
 
   versions = //
       [//
-       kotlin          : "1.2.50",
-       supportLibrary  : "27.1.1" /* "28.0.0-alpha3" */,
-       gradlePlugin    : "3.2.0-beta01",
-       jetpack         : "1.0.0-alpha3",
-       constraintLayout: "1.1.2",
-       xlifecycle      : "2.0.0-alpha1",
-       lifecycle       : "1.1.1",
-       exoplayer       : "2.8.1",
-       espresso        : "3.0.2", //
+          kotlin: "1.3.40",
+          supportLibrary: "28.0.0",
+          jetpack: "1.0.0",
+          constraintLayout: "2.0.0-alpha3",
+          xlifecycle: "2.1.0-alpha02",
+          lifecycle: "1.1.1",
+          exoplayer: "2.9.6",
+          espresso: "3.0.2", //
       ]
 
   libraries = //
       [//
-       kotlin       : //
-           [//
-            stdlib: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin", //
-           ],
+          kotlin: //
+              [//
+                  stdlib: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin", //
+              ],
 
-       //==================== Support Library ====================
-       support      : //
-           [//
-            appcompat       : "com.android.support:appcompat-v7:$versions.supportLibrary",
-            design          : "com.android.support:design:$versions.supportLibrary",
-            recyclerview    : "com.android.support:recyclerview-v7:$versions.supportLibrary",
-            cardview        : "com.android.support:cardview-v7:$versions.supportLibrary",
-            lifecycle       : "android.arch.lifecycle:extensions:$versions.lifecycle",
-            constraintLayout: "com.android.support.constraint:constraint-layout:$versions.constraintLayout" //
-           ],
+          //==================== Support Library ====================
+          support: //
+              [//
+                  appcompat: "com.android.support:appcompat-v7:$versions.supportLibrary",
+                  material: "com.android.support:design:$versions.supportLibrary",
+                  recyclerview: "com.android.support:recyclerview-v7:$versions.supportLibrary",
+                  cardview: "com.android.support:cardview-v7:$versions.supportLibrary",
+                  lifecycle: "android.arch.lifecycle:extensions:$versions.lifecycle",
+                  constraintlayout: "com.android.support.constraint:constraint-layout:$versions.constraintLayout" //
+              ],
 
-       androidx     : //
-           [//
-            appcompat       : "androidx.appcompat:appcompat:$versions.jetpack",
-            recyclerview    : "androidx.recyclerview:recyclerview:$versions.jetpack",
-            constraintlayout: "androidx.constraintlayout:constraintlayout:$versions.constraintLayout",
-            lifecycle       : "androidx.lifecycle:lifecycle-extensions:$versions.xlifecycle",
-            coordinator     : "androidx.coordinatorlayout:coordinatorlayout:$versions.jetpack", //
-           ],
+          androidx: //
+              [//
+                  core: "androidx.core:core-ktx:1.1.0-beta01",
+                  annotation: "androidx.annotation:annotation:1.1.0-rc01",
+                  material: "com.google.android.material:material:1.1.0-alpha06",
+                  fragment: "androidx.fragment:fragment:1.1.0-alpha08",
+                  fragmentktx: "androidx.fragment:fragment-ktx:1.1.0-alpha08",
+                  appcompat: "androidx.appcompat:appcompat:1.1.0-alpha05",
+                  collection: "androidx.collection:collection:1.1.0-rc01",
+                  collectionktx: "androidx.collection:collection-ktx:1.1.0-rc01",
+                  recyclerview: "androidx.recyclerview:recyclerview:1.1.0-alpha05",
+                  rvSelection: "androidx.recyclerview:recyclerview-selection:1.1.0-alpha05",
+                  viewpager2: "androidx.viewpager2:viewpager2:1.0.0-alpha04",
+                  constraintlayout: "androidx.constraintlayout:constraintlayout:2.0.0-alpha3",
 
-       xtest        : //
-           [//
-            runner  : "androidx.test:runner:1.1.0-alpha3",
-            expresso: //
-                [//
-                 core: "androidx.test.espresso:espresso-core:3.1.0-alpha3", //
-                ], //
-           ],
+                  lifecycle: "androidx.lifecycle:lifecycle-extensions:2.2.0-alpha01",
+                  livedataKtx: "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0-alpha01",
+                  viewModelKtx: "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-alpha01",
+                  lifecycleRuntime: "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0-alpha01",
+                  lifecycleService: "androidx.lifecycle:lifecycle-service:2.2.0-alpha01",
+                  lifecycleCompiler: "androidx.lifecycle:lifecycle-compiler:2.2.0-alpha01",
 
-       crashlytics  : "com.crashlytics.sdk.android:crashlytics:2.9.4@aar",
+                  pagingCommon: "androidx.paging:paging-common-ktx:2.1.0",
+                  pagingRuntime: "androidx.paging:paging-runtime-ktx:2.1.0",
 
-       //==================== Test ====================
-       junit        : "junit:junit:4.12",
-       mockitoKotlin: "com.nhaarman:mockito-kotlin:1.5.0",
-       robolectric  : //
-           [//
-            core: "org.robolectric:robolectric:3.5.1", //
-           ],
-       supporttest  : //
-           [//
-            runner: "com.android.support.test:runner:1.0.2",],
-       espresso     : //
-           [//
-            core   : "com.android.support.test.espresso:espresso-core:$versions.espresso",
-            intents: "com.android.support.test.espresso:espresso-intents:$versions.espresso" //
-           ], //
+                  coordinator: "androidx.coordinatorlayout:coordinatorlayout:1.1.0-alpha01", //
+              ],
 
-       exoplayer    : //
-           [//
-            all: "com.google.android.exoplayer:exoplayer:$versions.exoplayer" //
-           ], //
+          xtest: //
+              [//
+                  runner: "androidx.test:runner:1.1.0",
+                  espresso: //
+                      [//
+                          core: "androidx.test.espresso:espresso-core:3.1.0", //
+                      ], //
+              ],
+
+          crashlytics: "com.crashlytics.sdk.android:crashlytics:2.9.4@aar",
+
+          //==================== Test ====================
+          junit: "junit:junit:4.12",
+          mockitoKotlin: "com.nhaarman:mockito-kotlin:1.5.0",
+          robolectric: //
+              [//
+                  core: "org.robolectric:robolectric:3.5.1", //
+              ],
+          supporttest: //
+              [//
+                  runner: "com.android.support.test:runner:1.0.2",],
+          espresso: //
+              [//
+                  core: "com.android.support.test.espresso:espresso-core:$versions.espresso",
+                  intents: "com.android.support.test.espresso:espresso-intents:$versions.espresso" //
+              ], //
+
+          exoplayer: //
+              [//
+                  all: "com.google.android.exoplayer:exoplayer:$versions.exoplayer",
+                  snapshot: "com.github.google.exoplayer:library:dev-v2-SNAPSHOT",
+                  mediasession: "com.google.android.exoplayer:extension-mediasession:$versions.exoplayer" //
+              ], //
       ]
 }

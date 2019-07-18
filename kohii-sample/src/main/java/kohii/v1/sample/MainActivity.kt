@@ -16,27 +16,70 @@
 
 package kohii.v1.sample
 
-import android.net.Uri
+import android.content.res.Configuration
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import kohii.v1.Kohii
-import kotlinx.android.synthetic.main.main_activity.playerView
+import android.view.View
+import kohii.v1.sample.common.BackPressConsumer
+import kohii.v1.sample.common.BaseActivity
+import kohii.v1.sample.ui.main.MainFragment
+import kotlinx.android.synthetic.main.main_activity.toolbar
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity(), PlayerInfoHolder {
 
-  companion object {
-    const val videoUrl = "https://storage.googleapis.com/spec-host/mio-material/assets/1MvJxcu1kd5TFR6c5IBhxjLueQzSZvVQz/m2-manifesto.mp4"
+  private var playerInfo: PlayerInfo? = null
+
+  override fun recordPlayerInfo(info: PlayerInfo?) {
+    this.playerInfo = info
   }
+
+  override fun fetchPlayerInfo() = playerInfo
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main_activity)
-//    if (savedInstanceState == null) {
-//      supportFragmentManager.beginTransaction()
-//          .replace(R.id.container, MainFragment.newInstance())
-//          .commitNow()
-//    }
-
-    Kohii.with(this).setUp(Uri.parse(videoUrl)).asPlayable().bind(playerView)
+    setSupportActionBar(this.toolbar)
+    if (savedInstanceState == null) {
+      supportFragmentManager.beginTransaction()
+          .replace(
+              R.id.fragmentContainer,
+              MainFragment.newInstance(), MainFragment::class.java.simpleName
+          )
+          .commit()
+    }
   }
+
+  override fun onBackPressed() {
+    val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+    if (currentFragment !is BackPressConsumer || !currentFragment.consumeBackPress()) {
+      super.onBackPressed()
+    }
+  }
+
+  override fun onPictureInPictureModeChanged(
+    isInPictureInPictureMode: Boolean,
+    newConfig: Configuration?
+  ) {
+    super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+    val decorView = window.decorView
+    if (isInPictureInPictureMode) {
+      decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+          View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+          View.SYSTEM_UI_FLAG_FULLSCREEN
+    } else {
+      decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+    }
+  }
+}
+
+data class PlayerInfo(
+  val adapterPos: Int,
+  val viewTop: Int
+)
+
+// Implemented by host (Activity) to manage shared elements transition information.
+interface PlayerInfoHolder {
+
+  fun recordPlayerInfo(info: PlayerInfo?)
+
+  fun fetchPlayerInfo(): PlayerInfo?
 }

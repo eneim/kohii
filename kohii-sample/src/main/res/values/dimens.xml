@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+  <!-- Default screen margins, per the Android Design guidelines. -->
+  <dimen name="activity_horizontal_margin">16dp</dimen>
+  <dimen name="activity_vertical_margin">16dp</dimen>
+
+  <dimen name="text_margin">16dp</dimen>
+  <item name="fragmentContainer" type="id"/>
+  <item name="playerContainer" type="id"/>
+  <item name="playerView" type="id"/>
+  <item name="scrollView" type="id"/>
+  <item name="textContent" type="id"/>
+  <item name="videoThumb" type="id"/>
+
+  <dimen name="pager_padding">32dp</dimen>
+
+  <dimen name="pager_horizontal_space_base">8dp</dimen>
+  <dimen name="pager_horizontal_space">24dp</dimen>
+  <dimen name="pager_horizontal_space_x2">48dp</dimen>
+  <dimen name="pager_horizontal_space_x3">72dp</dimen>
+  <dimen name="pager_horizontal_space_x4">96dp</dimen>
+
+  <dimen name="overlay_collapse_max_width">420dp</dimen>
+
+  <integer name="column_number">1</integer>
+
+</resources>

@@ -22,17 +22,18 @@ import kotlinx.android.parcel.Parcelize
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate", "unused")
 @Parcelize
-data class PlaybackInfo(var resumeWindow: Int, var resumePosition: Long,
-    var volumeInfo: VolumeInfo) : Parcelable {
+data class PlaybackInfo(
+  var resumeWindow: Int,
+  var resumePosition: Long,
+  var volumeInfo: VolumeInfo
+) : Parcelable {
 
   constructor() : this(INDEX_UNSET, TIME_UNSET, VolumeInfo.SCRAP)
 
   companion object {
     const val TIME_UNSET = Long.MIN_VALUE + 1
     const val INDEX_UNSET = -1
-    val SCRAP = PlaybackInfo()
   }
 
   fun reset() {

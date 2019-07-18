@@ -16,65 +16,111 @@
 
 package kohii.v1
 
-import android.net.Uri
-import android.support.annotation.IntDef
+import android.graphics.Bitmap
+import androidx.annotation.IntDef
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
+import kohii.media.Media
 import kohii.media.PlaybackInfo
-import kohii.v1.exo.Config
+import kohii.media.VolumeInfo
+import java.util.concurrent.Future
 import kotlin.annotation.AnnotationRetention.SOURCE
 
 /**
+ * 2019/02/16
+ *
+ * A Playable should accept only one type of Target.
+ *
  * @author eneim (2018/06/24).
  */
-interface Playable {
+// TODO [20190430] Instead of defining output TYPE by parameter, consider to have "allows" method.
+interface Playable<OUTPUT : Any> {
 
   companion object {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
     const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
     const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
+
+    const val STATE_IDLE = Player.STATE_IDLE
+    const val STATE_BUFFERING = Player.STATE_BUFFERING
+    const val STATE_READY = Player.STATE_READY
+    const val STATE_END = Player.STATE_ENDED
+
+    internal val NO_TAG = Any()
   }
 
   @Retention(SOURCE)
   @IntDef(REPEAT_MODE_OFF, REPEAT_MODE_ONE, REPEAT_MODE_ALL)
   annotation class RepeatMode
 
-  fun bind(playerView: PlayerView): Playback<PlayerView>
+  @Retention(SOURCE)
+  @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)
+  annotation class State
 
-  /// Playback controller
+  val playbackState: Int
+
+  val tag: Any
+
+  val media: Media
+
+  @RepeatMode
+  var repeatMode: Int
+
+  val isPlaying: Boolean
+
+  val config: Config
+
+  fun <CONTAINER : Any> bind(
+    target: Target<CONTAINER, OUTPUT>,
+    config: Playback.Config = Playback.Config(),
+    cb: ((Playback<OUTPUT>) -> Unit)? = null
+  )
+
+  // Playback controller
+
+  fun prepare()
+
+  fun ensurePreparation()
 
   fun play()
 
   fun pause()
 
+  fun reset()
+
   fun release()
 
-  fun addVolumeChangeListener(listener: OnVolumeChangedListener)
+  fun seekTo(positionMs: Long)
 
-  fun removeVolumeChangeListener(listener: OnVolumeChangedListener)
+  fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 
-  fun setPlaybackInfo(playbackInfo: PlaybackInfo)
+  // Getter
+  val volumeInfo: VolumeInfo
 
-  fun getPlaybackInfo(): PlaybackInfo
+  // Setter/Getter
+  var playbackInfo: PlaybackInfo
 
-  // TODO [20180622] Should be hidden to User. Consider to make Playable abstract class
-  fun mayUpdateStatus(manager: Manager, active: Boolean)
+  fun onPlayerActive(
+    playback: Playback<OUTPUT>,
+    player: OUTPUT
+  )
 
-  data class Options(
-      val kohii: Kohii,
-      val uri: Uri,
-      val config: Config = Config.DEFAULT_CONFIG,
-      val playbackInfo: PlaybackInfo = PlaybackInfo.SCRAP,
-      val mediaType: String? = null,
-      val tag: Any? = null,
-      val prepareAlwaysLoad: Boolean = false,
-      @RepeatMode val repeatMode: Int = REPEAT_MODE_OFF
-  ) {
+  fun onPlayerInActive(
+    playback: Playback<OUTPUT>,
+    player: OUTPUT?
+  )
 
-    fun asPlayable(): Playable {
-      return this.kohii.getPlayable(Bundle(this.uri, this))
-    }
-  }
+  fun onAdded(playback: Playback<*>) {}
 
-  data class Bundle(val uri: Uri, val options: Options)
+  fun onActive(playback: Playback<*>) {}
+
+  fun onInActive(playback: Playback<*>) {}
+
+  fun onRemoved(playback: Playback<*>) {}
+
+  // data class for copying convenience.
+  data class Config(
+    val tag: String? = null,
+    val preLoad: Boolean = false,
+    val cover: Future<Bitmap?>? = null
+  )
 }

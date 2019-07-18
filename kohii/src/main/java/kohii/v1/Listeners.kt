@@ -20,6 +20,8 @@ import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.audio.AudioListener
 import com.google.android.exoplayer2.metadata.Metadata
 import com.google.android.exoplayer2.metadata.MetadataOutput
 import com.google.android.exoplayer2.source.TrackGroupArray
@@ -28,90 +30,173 @@ import com.google.android.exoplayer2.text.TextOutput
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.video.VideoListener
 import kohii.media.VolumeInfo
+import java.util.concurrent.CopyOnWriteArraySet
 
 /**
  * @author eneim (2018/06/24).
  */
 interface PlaybackEventListener {
 
-  fun onBuffering()  // ExoPlayer state: 2
+  /** Called when a Video is rendered on the Surface for the first time */
+  fun onFirstFrameRendered(playback: Playback<*>) {}
 
-  fun onPlaying()  // ExoPlayer state: 3, play flag: true
+  /**
+   * Called when buffering status of the playback is changed.
+   *
+   * @param playWhenReady true if the Video will start playing once buffered enough, false otherwise.
+   */
+  fun onBuffering(
+    playback: Playback<*>,
+    playWhenReady: Boolean
+  ) {
+  } // ExoPlayer state: 2
 
-  fun onPaused()   // ExoPlayer state: 3, play flag: false
+  /** Called when the Video starts playing */
+  fun onPlay(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: true
 
-  fun onCompleted()  // ExoPlayer state: 4
+  /** Called when the Video is paused */
+  fun onPause(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: false
+
+  /** Called when the Video finishes its playback */
+  fun onEnd(playback: Playback<*>) {} // ExoPlayer state: 4
+
+  /** Called when right before Playback's playInternal() method is called. Maybe called multiple times */
+  fun beforePlay(playback: Playback<*>) {}
+
+  /** Called when right after Playback's pauseInternal() method is called. Maybe called multiple times */
+  fun afterPause(playback: Playback<*>) {}
 }
 
-interface OnVolumeChangedListener {
+interface PlayerEventListener : Player.EventListener,
+    VideoListener,
+    AudioListener,
+    TextOutput,
+    MetadataOutput {
+  override fun onCues(cues: MutableList<Cue>?) {
+  }
+
+  override fun onMetadata(metadata: Metadata?) {
+  }
+}
+
+interface VolumeChangedListener {
 
   fun onVolumeChanged(volumeInfo: VolumeInfo)
 }
 
-interface OnErrorListener {
+interface ErrorListener {
 
   fun onError(error: Exception)
 }
 
-interface PlayerEventListener : Player.EventListener, VideoListener, TextOutput, MetadataOutput
+class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(), PlayerEventListener {
 
-abstract class DefaultEventListener : PlayerEventListener {
   override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
-
+    this.forEach { it.onPlaybackParametersChanged(playbackParameters) }
   }
 
   override fun onSeekProcessed() {
-
+    this.forEach { it.onSeekProcessed() }
   }
 
-  override fun onTracksChanged(trackGroups: TrackGroupArray?,
-      trackSelections: TrackSelectionArray?) {
-
+  override fun onTracksChanged(
+    trackGroups: TrackGroupArray?,
+    trackSelections: TrackSelectionArray?
+  ) {
+    this.forEach { it.onTracksChanged(trackGroups, trackSelections) }
   }
 
   override fun onPlayerError(error: ExoPlaybackException?) {
-
+    this.forEach { it.onPlayerError(error) }
   }
 
   override fun onLoadingChanged(isLoading: Boolean) {
-
+    this.forEach { it.onLoadingChanged(isLoading) }
   }
 
   override fun onPositionDiscontinuity(reason: Int) {
-
+    this.forEach { it.onPositionDiscontinuity(reason) }
   }
 
   override fun onRepeatModeChanged(repeatMode: Int) {
-
+    this.forEach { it.onRepeatModeChanged(repeatMode) }
   }
 
   override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-
+    this.forEach { it.onShuffleModeEnabledChanged(shuffleModeEnabled) }
   }
 
-  override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
-
+  override fun onTimelineChanged(
+    timeline: Timeline?,
+    manifest: Any?,
+    reason: Int
+  ) {
+    this.forEach { it.onTimelineChanged(timeline, manifest, reason) }
   }
 
-  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-
+  override fun onPlayerStateChanged(
+    playWhenReady: Boolean,
+    playbackState: Int
+  ) {
+    this.forEach { it.onPlayerStateChanged(playWhenReady, playbackState) }
   }
 
-  override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int,
-      pixelWidthHeightRatio: Float) {
-
+  override fun onVideoSizeChanged(
+    width: Int,
+    height: Int,
+    unappliedRotationDegrees: Int,
+    pixelWidthHeightRatio: Float
+  ) {
+    this.forEach {
+      it.onVideoSizeChanged(width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
+    }
   }
 
   override fun onRenderedFirstFrame() {
-
+    this.forEach { it.onRenderedFirstFrame() }
   }
 
   override fun onCues(cues: MutableList<Cue>?) {
-
+    this.forEach { it.onCues(cues) }
   }
 
   override fun onMetadata(metadata: Metadata?) {
-
+    this.forEach { it.onMetadata(metadata) }
   }
 
+  override fun onAudioAttributesChanged(audioAttributes: AudioAttributes?) {
+    this.forEach { it.onAudioAttributesChanged(audioAttributes) }
+  }
+
+  override fun onVolumeChanged(volume: Float) {
+    this.forEach { it.onVolumeChanged(volume) }
+  }
+
+  override fun onAudioSessionId(audioSessionId: Int) {
+    this.forEach { it.onAudioSessionId(audioSessionId) }
+  }
+}
+
+class VolumeChangedListeners : CopyOnWriteArraySet<VolumeChangedListener>(), VolumeChangedListener {
+  override fun onVolumeChanged(volumeInfo: VolumeInfo) {
+    this.forEach { it.onVolumeChanged(volumeInfo) }
+  }
+}
+
+class ErrorListeners : CopyOnWriteArraySet<ErrorListener>(), ErrorListener {
+  override fun onError(error: Exception) {
+    this.forEach { it.onError(error) }
+  }
+}
+
+interface OnSelectionCallback {
+
+  fun onSelection(playbacks: Collection<Playback<*>>)
+}
+
+internal class OnSelectionCallbacks : CopyOnWriteArraySet<OnSelectionCallback>(),
+    OnSelectionCallback {
+  override fun onSelection(playbacks: Collection<Playback<*>>) {
+    this.forEach { it.onSelection(playbacks) }
+  }
 }

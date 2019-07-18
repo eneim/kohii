@@ -14,8 +14,26 @@
   ~ limitations under the License.
   -->
 
-<!--suppress XmlUnusedNamespaceDeclaration -->
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="kohii.v1">
+
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+  <application>
+    <receiver
+        android:name=".ScreenStateReceiver"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.USER_PRESENT"/>
+        <action android:name="android.intent.action.SCREEN_ON"/>
+        <action android:name="android.intent.action.SCREEN_OFF"/>
+      </intent-filter>
+    </receiver>
+
+    <service
+        android:name="kohii.internal.HeadlessPlaybackService"
+        android:enabled="true"
+        android:exported="false"/>
+  </application>
 </manifest>
