@@ -19,14 +19,14 @@ Kohii is a high level Video playback library, built from the experience creating
 
 |Automatic playback|Background playback|Playback continuity (Seamless fullscreen)|
 | :--- | :--- | :--- |
-|<img src="./art/kohii_demo_2.gif" height="400"/>|<img src="./art/kohii_demo_1.gif" height="400"/>|<img src="./art/kohii_demo_3.gif" height="400"/>|
+|<img src="./art/kohii_demo_2.gif" width="180" height="390"/>|<img src="./art/kohii_demo_1.gif" width="180" height="390"/>|<img src="./art/kohii_demo_3.gif" width="390" height="390"/>|
 
 ## Setup
 
 Add to your module's build.gradle dependencies
 
 ```groovy
-implementation "im.ene.kohii:kohii:1.0.0.2906-A06"
+implementation "im.ene.kohii:kohii:1.0.0.2906-A10"
 implementation "com.google.android.exoplayer:exoplayer:2.9.6"
 ```
 
