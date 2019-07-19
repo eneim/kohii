@@ -115,7 +115,7 @@ dependencies {
   // androidTestImplementation 'com.google.truth:truth:0.42'
 
   // Espresso dependencies
-  androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+  androidTestImplementation Libs.AndroidX.Test.espressoCore
   // androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.1'
   // androidTestImplementation 'androidx.test.espresso:espresso-intents:3.1.1'
   // androidTestImplementation 'androidx.test.espresso:espresso-accessibility:3.1.1'

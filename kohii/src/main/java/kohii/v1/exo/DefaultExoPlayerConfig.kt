@@ -25,7 +25,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 object DefaultExoPlayerConfig {
 
   /** [Player.setPlaybackParameters] */
-  val PLAYBACK_PARAMS = PlaybackParameters.DEFAULT
+  val PLAYBACK_PARAMS: PlaybackParameters = PlaybackParameters.DEFAULT
 
   /** [DefaultTrackSelector.setParameters] */
   val SELECTOR_PARAMS = DefaultTrackSelector.Parameters.DEFAULT

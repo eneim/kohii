@@ -25,6 +25,7 @@ import kohii.media.PlaybackInfo
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Controller
+import kohii.v1.exo.DefaultExoPlayerConfig
 import java.util.concurrent.Future
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -41,7 +42,7 @@ open class Binder<RENDERER : Any> internal constructor(
     var cover: Future<Bitmap?>? = null,
       // Playback.Config
     @RepeatMode var repeatMode: Int = Playable.REPEAT_MODE_OFF,
-    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
+    var parameters: PlaybackParameters = DefaultExoPlayerConfig.PLAYBACK_PARAMS,
     var delay: Int = 0,
       // Indicator to judge if a Playback should be played or not.
       // This doesn't make sure that it will be played, it just to make the Playback be a candidate
