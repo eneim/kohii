@@ -21,6 +21,12 @@ Kohii is a high level Video playback library, built from the experience creating
 | :--- | :--- | :--- |
 |<img src="./art/kohii_demo_2.gif" width="180" height="390"/>|<img src="./art/kohii_demo_1.gif" width="180" height="390"/>|<img src="./art/kohii_demo_3.gif" width="390" height="390"/>|
 
+<p float="left">
+  <img src="./art/kohii_demo_2.gif" width="180" height="390"/>
+  <img src="./art/kohii_demo_1.gif" width="180" height="390"/>
+  <img src="./art/kohii_demo_3.gif" width="390" height="390"/>
+</p>
+
 ## Setup
 
 Add to your module's build.gradle dependencies
