@@ -58,8 +58,9 @@ open class LazyViewPlayback<RENDERER : Any>(
 
   override fun beforePlayInternal() {
     super.beforePlayInternal()
-    if (_renderer == null) _renderer =
-      rendererPool.acquireRenderer(this, this.boxedTarget, playable.media)
+    if (_renderer == null) {
+      _renderer = rendererPool.acquireRenderer(this, this.boxedTarget, playable.media)
+    }
   }
 
   override fun afterPauseInternal() {

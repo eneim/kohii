@@ -36,3 +36,4 @@
 /.scannerwork/.sonar_lock
 /buildSrc/build
 /buildSrc/.gradle
+/.idea/markdown-exported-files.xml

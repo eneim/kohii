@@ -78,7 +78,7 @@ fun Player.removeEventListener(listener: PlayerEventListener?) {
 
 inline fun <reified RENDERER : Any> Rebinder<*>?.safeCast(): Rebinder<RENDERER>? {
   @Suppress("UNCHECKED_CAST")
-  if (this?.rendererType !== RENDERER::class.java) return this as Rebinder<RENDERER>
+  if (this?.rendererType === RENDERER::class.java) return this as Rebinder<RENDERER>
   return null
 }
 
