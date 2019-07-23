@@ -40,12 +40,11 @@ import kohii.v1.sample.svg.GlideApp
 @Suppress("MemberVisibilityCanBePrivate")
 internal class VideoItemHolder(
   inflater: LayoutInflater,
-  layoutRes: Int,
   parent: ViewGroup,
   private val clickListener: OnClickListener,
   private val kohii: Kohii,
   private val host: VideoItemsAdapter
-) : BaseViewHolder(inflater, layoutRes, parent),
+) : BaseViewHolder(inflater, R.layout.holder_video_text_overlay, parent),
     Playback.Callback,
     PlaybackEventListener,
     OnClickListener {
@@ -57,7 +56,7 @@ internal class VideoItemHolder(
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
-  val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
+  val playerViewContainer = itemView.findViewById(R.id.playerViewContainer) as ViewGroup
   // val playerContainer = itemView.findViewById(R.id.playerContainer) as View
 
   var playback: Playback<PlayerView>? = null
@@ -73,7 +72,7 @@ internal class VideoItemHolder(
     get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
 
   // Trick
-  val rebinder: Rebinder?
+  val rebinder: Rebinder<PlayerView>?
     get() = this.tagKey?.let { Rebinder(it, PlayerView::class.java) }
 
   override fun bind(item: Any?) {
@@ -100,7 +99,7 @@ internal class VideoItemHolder(
       if (host.selectionTracker?.isSelected(rebinder) == true) {
         this.playback = null
       } else {
-        binder.bind(ViewTarget(playerView)) { pk ->
+        binder.bind(ViewTarget(playerViewContainer)) { pk ->
           pk.addPlaybackEventListener(this@VideoItemHolder)
           this@VideoItemHolder.playback = pk
         }
@@ -133,8 +132,8 @@ internal class VideoItemHolder(
 
   // Selection
 
-  fun getItemDetails(): ItemDetails<Rebinder> {
-    return object : ItemDetails<Rebinder>() {
+  fun getItemDetails(): ItemDetails<Rebinder<*>> {
+    return object : ItemDetails<Rebinder<*>>() {
       override fun getSelectionKey() = rebinder
 
       override fun getPosition() = adapterPosition

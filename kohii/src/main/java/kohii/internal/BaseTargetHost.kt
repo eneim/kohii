@@ -27,20 +27,22 @@ import kohii.media.VolumeInfo
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import kohii.v1.TargetHost
-import java.util.WeakHashMap
-import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.LazyThreadSafetyMode.NONE
 
-internal abstract class BaseTargetHost<V : Any>(
+abstract class BaseTargetHost<V : Any>(
   protected val actualHost: V,
-  manager: PlaybackManager
-) : TargetHost(actualHost, manager), View.OnAttachStateChangeListener, View.OnLayoutChangeListener {
+  manager: PlaybackManager,
+  selector: Selector? = null
+) : TargetHost(actualHost, manager, selector),
+    View.OnAttachStateChangeListener,
+    View.OnLayoutChangeListener {
 
-  private val targets = WeakHashMap<View, Any>()
+  private val targets = HashMap<Any, Any>()
 
-  override val lock = AtomicBoolean(false)
+  override var lock = false
   override var volumeInfo: VolumeInfo = VolumeInfo()
 
-  private val lazyHashCode by lazy {
+  private val lazyHashCode by lazy(NONE) {
     var result = host.hashCode()
     result = 31 * result + manager.hashCode()
     result
@@ -72,21 +74,23 @@ internal abstract class BaseTargetHost<V : Any>(
     this.targets.clear()
   }
 
-  override fun <T> attachTarget(target: T) {
-    if (target is View && !targets.containsKey(target)) {
-      if (ViewCompat.isAttachedToWindow(target)) {
-        this.onViewAttachedToWindow(target)
+  override fun <T : Any> attachTarget(target: T) {
+    if (targets.put(target, PRESENT) == null) { // null --> no previous map
+      if (target is View) {
+        if (ViewCompat.isAttachedToWindow(target)) {
+          this.onViewAttachedToWindow(target)
+        }
+        target.addOnAttachStateChangeListener(this)
       }
-      target.addOnAttachStateChangeListener(this)
-      targets[target] = PRESENT
     }
   }
 
-  override fun <T> detachTarget(target: T) {
-    if (target is View && targets.containsKey(target)) {
-      target.removeOnAttachStateChangeListener(this)
-      target.removeOnLayoutChangeListener(this)
-      targets.remove(target)
+  override fun <T : Any> detachTarget(target: T) {
+    if (targets.remove(target) != null) { // non-null --> was mapped with a value
+      if (target is View) {
+        target.removeOnAttachStateChangeListener(this)
+        target.removeOnLayoutChangeListener(this)
+      }
     }
   }
 
@@ -116,7 +120,7 @@ internal abstract class BaseTargetHost<V : Any>(
       val sorted = grouped.getValue(true)
           .sortedWith(comparators.getValue(orientation))
       val manuallyStarted =
-        sorted.firstOrNull { playback -> manager.kohii.manualPlayableState[playback.playable] == true }
+        sorted.firstOrNull { playback -> manager.kohii.manualPlayableRecord[playback.playable] == true }
       return@lazy listOfNotNull(manuallyStarted ?: sorted.firstOrNull())
     }
 

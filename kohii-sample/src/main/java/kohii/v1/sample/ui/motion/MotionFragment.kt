@@ -22,6 +22,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.databinding.DataBindingUtil
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.safeCast
 import kohii.v1.Kohii
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
@@ -82,8 +84,8 @@ class MotionFragment : BaseFragment(), Presenter {
     container: View,
     video: Video
   ) {
-    val rebinder = container.getTag(R.id.motion_view_tag)
-    (rebinder as? Rebinder)?.also {
+    val rebinder = (container.getTag(R.id.motion_view_tag) as Rebinder<*>?).safeCast<PlayerView>()
+    rebinder?.also {
       startActivity(
           PlayerActivity.createIntent(
               requireContext(),

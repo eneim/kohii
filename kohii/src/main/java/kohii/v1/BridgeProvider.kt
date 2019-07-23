@@ -18,7 +18,7 @@ package kohii.v1
 
 import kohii.media.Media
 
-interface BridgeProvider<PLAYER : Any> : Cleanable {
+interface BridgeProvider<PLAYER : Any> {
 
   fun provideBridge(
     kohii: Kohii,

@@ -17,6 +17,7 @@
 package kohii.media
 
 import android.net.Uri
+import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 /**
@@ -27,7 +28,7 @@ open class MediaItem(
   override val uri: Uri,
   override val type: String? = null,
   override val mediaDrm: MediaDrm? = null
-) : Media {
+) : Media, Parcelable {
 
   constructor(
     url: String,

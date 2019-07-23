@@ -22,3 +22,9 @@ internal interface HeadlessPlayback {
 
   fun dismiss()
 }
+
+interface Prioritized : Comparable<Prioritized> {
+  override fun compareTo(other: Prioritized): Int {
+    return 0
+  }
+}

@@ -62,7 +62,8 @@ class PlaybackManagerGroup(
   companion object {
     val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
     val defaultSelector: (Collection<Playback<*>>) -> Collection<Playback<*>> =
-      { listOfNotNull(it.firstOrNull()) }
+      // { listOfNotNull(it.firstOrNull()) }
+      { it }
   }
 
   internal fun attachPlaybackManager(playbackManager: PlaybackManager): Boolean {
@@ -117,7 +118,7 @@ class PlaybackManagerGroup(
     playbackDispatcher.onDetached()
     selection.clear()
     if (!activity.isChangingConfigurations) {
-      kohii.manualPlayableState.clear()
+      kohii.manualPlayableRecord.clear()
     }
     // Eagerly detach all PlaybackManager if there is any.
     // Each operation will also modify the related Set.

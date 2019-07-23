@@ -24,7 +24,7 @@ import kohii.media.MediaItem
 abstract class PlayableCreator<RENDERER : Any>(
   protected val kohii: Kohii,
   internal val rendererType: Class<RENDERER>
-) : Cleanable {
+) {
 
   fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
 

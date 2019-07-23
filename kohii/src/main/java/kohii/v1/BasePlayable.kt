@@ -96,7 +96,8 @@ abstract class BasePlayable<RENDERER : Any>(
     cb?.invoke(result)
   }
 
-  override val tag: Any = config.tag ?: NO_TAG
+  override val tag: Any
+    get() = config.tag ?: NO_TAG
 
   override val playbackState: Int
     get() = bridge.playbackState

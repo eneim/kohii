@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-package kohii.internal
+plugins {
+  `kotlin-dsl`
+}
 
-import android.content.Context
-import android.util.AttributeSet
-import android.view.View
-import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
-import kohii.Draft
-
-@Suppress("unused")
-@Draft("2019/02/16")
-class NestedScrollBehavior<V : View> : Behavior<V> {
-
-  internal constructor() : super()
-
-  internal constructor(
-    context: Context?,
-    attrs: AttributeSet?
-  ) : super(context, attrs)
+repositories {
+  jcenter()
 }

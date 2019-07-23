@@ -23,6 +23,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.forceCast
 import kohii.v1.Kohii
 import kohii.v1.Rebinder
 import kohii.v1.exo.DefaultControlDispatcher
@@ -40,7 +42,7 @@ class OrientedFullscreenFragment : BaseFragment() {
     private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
 
     fun newInstance(
-      rebinder: Rebinder,
+      rebinder: Rebinder<PlayerView>,
       initData: InitData
     ): OrientedFullscreenFragment {
       val bundle = Bundle().also {
@@ -95,11 +97,11 @@ class OrientedFullscreenFragment : BaseFragment() {
 
     val kohii = Kohii[this]
     val manager = kohii.register(this, playerContainer)
-    val rebinder = requireArguments().getParcelable<Rebinder>(KEY_REBINDER)
+    val rebinder =
+      (requireArguments().getParcelable(KEY_REBINDER) as Rebinder<*>).forceCast<PlayerView>()
 
-    rebinder
-        ?.with { controller = DefaultControlDispatcher(manager, playerView) }
-        ?.rebind(kohii, playerView)
+    rebinder.with { controller = DefaultControlDispatcher(manager, playerView) }
+        .rebind(kohii, playerView)
 
     (requireActivity() as AppCompatActivity).also {
       if (it.windowManager.defaultDisplay.rotation % 2 == 1) {

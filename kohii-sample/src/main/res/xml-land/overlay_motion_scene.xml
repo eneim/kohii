@@ -26,8 +26,7 @@
         motion:layout_constraintBottom_toBottomOf="parent"
         motion:layout_constraintEnd_toEndOf="parent"
         motion:layout_constraintStart_toStartOf="parent"
-        motion:layout_constraintTop_toTopOf="parent"
-        />
+        motion:layout_constraintTop_toTopOf="parent" />
 
     <Constraint
         android:id="@id/video_player_frame"
@@ -37,7 +36,7 @@
         motion:layout_constraintDimensionRatio="16:9"
         motion:layout_constraintEnd_toEndOf="@id/dummy_frame"
         motion:layout_constraintStart_toStartOf="@id/dummy_frame"
-        motion:layout_constraintTop_toTopOf="@id/dummy_frame"/>
+        motion:layout_constraintTop_toTopOf="@id/dummy_frame" />
 
     <Constraint
         android:id="@+id/video_player_container"
@@ -46,8 +45,7 @@
         motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
         motion:layout_constraintLeft_toLeftOf="@id/video_player_frame"
         motion:layout_constraintRight_toRightOf="@id/video_player_frame"
-        motion:layout_constraintTop_toTopOf="@id/video_player_frame"
-        />
+        motion:layout_constraintTop_toTopOf="@id/video_player_frame" />
 
     <Constraint
         android:id="@id/video_title_frame"
@@ -57,7 +55,7 @@
         motion:layout_constraintBottom_toBottomOf="@id/dummy_frame"
         motion:layout_constraintEnd_toEndOf="@id/dummy_frame"
         motion:layout_constraintStart_toStartOf="@id/dummy_frame"
-        motion:layout_constraintTop_toBottomOf="@id/dummy_frame"/>
+        motion:layout_constraintTop_toBottomOf="@id/dummy_frame" />
 
     <Constraint
         android:id="@id/video_overlay_title"
@@ -66,7 +64,7 @@
         motion:layout_constraintBottom_toBottomOf="@id/video_title_frame"
         motion:layout_constraintEnd_toEndOf="@id/video_title_frame"
         motion:layout_constraintStart_toStartOf="@id/video_title_frame"
-        motion:layout_constraintTop_toTopOf="@id/video_title_frame"/>
+        motion:layout_constraintTop_toTopOf="@id/video_title_frame" />
 
   </ConstraintSet>
 
@@ -76,46 +74,44 @@
         android:id="@+id/dummy_frame"
         android:layout_width="0dp"
         android:layout_height="64dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         motion:layout_constraintEnd_toEndOf="parent"
         motion:layout_constraintStart_toStartOf="parent"
-        motion:layout_constraintTop_toTopOf="parent"
-        />
+        motion:layout_constraintTop_toTopOf="parent" />
 
     <Constraint
         android:id="@id/video_player_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
         motion:layout_constraintBottom_toBottomOf="@id/dummy_frame"
-        motion:layout_constraintEnd_toEndOf="@id/dummy_frame"
+        motion:layout_constraintDimensionRatio="H,1:2.4"
         motion:layout_constraintStart_toStartOf="@id/dummy_frame"
-        motion:layout_constraintTop_toTopOf="@id/dummy_frame"/>
+        motion:layout_constraintTop_toTopOf="@id/dummy_frame" />
 
     <Constraint
         android:id="@id/video_player_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="2dp"
         android:layout_marginStart="2dp"
         android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
         motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
-        motion:layout_constraintDimensionRatio="H,1:2.4"
+        motion:layout_constraintEnd_toEndOf="@id/video_player_frame"
         motion:layout_constraintStart_toStartOf="@id/video_player_frame"
-        motion:layout_constraintTop_toTopOf="@id/video_player_frame"
-        />
+        motion:layout_constraintTop_toTopOf="@id/video_player_frame" />
 
     <Constraint
         android:id="@id/video_title_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         motion:layout_constraintEnd_toEndOf="@id/dummy_frame"
         motion:layout_constraintStart_toStartOf="@id/dummy_frame"
-        motion:layout_constraintTop_toBottomOf="@id/video_player_frame"/>
+        motion:layout_constraintTop_toBottomOf="@id/video_player_frame" />
 
     <Constraint
         android:id="@id/video_overlay_title"
@@ -125,8 +121,7 @@
         motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
         motion:layout_constraintEnd_toEndOf="@id/video_player_frame"
         motion:layout_constraintStart_toStartOf="@id/video_player_frame"
-        motion:layout_constraintTop_toBottomOf="@id/video_player_frame"
-        />
+        motion:layout_constraintTop_toBottomOf="@id/video_player_frame" />
 
     <!--<Constraint android:id="@id/image_play">-->
     <!--<PropertySet motion:alpha="1"/>-->
@@ -143,43 +138,39 @@
       motion:constraintSetEnd="@id/end"
       motion:constraintSetStart="@id/start"
       motion:duration="250"
-      motion:interpolator="easeOut">
+      motion:motionInterpolator="easeOut">
 
     <KeyFrameSet>
 
       <KeyPosition
           motion:curveFit="linear"
           motion:framePosition="90"
+          motion:motionTarget="@id/video_player_container"
           motion:percentWidth="0"
-          motion:percentX="0"
-          motion:target="@id/video_player_container"
-          />
+          motion:percentX="0" />
 
       <KeyPosition
           motion:curveFit="linear"
           motion:framePosition="90"
-          motion:percentWidth="0"
-          motion:target="@id/video_player_frame"
-          />
+          motion:motionTarget="@id/video_player_frame"
+          motion:percentWidth="0" />
 
       <KeyPosition
           motion:curveFit="linear"
           motion:framePosition="90"
-          motion:percentWidth="0"
-          motion:target="@id/dummy_frame"
-          />
+          motion:motionTarget="@id/dummy_frame"
+          motion:percentWidth="0" />
 
       <KeyPosition
           motion:curveFit="linear"
           motion:framePosition="90"
-          motion:percentWidth="0"
-          motion:target="@id/video_title_frame"
-          />
+          motion:motionTarget="@id/video_title_frame"
+          motion:percentWidth="0" />
 
       <KeyAttribute
           android:alpha="0"
           motion:framePosition="75"
-          motion:target="@id/video_overlay_title"/>
+          motion:motionTarget="@id/video_overlay_title" />
 
       <!--<KeyAttribute-->
       <!--android:alpha="0.10"-->

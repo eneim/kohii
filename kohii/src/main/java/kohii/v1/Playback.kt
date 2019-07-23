@@ -43,7 +43,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
 ) : PlayerEventListener {
 
   companion object {
-    const val TAG = "Kohii::PB"
+    const val TAG = BuildConfig.LIBRARY_PACKAGE_NAME
     const val DELAY_INFINITE = -1L
 
     val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
@@ -345,20 +345,18 @@ abstract class Playback<RENDERER : Any> internal constructor(
     fun onRemoved(playback: Playback<*>) {}
   }
 
-  // If startBySystem returns true, then pauseBySystem will be ignored. See matrix below
-  // startBySystem = true then pauseBySystem will be true
-  // final flag = startBySystem || pauseBySystem
   interface Controller {
     // false = full manual.
     // true = half manual.
     // When true:
-    // - If user starts a play, it will not be paused unless Playback is not visible enough (controlled by Config)
-    // - If user pauses a playing Playback, it will not be played unless user resume it. Work with config change.
-    // - If user scrolls so that a Playback is not visible enough, system will pause the Playback.
-    // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously playing,
-    // or pause it if it was paused before (= do nothing).
+    // - If user starts a Playback, it will not be paused until Playback is not visible enough (controlled by Playback.Config), or user starts other Playback (priority override).
+    // - If user pauses a Playback, it will not be played until user resumes it.
+    // - If user scrolls a Playback so that a it is not visible enough, system will pause the Playback.
+    // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously played by User,
+    // or pause it if it was paused by User before (= do nothing).
     fun pauseBySystem(): Boolean = true
 
+    // - Allow System to start a Playback.
     fun startBySystem(): Boolean = false
   }
 }

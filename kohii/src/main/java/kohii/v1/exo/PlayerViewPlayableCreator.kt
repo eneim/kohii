@@ -16,22 +16,14 @@
 
 package kohii.v1.exo
 
-import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.BridgeProvider
-import kohii.v1.DefaultRendererPool
 import kohii.v1.Kohii
-import kohii.v1.LazyViewPlayback
 import kohii.v1.Playable
 import kohii.v1.Playable.Config
 import kohii.v1.PlayableCreator
-import kohii.v1.Playback
 import kohii.v1.PlaybackCreator
-import kohii.v1.PlaybackManager
-import kohii.v1.RendererCreator
-import kohii.v1.Target
-import kohii.v1.ViewPlayback
 
 /**
  * @author eneim (2019/03/14)
@@ -43,60 +35,16 @@ import kohii.v1.ViewPlayback
  */
 class PlayerViewPlayableCreator(
   kohii: Kohii,
-  private val rendererCreator: RendererCreator<PlayerView> = PlayerViewCreator(),
-  bridgeCreatorFactory: (Kohii) -> BridgeProvider<PlayerView> = { kohii.defaultBridgeProvider }
-) : PlayableCreator<PlayerView>(kohii, PlayerView::class.java),
-    PlaybackCreator<PlayerView> {
-
-  private val bridgeProvider = bridgeCreatorFactory.invoke(kohii)
+  private val bridgeProvider: BridgeProvider<PlayerView>,
+  private val playbackCreator: PlaybackCreator<PlayerView> =
+    PlayerViewPlaybackCreator(kohii, PlayerViewCreator())
+) : PlayableCreator<PlayerView>(kohii, PlayerView::class.java) {
 
   override fun createPlayable(
     kohii: Kohii,
     media: Media,
     config: Config
   ): Playable<PlayerView> {
-    return PlayerViewPlayable(kohii, media, config, bridgeProvider, this)
-  }
-
-  override fun <CONTAINER : Any> createPlayback(
-    manager: PlaybackManager,
-    target: Target<CONTAINER, PlayerView>,
-    playable: Playable<PlayerView>,
-    config: Playback.Config
-  ): Playback<PlayerView> {
-    return when (val container = target.container) {
-      is PlayerView -> {
-        ViewPlayback(
-            kohii,
-            playable,
-            manager,
-            container,
-            config
-        )
-      }
-
-      is ViewGroup -> {
-        val rendererPool =
-          manager.fetchRendererPool(PlayerView::class.java)
-              ?: DefaultRendererPool(kohii, creator = rendererCreator).also {
-                manager.registerRendererPool(PlayerView::class.java, it)
-              }
-
-        @Suppress("UNCHECKED_CAST")
-        LazyViewPlayback(
-            kohii,
-            playable,
-            manager,
-            boxedTarget = target as Target<ViewGroup, PlayerView>,
-            options = config,
-            rendererPool = rendererPool
-        )
-      }
-      else -> throw IllegalArgumentException("Unsupported container type: ${container::javaClass}")
-    }
-  }
-
-  override fun cleanUp() {
-    bridgeProvider.cleanUp()
+    return PlayerViewPlayable(kohii, media, config, bridgeProvider, playbackCreator)
   }
 }
