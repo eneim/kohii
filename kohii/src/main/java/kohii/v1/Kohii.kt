@@ -81,7 +81,7 @@ class Kohii(context: Context) : PlayableManager {
   // Store playable whose tag is available. Non tagged playable are always ignored.
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Pair<Playable<*>, Class<*>>>()
   // In critical situation, this map may hold a lot of entries, so use HashMap.
-  // !Playable Tag is globally unique.
+  // REQUIRED: Playable Tag is globally unique.
   internal val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
   private val headlessPlayback by lazy(NONE) {
