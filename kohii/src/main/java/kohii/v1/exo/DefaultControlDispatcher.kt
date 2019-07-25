@@ -77,7 +77,7 @@ open class DefaultControlDispatcher(
     reset: Boolean
   ): Boolean {
     return manager.findPlaybackForOutputHolder(playerView)?.let {
-      it.release()
+      it.release() // TODO double check this.
       true
     } ?: false
   }
