@@ -31,7 +31,6 @@ import com.google.android.exoplayer2.drm.UnsupportedDrmException.REASON_UNSUPPOR
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.util.Util.getDrmUuid
 import kohii.media.Media
-import kohii.v1.Cleanable
 import kohii.v1.R
 import java.util.UUID
 import kotlin.LazyThreadSafetyMode.NONE
@@ -42,7 +41,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 class DefaultDrmSessionManagerProvider(
   private val context: Context,
   private val httpDataSourceFactory: HttpDataSource.Factory
-) : DrmSessionManagerProvider, Cleanable {
+) : DrmSessionManagerProvider {
 
   private val cache = lazy(NONE) { HashMap<DrmSessionManager<*>, ExoMediaDrm<*>>() }
 
