@@ -18,11 +18,11 @@ package kohii.v1
 
 import kohii.media.Media
 
-interface BridgeProvider<PLAYER : Any> {
+interface BridgeProvider<RENDERER : Any> {
 
   fun provideBridge(
     kohii: Kohii,
     media: Media,
     config: Playable.Config
-  ): Bridge<PLAYER>
+  ): Bridge<RENDERER>
 }
