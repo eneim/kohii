@@ -17,12 +17,14 @@
 package kohii.v1.exo
 
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.trackselection.TrackSelector
 import kohii.media.Media
 import kohii.v1.Cleanable
 
 /**
  * @author eneim (2018/10/27).
+ *
+ * A Pool to store unused Player instance. As initializing a Player is relatively expensive,
+ * we try to cache them for reuse.
  */
 interface ExoPlayerProvider : Cleanable {
 
@@ -32,6 +34,4 @@ interface ExoPlayerProvider : Cleanable {
     media: Media,
     player: Player
   )
-
-  val trackSelector: TrackSelector
 }

@@ -16,9 +16,12 @@
 
 package kohii.v1.exo
 
+import android.content.Context
+import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 
 class DefaultBandwidthMeterFactory : BandwidthMeterFactory {
 
-  override fun createBandwidthMeter() = DefaultBandwidthMeter()
+  override fun createBandwidthMeter(context: Context): BandwidthMeter =
+    DefaultBandwidthMeter.Builder(context).build()
 }

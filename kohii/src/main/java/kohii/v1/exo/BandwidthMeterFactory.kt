@@ -16,9 +16,10 @@
 
 package kohii.v1.exo
 
+import android.content.Context
 import com.google.android.exoplayer2.upstream.BandwidthMeter
 
 interface BandwidthMeterFactory {
 
-  fun createBandwidthMeter(): BandwidthMeter
+  fun createBandwidthMeter(context: Context): BandwidthMeter
 }
