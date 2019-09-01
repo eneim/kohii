@@ -29,7 +29,7 @@ import kohii.v1.sample.DemoApp
 open class BaseFragment : Fragment() {
 
   companion object {
-    const val videoUrl = "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8"
+    const val videoUrl = "https://content.jwplatform.com/manifests/146UwF4L.m3u8"
   }
 
   @Suppress("MemberVisibilityCanBePrivate")
