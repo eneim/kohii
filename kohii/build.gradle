@@ -59,6 +59,10 @@ android {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
+
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
 }
 
 configurations {
@@ -103,14 +107,14 @@ dependencies {
   // Common library
   androidTestImplementation Libs.Kotlin.stdlibJdk7
   androidTestImplementation Libs.AndroidX.recyclerView
-  androidTestImplementation Libs.AndroidX.Test.core
 
   // AndroidJUnitRunner and JUnit Rules
+  androidTestImplementation Libs.AndroidX.Test.core
   androidTestImplementation Libs.AndroidX.Test.runner
   androidTestImplementation Libs.AndroidX.Test.rules
 
   // Assertions
-  androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+  androidTestImplementation Libs.Common.junitExt
   // androidTestImplementation 'androidx.test.ext:truth:1.1.0'
   // androidTestImplementation 'com.google.truth:truth:0.42'
 
