@@ -19,6 +19,8 @@ package kohii.v1.exo
 import android.content.Context
 import android.os.Looper
 import androidx.annotation.CallSuper
+import com.google.android.exoplayer2.DefaultLoadControl
+import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -26,6 +28,8 @@ import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.BandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.util.Util
 import kohii.logInfo
 import kohii.media.VolumeInfo
 import kohii.v1.VolumeChangedListener
@@ -40,15 +44,17 @@ import kotlin.LazyThreadSafetyMode.NONE
  */
 open class KohiiExoPlayer(
   context: Context,
-  renderersFactory: RenderersFactory,
+  renderersFactory: RenderersFactory = DefaultRenderersFactory(
+      context.applicationContext
+  ).setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF),
     // TrackSelector is initialized at the same time a new Player instance is created.
     // This process will set the BandwidthMeter to the TrackSelector. Therefore we need to have
     // unique TrackSelector per Player instance.
-  val trackSelector: DefaultTrackSelector,
-  loadControl: LoadControl,
-  bandwidthMeter: BandwidthMeter,
-  drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?,
-  looper: Looper
+  val trackSelector: DefaultTrackSelector = DefaultTrackSelector(),
+  loadControl: LoadControl = DefaultLoadControl(),
+  bandwidthMeter: BandwidthMeter = DefaultBandwidthMeter.Builder(context).build(),
+  drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>? = null,
+  looper: Looper = Util.getLooper()
 ) : SimpleExoPlayer(
     context,
     renderersFactory,

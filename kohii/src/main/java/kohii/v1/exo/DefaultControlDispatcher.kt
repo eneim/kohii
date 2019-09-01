@@ -72,13 +72,11 @@ open class DefaultControlDispatcher(
     } ?: false
   }
 
+  // Currently dispatched by background playback controller.
   override fun dispatchStop(
     player: Player?,
     reset: Boolean
   ): Boolean {
-    return manager.findPlaybackForOutputHolder(playerView)?.let {
-      it.release() // TODO double check this.
-      true
-    } ?: false
+    return false
   }
 }

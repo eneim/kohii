@@ -117,10 +117,10 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:alpha="0"
-        motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
-        motion:layout_constraintEnd_toEndOf="@id/video_player_frame"
-        motion:layout_constraintStart_toStartOf="@id/video_player_frame"
-        motion:layout_constraintTop_toBottomOf="@id/video_player_frame" />
+        motion:layout_constraintBottom_toBottomOf="@id/video_title_frame"
+        motion:layout_constraintEnd_toEndOf="@id/video_title_frame"
+        motion:layout_constraintStart_toStartOf="@id/video_title_frame"
+        motion:layout_constraintTop_toTopOf="@id/video_title_frame" />
 
     <!--<Constraint android:id="@id/image_play">-->
     <!--<PropertySet motion:alpha="1"/>-->
