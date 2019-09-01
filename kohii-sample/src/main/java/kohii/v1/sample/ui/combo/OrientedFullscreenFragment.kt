@@ -91,14 +91,14 @@ class OrientedFullscreenFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val initData = arguments?.getParcelable(KEY_INIT_DATA) as InitData
+    val initData = arguments?.getParcelable<InitData>(KEY_INIT_DATA)!!
     val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
     container.setAspectRatio(initData.aspectRatio)
 
     val kohii = Kohii[this]
     val manager = kohii.register(this, playerContainer)
     val rebinder =
-      (requireArguments().getParcelable(KEY_REBINDER) as Rebinder<*>).forceCast<PlayerView>()
+      (requireArguments().getParcelable<Rebinder<*>>(KEY_REBINDER)).forceCast<PlayerView>()
 
     rebinder.with { controller = DefaultControlDispatcher(manager, playerView) }
         .rebind(kohii, playerView)

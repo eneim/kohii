@@ -97,18 +97,6 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   } while (true)
 }
 
-// Apply a transformer on each item, return the first result that suffices the predicate.
-inline fun <T, R> Iterable<T>.takeFirstOrNull(
-  transformer: (T) -> R,
-  predicate: (R) -> Boolean = { it != null } // default predicate
-): R? {
-  for (element in this) {
-    val result = transformer.invoke(element)
-    if (predicate(result)) return result
-  }
-  return null
-}
-
 // Return a View that is ancestor of target, and has direct parent is a CoordinatorLayout
 @Suppress("unused")
 fun findSuitableParent(

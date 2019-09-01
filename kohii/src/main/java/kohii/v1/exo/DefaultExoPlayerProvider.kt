@@ -31,10 +31,10 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.util.Util
 import kohii.media.Media
 import kohii.onEachAcquired
-import java.lang.Math.max
 import java.net.CookieHandler
 import java.net.CookieManager
 import java.net.CookiePolicy
+import kotlin.math.max
 
 /**
  * @author eneim (2018/10/27).
