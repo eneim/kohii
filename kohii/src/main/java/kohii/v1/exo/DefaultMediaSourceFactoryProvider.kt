@@ -36,21 +36,21 @@ import kohii.media.Media
  * @author eneim (2018/10/27).
  */
 class DefaultMediaSourceFactoryProvider private constructor(
-  private val offlineSourceHelper: OfflineSourceHelper? = null,
   upstreamFactory: DataSource.Factory,
-  mediaCache: Cache? = null
+  mediaCache: Cache? = null,
+  private val offlineSourceHelper: OfflineSourceHelper? = null
 ) : MediaSourceFactoryProvider {
 
   constructor(
     upstreamFactory: DataSource.Factory,
     mediaCache: Cache? = null
-  ) : this(null, upstreamFactory, mediaCache)
+  ) : this(upstreamFactory, mediaCache, null)
 
   @Suppress("unused") //
   constructor(
     upstreamFactory: DataSource.Factory,
     offlineSourceHelper: OfflineSourceHelper
-  ) : this(offlineSourceHelper, upstreamFactory, offlineSourceHelper.downloadCache)
+  ) : this(upstreamFactory, offlineSourceHelper.downloadCache, offlineSourceHelper)
 
   private val dataSourceFactory: DataSource.Factory =
     if (mediaCache != null) {
