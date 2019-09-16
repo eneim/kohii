@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.exo
 
-interface Prioritized : Comparable<Prioritized> {
-  override fun compareTo(other: Prioritized): Int {
-    return 0
-  }
-}
+import com.google.android.exoplayer2.source.MediaSource
+import kohii.ExoPlayer
+import kohii.media.Media
+
+@ExoPlayer
+class HybridMediaItem(
+  val media: Media,
+  val mediaSource: MediaSource
+) : Media by media, MediaSource by mediaSource

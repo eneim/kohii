@@ -17,9 +17,8 @@
 package kohii.media
 
 import android.net.Uri
-import android.os.Parcelable
 
-interface Media : Parcelable {
+interface Media {
 
   val uri: Uri
 

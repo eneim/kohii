@@ -16,12 +16,13 @@
 
 package kohii.v1.sample.ui.fbook.player
 
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Playback
 import kohii.v1.Rebinder
 
 interface PlayerPanel {
 
-  val rebinder: Rebinder
+  val rebinder: Rebinder<PlayerView>
 
   interface Callback {
 

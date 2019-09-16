@@ -21,16 +21,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
+import kohii.media.MediaItem
 import kohii.media.VolumeInfo
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackEventListener
 import kohii.v1.Scope
+import kohii.v1.exo.HybridMediaItem
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_debug.muteSwitch
 import kotlinx.android.synthetic.main.fragment_debug.playerView1
-import kotlinx.android.synthetic.main.fragment_debug.playerView2
 import kotlinx.android.synthetic.main.fragment_debug.scopes
 import kotlinx.android.synthetic.main.fragment_debug.scrollView
 
@@ -59,20 +60,13 @@ class DebugFragment : BaseFragment() {
     val kohii = Kohii[this]
     val manager = kohii.register(this, scrollView)
 
-    kohii.setUp(videoUrl)
+    val media = MediaItem(videoUrl)
+    val mediaSource = kohii.createMediaSource(media)
+    val hybridMediaItem = HybridMediaItem(media, mediaSource)
+
+    kohii.setUp(hybridMediaItem)
         .with { tag = "$videoUrl::1" }
         .bind(playerView1) {
-          it.addPlaybackEventListener(object : PlaybackEventListener {
-            override fun onFirstFrameRendered(playback: Playback<*>) {
-              super.onFirstFrameRendered(playback)
-              this@DebugFragment.playback = playback
-            }
-          })
-        }
-
-    kohii.setUp(videoUrl)
-        .with { tag = "$videoUrl::2" }
-        .bind(playerView2) {
           it.addPlaybackEventListener(object : PlaybackEventListener {
             override fun onFirstFrameRendered(playback: Playback<*>) {
               super.onFirstFrameRendered(playback)

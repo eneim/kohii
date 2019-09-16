@@ -46,7 +46,7 @@ class Pager2Fragment : BaseFragment() {
       return Int.MAX_VALUE
     }
 
-    override fun getItem(position: Int): Fragment {
+    override fun createFragment(position: Int): Fragment {
       return PageFragment.newInstance(position, videos[position % videos.size])
     }
   }

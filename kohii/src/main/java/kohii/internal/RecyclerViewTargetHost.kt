@@ -30,8 +30,9 @@ import java.lang.ref.WeakReference
 
 internal class RecyclerViewTargetHost(
   host: RecyclerView,
-  manager: PlaybackManager
-) : BaseTargetHost<RecyclerView>(host, manager) {
+  manager: PlaybackManager,
+  selector: Selector? = null
+) : BaseTargetHost<RecyclerView>(host, manager, selector) {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {
@@ -73,13 +74,14 @@ internal class RecyclerViewTargetHost(
         playback.token.shouldPlay()
   }
 
-  override fun accepts(container: Any): Boolean {
-    if (container !is View) return false
-    val params = RecycleViewUtils.fetchItemViewParams(container)
+  override fun accepts(target: Any): Boolean {
+    if (target !is View) return false
+    val params = RecycleViewUtils.fetchItemViewParams(target)
     return RecycleViewUtils.checkParams(actualHost, params)
   }
 
   override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    if (selector != null) return selector.select(candidates)
     return super.selectByOrientation(candidates, actualHost.fetchOrientation())
   }
 

@@ -98,7 +98,7 @@ abstract class PlaybackManager(
   protected open fun onOwnerStart(owner: LifecycleOwner) {
     attachedPlaybacks.forEach {
       if (kohii.mapPlayableToManager[it.playable] == null ||
-          kohii.mapPlayableToManager[it.playable] === kohii // take it from background
+          kohii.mapPlayableToManager[it.playable] === kohii // will take it from background
       ) {
         kohii.mapPlayableToManager[it.playable] = this
       }
@@ -220,7 +220,6 @@ abstract class PlaybackManager(
     return if (added) targetHost else null
   }
 
-  // TODO why this method is public before?
   internal fun dispatchRefreshAll() {
     this.parent.onManagerRefresh()
   }
@@ -237,7 +236,7 @@ abstract class PlaybackManager(
       return@filter !shouldPrepare &&
           (controller == null ||
               controller.pauseBySystem() ||
-              kohii.manualPlayableState[it.playable] != true)
+              kohii.manualPlayableRecord[it.playable] != true)
       // TODO consider to force: if controller.startBySystem is true, then controller.pauseBySystem will be ignored.
     }
 
@@ -260,7 +259,7 @@ abstract class PlaybackManager(
         // Use this customized extension fun so we don't need to call select for all TargetHosts
         .takeFirstOrNull(
             transformer = {
-              if (it.lock.get()) {
+              if (it.lock) {
                 emptyList()
               } else {
                 it.select(mapHostToCandidates.getValue(it))

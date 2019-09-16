@@ -106,8 +106,4 @@ class YouTubePlayableCreator(
         outputHolderPool
     )
   }
-
-  override fun cleanUp() {
-    // no-op
-  }
 }

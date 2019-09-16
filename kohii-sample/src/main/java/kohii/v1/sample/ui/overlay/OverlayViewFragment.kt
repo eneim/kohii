@@ -29,12 +29,14 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.SelectionTracker.SelectionObserver
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import kohii.media.VolumeInfo
+import kohii.safeCast
 import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.Rebinder
@@ -63,10 +65,10 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   }
 
   private var overlaySheet: BottomSheetBehavior<*>? = null
-  private var rebinder: Rebinder? = null
+  private var rebinder: Rebinder<PlayerView>? = null
   private var playback: Playback<*>? = null
 
-  private lateinit var selectionTracker: SelectionTracker<Rebinder>
+  private lateinit var selectionTracker: SelectionTracker<Rebinder<*>>
   private lateinit var keyProvider: VideoTagKeyProvider
 
   private lateinit var kohii: Kohii
@@ -122,7 +124,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
     // Must be created after setting the Adapter, because once created, this instance will
     // call recyclerView.adapter and will throw NPE if it doesn't present.
-    selectionTracker = SelectionTracker.Builder<Rebinder>(
+    selectionTracker = SelectionTracker.Builder(
         "caminandes.json",
         recyclerView,
         keyProvider,
@@ -172,9 +174,9 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       }
     })
 
-    selectionTracker.addObserver(object : SelectionObserver<Rebinder>() {
+    selectionTracker.addObserver(object : SelectionObserver<Rebinder<PlayerView>>() {
       override fun onItemStateChanged(
-        key: Rebinder,
+        key: Rebinder<PlayerView>,
         selected: Boolean
       ) {
         if (selected && key !== rebinder) {
@@ -221,7 +223,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       (videoOverlay as? MotionLayout)?.progress = 0F
     }
 
-    rebinder = selectionTracker.selection?.firstOrNull()
+    rebinder = (selectionTracker.selection?.firstOrNull()).safeCast()
     rebinder?.rebind(kohii, overlayPlayerView) {
       kohii.promote(it)
       playback = it

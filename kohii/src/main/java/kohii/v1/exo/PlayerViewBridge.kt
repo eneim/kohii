@@ -50,6 +50,7 @@ import kohii.v1.PlayerEventListener
 import kohii.v1.R
 import kohii.v1.VolumeInfoController
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.max
 
 /**
  * @author eneim (2018/06/24).
@@ -94,7 +95,7 @@ internal open class PlayerViewBridge(
     get() = player?.playbackState ?: -1
 
   override fun prepare(loadSource: Boolean) {
-    this.addEventListener(this)
+    super.addEventListener(this)
 
     if (player == null) {
       sourcePrepared.set(false)
@@ -248,7 +249,7 @@ internal open class PlayerViewBridge(
       if (it.playbackState == Player.STATE_IDLE) return
       _playbackInfo.resumeWindow = it.currentWindowIndex
       _playbackInfo.resumePosition =
-        if (it.isCurrentWindowSeekable) Math.max(0, it.currentPosition) else TIME_UNSET
+        if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET
       _playbackInfo.volumeInfo = it.getVolumeInfo()
     }
   }
@@ -394,7 +395,7 @@ internal open class PlayerViewBridge(
     trackGroups: TrackGroupArray?,
     trackSelections: TrackSelectionArray?
   ) {
-    if (trackGroups === lastSeenTrackGroupArray) return
+    if (trackGroups == lastSeenTrackGroupArray) return
     lastSeenTrackGroupArray = trackGroups
     val trackSelector = playerProvider.trackSelector as? MappingTrackSelector ?: return
     val trackInfo = trackSelector.currentMappedTrackInfo

@@ -30,6 +30,12 @@ open class LazyViewPlayback<RENDERER : Any>(
     kohii, playable, manager, boxedTarget.container, options
 ) {
 
+  init {
+    if (boxedTarget is IdenticalTarget<*>) {
+      throw IllegalArgumentException("IdenticalTarget is not allowed here.")
+    }
+  }
+
   private var _renderer: RENDERER? by Delegates.observable(null as RENDERER?,
       onChange = { _, prev, next ->
         if (next === prev) return@observable
@@ -40,7 +46,7 @@ open class LazyViewPlayback<RENDERER : Any>(
             this.playable.onPlayerInActive(this@LazyViewPlayback, prev)
           }
         }
-        // 2. If next value is not null, notify its value
+        // 2. If next value is not null, attach and notify its value
         if (next != null) {
           boxedTarget.attachRenderer(next)
           this.playable.onPlayerActive(this@LazyViewPlayback, next)
@@ -52,8 +58,9 @@ open class LazyViewPlayback<RENDERER : Any>(
 
   override fun beforePlayInternal() {
     super.beforePlayInternal()
-    if (_renderer == null) _renderer =
-      rendererPool.acquireRenderer(this, this.boxedTarget, playable.media)
+    if (_renderer == null) {
+      _renderer = rendererPool.acquireRenderer(this, this.boxedTarget, playable.media)
+    }
   }
 
   override fun afterPauseInternal() {

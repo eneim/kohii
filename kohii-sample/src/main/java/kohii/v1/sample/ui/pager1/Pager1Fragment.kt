@@ -30,6 +30,7 @@ import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getDisplayPoint
 import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
+import kotlin.math.abs
 
 class Pager1Fragment : BaseFragment() {
 
@@ -72,7 +73,7 @@ class Pager1Fragment : BaseFragment() {
         (requireActivity().getDisplayPoint().x - it.paddingStart - it.paddingEnd).toFloat()
       val offset = it.paddingStart / clientWidth
       it.setPageTransformer(false) { page, position ->
-        val scale = (1f - Math.abs(position - offset) * 0.15f).coerceAtLeast(0.5f)
+        val scale = (1f - abs(position - offset) * 0.15f).coerceAtLeast(0.5f)
         page.scaleX = scale
         page.scaleY = scale
       }

@@ -24,8 +24,9 @@ import kohii.v1.PlaybackManager
 
 internal class NestedScrollViewTargetHost(
   host: NestedScrollView,
-  manager: PlaybackManager
-) : BaseTargetHost<NestedScrollView>(host, manager), OnScrollChangeListener {
+  manager: PlaybackManager,
+  selector: Selector? = null
+) : BaseTargetHost<NestedScrollView>(host, manager, selector), OnScrollChangeListener {
 
   override fun onAdded() {
     super.onAdded()
@@ -52,12 +53,13 @@ internal class NestedScrollViewTargetHost(
   }
 
   override fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    if (selector != null) return selector.select(candidates)
     return super.selectByOrientation(candidates, VERTICAL)
   }
 
-  override fun accepts(container: Any): Boolean {
-    if (container !is View) return false
-    var view = container
+  override fun accepts(target: Any): Boolean {
+    if (target !is View) return false
+    var view = target
     var parent = view.parent
     while (parent != null && parent !== this.host && parent is View) {
       @Suppress("USELESS_CAST")

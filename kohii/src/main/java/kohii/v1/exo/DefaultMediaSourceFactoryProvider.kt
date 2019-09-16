@@ -21,7 +21,8 @@ import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.offline.FilteringManifestParser
 import com.google.android.exoplayer2.offline.StreamKey
 import com.google.android.exoplayer2.source.ExtractorMediaSource
-import com.google.android.exoplayer2.source.ads.AdsMediaSource
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ads.AdsMediaSource.MediaSourceFactory
 import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.dash.manifest.DashManifest
 import com.google.android.exoplayer2.source.dash.manifest.DashManifestParser
@@ -70,8 +71,22 @@ class DefaultMediaSourceFactoryProvider private constructor(
       upstreamFactory
     }
 
-  override fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory {
-    when (@C.ContentType val type = Util.inferContentType(media.uri, media.type)) {
+  override fun provideMediaSourceFactory(media: Media): MediaSourceFactory {
+    @C.ContentType val type = Util.inferContentType(media.uri, media.type)
+
+    if (media is HybridMediaItem) {
+      return object : MediaSourceFactory {
+        override fun getSupportedTypes(): IntArray {
+          return intArrayOf(type)
+        }
+
+        override fun createMediaSource(uri: Uri?): MediaSource {
+          return media.mediaSource
+        }
+      }
+    }
+
+    when (type) {
       C.TYPE_DASH ->
         return DashMediaSource.Factory(dataSourceFactory)
             .setManifestParser(

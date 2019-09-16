@@ -22,6 +22,8 @@ import android.graphics.Point
 import android.os.Bundle
 import android.os.Parcelable
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.safeCast
 import kohii.v1.Kohii
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
@@ -42,7 +44,7 @@ class PlayerActivity : BaseActivity() {
     fun createIntent(
       context: Context,
       initData: InitData,
-      rebinder: Rebinder
+      rebinder: Rebinder<PlayerView>
     ): Intent {
       val extras = Bundle().also {
         it.putParcelable(EXTRA_INIT_DATA, initData)
@@ -58,8 +60,10 @@ class PlayerActivity : BaseActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_player)
 
-    val initData = intent?.extras?.getParcelable(EXTRA_INIT_DATA) as InitData?
-    val rebinder = intent?.extras?.getParcelable(EXTRA_REBINDER) as Rebinder?
+    val extras = intent?.extras
+    val initData = extras?.getParcelable(EXTRA_INIT_DATA) as InitData?
+    val rebinder = (extras?.getParcelable(EXTRA_REBINDER) as Rebinder<*>?).safeCast<PlayerView>()
+
     if (rebinder != null && initData != null) {
       val displaySize = Point().apply {
         this@PlayerActivity.windowManager.defaultDisplay.getSize(this)

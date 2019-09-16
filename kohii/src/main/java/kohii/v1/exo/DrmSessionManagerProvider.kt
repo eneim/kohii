@@ -26,4 +26,6 @@ import kohii.media.Media
 interface DrmSessionManagerProvider {
 
   fun provideDrmSessionManager(media: Media): DrmSessionManager<FrameworkMediaCrypto>?
+
+  fun releaseDrmSessionManager(sessionManager: DrmSessionManager<*>?)
 }
