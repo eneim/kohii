@@ -31,7 +31,7 @@ open class DefaultRendererPool<RENDERER : Any>(
   private val creator: RendererCreator<RENDERER>
 ) : RendererPool<RENDERER>, LifecycleObserver {
 
-  // key = "POOL::${containerType}::${mediaType}"
+  // key = "kohii.v1::pool::${containerType}::${mediaType}"
   protected val keyToPool = HashMap<String, SimplePool<RENDERER>>()
 
   override fun <CONTAINER : Any> acquireRenderer(
@@ -74,5 +74,5 @@ open class DefaultRendererPool<RENDERER : Any>(
   private fun poolKey(
     containerType: Int,
     mediaType: Int
-  ) = "kohii.v1.pool::$containerType::$mediaType"
+  ) = "${BuildConfig.LIBRARY_PACKAGE_NAME}::pool::$containerType::$mediaType"
 }

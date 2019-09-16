@@ -16,7 +16,7 @@
 
 package kohii.v1
 
-internal class IdenticalTarget<RENDERER : Any>(override val container: RENDERER) : Target<RENDERER, RENDERER> {
+class IdenticalTarget<RENDERER : Any>(override val container: RENDERER) : Target<RENDERER, RENDERER> {
 
   override fun attachRenderer(renderer: RENDERER) {
     // no-ops

@@ -26,11 +26,13 @@ import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.util.Util
 import kohii.media.Media
 import kohii.onEachAcquired
+import kohii.v1.Cleanable
 import java.lang.Math.max
 import java.net.CookieHandler
 import java.net.CookieManager
@@ -58,7 +60,7 @@ class DefaultExoPlayerProvider(
 
   // Cache...
   private val plainPlayerPool = Pools.SimplePool<Player>(MAX_POOL_SIZE)
-  private val drmPlayerCache = WeakHashMap<ExoPlayer, Long>()
+  private val drmPlayerCache = WeakHashMap<ExoPlayer, DrmSessionManager<*>>()
 
   init {
     // Adapt from ExoPlayer demo app.
@@ -91,7 +93,7 @@ class DefaultExoPlayerProvider(
           drmSessionManager,
           Util.getLooper()
       ).also {
-        drmPlayerCache[it] = System.currentTimeMillis()
+        drmPlayerCache[it] = drmSessionManager
       }
     }
 
@@ -106,15 +108,19 @@ class DefaultExoPlayerProvider(
     player.stop(true)
     if (drmPlayerCache.containsKey(player)) {
       player.release()
-      drmPlayerCache.remove(player)
+      drmSessionManagerProvider?.releaseDrmSessionManager(drmPlayerCache.remove(player))
     } else {
-      plainPlayerPool.release(player)
+      if (!plainPlayerPool.release(player)) {
+        // No more space in pool --> this Player has no where to go --> release it.
+        player.release()
+      }
     }
   }
 
   override fun cleanUp() {
     for ((key) in drmPlayerCache) key?.release()
     drmPlayerCache.clear()
+    (drmSessionManagerProvider as? Cleanable)?.cleanUp()
     plainPlayerPool.onEachAcquired { it.release() }
   }
 }

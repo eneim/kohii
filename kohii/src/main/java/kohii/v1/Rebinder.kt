@@ -24,33 +24,27 @@ import kotlinx.android.parcel.Parcelize
 // Pass instance of this class around to rebind the Playable.
 // This requires the type of next Target must be the same or sub-class of original Target.
 @Parcelize
-data class Rebinder(
+data class Rebinder<RENDERER : Any>(
   val tag: String,
-  val rendererType: Class<*>
+  val rendererType: Class<RENDERER>
 ) : Parcelable {
 
   @IgnoredOnParcel
   private var params = Params() // this object is "one shot", mean that once used, will be reset.
 
-  fun with(params: Params.() -> Unit): Rebinder {
+  fun with(params: Params.() -> Unit): Rebinder<RENDERER> {
     this.params.apply(params)
     return this
   }
 
-  fun <RENDERER : Any> rebind(
+  fun rebind(
     kohii: Kohii,
     target: RENDERER,
     reset: Boolean = false,
-    onDone: ((Playback<*>) -> Unit)? = null
-  ): Rebinder {
-    val targetType = target::class.java
+    onDone: ((Playback<RENDERER>) -> Unit)? = null
+  ): Rebinder<RENDERER> {
     val cache = kohii.mapTagToPlayable[this.tag]
     if (cache != null) {
-      // Eg: if rendererType is FrameLayout.class, then target can be a PlayerView, but not View
-      if (!this.rendererType.isAssignableFrom(targetType)) {
-        throw IllegalStateException("Incompatible type. Expect: $rendererType, Found: $targetType")
-      }
-
       // cache.first -> cached Playable instance
       // cache.second -> compatible renderer type of the Playable
 
@@ -69,23 +63,27 @@ data class Rebinder(
     return this
   }
 
-  /* fun rebind(
+  fun <CONTAINER : Any> rebind(
     kohii: Kohii,
-    target: Target<Any, Any>,
+    target: Target<CONTAINER, RENDERER>,
     reset: Boolean = false,
-    onDone: ((Playback<*>) -> Unit)? = null
-  ): Rebinder {
+    onDone: ((Playback<RENDERER>) -> Unit)? = null
+  ): Rebinder<RENDERER> {
     val cache = kohii.mapTagToPlayable[this.tag]
     if (cache != null) {
+      // cache.first -> cached Playable instance
+      // cache.second -> compatible renderer type of the Playable
+
+      // Also check type of Playable found in cache
       val playable = if (this.rendererType.isAssignableFrom(cache.second)) cache.first else null
       check(playable != null) { "No Playable found for tag ${this.tag}" }
       if (reset) playable.reset()
-      @Suppress("UNCHECKED_CAST")
-      (playable as Playable<Any>).bind(target, this.params.createPlaybackConfig(), onDone)
+      @Suppress("UNCHECKED_CAST") // it should be safe, as we've checked target type above.
+      (playable as Playable<RENDERER>).bind(target, this.params.createPlaybackConfig(), onDone)
     } else if (BuildConfig.DEBUG) {
       throw IllegalStateException("No Playable found for tag ${this.tag}.")
     }
     params = Params()
     return this
-  } */
+  }
 }

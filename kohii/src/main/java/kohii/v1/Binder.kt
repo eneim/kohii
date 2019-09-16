@@ -25,6 +25,7 @@ import kohii.media.PlaybackInfo
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playback.Callback
 import kohii.v1.Playback.Controller
+import kohii.v1.exo.DefaultExoPlayerConfig
 import java.util.concurrent.Future
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -39,12 +40,12 @@ open class Binder<RENDERER : Any> internal constructor(
     var tag: String? = null,
     var preLoad: Boolean = false,
     var cover: Future<Bitmap?>? = null,
+      // Playback.Config
     @RepeatMode var repeatMode: Int = Playable.REPEAT_MODE_OFF,
-    var parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
-
+    var parameters: PlaybackParameters = DefaultExoPlayerConfig.PLAYBACK_PARAMS,
     var delay: Int = 0,
-      // Indicator to used to judge of a Playback should be played or not.
-      // This doesn't warranty that it will be played, it just to make the Playback be a candidate
+      // Indicator to judge if a Playback should be played or not.
+      // This doesn't make sure that it will be played, it just to make the Playback be a candidate
       // to start a playback.
       // In ViewPlayback, this is equal to visible area offset of the video container View.
     var threshold: Float = 0.65F,
@@ -57,7 +58,11 @@ open class Binder<RENDERER : Any> internal constructor(
   ) {
 
     internal fun createPlayableConfig(): Playable.Config {
-      return Playable.Config(this.tag, this.preLoad, this.cover)
+      return Playable.Config(
+          this.tag,
+          this.preLoad,
+          this.cover
+      )
     }
 
     internal fun createPlaybackConfig(): Playback.Config {
@@ -76,6 +81,7 @@ open class Binder<RENDERER : Any> internal constructor(
     }
   }
 
+  // Made public for the inline DSL function.
   @RestrictTo(LIBRARY) // don't touch this.
   val params = Params()
 
@@ -87,7 +93,7 @@ open class Binder<RENDERER : Any> internal constructor(
   fun <CONTAINER : Any> bind(
     target: Target<CONTAINER, RENDERER>,
     onDone: ((Playback<RENDERER>) -> Unit)? = null
-  ): Rebinder? {
+  ): Rebinder<RENDERER>? {
     val tag = this.params.tag
     val playable = requestPlayable(this.params.createPlayableConfig())
     playable.bind(target, this.params.createPlaybackConfig(), onDone)
@@ -96,9 +102,9 @@ open class Binder<RENDERER : Any> internal constructor(
 
   fun bind(
     target: RENDERER,
-    callback: ((Playback<RENDERER>) -> Unit)? = null
-  ): Rebinder? {
-    return this.bind(IdenticalTarget(target), callback)
+    onDone: ((Playback<RENDERER>) -> Unit)? = null
+  ): Rebinder<RENDERER>? {
+    return this.bind(IdenticalTarget(target), onDone)
   }
 
   private fun requestPlayable(config: Playable.Config): Playable<RENDERER> {

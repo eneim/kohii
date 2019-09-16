@@ -80,29 +80,31 @@ class PageFragment : BaseFragment(), Prioritized {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    val kohii = Kohii[this].also {
+      it.register(this, view.findViewById(R.id.content))
+    }
+
+    val pagePos = requireArguments().getInt(pageTagKey)
+    val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
+    kohii.setUp(video.file)
+        .with {
+          tag = videoTag
+          repeatMode = Playable.REPEAT_MODE_ONE
+          preLoad = true
+        }
+        .bind(playerView) { playback = it }
+
     view.doOnLayout {
       val container = view.findViewById<View>(R.id.playerContainer)
       // [1] Update resize mode based on Window size.
       (container as? AspectRatioFrameLayout)?.also { ctn ->
         if (it.width * 9 >= it.height * 16) {
+          // if (it.width * it.height >= it.height * it.width) { // how about this?
           ctn.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
         } else {
           ctn.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
         }
       }
-
-      val kohii = Kohii[this].also {
-        it.register(this, view.findViewById(R.id.content))
-      }
-      val pagePos = arguments?.getInt(pageTagKey) ?: -1
-      val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
-      kohii.setUp(video.file)
-          .with {
-            tag = videoTag
-            repeatMode = Playable.REPEAT_MODE_ONE
-            preLoad = true
-          }
-          .bind(playerView) { playback = it }
     }
   }
 }

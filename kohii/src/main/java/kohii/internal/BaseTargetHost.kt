@@ -27,7 +27,6 @@ import kohii.media.VolumeInfo
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import kohii.v1.TargetHost
-import java.util.WeakHashMap
 import kotlin.LazyThreadSafetyMode.NONE
 
 abstract class BaseTargetHost<V : Any>(
@@ -38,7 +37,7 @@ abstract class BaseTargetHost<V : Any>(
     View.OnAttachStateChangeListener,
     View.OnLayoutChangeListener {
 
-  private val targets = WeakHashMap<Any, Any>()
+  private val targets = HashMap<Any, Any>()
 
   override var lock = false
   override var volumeInfo: VolumeInfo = VolumeInfo()
@@ -75,7 +74,7 @@ abstract class BaseTargetHost<V : Any>(
     this.targets.clear()
   }
 
-  override fun <T> attachTarget(target: T) {
+  override fun <T : Any> attachTarget(target: T) {
     if (targets.put(target, PRESENT) == null) { // null --> no previous map
       if (target is View) {
         if (ViewCompat.isAttachedToWindow(target)) {
@@ -86,7 +85,7 @@ abstract class BaseTargetHost<V : Any>(
     }
   }
 
-  override fun <T> detachTarget(target: T) {
+  override fun <T : Any> detachTarget(target: T) {
     if (targets.remove(target) != null) { // non-null --> was mapped with a value
       if (target is View) {
         target.removeOnAttachStateChangeListener(this)
@@ -121,7 +120,7 @@ abstract class BaseTargetHost<V : Any>(
       val sorted = grouped.getValue(true)
           .sortedWith(comparators.getValue(orientation))
       val manuallyStarted =
-        sorted.firstOrNull { playback -> manager.kohii.manualPlayableState[playback.playable] == true }
+        sorted.firstOrNull { playback -> manager.kohii.manualPlayableRecord[playback.playable] == true }
       return@lazy listOfNotNull(manuallyStarted ?: sorted.firstOrNull())
     }
 

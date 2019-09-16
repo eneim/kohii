@@ -22,6 +22,7 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager
 import com.google.android.exoplayer2.drm.DrmSessionManager
+import com.google.android.exoplayer2.drm.ExoMediaDrm
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import com.google.android.exoplayer2.drm.FrameworkMediaDrm
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback
@@ -30,8 +31,10 @@ import com.google.android.exoplayer2.drm.UnsupportedDrmException.REASON_UNSUPPOR
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.util.Util.getDrmUuid
 import kohii.media.Media
+import kohii.v1.Cleanable
 import kohii.v1.R
 import java.util.UUID
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * @author eneim (2018/10/27).
@@ -39,7 +42,9 @@ import java.util.UUID
 class DefaultDrmSessionManagerProvider(
   private val context: Context,
   private val httpDataSourceFactory: HttpDataSource.Factory
-) : DrmSessionManagerProvider {
+) : DrmSessionManagerProvider, Cleanable {
+
+  private val cache = lazy(NONE) { HashMap<DrmSessionManager<*>, ExoMediaDrm<*>>() }
 
   override fun provideDrmSessionManager(media: Media): DrmSessionManager<FrameworkMediaCrypto>? {
     val mediaDrm = media.mediaDrm ?: return null
@@ -96,12 +101,26 @@ class DefaultDrmSessionManagerProvider(
         i += 2
       }
     }
+    val mediaDrm = FrameworkMediaDrm.newInstance(uuid)
     return DefaultDrmSessionManager(
         uuid,
-        FrameworkMediaDrm.newInstance(uuid),
+        mediaDrm,
         drmCallback,
         null,
         multiSession
-    )
+    ).also { cache.value[it] = mediaDrm }
+  }
+
+  override fun releaseDrmSessionManager(sessionManager: DrmSessionManager<*>?) {
+    if (sessionManager != null && cache.isInitialized()) {
+      cache.value.remove(sessionManager)
+          ?.release()
+    }
+  }
+
+  override fun cleanUp() {
+    if (cache.isInitialized()) {
+      cache.value.forEach { (_, u) -> u.release() }
+    }
   }
 }

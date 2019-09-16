@@ -95,7 +95,7 @@ internal open class PlayerViewBridge(
     get() = player?.playbackState ?: -1
 
   override fun prepare(loadSource: Boolean) {
-    this.addEventListener(this)
+    super.addEventListener(this)
 
     if (player == null) {
       sourcePrepared.set(false)
@@ -395,7 +395,7 @@ internal open class PlayerViewBridge(
     trackGroups: TrackGroupArray?,
     trackSelections: TrackSelectionArray?
   ) {
-    if (trackGroups === lastSeenTrackGroupArray) return
+    if (trackGroups == lastSeenTrackGroupArray) return
     lastSeenTrackGroupArray = trackGroups
     val trackSelector = playerProvider.trackSelector as? MappingTrackSelector ?: return
     val trackInfo = trackSelector.currentMappedTrackInfo

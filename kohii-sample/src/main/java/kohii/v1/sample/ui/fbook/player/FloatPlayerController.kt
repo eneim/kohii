@@ -16,9 +16,10 @@
 
 package kohii.v1.sample.ui.fbook.player
 
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Rebinder
 
 interface FloatPlayerController {
 
-  fun showFloatPlayer(rebinder: Rebinder)
+  fun showFloatPlayer(rebinder: Rebinder<PlayerView>)
 }

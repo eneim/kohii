@@ -20,6 +20,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Rebinder
 import kohii.v1.sample.R
 
@@ -32,6 +33,6 @@ class VideoViewHolder(itemView: View) : ViewHolder(itemView) {
     playerContainer.setAspectRatio(2.0F)
   }
 
-  var rebinder: Rebinder? = null
+  var rebinder: Rebinder<PlayerView>? = null
   var aspectRatio: Float = 1F
 }

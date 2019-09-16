@@ -106,9 +106,9 @@ abstract class TargetHost(
 
   internal open fun onRemoved() {}
 
-  internal abstract fun <T> attachTarget(target: T)
+  internal abstract fun <T : Any> attachTarget(target: T)
 
-  internal abstract fun <T> detachTarget(target: T)
+  internal abstract fun <T : Any> detachTarget(target: T)
 
   /**
    * Returns true if this TargetHost accepts a target. When a TargetHost accepts a target, it keeps track

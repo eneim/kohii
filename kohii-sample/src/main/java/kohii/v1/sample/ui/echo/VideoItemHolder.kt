@@ -52,7 +52,7 @@ class VideoItemHolder(
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
-  val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
+  // val playerViewContainer = itemView.findViewById(R.id.playerViewContainer) as ViewGroup
   val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
   val volumeButton = itemView.findViewById(R.id.volumeButton) as MaterialButton
 

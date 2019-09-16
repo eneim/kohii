@@ -118,7 +118,7 @@ class PlaybackManagerGroup(
     playbackDispatcher.onDetached()
     selection.clear()
     if (!activity.isChangingConfigurations) {
-      kohii.manualPlayableState.clear()
+      kohii.manualPlayableRecord.clear()
     }
     // Eagerly detach all PlaybackManager if there is any.
     // Each operation will also modify the related Set.

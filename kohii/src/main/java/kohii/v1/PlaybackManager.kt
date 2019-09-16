@@ -98,7 +98,7 @@ abstract class PlaybackManager(
   protected open fun onOwnerStart(owner: LifecycleOwner) {
     attachedPlaybacks.forEach {
       if (kohii.mapPlayableToManager[it.playable] == null ||
-          kohii.mapPlayableToManager[it.playable] === kohii // take it from background
+          kohii.mapPlayableToManager[it.playable] === kohii // will take it from background
       ) {
         kohii.mapPlayableToManager[it.playable] = this
       }
@@ -236,7 +236,7 @@ abstract class PlaybackManager(
       return@filter !shouldPrepare &&
           (controller == null ||
               controller.pauseBySystem() ||
-              kohii.manualPlayableState[it.playable] != true)
+              kohii.manualPlayableRecord[it.playable] != true)
       // TODO consider to force: if controller.startBySystem is true, then controller.pauseBySystem will be ignored.
     }
 
