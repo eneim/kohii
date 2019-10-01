@@ -18,6 +18,7 @@ package kohii.v1
 
 import android.app.Activity
 import android.app.Application
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -31,23 +32,24 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleService
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo.VERSION_SLASHY
+import com.google.android.exoplayer2.database.ExoDatabaseProvider
 import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.Beta
 import kohii.ExoPlayer
 import kohii.internal.HeadlessPlaybackService
 import kohii.internal.ViewPlaybackManager
+import kohii.logError
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.takeFirstOrNull
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
 import kohii.v1.exo.DefaultExoPlayerProvider
@@ -91,8 +93,7 @@ class Kohii(context: Context) : PlayableManager {
   @ExoPlayer
   internal val defaultBridgeProvider by lazy(NONE) {
     val userAgent = getUserAgent(this.app, BuildConfig.LIB_NAME)
-    val bandwidthMeter = DefaultBandwidthMeter()
-    val httpDataSource = DefaultHttpDataSourceFactory(userAgent, bandwidthMeter.transferListener)
+    val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
     // ExoPlayerProvider
     val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this.app, httpDataSource)
@@ -105,7 +106,9 @@ class Kohii(context: Context) : PlayableManager {
     // MediaSourceFactoryProvider
     val fileDir = this.app.getExternalFilesDir(null) ?: this.app.filesDir
     val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
-    val mediaCache = SimpleCache(contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE))
+    val mediaCache: Cache = SimpleCache(
+        contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE), ExoDatabaseProvider(this.app)
+    )
     val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
     val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
     PlayerViewBridgeProvider(playerProvider, mediaSourceFactoryProvider).also {
@@ -114,7 +117,7 @@ class Kohii(context: Context) : PlayableManager {
   }
 
   @ExoPlayer
-  private val defaultPlayableCreator by lazy(NONE) {
+  private val defaultPlayableCreator: PlayableCreator<PlayerView> by lazy(NONE) {
     PlayerViewPlayableCreator(this, bridgeProvider = this.defaultBridgeProvider)
   }
 
@@ -127,7 +130,7 @@ class Kohii(context: Context) : PlayableManager {
 
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
-    private const val CACHE_SIZE = 32 * 1024 * 1024L // 32 Megabytes
+    private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
 
     @Volatile private var kohii: Kohii? = null
 
@@ -159,6 +162,10 @@ class Kohii(context: Context) : PlayableManager {
   // instance methods
 
   internal fun setHeadlessPlayback(headlessPlayback: HeadlessPlayback?) {
+    if (this.headlessPlayback.get() !== headlessPlayback) {
+      this.headlessPlayback.get()
+          ?.dismiss()
+    }
     this.headlessPlayback.set(headlessPlayback)
   }
 
@@ -180,19 +187,20 @@ class Kohii(context: Context) : PlayableManager {
   }
 
   // Called when a Playable is no longer be managed by any Manager, its resource should be release.
-  // Always get called after playback.release()
+  // If called, it must be after playback.release()
   internal fun releasePlayable(
     tag: Any?,
     playable: Playable<*>
   ) {
-    tag?.run {
-      val cache = mapTagToPlayable.remove(tag)
-      if (cache?.first !== playable) {
-        throw IllegalArgumentException(
-            "Illegal playable removal: cached playable of tag [$tag] is [${cache?.first}] but not [$playable]"
-        )
+    playable.release()
+    tag?.let {
+      val cache = mapTagToPlayable.remove(it)
+      require(cache?.first === playable) {
+        "Illegal cache of tag [$it]: expect [$playable], found [${cache?.first}]."
       }
-    } ?: playable.release()
+    }
+    manualPlayableRecord.remove(playable)
+    manualPlayables.remove(playable)
   }
 
   internal fun onFirstManagerOnline() {
@@ -208,7 +216,6 @@ class Kohii(context: Context) : PlayableManager {
     app.unregisterReceiver(screenStateReceiver)
   }
 
-  // Called by ControlDispatcher only
   internal fun play(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
@@ -229,7 +236,6 @@ class Kohii(context: Context) : PlayableManager {
     playback.manager.dispatchRefreshAll()
   }
 
-  // Called by ControlDispatcher only
   internal fun pause(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
@@ -267,16 +273,24 @@ class Kohii(context: Context) : PlayableManager {
     }
   }
 
-  internal fun trySavePlaybackInfo(playback: Playback<*>) {
-    if (playback.playable.tag != Playable.NO_TAG) {
-      mapPlayableTagToInfo[playback.playable.tag] = playback.playable.playbackInfo
+  // TODO check when we should call this method.
+  internal fun trySavePlaybackInfo(playable: Playable<*>) {
+    if (playable.tag != Playable.NO_TAG) {
+      if (!mapPlayableTagToInfo.containsKey(playable.tag)) {
+        "Save state ${playable.tag}".logError(tag = "Kohii::A11")
+        mapPlayableTagToInfo[playable.tag] = playable.playbackInfo
+      }
     }
   }
 
-  internal fun tryRestorePlaybackInfo(playback: Playback<*>) {
-    if (playback.playable.tag != Playable.NO_TAG) {
-      val info = mapPlayableTagToInfo.remove(playback.playable.tag)
-      if (info != null) playback.playable.playbackInfo = info
+  // TODO check when we should call this method.
+  internal fun tryRestorePlaybackInfo(playable: Playable<*>) {
+    if (playable.tag != Playable.NO_TAG) {
+      val info = mapPlayableTagToInfo.remove(playable.tag)
+      if (info != null) {
+        playable.playbackInfo = info
+        "Restore state ${playable.tag}".logError(tag = "Kohii::A11")
+      }
     }
   }
 
@@ -302,11 +316,8 @@ class Kohii(context: Context) : PlayableManager {
     }
     val manager = managers.getOrPut(lifecycleOwner) {
       // Create new in case of no cache found.
-      if (lifecycleOwner is LifecycleService) {
-        throw IllegalArgumentException("Service is not supported yet.")
-      } else {
-        return@getOrPut ViewPlaybackManager(this, provider, managerGroup, lifecycleOwner)
-      }
+      require(lifecycleOwner !is Service) { "Service is not supported yet." }
+      return@getOrPut ViewPlaybackManager(this, provider, managerGroup, lifecycleOwner)
     }
 
     hosts.mapNotNull {
@@ -385,10 +396,11 @@ class Kohii(context: Context) : PlayableManager {
           }
           is Playback<*> -> this.pause(receiver.targetHost, Scope.HOST)
           else -> {
-            // Find the TargetHost whose host is this receiver
-            val host = this.managers.values.takeFirstOrNull(
-                { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
-            )
+            val host = this.managers.values.asSequence()
+                .map { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
+                .filterNotNull()
+                .firstOrNull()
+
             if (host != null) this.pause(host, Scope.HOST)
           }
         }
@@ -436,9 +448,11 @@ class Kohii(context: Context) : PlayableManager {
           is Playback<*> -> this.resume(receiver.targetHost, Scope.HOST)
           else -> {
             // Find the TargetHost whose host is this receiver
-            val host = this.managers.values.takeFirstOrNull(
-                { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
-            )
+            val host = this.managers.values.asSequence()
+                .map { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
+                .filterNotNull()
+                .firstOrNull()
+
             if (host != null) this.resume(host, Scope.HOST)
           }
         }

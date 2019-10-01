@@ -61,7 +61,8 @@ open class Binder<RENDERER : Any> internal constructor(
       return Playable.Config(
           this.tag,
           this.preLoad,
-          this.cover
+          this.cover,
+          this.headlessPlaybackParams
       )
     }
 
@@ -75,8 +76,7 @@ open class Binder<RENDERER : Any> internal constructor(
           repeatMode,
           parameters,
           keepScreenOn,
-          callback,
-          headlessPlaybackParams
+          callback
       )
     }
   }
@@ -101,10 +101,11 @@ open class Binder<RENDERER : Any> internal constructor(
   }
 
   fun bind(
-    target: RENDERER,
+    renderer: RENDERER,
     onDone: ((Playback<RENDERER>) -> Unit)? = null
   ): Rebinder<RENDERER>? {
-    return this.bind(IdenticalTarget(target), onDone)
+    require(renderer !is Target<*, *>) { "Target type is not allowed here." }
+    return this.bind(IdenticalTarget(renderer), onDone)
   }
 
   private fun requestPlayable(config: Playable.Config): Playable<RENDERER> {
@@ -118,9 +119,9 @@ open class Binder<RENDERER : Any> internal constructor(
         val cache = kohii.mapTagToPlayable[tag]
         if (cache?.second !== playableCreator.rendererType) {
           // cached Playable of different output type will be replaced.
+          if (cache?.first != null) kohii.releasePlayable(tag, cache.first) // Added [20190726]
           toCreate.also {
             kohii.mapTagToPlayable[tag] = Pair(it, playableCreator.rendererType)
-            cache?.first?.release()
           }
         } else {
           @Suppress("UNCHECKED_CAST")

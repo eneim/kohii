@@ -31,6 +31,7 @@ import kohii.v1.sample.ui.overlay.OverlayViewFragment
 import kohii.v1.sample.ui.pager0.PagerViewsFragment
 import kohii.v1.sample.ui.pager1.Pager1Fragment
 import kohii.v1.sample.ui.pager2.Pager2Fragment
+import kohii.v1.sample.ui.pager3.Pager3Fragment
 import kohii.v1.sample.ui.rview.RecyclerViewFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
 import kohii.v1.sample.ui.youtube1.YouTube1Fragment
@@ -97,12 +98,17 @@ class DemoItemsAdapter(
         DemoItem(
             R.string.demo_title_pager_2,
             R.string.demo_desc_pager_2,
-            Pager2Fragment::class.java
+            PagerViewsFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_pager_3,
             R.string.demo_desc_pager_3,
-            PagerViewsFragment::class.java
+            Pager2Fragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_pager_4,
+            R.string.demo_desc_pager_4,
+            Pager3Fragment::class.java
         ),
         DemoItem(
             R.string.demo_title_master_detail,

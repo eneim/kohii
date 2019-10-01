@@ -31,6 +31,13 @@ open class DefaultRendererPool<RENDERER : Any>(
   private val creator: RendererCreator<RENDERER>
 ) : RendererPool<RENDERER>, LifecycleObserver {
 
+  companion object {
+    private fun poolKey(
+      containerType: Int,
+      mediaType: Int
+    ) = "${BuildConfig.LIBRARY_PACKAGE_NAME}::pool::$containerType::$mediaType"
+  }
+
   // key = "kohii.v1::pool::${containerType}::${mediaType}"
   protected val keyToPool = HashMap<String, SimplePool<RENDERER>>()
 
@@ -43,8 +50,8 @@ open class DefaultRendererPool<RENDERER : Any>(
     val containerType = creator.getContainerType(container)
     val mediaType = creator.getMediaType(media)
     val poolKey = poolKey(containerType, mediaType)
-    val pool = keyToPool.getOrPut(poolKey) { SimplePool(poolSize) }
-    return pool.acquire() ?: creator.createRenderer(playback, container, mediaType)
+    val pool = keyToPool[poolKey]
+    return pool?.acquire() ?: creator.createRenderer(playback, container, mediaType)
   }
 
   override fun <CONTAINER : Any> releaseRenderer(
@@ -70,9 +77,4 @@ open class DefaultRendererPool<RENDERER : Any>(
     owner.lifecycle.removeObserver(this)
     kohii.cleanUpPool(owner, this)
   }
-
-  private fun poolKey(
-    containerType: Int,
-    mediaType: Int
-  ) = "${BuildConfig.LIBRARY_PACKAGE_NAME}::pool::$containerType::$mediaType"
 }

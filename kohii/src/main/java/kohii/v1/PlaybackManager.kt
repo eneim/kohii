@@ -18,7 +18,6 @@ package kohii.v1
 
 import androidx.annotation.CallSuper
 import androidx.collection.ArraySet
-import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.Lifecycle.Event.ON_START
 import androidx.lifecycle.Lifecycle.Event.ON_STOP
@@ -26,9 +25,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
-import kohii.takeFirstOrNull
 import kohii.v1.Playback.Config
-import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -45,7 +42,6 @@ abstract class PlaybackManager(
 ) : LifecycleObserver, PlayableManager, Comparable<PlaybackManager> {
 
   companion object {
-    val PRESENT = Any() // Use for mapping.
 
     fun compareAndCheck(
       left: Prioritized,
@@ -53,10 +49,8 @@ abstract class PlaybackManager(
     ): Int {
       val ltr = left.compareTo(right)
       val rtl = right.compareTo(left)
-      if (ltr + rtl != 0) {
-        throw IllegalStateException(
-            "Illegal comparison result. Sum of comparison result of 2 directions must be 0, get ${ltr + rtl}."
-        )
+      check(ltr + rtl == 0) {
+        "Illegal comparison result. Sum of comparison result of 2 directions must be 0, get ${ltr + rtl}."
       }
 
       return ltr
@@ -65,20 +59,14 @@ abstract class PlaybackManager(
 
   // TargetHosts work in "first come first serve" model. Only one TargetHost will be active at a time.
   private val commonTargetHosts = LinkedHashSet<TargetHost>()
-  private val stickyTargetHosts by lazy { ArraySet<TargetHost>() }
+  private val stickyTargetHosts by lazy(NONE) { ArraySet<TargetHost>() }
 
-  private val attachedPlaybacks = ArraySet<Playback<*>>()
-  // Weak map, so detached Playback can be cleared if not referred anymore.
-  private val detachedPlaybacks = WeakHashMap<Playback<*>, Any>()
-  // Any Playback to be removed will be put here.
-  @Suppress("unused")
-  private val playbacksToRemove = ArraySet<Playback<*>>()
-
+  private val playbackStates = mutableMapOf<Playback<*>, Boolean>()
   // As a target has no idea which Playable it is bound to, Manager need to manage the link
   // So that when adding new link, it can effectively clean up old links.
   private val mapTargetToPlayback = HashMap<Any /* Target Container */, Playback<*>>()
 
-  internal val selectionCallbacks = lazy { OnSelectionCallbacks() }
+  internal val selectionCallbacks = lazy(NONE) { OnSelectionCallbacks() }
 
   // will be updated every time a new TargetHost is registered.
   internal val targetHosts = LinkedHashSet<TargetHost>()
@@ -89,55 +77,66 @@ abstract class PlaybackManager(
   // [BEGIN] Internal API
 
   @CallSuper
-  @OnLifecycleEvent(ON_CREATE)
-  protected open fun onOwnerCreate(owner: LifecycleOwner) {
-  }
-
-  @CallSuper
   @OnLifecycleEvent(ON_START)
   protected open fun onOwnerStart(owner: LifecycleOwner) {
-    attachedPlaybacks.forEach {
-      if (kohii.mapPlayableToManager[it.playable] == null ||
-          kohii.mapPlayableToManager[it.playable] === kohii // will take it from background
-      ) {
+    playbackStates.keys.forEach {
+      val playbackActive = it.token.shouldPrepare()
+      if (playbackActive) onActive(it)
+      val playableManager = kohii.mapPlayableToManager[it.playable]
+      // If the PlayableManager of a Playable is undefined, or is Kohii itself (= the Playable is
+      // involved in a background playback), this PlayableManager will takeover it.
+      // Scenario: when an Activity becomes temporarily inactive by an onStop call, if possible
+      // Kohii will keep the Playable alive by background playback. Without the destruction, when
+      // the Activity becomes active again by an onStart call, it will take the Playable back.
+      if (playableManager == null /* no manager found */ || playableManager === kohii /* background playback */) {
         kohii.mapPlayableToManager[it.playable] = this
       }
+
       if (kohii.mapPlayableToManager[it.playable] === this) {
-        kohii.tryRestorePlaybackInfo(it)
-        it.onActive()
-        if (it.token.shouldPrepare()) it.playable.prepare()
+        kohii.tryRestorePlaybackInfo(it.playable)
+        if (playbackActive) it.playable.prepare()
       }
     }
+
+    // When an arbitrary PlaybackManager starts, any existing HeadlessPlayback must dismiss.
     kohii.getHeadlessPlayback()
         ?.dismiss()
     this.dispatchRefreshAll()
   }
 
+  // If user click to 'Recent Apps' button, in modern Android version the stop event is triggered,
+  // but not destroy event. So there is not much event triggered to the UI components, for example
+  // onDetachedFromWindow will not be happened. Considering this situation, we want to keep the
+  // attached Playbacks as it, so when we are back, we can still keep track of the list of active Players.
+  // Note that this event is also where starting background playback should happen.
   @CallSuper
   @OnLifecycleEvent(ON_STOP)
   protected open fun onOwnerStop(owner: LifecycleOwner) {
     val configChange = parent.activity.isChangingConfigurations
-    attachedPlaybacks.forEach {
-      it.onInActive()
+    playbackStates.keys.forEach {
+      // check if the Playback is currently playing right before this event.
       val removed = parent.selection.remove(it)
       val playable = it.playable
       // Only pause this playback if
       // - [1] config change is not happening and
       // - [2] the playable is managed by this manager, or by no-one.
-      // FYI: The Playable instances holds the actual playback resource. It is not managed by
+      // Note: The Playable instances holds the actual playback resource. It is not managed by
       // anything else when the Activity is destroyed and to be recreated (config change).
       if (!configChange && kohii.mapPlayableToManager[playable] === this) {
-        val params = it.config.headlessPlaybackParams
-        if (it.playable.isPlaying && removed && params != null && params.enabled) {
+        val params = playable.config.headlessPlaybackParams
+        if (playable.isPlaying() && removed && params != null && params.enabled) {
           kohii.enterHeadlessPlayback(it, params)
         } else {
+          kohii.trySavePlaybackInfo(playable)
           it.pauseInternal()
-          kohii.trySavePlaybackInfo(it)
+          it.release()
         }
         // it.release()
         // There is no recreation. If this manager is managing the playable, unload the Playable.
         // kohii.mapPlayableToManager[playable] = null
       }
+      // Force the Playback to be inactive
+      onInActive(it)
     }
   }
 
@@ -146,14 +145,13 @@ abstract class PlaybackManager(
   internal open fun onOwnerDestroy(owner: LifecycleOwner) {
     val configChange = parent.activity.isChangingConfigurations
     // Wrap by an ArrayList because we also remove entry while iterating by performRemovePlayback
-    (ArrayList(mapTargetToPlayback.values).apply {
-      this.forEach {
-        if (!configChange && kohii.mapPlayableToManager[it.playable] === this@PlaybackManager) {
-          it.release()
-        }
-        performRemovePlayback(it)
+    ArrayList(mapTargetToPlayback.values).onEach {
+      if (!configChange && kohii.mapPlayableToManager[it.playable] === this@PlaybackManager) {
+        kohii.mapPlayableToManager.remove(it.playable)
       }
-    }).clear()
+      performRemovePlayback(it)
+    }
+        .clear()
 
     kohii.mapPlayableToManager.filter { it.value === this }
         .forEach {
@@ -228,24 +226,28 @@ abstract class PlaybackManager(
   internal fun refreshPlaybacks(): ArrayList<Playback<*>> {
     // Confirm if any invisible view is visible again.
     // This is the case of NestedScrollView.
-    val toActive = detachedPlaybacks.filter { it.key.token.shouldPrepare() }
+    val toActive = playbackStates.filterNot { it.value }
+        .filter { it.key.token.shouldPrepare() }
         .keys
-    val toInActive = attachedPlaybacks.filter {
-      val controller = it.controller
-      val shouldPrepare = it.token.shouldPrepare()
-      return@filter !shouldPrepare &&
-          (controller == null ||
-              controller.pauseBySystem() ||
-              kohii.manualPlayableRecord[it.playable] != true)
-      // TODO consider to force: if controller.startBySystem is true, then controller.pauseBySystem will be ignored.
-    }
+    val toInActive = playbackStates.filterValues { it }
+        .filterKeys {
+          val controller = it.controller
+          val shouldPrepare = it.token.shouldPrepare()
+          return@filterKeys !shouldPrepare &&
+              (controller == null ||
+                  controller.pauseBySystem() ||
+                  kohii.manualPlayableRecord[it.playable] != true)
+          // TODO consider to force: if controller.startBySystem is true, then controller.pauseBySystem will be ignored.
+        }
 
-    toActive.forEach { this.onTargetActive(it.target) }
-    toInActive.forEach { this.onTargetInActive(it.target) }
-    return ArrayList(attachedPlaybacks)
+    toActive.forEach { onActive(it) }
+    toInActive.forEach { onInActive(it.key) }
+    return playbackStates.asSequence()
+        .filter { it.value }
+        .mapTo(arrayListOf(), { e -> e.key })
   }
 
-  // Return the Pair of Playbacks for play to Playbacks for pause.
+  // Return the Pair of Playbacks to play to Playbacks to pause.
   internal fun partitionPlaybacks(): Pair<Collection<Playback<*>> /* toPlay */, Collection<Playback<*>> /* toPause */> {
     val playbacks = refreshPlaybacks()
     val toPlay = HashSet<Playback<*>>()
@@ -254,25 +256,18 @@ abstract class PlaybackManager(
         .groupBy { it.targetHost }
 
     // Iterate by this Set to preserve the TargetHost's order.
-    targetHosts.filter { mapHostToCandidates[it] != null }
-        // First TargetHost returns non empty collection will be picked
-        // Use this customized extension fun so we don't need to call select for all TargetHosts
-        .takeFirstOrNull(
-            transformer = {
-              if (it.lock) {
-                emptyList()
-              } else {
-                it.select(mapHostToCandidates.getValue(it))
-              }
-            },
-            predicate = { it.isNotEmpty() }
-        )
+    targetHosts.asSequence()
+        .filter { mapHostToCandidates[it] != null }
+        .map {
+          if (it.lock) emptyList() else it.select(mapHostToCandidates.getValue(it))
+        }
+        .firstOrNull { it.isNotEmpty() }
         ?.also {
           toPlay.addAll(it)
           playbacks.removeAll(it)
         }
 
-    playbacks.addAll(detachedPlaybacks.keys)
+    playbacks.addAll(playbackStates.filterValues { !it }.keys)
     return if (lock.get()) {
       Pair(emptyList(), toPlay + playbacks)
     } else {
@@ -282,6 +277,14 @@ abstract class PlaybackManager(
 
   // Bind the Playable for a Target in this PlaybackManager.
   // This will create Playback on demand, and add it to Manager.
+  /*
+    Binding Playable to a Target can happen in following scenarios:
+    - New binding: binding a fresh Playable to a fresh Target.
+    - Rebinding (1): rebinding a Playable from one Target to the same Target.
+    - Rebinding (2): rebinding a Playable from one Target to another fresh Target (not bound).
+    - Rebinding (3): binding a fresh Playable to a already-bound Target.
+    - Rebinding (4): rebinding a Playable from one Target to a already-bound Target.
+   */
   internal fun <CONTAINER : Any, RENDERER : Any> performBindPlayable(
     playable: Playable<RENDERER>,
     target: Target<CONTAINER, RENDERER>,
@@ -294,22 +297,22 @@ abstract class PlaybackManager(
     // Find Playback that was bound to this Playable and Target before in the same Manager.
     val existing = this.findPlaybackForPlayable(playable)
     val candidate =
-      if (existing != null && existing.target === target.container && existing.config == config /* not === */) {
+      if (existing != null && existing.target === target.container && existing.config == config /* equals */) {
         existing
       } else {
         creator.createPlayback(this, target, playable, config)
             .also {
               if (config.callback != null) it.addCallback(config.callback)
-              // it.onCreated()
             }
       }
 
     val (added, removed) = performAddPlayback(candidate)
+    kohii.tryRestorePlaybackInfo(added.playable)
 
     // Next, search for and remove any other binding of same Target/Playable as well.
     val toRemove = lazy(NONE) { mutableSetOf<Playback<*>>() }
     if (candidate !== existing) {
-      if (existing != null && existing !== removed) {
+      if (existing != null && existing !== removed) { // 'removed' Playback is removed already.
         toRemove.value += existing
       }
     }
@@ -318,7 +321,7 @@ abstract class PlaybackManager(
 
     // [All] = [Same Target] + [Same Playable] - [Both] + [Others] ([Both] was counted twice)
     val playbacksInOtherManagers = others.flatMap { it.value.mapTargetToPlayback.values } // [All]
-    val sameTarget = others.mapNotNull { it.value.mapTargetToPlayback[target] } // [Same Target]
+    val sameTarget = others.mapNotNull { it.value.mapTargetToPlayback[target.container] }
     val samePlayable = (playbacksInOtherManagers - sameTarget).filter {
       it.playable === playable
     } // [Same Playable] - [Both]
@@ -329,8 +332,7 @@ abstract class PlaybackManager(
     }
 
     if (toRemove.isInitialized()) {
-      toRemove.value.groupBy { it.manager }
-          .forEach { (t, u) -> t.performRemovePlaybacks(u) }
+      toRemove.value.forEach { it.manager.performRemovePlayback(it) }
     }
 
     return added
@@ -345,6 +347,7 @@ abstract class PlaybackManager(
    */
   internal fun <OUTPUT : Any> performAddPlayback(playback: Playback<OUTPUT>): Pair<Playback<OUTPUT>, Playback<*>?> {
     val target = playback.target
+    // cache = old Playback of same target --> its Playable should also be cleared.
     val cache = mapTargetToPlayback[target]
     val shouldAdd = cache == null || cache !== playback
 
@@ -353,23 +356,26 @@ abstract class PlaybackManager(
       // State: there is another Playback of the same Target in the same Manager.
       // Scenario: RecyclerView recycle VH so one Target can be rebound to other Playback.
       // Action: destroy the other Playback, then add the new one.
-      if (cache != null) performRemovePlayback(cache)
+      if (cache != null) {
+        if (cache.playable !== playback.playable && kohii.mapPlayableToManager[cache.playable] === this) {
+          // The Playable of 'cache' must be removed.
+          kohii.trySavePlaybackInfo(cache.playable)
+          kohii.mapPlayableToManager.remove(cache.playable)
+        }
+        performRemovePlayback(cache)
+      }
       mapTargetToPlayback[target] = playback
-      playback.onAdded()
+      onAdded(playback)
     }
 
     // In case we are adding existing one and it is already active, we refresh everything.
-    if (attachedPlaybacks.contains(playback)) {
+    if (playbackStates.containsKey(playback)) {
       if (playback.targetHost.allowsToPlay(playback)) this.dispatchRefreshAll()
     }
 
     // At this point, mapTargetToPlayback must contains the playback instance.
     if (BuildConfig.DEBUG) {
-      if (!mapTargetToPlayback.containsValue(playback)) {
-        throw IllegalStateException(
-            "Could not add Playback: $playback"
-        )
-      }
+      check(mapTargetToPlayback.containsValue(playback)) { "Could not add Playback: $playback" }
     }
 
     return playback to cache
@@ -378,68 +384,24 @@ abstract class PlaybackManager(
   // Permanently remove the Playback from cache.
   // Notice: never call this inside an iteration of the maps below:
   // - mapTargetToPlayback
-  // - attachedPlaybacks
-  // - detachedPlaybacks
-  // - mapPlayableTagToInfo
-  internal fun performRemovePlayback(playback: Playback<*>) {
-    mapTargetToPlayback.remove(playback.target)
+  private fun performRemovePlayback(playback: Playback<*>) {
+    val target = playback.target
+    mapTargetToPlayback.remove(target)
         ?.also {
-          if (it !== playback) throw IllegalStateException(
-              "Illegal cache: expect $playback but get $it"
-          )
-          val toInActive = attachedPlaybacks.remove(it)
-          detachedPlaybacks.remove(it)
-          if (toInActive) it.onInActive()
-          it.onRemoved()
-          // it.onDestroyed()
-          it.removeCallback(parent)
+          check(it === playback) { "Illegal cache: expect $playback but get $it" }
+          if (playbackStates.containsKey(it)) {
+            onInActive(it)
+            onDetached(it)
+            playbackStates.remove(it)
+          }
+          parent.selection.remove(it)
+          onRemoved(it)
         }
   }
 
-  private fun performRemovePlaybacks(playbacks: Collection<Playback<*>>) {
-    playbacks.forEach { performRemovePlayback(it) }
-  }
-
-  // Called when a Playback's target is attached. Eg: PlayerView is attached to window.
-  internal fun <T> onTargetActive(target: T) {
-    mapTargetToPlayback[target as Any]?.also {
-      attachedPlaybacks.add(it)
-      detachedPlaybacks.remove(it)
-      if (kohii.mapPlayableToManager[it.playable] === this) { // added 20190115, check this.
-        kohii.tryRestorePlaybackInfo(it)
-        if (it.token.shouldPrepare()) it.playable.prepare()
-        it.onActive()
-      }
-      this@PlaybackManager.dispatchRefreshAll()
-    } ?: throw IllegalStateException(
-        "No Playback found for Target: $target in Manager: $this"
-    )
-  }
-
-  // Called when a Playback's target is detached. Eg: PlayerView is detached from window.
-  // Call this will also save old PlaybackInfo if needed.
-  internal fun <T> onTargetInActive(target: T) {
-    mapTargetToPlayback[target as Any]?.also {
-      parent.selection.remove(it)
-      detachedPlaybacks[it] = PRESENT // Mark as detached/inactive
-      if (attachedPlaybacks.remove(it)) it.onInActive()
-      this@PlaybackManager.dispatchRefreshAll() // To refresh latest playback status.
-      val configChange = parent.activity.isChangingConfigurations
-      if (!configChange && kohii.mapPlayableToManager[it.playable] === this) {
-        // Become inactive in this Manager.
-        // Only pause and release if this Manager manages the Playable.
-        it.pauseInternal()
-        kohii.trySavePlaybackInfo(it)
-        // We need to release here. Reason: in RecyclerView, when the ViewHolder is detached,
-        // its PlayerView will be inactive.
-        it.release()
-      }
-    }
-  }
-
   // Called by Playback to notify that its Target has internal change.
-  internal fun <T> onTargetUpdated(target: T) {
-    val playback = mapTargetToPlayback[target as Any]
+  internal fun onTargetUpdated(target: Any) {
+    val playback = mapTargetToPlayback[target]
     if (playback != null) {
       // fixed = the TargetHost that truly accepts the target.
       // Scenario: in first bind of RV, VH's itemView has null Parent, but might has LayoutParams
@@ -456,6 +418,77 @@ abstract class PlaybackManager(
     }
   }
 
+  // Called when a Playback's target is attached. Eg: PlayerView is attached to window.
+  internal fun onTargetAttached(target: Any) {
+    mapTargetToPlayback[target]?.also {
+      playbackStates[it] = false
+      // [Q] Any chance that kohii.mapPlayableToManager[it.playable] is not 'this'?
+      if (kohii.mapPlayableToManager[it.playable] === this) { // added 20190115, check this.
+        kohii.tryRestorePlaybackInfo(it.playable)
+        if (it.token.shouldPrepare()) it.playable.prepare()
+        onAttached(it)
+        onActive(it)
+      }
+      this@PlaybackManager.dispatchRefreshAll()
+    } ?: throw IllegalStateException(
+        "No Playback found for Target: $target in Manager: $this"
+    )
+  }
+
+  // Called when a Playback's target is detached. Eg: PlayerView is detached from window.
+  // Call this will also save old PlaybackInfo if needed.
+  // We need to keep track of detached target, because in case of RecyclerView, when a ViewHolder's
+  // View is detached, it is still bound to data and can be re-attached anytime without any re-binding.
+  internal fun onTargetDetached(target: Any) {
+    val configChange = parent.activity.isChangingConfigurations
+    mapTargetToPlayback[target]?.also {
+      parent.selection.remove(it)
+      if (playbackStates.containsKey(it)) {
+        onInActive(it)
+        onDetached(it)
+        playbackStates.remove(it)
+      }
+      if (!configChange && kohii.mapPlayableToManager[it.playable] === this) {
+        // Only pause and release if this Manager manages the Playable.
+        kohii.trySavePlaybackInfo(it.playable)
+        it.pauseInternal()
+        // We need to release here. Reason: in RecyclerView, when the ViewHolder is detached,
+        // its PlayerView will be inactive.
+        it.release()
+      }
+    }
+    this.dispatchRefreshAll() // To refresh latest playback status.
+  }
+
+  private fun onAdded(playback: Playback<*>) {
+    playback.onAdded()
+  }
+
+  private fun onAttached(playback: Playback<*>) {
+    playback.onTargetAttached()
+  }
+
+  // Place where Playback should setup the Target to its container (e.g add PlayerView).
+  private fun onActive(playback: Playback<*>) {
+    playbackStates[playback] = true
+    playback.onTargetActive()
+  }
+
+  // Place where Playback should free the Target from its container (e.g remove PlayerView).
+  private fun onInActive(playback: Playback<*>) {
+    playbackStates[playback] = false
+    playback.onTargetInActive()
+  }
+
+  private fun onDetached(playback: Playback<*>) {
+    playback.onTargetDetached()
+  }
+
+  private fun onRemoved(playback: Playback<*>) {
+    playback.onRemoved()
+    playback.removeCallback(parent)
+  }
+
   @Suppress("UNCHECKED_CAST")
   internal fun <OUTPUT : Any> findPlaybackForPlayable(playable: Playable<OUTPUT>): Playback<OUTPUT>? =
     this.mapTargetToPlayback.values.firstOrNull {
@@ -463,11 +496,15 @@ abstract class PlaybackManager(
     } as? Playback<OUTPUT>?
 
   @Suppress("UNCHECKED_CAST")
-  internal fun <OUTPUT : Any> findPlaybackForOutputHolder(output: OUTPUT): Playback<OUTPUT>? =
+  internal fun <OUTPUT : Any> findPlaybackForOutput(output: OUTPUT): Playback<OUTPUT>? =
     this.mapTargetToPlayback.values.firstOrNull { it.renderer === output } as? Playback<OUTPUT>
 
   internal fun findHostForContainer(container: Any) =
     targetHosts.firstOrNull { it.accepts(container) }
+
+  internal fun isActive(playback: Playback<*>): Boolean {
+    return playbackStates[playback] == true
+  }
 
   override fun toString(): String {
     return "Manager:${Integer.toHexString(super.hashCode())}, Provider: $provider"
@@ -576,5 +613,11 @@ abstract class PlaybackManager(
 
   internal fun promote(targetHost: TargetHost) {
     this.registerTargetHost(targetHost, sticky = true)
+  }
+
+  // TODO check this implementation.
+  internal fun unbind(playback: Playback<*>) {
+    onTargetDetached(playback.target)
+    performRemovePlayback(playback)
   }
 }

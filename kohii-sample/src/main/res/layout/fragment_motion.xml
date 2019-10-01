@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,26 +43,33 @@
         android:orientation="vertical"
         >
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
+          android:clickable="true"
+          android:focusable="true"
           android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video0)}"
-          app:provider="@{presenter.requireProvider()}"
-          app:resize_mode="fixed_width"
-          app:show_buffering="when_playing"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video0}"
-          />
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:provider="@{presenter.requireProvider()}"
+            app:resize_mode="fixed_width"
+            app:show_buffering="when_playing"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video0}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="4dp"
-          android:layout_marginEnd="8dp"
           android:layout_marginStart="8dp"
           android:layout_marginTop="8dp"
+          android:layout_marginEnd="8dp"
+          android:layout_marginBottom="4dp"
           android:text="@{motion.title}"
           android:textAppearance="@style/TextAppearance.AppCompat.Headline"
           />
@@ -71,9 +77,9 @@
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="8dp"
-          android:layout_marginEnd="8dp"
           android:layout_marginStart="8dp"
+          android:layout_marginEnd="8dp"
+          android:layout_marginBottom="8dp"
           android:text="@{motion.subTitle}"
           android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
           />
@@ -94,18 +100,25 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video1)}"
-          app:provider="@{presenter.requireProvider()}"
-          app:resize_mode="fixed_width"
-          app:show_buffering="when_playing"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video1}"
-          />
+          android:clickable="true"
+          android:focusable="true"
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video0)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:provider="@{presenter.requireProvider()}"
+            app:resize_mode="fixed_width"
+            app:show_buffering="when_playing"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video1}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
@@ -116,18 +129,25 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video2)}"
-          app:provider="@{presenter.requireProvider()}"
-          app:resize_mode="fixed_width"
-          app:show_buffering="when_playing"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video2}"
-          />
+          android:clickable="true"
+          android:focusable="true"
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video0)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:provider="@{presenter.requireProvider()}"
+            app:resize_mode="fixed_width"
+            app:show_buffering="when_playing"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video2}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
@@ -138,18 +158,25 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video3)}"
-          app:provider="@{presenter.requireProvider()}"
-          app:resize_mode="fixed_width"
-          app:show_buffering="when_playing"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video3}"
-          />
+          android:clickable="true"
+          android:focusable="true"
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video0)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:provider="@{presenter.requireProvider()}"
+            app:resize_mode="fixed_width"
+            app:show_buffering="when_playing"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video3}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"
@@ -160,18 +187,25 @@
           android:textAppearance="@style/TextAppearance.AppCompat.Body1"
           />
 
-      <com.google.android.exoplayer2.ui.PlayerView
+      <FrameLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:minHeight="120dp"
-          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video4)}"
-          app:provider="@{presenter.requireProvider()}"
-          app:resize_mode="fixed_width"
-          app:show_buffering="when_playing"
-          app:surface_type="texture_view"
-          app:use_controller="false"
-          app:video="@{motion.video4}"
-          />
+          android:clickable="true"
+          android:focusable="true"
+          android:onClick="@{(view) -> presenter.onVideoClick(view, motion.video0)}"
+          >
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="120dp"
+            app:provider="@{presenter.requireProvider()}"
+            app:resize_mode="fixed_width"
+            app:show_buffering="when_playing"
+            app:surface_type="texture_view"
+            app:use_controller="false"
+            app:video="@{motion.video4}"
+            />
+      </FrameLayout>
 
       <androidx.appcompat.widget.AppCompatTextView
           android:layout_width="match_parent"

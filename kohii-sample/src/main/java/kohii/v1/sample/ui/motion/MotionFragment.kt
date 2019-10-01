@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
+import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.safeCast
@@ -55,10 +56,7 @@ class MotionFragment : BaseFragment(), Presenter {
         R.layout.fragment_motion,
         container,
         false
-    ) as FragmentMotionBinding).also {
-      it.motion = Motion()
-      it.lifecycleOwner = this
-    }
+    ) as FragmentMotionBinding)
     return binding!!.root
   }
 
@@ -68,6 +66,10 @@ class MotionFragment : BaseFragment(), Presenter {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this, scrollView)
+    binding?.let {
+      it.motion = Motion()
+      it.lifecycleOwner = viewLifecycleOwner
+    }
   }
 
   override fun onStart() {
@@ -84,7 +86,8 @@ class MotionFragment : BaseFragment(), Presenter {
     container: View,
     video: Video
   ) {
-    val rebinder = (container.getTag(R.id.motion_view_tag) as Rebinder<*>?).safeCast<PlayerView>()
+    val playerView = (container as ViewGroup)[0]
+    val rebinder = (playerView.getTag(R.id.motion_view_tag) as Rebinder<*>?).safeCast<PlayerView>()
     rebinder?.also {
       startActivity(
           PlayerActivity.createIntent(

@@ -200,3 +200,9 @@ internal fun String.logWarn(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
     Log.w(tag, this)
   }
 }
+
+internal fun String.logError(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+  if (BuildConfig.DEBUG) {
+    Log.e(tag, this)
+  }
+}

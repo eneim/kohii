@@ -37,9 +37,9 @@ interface Bridge<RENDERER : Any> {
 
   @RepeatMode var repeatMode: Int
 
-  val isPlaying: Boolean
-
   val volumeInfo: VolumeInfo
+
+  fun isPlaying(): Boolean
 
   fun seekTo(positionMs: Long)
 

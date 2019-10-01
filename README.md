@@ -26,8 +26,8 @@ Kohii is a high level Video playback library, built from the experience creating
 Add to your module's build.gradle dependencies
 
 ```groovy
-implementation "im.ene.kohii:kohii:1.0.0.2906-A10"
-implementation "com.google.android.exoplayer:exoplayer:2.9.6"
+implementation "im.ene.kohii:kohii:1.0.0.2010004-A11"
+implementation "com.google.android.exoplayer:exoplayer:2.10.4"
 ```
 
 ## Start a playback
