@@ -134,9 +134,10 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         .withSelectionPredicate(SelectionPredicates.createSelectSingleAnything())
         .build()
         .also {
-          videoAdapter.selectionTracker = it
           it.onRestoreInstanceState(savedInstanceState)
         }
+
+    videoAdapter.selectionTracker = selectionTracker
 
     val sheet = BottomSheetBehavior.from(bottomSheet)
     overlaySheet = sheet
@@ -179,12 +180,14 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         key: Rebinder<PlayerView>,
         selected: Boolean
       ) {
-        if (selected && key !== rebinder) {
-          rebinder = key
-          key.rebind(kohii, overlayPlayerView) {
-            kohii.promote(it)
-            playback = it
-            sheet.state = STATE_EXPANDED
+        if (selected) {
+          if (key !== rebinder) {
+            rebinder = key
+            key.rebind(kohii, overlayPlayerView) {
+              kohii.promote(it)
+              playback = it
+              sheet.state = STATE_EXPANDED
+            }
           }
         }
       }
