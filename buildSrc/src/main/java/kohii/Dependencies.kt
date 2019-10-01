@@ -76,7 +76,7 @@ object Libs {
     val palette = "androidx.palette:palette:1.0.0"
     val emoji = "androidx.emoji:emoji:1.0.0"
 
-    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0-beta03"
+    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0-beta04"
     val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-alpha06"
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
