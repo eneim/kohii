@@ -31,9 +31,7 @@ open class LazyViewPlayback<RENDERER : Any>(
 ) {
 
   init {
-    if (boxedTarget is IdenticalTarget<*>) {
-      throw IllegalArgumentException("IdenticalTarget is not allowed here.")
-    }
+    require(boxedTarget !is IdenticalTarget<*>) { "IdenticalTarget is not allowed here." }
   }
 
   private var _renderer: RENDERER? by Delegates.observable(null as RENDERER?,
