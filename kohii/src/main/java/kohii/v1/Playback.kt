@@ -27,6 +27,7 @@ import kohii.v1.Playable.Companion.STATE_READY
 import kohii.v1.Playable.RepeatMode
 import kohii.v1.Playable.State
 import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Instance of this class will be tight to a Target. And that target is not reusable, so instance
@@ -82,8 +83,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
     @RepeatMode val repeatMode: Int = Playable.REPEAT_MODE_OFF,
     val parameters: PlaybackParameters = PlaybackParameters.DEFAULT,
     val keepScreenOn: Boolean = true,
-    val callback: Callback? = null, // stateful, can leak
-    val headlessPlaybackParams: HeadlessPlaybackParams? = null
+    val callback: Callback? = null // stateful, can leak
   )
 
   // Listeners for Playable. Playable will access these filed on demand.
@@ -115,11 +115,10 @@ abstract class Playback<RENDERER : Any> internal constructor(
         STATE_IDLE -> {
         }
         STATE_BUFFERING ->
-          listener.onBuffering(this@Playback, playable.isPlaying)
+          listener.onBuffering(this@Playback, playable.isPlaying())
         STATE_READY ->
-          if (playable.isPlaying) listener.onPlay(
-              this@Playback
-          ) else listener.onPause(this@Playback)
+          if (playable.isPlaying()) listener.onPlay(this@Playback)
+          else listener.onPause(this@Playback)
         STATE_END -> listener.onEnd(this@Playback)
       }
     }
@@ -197,8 +196,8 @@ abstract class Playback<RENDERER : Any> internal constructor(
   }
 
   fun unbind() {
-    this.unbindInternal()
-    manager.performRemovePlayback(this)
+    manager.unbind(this)
+    this.onUnbind()
   }
 
   // [END] Public API
@@ -215,8 +214,8 @@ abstract class Playback<RENDERER : Any> internal constructor(
   }
 
   @CallSuper
-  internal open fun unbindInternal() {
-    manager.onTargetInActive(this.target)
+  open fun onUnbind() {
+    // no-ops. for child class to override.
   }
 
   // Used by subclasses to dispatch internal event listeners
@@ -254,8 +253,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
   }
 
   internal fun release() {
-    playable.release()
-    kohii.mapPlayableTagToInfo.remove(playable.tag)
+    playable.onRelease(this)
   }
 
   @CallSuper
@@ -279,38 +277,6 @@ abstract class Playback<RENDERER : Any> internal constructor(
     targetHost.attachTarget(target)
   }
 
-  // ~ View is attached
-  @CallSuper
-  internal open fun onActive() {
-    // TODO [20190527] why we do not call this anymore?
-    // playable.onActive(this)
-    for (callback in this.callbacks) {
-      callback.onActive(this)
-    }
-    val player = this.renderer
-    if (player != null && player === this.target) {
-      this.playable.onPlayerActive(this, player)
-    }
-  }
-
-  // Playback's onInActive is equal to View's detach event or Activity stops.
-  // Once it is inactive, its resource is considered freed and can be cleanup anytime.
-  // Proper handling of in-active state must consider to: [1] Save any previous state (PlaybackInfo)
-  // to cache, ready to reuse once coming back, [2] Consider to release allocated resource if there
-  // is no other Manager manages the internal Playable.
-  @CallSuper
-  internal open fun onInActive() {
-    for (callback in this.callbacks) {
-      callback.onInActive(this)
-    }
-    val player = this.renderer
-    if (player === this.target) {
-      this.playable.onPlayerInActive(this, player)
-    }
-    // TODO [20190527] why we do not call this anymore?
-    // playable.onInActive(this)
-  }
-
   // Being removed from Manager
   @CallSuper
   internal open fun onRemoved() {
@@ -323,11 +289,15 @@ abstract class Playback<RENDERER : Any> internal constructor(
     this.listeners.clear()
   }
 
-  override fun toString(): String {
+  private val lazyString by lazy(NONE) {
     val firstPart = "${javaClass.simpleName}@${Integer.toHexString(hashCode())}"
     val tagString = tag.toString()
     val tagLog = tagString.substring(tagString.length - 4)
-    return "$firstPart::$tagLog"
+    "$firstPart::$tagLog"
+  }
+
+  override fun toString(): String {
+    return lazyString
   }
 
   interface Callback {
@@ -349,7 +319,8 @@ abstract class Playback<RENDERER : Any> internal constructor(
     // false = full manual.
     // true = half manual.
     // When true:
-    // - If user starts a Playback, it will not be paused until Playback is not visible enough (controlled by Playback.Config), or user starts other Playback (priority override).
+    // - If user starts a Playback, it will not be paused until Playback is not visible enough
+    // (controlled by Playback.Config), or user starts other Playback (priority override).
     // - If user pauses a Playback, it will not be played until user resumes it.
     // - If user scrolls a Playback so that a it is not visible enough, system will pause the Playback.
     // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously played by User,
@@ -358,5 +329,41 @@ abstract class Playback<RENDERER : Any> internal constructor(
 
     // - Allow System to start a Playback.
     fun startBySystem(): Boolean = false
+  }
+
+  fun onTargetAttached() {}
+
+  fun onTargetDetached() {}
+
+  @CallSuper
+  open fun onTargetActive() {
+    for (callback in this.callbacks) {
+      callback.onActive(this)
+    }
+
+    if (kohii.mapPlayableToManager[playable] === this.manager) {
+      // val current = manager.mapTargetToPlayback[this.target]
+      // if (current?.playable !== this.playable) return
+      val player = this.renderer
+      if (player === this.target) {
+        this.playable.onPlayerActive(this, player)
+      }
+    }
+  }
+
+  @CallSuper
+  open fun onTargetInActive() {
+    for (callback in this.callbacks) {
+      callback.onInActive(this)
+    }
+
+    if (kohii.mapPlayableToManager[playable] === this.manager) {
+      // val current = manager.mapTargetToPlayback[this.target]
+      // if (current?.playable !== this.playable) return
+      val player = this.renderer
+      if (player === this.target) {
+        this.playable.onPlayerInActive(this, player)
+      }
+    }
   }
 }

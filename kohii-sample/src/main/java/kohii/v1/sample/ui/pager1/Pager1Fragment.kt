@@ -32,6 +32,7 @@ import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlin.math.abs
 
+// ViewPager whose pages are Fragments
 class Pager1Fragment : BaseFragment() {
 
   companion object {

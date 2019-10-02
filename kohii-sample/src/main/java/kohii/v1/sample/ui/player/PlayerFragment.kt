@@ -78,7 +78,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
     }
     prepareSharedElementTransition()
 
-    val initData = arguments?.getParcelable(KEY_INIT_DATA) as InitData
+    val initData = arguments?.getParcelable<InitData>(KEY_INIT_DATA)!!
     val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
     transView = container
     ViewCompat.setTransitionName(transView!!, initData.tag)

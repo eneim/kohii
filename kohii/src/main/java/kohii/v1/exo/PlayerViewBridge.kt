@@ -29,7 +29,6 @@ import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
 import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
@@ -49,7 +48,6 @@ import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.R
 import kohii.v1.VolumeInfoController
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 
 /**
@@ -78,8 +76,8 @@ internal open class PlayerViewBridge(
   private val context = kohii.app
   private val mediaSourceFactory = mediaSourceFactoryProvider.provideMediaSourceFactory(media)
 
-  private var listenerApplied = AtomicBoolean(false)
-  private var sourcePrepared = AtomicBoolean(false)
+  private var listenerApplied = false
+  private var sourcePrepared = false
 
   private var _playbackInfo = PlaybackInfo() // Backing field for PlaybackInfo set/get
   private var _repeatMode = Playable.REPEAT_MODE_OFF // Backing field
@@ -98,8 +96,8 @@ internal open class PlayerViewBridge(
     super.addEventListener(this)
 
     if (player == null) {
-      sourcePrepared.set(false)
-      listenerApplied.set(false)
+      sourcePrepared = false
+      listenerApplied = false
     }
 
     if (loadSource) {
@@ -117,7 +115,7 @@ internal open class PlayerViewBridge(
       this.lastSeenTrackGroupArray = null
       this.inErrorState = false
       if (value == null) {
-        field?.also {
+        field!!.also {
           // 'field' must be not null here
           it.player = null
           it.setErrorMessageProvider(null)
@@ -143,7 +141,7 @@ internal open class PlayerViewBridge(
   }
 
   override fun pause() {
-    if (sourcePrepared.get()) player?.playWhenReady = false
+    if (sourcePrepared) player?.playWhenReady = false
   }
 
   override fun reset() {
@@ -153,7 +151,7 @@ internal open class PlayerViewBridge(
       it.stop(true)
     }
     this.mediaSource = null // So it will be re-prepared later.
-    this.sourcePrepared.set(false)
+    this.sourcePrepared = false
     this.lastSeenTrackGroupArray = null
     this.inErrorState = false
   }
@@ -162,8 +160,9 @@ internal open class PlayerViewBridge(
     this.removeEventListener(this)
     this.playerView = null
     player?.also {
-      if (listenerApplied.compareAndSet(true, false)) {
+      if (listenerApplied) {
         it.removeEventListener(eventListeners)
+        listenerApplied = false
       }
       (it as? VolumeInfoController)?.removeVolumeChangedListener(volumeListeners)
       it.stop(true)
@@ -172,15 +171,17 @@ internal open class PlayerViewBridge(
 
     this.player = null
     this.mediaSource = null
-    this.sourcePrepared.set(false)
+    this.sourcePrepared = false
     this.lastSeenTrackGroupArray = null
     this.inErrorState = false
   }
 
-  override val isPlaying: Boolean
-    get() = player?.let {
+  // TODO double check this once ExoPlayer release the "Player.isPlaying" API
+  override fun isPlaying(): Boolean {
+    return player?.let {
       it.playbackState in 2..3 && it.playWhenReady
     } ?: false
+  }
 
   override val volumeInfo: VolumeInfo
     get() = this.playbackInfo.volumeInfo // this will first update the PlaybackInfo via getter.
@@ -262,36 +263,36 @@ internal open class PlayerViewBridge(
     // Note: we allow subclass to create MediaSource on demand. So it can be not-null here.
     // The flag sourcePrepared can also be set to false somewhere else.
     if (mediaSource == null) {
-      sourcePrepared.set(false)
+      sourcePrepared = false
       mediaSource = mediaSourceFactory.createMediaSource(this.media.uri)
     }
 
     // Player is reset, need to prepare again.
     if (player?.playbackState == Player.STATE_IDLE) {
-      sourcePrepared.set(false)
+      sourcePrepared = false
     }
 
-    if (!sourcePrepared.get()) {
+    if (!sourcePrepared) {
       ensurePlayer()
       (player as? ExoPlayer)?.also {
         it.prepare(mediaSource, playbackInfo.resumeWindow == INDEX_UNSET, false)
-        sourcePrepared.set(true)
+        sourcePrepared = true
       }
     }
   }
 
   private fun ensurePlayer() {
     if (player == null) {
-      sourcePrepared.set(false)
-      listenerApplied.set(false)
+      sourcePrepared = false
+      listenerApplied = false
       player = playerProvider.acquirePlayer(this.media)
     }
 
     player!!.also {
-      if (!listenerApplied.get()) {
+      if (!listenerApplied) {
         (player as? VolumeInfoController)?.addVolumeChangedListener(volumeListeners)
         it.addEventListener(eventListeners)
-        listenerApplied.set(true)
+        listenerApplied = true
       }
 
       it.playbackParameters = _playbackParams
@@ -313,8 +314,8 @@ internal open class PlayerViewBridge(
     // (by not calling super.onErrorMessage(message)).
     if (this.errorListeners.isNotEmpty()) {
       this.errorListeners.onError(RuntimeException(message, cause))
-    } else if (playerView != null) {
-      Toast.makeText(playerView!!.context.applicationContext, message, Toast.LENGTH_SHORT)
+    } else {
+      Toast.makeText(context, message, Toast.LENGTH_SHORT)
           .show()
     }
   }
@@ -397,15 +398,15 @@ internal open class PlayerViewBridge(
   ) {
     if (trackGroups == lastSeenTrackGroupArray) return
     lastSeenTrackGroupArray = trackGroups
-    val trackSelector = playerProvider.trackSelector as? MappingTrackSelector ?: return
-    val trackInfo = trackSelector.currentMappedTrackInfo
+    val player = this.player as? KohiiExoPlayer ?: return
+    val trackInfo = player.trackSelector.currentMappedTrackInfo
     if (trackInfo != null) {
       if (trackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_video), player?.playbackError)
+        onErrorMessage(context.getString(R.string.error_unsupported_video), player.playbackError)
       }
 
       if (trackInfo.getTypeSupport(C.TRACK_TYPE_AUDIO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_audio), player?.playbackError)
+        onErrorMessage(context.getString(R.string.error_unsupported_audio), player.playbackError)
       }
     }
   }

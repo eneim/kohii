@@ -16,6 +16,7 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="app_name">Kohii Library</string>
+  <string name="app_description">A media content</string>
 
   <string name="application_name">ExoPlayer</string>
 

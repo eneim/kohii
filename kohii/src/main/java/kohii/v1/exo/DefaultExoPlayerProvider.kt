@@ -28,16 +28,13 @@ import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.util.Util
 import kohii.media.Media
 import kohii.onEachAcquired
-import kohii.v1.Cleanable
-import java.lang.Math.max
 import java.net.CookieHandler
 import java.net.CookieManager
 import java.net.CookiePolicy
-import java.util.WeakHashMap
+import kotlin.math.max
 
 /**
  * @author eneim (2018/10/27).
@@ -49,18 +46,18 @@ class DefaultExoPlayerProvider(
   private val loadControl: LoadControl = DefaultLoadControl(),
   private val renderersFactory: RenderersFactory = DefaultRenderersFactory(
       context.applicationContext
-  ).setExtensionRendererMode(EXTENSION_RENDERER_MODE_OFF),
-  override val trackSelector: TrackSelector = DefaultTrackSelector()
+  ).setExtensionRendererMode(EXTENSION_RENDERER_MODE_OFF)
 ) : ExoPlayerProvider {
 
   companion object {
+    // Max number of Player instance are cached in the Pool
     // Magic number: Build.VERSION.SDK_INT / 6 --> API 16 ~ 18 will set pool size to 2, etc.
     internal val MAX_POOL_SIZE = max(Util.SDK_INT / 6, Runtime.getRuntime().availableProcessors())
   }
 
   // Cache...
   private val plainPlayerPool = Pools.SimplePool<Player>(MAX_POOL_SIZE)
-  private val drmPlayerCache = WeakHashMap<ExoPlayer, DrmSessionManager<*>>()
+  private val drmPlayerCache = HashMap<ExoPlayer, DrmSessionManager<*>>()
 
   init {
     // Adapt from ExoPlayer demo app.
@@ -74,22 +71,22 @@ class DefaultExoPlayerProvider(
   override fun acquirePlayer(media: Media): Player {
     val drmSessionManager = drmSessionManagerProvider?.provideDrmSessionManager(media)
     val result = if (drmSessionManager == null) {
-      plainPlayerPool.acquire() ?: KohiiPlayer(
+      plainPlayerPool.acquire() ?: KohiiExoPlayer(
           context,
           renderersFactory,
-          trackSelector,
+          DefaultTrackSelector(),
           loadControl,
-          bandwidthMeterFactory.createBandwidthMeter(),
+          bandwidthMeterFactory.createBandwidthMeter(this.context),
           null,
           Util.getLooper()
       )
     } else {
-      KohiiPlayer(
+      KohiiExoPlayer(
           context,
           renderersFactory,
-          trackSelector,
+          DefaultTrackSelector(),
           loadControl,
-          bandwidthMeterFactory.createBandwidthMeter(),
+          bandwidthMeterFactory.createBandwidthMeter(this.context),
           drmSessionManager,
           Util.getLooper()
       ).also {
@@ -118,9 +115,9 @@ class DefaultExoPlayerProvider(
   }
 
   override fun cleanUp() {
-    for ((key) in drmPlayerCache) key?.release()
+    for ((key) in drmPlayerCache) key.release()
     drmPlayerCache.clear()
-    (drmSessionManagerProvider as? Cleanable)?.cleanUp()
+    drmSessionManagerProvider?.cleanUp()
     plainPlayerPool.onEachAcquired { it.release() }
   }
 }

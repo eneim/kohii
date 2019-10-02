@@ -40,7 +40,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   companion object {
     const val videoUrl =
       // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
-      "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8" // Big Buck Bunny
+      "https://content.jwplatform.com/manifests/146UwF4L.m3u8" // Big Buck Bunny
 
     fun newInstance() = ScrollViewFragment().also {
       it.arguments = Bundle()

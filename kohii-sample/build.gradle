@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import kohii.BuildConfig
 import kohii.Libs
 
 apply plugin: 'com.android.application'
@@ -35,7 +36,7 @@ if (file("google-services.json").exists()) {
 }
 
 android {
-  compileSdkVersion buildConfig.compileSdk
+  compileSdkVersion BuildConfig.compileSdkVersion
 
   signingConfigs {
     release {
@@ -55,10 +56,10 @@ android {
 
   defaultConfig {
     applicationId "kohii.v1.sample"
-    minSdkVersion 21 /* buildConfig.minSdk */
-    targetSdkVersion buildConfig.targetSdk
-    versionCode buildConfig.version.code
-    versionName buildConfig.version.name
+    minSdkVersion 21 /* BuildConfig.minSdkVersion */
+    targetSdkVersion BuildConfig.targetSdkVersion
+    versionCode BuildConfig.releaseVersionCode
+    versionName BuildConfig.releaseVersionName
 
     manifestPlaceholders = [
         fabric_api_key: "${fabric_api_key}"
@@ -90,11 +91,6 @@ android {
     }
   }
 
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
-
   packagingOptions {
     exclude 'META-INF/services/javax.annotation.processing.Processor'
     exclude 'META-INF/DEPENDENCIES'
@@ -102,6 +98,15 @@ android {
 
   dataBinding.enabled = true
   productFlavors {}
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
 }
 
 configurations {
@@ -138,10 +143,6 @@ dependencies {
 
   implementation Libs.AndroidX.viewPager2
 
-  testImplementation Libs.Common.junit
-  androidTestImplementation Libs.AndroidX.Test.core
-  androidTestImplementation Libs.AndroidX.Test.espressoCore
-
   implementation Libs.Square.moshi
   implementation Libs.Square.moshiKotlin
   implementation Libs.Square.okio
@@ -149,8 +150,6 @@ dependencies {
   implementation Libs.Glide.glide
   kapt Libs.Glide.compiler
   implementation Libs.Other.androidSvg
-
-  debugImplementation Libs.Square.leakCanary
 
   implementation(Libs.Google.crashlytics) {
     transitive = true
@@ -163,4 +162,10 @@ dependencies {
 
   implementation Libs.Google.firebaseCore
   implementation Libs.Other.youtubePlayer
+
+  debugImplementation Libs.Square.leakCanary
+
+  testImplementation Libs.Common.junit
+  androidTestImplementation Libs.AndroidX.Test.core
+  androidTestImplementation Libs.AndroidX.Test.espressoCore
 }

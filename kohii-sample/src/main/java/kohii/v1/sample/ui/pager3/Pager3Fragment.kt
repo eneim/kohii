@@ -14,76 +14,73 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.pager0
+package kohii.v1.sample.ui.pager3
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.viewpager.widget.PagerAdapter
+import androidx.recyclerview.widget.RecyclerView.Adapter
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.ViewTarget
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
-import kotlinx.android.synthetic.main.fragment_pager.viewPager
+import kotlinx.android.synthetic.main.fragment_pager_2_vertical.viewPager
 import kotlinx.android.synthetic.main.widget_video_container.view.videoFrame
 
-// ViewPager whose pages are Views
-class PagerViewsFragment : BaseFragment() {
+// ViewPager2 whose pages are Views
+class Pager3Fragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = PagerViewsFragment()
+    fun newInstance() = Pager3Fragment()
   }
 
-  class PagerPagesAdapter(
+  class VideoViewHolder(
     val kohii: Kohii,
-    private val videos: List<Video>
-  ) : PagerAdapter() {
+    itemView: View
+  ) : ViewHolder(itemView) {
 
-    override fun isViewFromObject(
-      view: View,
-      `object`: Any
-    ): Boolean {
-      return view === `object`
-    }
-
-    override fun getCount(): Int {
-      return Int.MAX_VALUE
-    }
-
-    override fun instantiateItem(
-      container: ViewGroup,
-      position: Int
-    ): Any {
-      // Normal creation
-      val view = LayoutInflater.from(container.context)
-          .inflate(R.layout.widget_video_container, container, false)
-      container.addView(view)
-      // Now bind the content
-      val video = videos[position % videos.size].playlist.first()
-          .sources.first()
-      val itemTag = "$javaClass::$position::${video.file}"
+    fun bind(video: Sources) {
+      val itemTag = "$javaClass::$adapterPosition::${video.file}"
       kohii.setUp(video.file)
           .with {
             tag = itemTag
             preLoad = true
             repeatMode = Playable.REPEAT_MODE_ONE
           }
-          .bind(ViewTarget(view.videoFrame))
-      return view
+          .bind(ViewTarget(itemView.videoFrame))
+    }
+  }
+
+  class VideoPagerAdapter(
+    val kohii: Kohii,
+    private val videos: List<Video>
+  ) : Adapter<VideoViewHolder>() {
+    override fun onCreateViewHolder(
+      parent: ViewGroup,
+      viewType: Int
+    ): VideoViewHolder {
+      val view = LayoutInflater.from(parent.context)
+          .inflate(R.layout.widget_video_container, parent, false)
+      return VideoViewHolder(kohii, view)
     }
 
-    override fun destroyItem(
-      container: ViewGroup,
-      position: Int,
-      `object`: Any
+    override fun onBindViewHolder(
+      holder: VideoViewHolder,
+      position: Int
     ) {
-      if (`object` is View) {
-        container.removeView(`object`)
-      }
+      val video = videos[position % videos.size].playlist.first()
+          .sources.first()
+      holder.bind(video)
+    }
+
+    override fun getItemCount(): Int {
+      return Int.MAX_VALUE
     }
   }
 
@@ -92,7 +89,7 @@ class PagerViewsFragment : BaseFragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    return inflater.inflate(R.layout.fragment_pager, container, false)
+    return inflater.inflate(R.layout.fragment_pager_2_vertical, container, false)
   }
 
   override fun onViewCreated(
@@ -100,9 +97,10 @@ class PagerViewsFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also { it.register(this, viewPager) }
+    val kohii = Kohii[this]
+    kohii.register(this, viewPager, viewPager.getChildAt(0))
 
     this.viewPager.adapter =
-      PagerPagesAdapter(kohii, (requireActivity().application as DemoApp).videos)
+      VideoPagerAdapter(kohii, (requireActivity().application as DemoApp).videos)
   }
 }

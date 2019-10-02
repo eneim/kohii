@@ -117,8 +117,9 @@ class YouTubeBridge(
   override val playbackState: Int
     get() = mapState(tracker.state)
 
-  override val isPlaying: Boolean
-    get() = tracker.state === PLAYING
+  override fun isPlaying(): Boolean {
+    return tracker.state === PLAYING
+  }
 
   override val volumeInfo: VolumeInfo = VolumeInfo()
 

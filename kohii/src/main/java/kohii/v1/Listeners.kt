@@ -189,6 +189,7 @@ class ErrorListeners : CopyOnWriteArraySet<ErrorListener>(), ErrorListener {
   }
 }
 
+// TODO revise this interface
 interface OnSelectionCallback {
 
   fun onSelection(playbacks: Collection<Playback<*>>)

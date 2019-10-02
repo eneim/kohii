@@ -90,7 +90,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     // Orientation change will cause this fragment to be recreated, we don't want that to happen.
-    retainInstance = true
+    // retainInstance = true
     (requireActivity() as AppCompatActivity).also {
       val decorView = it.window.decorView
       systemUiOptions.set(decorView.systemUiVisibility)
@@ -114,7 +114,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     val manager = kohii.register(this, playerContainer)
 
     requireArguments().apply {
-      rebinderFromArgs = (getParcelable(KEY_REBINDER) as Rebinder<*>).forceCast()
+      rebinderFromArgs = getParcelable<Rebinder<*>>(KEY_REBINDER).forceCast()
       val ratio = getFloat(KEY_RATIO, 16 / 9.toFloat())
       val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
       container.setAspectRatio(ratio)

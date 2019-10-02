@@ -35,6 +35,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.Kohii
 import kohii.v1.sample.R
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
 
 class FloatPlayerManager(val activity: Activity) {
 
@@ -103,7 +104,7 @@ class FloatPlayerManager(val activity: Activity) {
         val deltaY = event.rawY.toInt() - floatViewLastY
         floatViewLastX = event.rawX.toInt()
         floatViewLastY = event.rawY.toInt()
-        if (Math.abs(totalDeltaX) >= 5 || Math.abs(totalDeltaY) >= 5) {
+        if (abs(totalDeltaX) >= 5 || abs(totalDeltaY) >= 5) {
           if (event.pointerCount == 1) {
             params.x -= deltaX
             params.y -= deltaY

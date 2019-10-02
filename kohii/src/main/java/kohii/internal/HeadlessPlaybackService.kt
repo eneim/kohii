@@ -56,11 +56,11 @@ internal class HeadlessPlaybackService : LifecycleService(),
   }
 
   override fun onStartCommand(
-    intent: Intent,
+    intent: Intent?,
     flags: Int,
     startId: Int
   ): Int {
-    val extras = intent.extras ?: throw IllegalArgumentException("Service has no extras.")
+    val extras = intent?.extras ?: throw IllegalArgumentException("Service has no extras.")
     // Get the Playable.
     val playableTag = extras.getString(KEY_PLAYABLE)
         ?: throw IllegalArgumentException("No playable tag provided.")
@@ -70,16 +70,17 @@ internal class HeadlessPlaybackService : LifecycleService(),
       return super.onStartCommand(intent, flags, startId)
     }
 
-    val params = extras.getParcelable(KEY_PARAMS) as HeadlessPlaybackParams
+    val params = extras.getParcelable<HeadlessPlaybackParams>(KEY_PARAMS)
 
     val playable = cache.first
     this.playable = playable
-    if (playable is PlayerViewPlayable) {
+    if (params != null && playable is PlayerViewPlayable) {
       val bridge = playable.bridge as PlayerViewBridge
       playerNotificationManager = PlayerNotificationManager.createWithNotificationChannel(
           this,
           params.channelId,
           params.channelName,
+          params.channelDescription,
           params.notificationId,
           object : MediaDescriptionAdapter {
             override fun createCurrentContentIntent(player: Player?): PendingIntent? {
@@ -101,10 +102,10 @@ internal class HeadlessPlaybackService : LifecycleService(),
               bitmapCallback = callback
               return null
             }
-          }
+          },
+          this
       )
 
-      playerNotificationManager?.setNotificationListener(this)
       playerNotificationManager?.setPlayer(bridge.player)
     }
     return super.onStartCommand(intent, flags, startId)
@@ -119,7 +120,6 @@ internal class HeadlessPlaybackService : LifecycleService(),
       }
 
       if (kohii.mapPlayableToManager[playable] == null) {
-        playable.release()
         kohii.releasePlayable(playable.tag, playable)
       }
     }
@@ -136,13 +136,17 @@ internal class HeadlessPlaybackService : LifecycleService(),
 
   // NotificationListener
 
-  override fun onNotificationCancelled(notificationId: Int) {
+  override fun onNotificationCancelled(
+    notificationId: Int,
+    dismissedByUser: Boolean
+  ) {
     stopSelf()
   }
 
-  override fun onNotificationStarted(
+  override fun onNotificationPosted(
     notificationId: Int,
-    notification: Notification?
+    notification: Notification?,
+    ongoing: Boolean
   ) {
     startForeground(notificationId, notification)
     playable.config.cover?.let { lazyBitmap ->

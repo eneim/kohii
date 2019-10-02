@@ -35,12 +35,12 @@ class PlayerViewCreator : RendererCreator<PlayerView> {
     container: CONTAINER,
     type: Int
   ): PlayerView {
-    if (container !is ViewGroup) throw IllegalArgumentException("Need ViewGroup container.")
+    require(container is ViewGroup) { "Need ViewGroup container." }
     require(
         type == R.layout.kohii_player_textureview ||
             type == R.layout.kohii_player_surface_view ||
             type == R.layout.kohii_player_spherical_view
-    ) { "Unknown type: $type" } // just to demonstrate a good practice. we do not need them.
+    ) { "Unknown type: $type" }
     return LayoutInflater.from(container.context).inflate(type, container, false) as PlayerView
   }
 }

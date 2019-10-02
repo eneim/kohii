@@ -96,7 +96,7 @@ abstract class BaseTargetHost<V : Any>(
 
   override fun onViewAttachedToWindow(v: View?) {
     if (v != null) {
-      manager.onTargetActive(v)
+      manager.onTargetAttached(v)
       v.addOnLayoutChangeListener(this)
     }
   }
@@ -104,7 +104,7 @@ abstract class BaseTargetHost<V : Any>(
   override fun onViewDetachedFromWindow(v: View?) {
     if (v != null) {
       v.removeOnLayoutChangeListener(this)
-      manager.onTargetInActive(v)
+      manager.onTargetDetached(v)
     }
   }
 

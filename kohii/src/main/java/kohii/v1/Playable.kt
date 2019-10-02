@@ -28,12 +28,11 @@ import kotlin.annotation.AnnotationRetention.SOURCE
 /**
  * 2019/02/16
  *
- * A Playable should accept only one type of Target.
+ * A Playable should accept only one type of Renderer.
  *
  * @author eneim (2018/06/24).
  */
-// TODO [20190430] Instead of defining output TYPE by parameter, consider to have "allows" method.
-interface Playable<OUTPUT : Any> {
+interface Playable<RENDERER : Any> {
 
   companion object {
     const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
@@ -62,20 +61,20 @@ interface Playable<OUTPUT : Any> {
 
   val media: Media
 
-  val isPlaying: Boolean
-
   val config: Config
 
   @RepeatMode
   var repeatMode: Int
 
   fun <CONTAINER : Any> bind(
-    target: Target<CONTAINER, OUTPUT>,
+    target: Target<CONTAINER, RENDERER>,
     config: Playback.Config = Playback.Config(),
-    cb: ((Playback<OUTPUT>) -> Unit)? = null
+    onDone: ((Playback<RENDERER>) -> Unit)? = null
   )
 
   // Playback controller
+
+  fun isPlaying(): Boolean
 
   fun prepare()
 
@@ -100,27 +99,30 @@ interface Playable<OUTPUT : Any> {
   var playbackInfo: PlaybackInfo
 
   fun onPlayerActive(
-    playback: Playback<OUTPUT>,
-    player: OUTPUT
+    playback: Playback<RENDERER>,
+    player: RENDERER
   )
 
   fun onPlayerInActive(
-    playback: Playback<OUTPUT>,
-    player: OUTPUT?
+    playback: Playback<RENDERER>,
+    player: RENDERER?
   )
 
+  /**
+   * Called by the Playback that currently owns this Playable. This method is called when the Playback
+   * is added to the PlaybackManager for the first time.
+   */
   fun onAdded(playback: Playback<*>) {}
 
-  fun onActive(playback: Playback<*>) {}
-
-  fun onInActive(playback: Playback<*>) {}
-
   fun onRemoved(playback: Playback<*>) {}
+
+  fun onRelease(playback: Playback<*>) {}
 
   // data class for copying convenience.
   data class Config(
     val tag: String? = null,
     val preLoad: Boolean = false,
-    val cover: Future<Bitmap?>? = null
+    val cover: Future<Bitmap?>? = null,
+    val headlessPlaybackParams: HeadlessPlaybackParams? = null
   )
 }

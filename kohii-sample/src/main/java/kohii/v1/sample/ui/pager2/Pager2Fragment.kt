@@ -30,7 +30,7 @@ import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.pager1.PageFragment
 import kotlinx.android.synthetic.main.fragment_pager_2_horizontal.viewPager
 
-// Only demo the case of using Fragment. Using ViewPager2 with normal View is equal to RecyclerView.
+// ViewPager2 whose pages are Fragments
 class Pager2Fragment : BaseFragment() {
 
   companion object {

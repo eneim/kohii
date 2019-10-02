@@ -18,19 +18,12 @@ package kohii.v1.exo
 
 import android.net.Uri
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.offline.FilteringManifestParser
-import com.google.android.exoplayer2.offline.StreamKey
-import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.ads.AdsMediaSource.MediaSourceFactory
 import com.google.android.exoplayer2.source.dash.DashMediaSource
-import com.google.android.exoplayer2.source.dash.manifest.DashManifest
-import com.google.android.exoplayer2.source.dash.manifest.DashManifestParser
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
-import com.google.android.exoplayer2.source.hls.playlist.DefaultHlsPlaylistParserFactory
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource
-import com.google.android.exoplayer2.source.smoothstreaming.manifest.SsManifest
-import com.google.android.exoplayer2.source.smoothstreaming.manifest.SsManifestParser
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.FileDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.Cache
@@ -43,21 +36,21 @@ import kohii.media.Media
  * @author eneim (2018/10/27).
  */
 class DefaultMediaSourceFactoryProvider private constructor(
-  private val offlineSourceHelper: OfflineSourceHelper? = null,
   upstreamFactory: DataSource.Factory,
-  mediaCache: Cache? = null
+  mediaCache: Cache? = null,
+  private val offlineSourceHelper: OfflineSourceHelper? = null
 ) : MediaSourceFactoryProvider {
 
   constructor(
     upstreamFactory: DataSource.Factory,
     mediaCache: Cache? = null
-  ) : this(null, upstreamFactory, mediaCache)
+  ) : this(upstreamFactory, mediaCache, null)
 
   @Suppress("unused") //
   constructor(
     upstreamFactory: DataSource.Factory,
     offlineSourceHelper: OfflineSourceHelper
-  ) : this(offlineSourceHelper, upstreamFactory, offlineSourceHelper.downloadCache)
+  ) : this(upstreamFactory, offlineSourceHelper.downloadCache, offlineSourceHelper)
 
   private val dataSourceFactory: DataSource.Factory =
     if (mediaCache != null) {
@@ -86,36 +79,16 @@ class DefaultMediaSourceFactoryProvider private constructor(
       }
     }
 
-    when (type) {
-      C.TYPE_DASH ->
-        return DashMediaSource.Factory(dataSourceFactory)
-            .setManifestParser(
-                FilteringManifestParser<DashManifest>(
-                    DashManifestParser(), getOfflineStreamKeys(media.uri)
-                )
-            )
-      C.TYPE_SS ->
-        return SsMediaSource.Factory(dataSourceFactory)
-            .setManifestParser(
-                FilteringManifestParser<SsManifest>(
-                    SsManifestParser(), getOfflineStreamKeys(media.uri)
-                ) //
-            )
-      C.TYPE_HLS ->
-        return HlsMediaSource.Factory(dataSourceFactory)
-            .setPlaylistParserFactory(
-                DefaultHlsPlaylistParserFactory(getOfflineStreamKeys(media.uri))
-            )
-      C.TYPE_OTHER ->
-        return ExtractorMediaSource.Factory(dataSourceFactory)
+    if (offlineSourceHelper != null) return offlineSourceHelper.getMediaSourceFactory(media.uri)
+
+    return when (type) {
+      C.TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
+      C.TYPE_SS -> SsMediaSource.Factory(dataSourceFactory)
+      C.TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
+      C.TYPE_OTHER -> ProgressiveMediaSource.Factory(dataSourceFactory)
       else -> {
         throw IllegalStateException("Unsupported type: $type")
       }
     }
-  }
-
-  @Suppress("UNUSED_PARAMETER")
-  private fun getOfflineStreamKeys(uri: Uri): List<StreamKey> {
-    return offlineSourceHelper?.offlineStreamKeys(uri) ?: emptyList()
   }
 }

@@ -49,10 +49,6 @@ class YouTubeViewHolder(
 
   var playback: Playback<*>? = null
 
-  init {
-    // container.id = ViewCompat.generateViewId()
-  }
-
   override fun bind(item: Any?) {
     super.bind(item)
     (item as? Video)?.apply {

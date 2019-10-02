@@ -16,7 +16,6 @@
 
 package kohii.v1
 
-import android.view.ViewGroup
 import kohii.media.Media
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.NO_TAG
@@ -52,39 +51,22 @@ abstract class BasePlayable<RENDERER : Any>(
 
     // Note|eneim|20190113: only call release when there is no more Manager manages this.
     if (kohii.mapPlayableToManager[this] == null) {
-      playback.release()
       // There is no other Manager to manage this Playable, and we are removing the last one, so ...
       kohii.releasePlayable(config.tag, this)
+      kohii.mapPlayableTagToInfo.remove(this.tag)
     }
   }
 
-  /* Expected:
-   * - Instance of this class will have member 'playback' set to the method parameter.
-   * - Bridge instance will be set with correct target (PlayerView).
-   */
-  override fun onActive(playback: Playback<*>) {
-    require(playback.target is ViewGroup) {
-      "${this.javaClass.name} only works with target of type ViewGroup"
-    }
-  }
-
-  override fun onInActive(playback: Playback<*>) {
-    // When a Playback becomes inactive, its Playable may be attached to other Playback already.
-    // We only detach the Bridge's PlayerView when the Playable is no longer belong to any Playback,
-    // which is equal to: (1) it is not being managed, or (2) it is being managed by the Playback passed
-    // to this method, and this Playback is being inactive.
-    if (kohii.mapPlayableToManager[this] === playback.manager /* (2) */ ||
-        kohii.mapPlayableToManager[this] == null /* (1) */
-    ) {
-      // This will release current Video MediaCodec instances, which are expensive to retain.
-      this.bridge.playerView = null
+  override fun onRelease(playback: Playback<*>) {
+    if (kohii.mapPlayableToManager[this] == null || !playback.manager.isActive(playback)) {
+      this.release()
     }
   }
 
   override fun <CONTAINER : Any> bind(
     target: Target<CONTAINER, RENDERER>,
     config: Config,
-    cb: ((Playback<RENDERER>) -> Unit)?
+    onDone: ((Playback<RENDERER>) -> Unit)?
   ) {
     val manager = kohii.findManagerForContainer(target.container)
         ?: throw IllegalStateException("There is no manager for $target. Forget to register one?")
@@ -93,7 +75,7 @@ abstract class BasePlayable<RENDERER : Any>(
         this, target, config,
         playbackCreator
     )
-    cb?.invoke(result)
+    onDone?.invoke(result)
   }
 
   override val tag: Any
@@ -108,8 +90,9 @@ abstract class BasePlayable<RENDERER : Any>(
       this.bridge.repeatMode = value
     }
 
-  override val isPlaying: Boolean
-    get() = this.bridge.isPlaying
+  override fun isPlaying(): Boolean {
+    return this.bridge.isPlaying()
+  }
 
   override fun prepare() {
     this.bridge.prepare(config.preLoad)

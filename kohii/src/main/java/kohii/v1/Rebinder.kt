@@ -56,9 +56,7 @@ data class Rebinder<RENDERER : Any>(
       (playable as Playable<RENDERER>).bind(
           IdenticalTarget(target), this.params.createPlaybackConfig(), onDone
       )
-    } else if (BuildConfig.DEBUG) {
-      throw IllegalStateException("No Playable found for tag ${this.tag}.")
-    }
+    } else check(!BuildConfig.DEBUG) { "No Playable found for tag ${this.tag}." }
     params = Params()
     return this
   }
@@ -80,8 +78,8 @@ data class Rebinder<RENDERER : Any>(
       if (reset) playable.reset()
       @Suppress("UNCHECKED_CAST") // it should be safe, as we've checked target type above.
       (playable as Playable<RENDERER>).bind(target, this.params.createPlaybackConfig(), onDone)
-    } else if (BuildConfig.DEBUG) {
-      throw IllegalStateException("No Playable found for tag ${this.tag}.")
+    } else {
+      check(!BuildConfig.DEBUG) { "No Playable found for tag ${this.tag}." }
     }
     params = Params()
     return this

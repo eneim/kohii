@@ -16,8 +16,6 @@
 
 package kohii.v1.sample.ui.motion
 
-import android.net.Uri
-import android.widget.ImageView
 import androidx.core.view.ViewCompat
 import androidx.databinding.BindingAdapter
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
@@ -26,23 +24,12 @@ import kohii.media.MediaItem
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.sample.R
-import kohii.v1.sample.svg.GlideApp
 
 /**
  * For DataBinding
  *
  * @author eneim (2018/07/15).
  */
-@Suppress("unused")
-@BindingAdapter("backdrop")
-fun setBackdrop(
-  view: ImageView,
-  url: String
-) {
-  GlideApp.with(view)
-      .load(Uri.parse(url))
-      .into(view)
-}
 
 @BindingAdapter("video", "provider")
 fun setVideo(

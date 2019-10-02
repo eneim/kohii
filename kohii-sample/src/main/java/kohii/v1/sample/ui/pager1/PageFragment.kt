@@ -55,7 +55,7 @@ class PageFragment : BaseFragment(), Prioritized {
   }
 
   val video: Sources by lazy {
-    val video = arguments?.getParcelable(pageVideoKey) as Video
+    val video = arguments?.getParcelable<Video>(pageVideoKey)!!
     val item = video.playlist.first()
         .sources.first()
     item

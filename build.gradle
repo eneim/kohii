@@ -18,14 +18,11 @@
 import kohii.Libs
 
 buildscript {
-  apply from: "${rootDir.absolutePath}/gradle/deps.gradle"
-
   repositories {
     google()
     mavenCentral()
     maven { url 'https://maven.fabric.io/public' }
     maven { url "https://plugins.gradle.org/m2/" }
-
     jcenter()
   }
 

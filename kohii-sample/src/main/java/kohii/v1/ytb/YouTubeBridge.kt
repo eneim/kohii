@@ -169,7 +169,7 @@ class YouTubeBridge(
 
   override fun play() {
     Log.d("Kohii::YT", "play: ${this.playerView}")
-    if (!this.isPlaying || _loadedVideoId != media.uri.toString()) {
+    if (!this.isPlaying() || _loadedVideoId != media.uri.toString()) {
       this._playWhenReady = true
       this.playerView?.let {
         if (it.view != null) {
@@ -194,8 +194,9 @@ class YouTubeBridge(
     player = null
   }
 
-  override val isPlaying: Boolean
-    get() = this.player != null && this._playWhenReady
+  override fun isPlaying(): Boolean {
+    return this.player != null && this._playWhenReady
+  }
 
   override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 

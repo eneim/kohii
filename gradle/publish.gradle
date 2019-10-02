@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import kohii.BuildConfig
+
 apply plugin: 'maven'
 apply plugin: 'signing'
-apply from: "${rootDir.absolutePath}/gradle/deps.gradle"
+// apply from: "${rootDir.absolutePath}/gradle/deps.gradle"
 
-version = buildConfig.version.name
+version = BuildConfig.releaseVersionName
 group = GROUP
 
 @SuppressWarnings("GrMethodMayBeStatic")
