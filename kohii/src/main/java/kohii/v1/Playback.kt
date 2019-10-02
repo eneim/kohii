@@ -18,7 +18,6 @@ package kohii.v1
 
 import androidx.annotation.CallSuper
 import com.google.android.exoplayer2.PlaybackParameters
-import kohii.logDebug
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.STATE_BUFFERING
@@ -255,7 +254,6 @@ abstract class Playback<RENDERER : Any> internal constructor(
 
   internal fun release() {
     playable.onRelease(this)
-    "Release $this".logDebug(tag = "Kohii::A11")
   }
 
   @CallSuper
