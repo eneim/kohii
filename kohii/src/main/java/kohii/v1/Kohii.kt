@@ -45,7 +45,6 @@ import kohii.Beta
 import kohii.ExoPlayer
 import kohii.internal.HeadlessPlaybackService
 import kohii.internal.ViewPlaybackManager
-import kohii.logError
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
@@ -277,7 +276,6 @@ class Kohii(context: Context) : PlayableManager {
   internal fun trySavePlaybackInfo(playable: Playable<*>) {
     if (playable.tag != Playable.NO_TAG) {
       if (!mapPlayableTagToInfo.containsKey(playable.tag)) {
-        "Save state ${playable.tag}".logError(tag = "Kohii::A11")
         mapPlayableTagToInfo[playable.tag] = playable.playbackInfo
       }
     }
@@ -287,10 +285,7 @@ class Kohii(context: Context) : PlayableManager {
   internal fun tryRestorePlaybackInfo(playable: Playable<*>) {
     if (playable.tag != Playable.NO_TAG) {
       val info = mapPlayableTagToInfo.remove(playable.tag)
-      if (info != null) {
-        playable.playbackInfo = info
-        "Restore state ${playable.tag}".logError(tag = "Kohii::A11")
-      }
+      if (info != null) playable.playbackInfo = info
     }
   }
 
