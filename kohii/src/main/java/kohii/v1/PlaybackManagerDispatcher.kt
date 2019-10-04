@@ -34,7 +34,7 @@ internal class PlaybackManagerDispatcher(managerGroup: PlaybackManagerGroup) {
     handler.sendEmptyMessageDelayed(MSG_REFRESH, DELAY)
   }
 
-  internal fun onContainerDestroyed() {
+  internal fun onDestroyed() {
     handler.removeCallbacksAndMessages(null)
   }
 

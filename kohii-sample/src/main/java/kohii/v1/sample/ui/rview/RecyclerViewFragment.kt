@@ -37,6 +37,7 @@ import kohii.v1.sample.PlayerInfoHolder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.doOnNextLayoutAs
+import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.toPixel
 import kohii.v1.sample.ui.rview.data.Item
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
@@ -54,7 +55,7 @@ class RecyclerViewFragment : BaseFragment() {
   }
 
   private val items: List<Item> by lazy {
-    val asset = requireActivity().application.assets
+    val asset = getApp().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())

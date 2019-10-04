@@ -17,12 +17,10 @@
 package kohii.v1.sample
 
 import android.app.Application
-import com.crashlytics.android.Crashlytics
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.fabric.sdk.android.Fabric
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
 import okio.buffer
@@ -54,8 +52,13 @@ class DemoApp : Application() {
     adapter.fromJson(asset.open("medias.json").source().buffer()) ?: emptyList()
   }
 
+  val youtubeApiKey by lazy(NONE) {
+    val keyId = resources.getIdentifier("google_api_key", "string", packageName)
+    return@lazy if (keyId > 0) getString(keyId) else ""
+  }
+
+  @Suppress("RedundantOverride")
   override fun onCreate() {
     super.onCreate()
-    Fabric.with(this, Crashlytics())
   }
 }

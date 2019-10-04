@@ -40,14 +40,14 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-A11"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-A12"
 }
 
 @Suppress("MayBeConstant", "unused")
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:3.5.0"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:3.5.1"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.8.6"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:8.2.0"
 
@@ -68,9 +68,9 @@ object Libs {
   }
 
   object AndroidX {
-    val appcompat = "androidx.appcompat:appcompat:1.1.0-rc01"
-    val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0-rc01"
-    val activityKtx = "androidx.activity:activity-ktx:1.1.0-alpha01"
+    val appcompat = "androidx.appcompat:appcompat:1.1.0"
+    val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
+    val activityKtx = "androidx.activity:activity-ktx:1.1.0-alpha03"
     val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
     val browser = "androidx.browser:browser:1.0.0"
     val palette = "androidx.palette:palette:1.0.0"
@@ -80,17 +80,17 @@ object Libs {
     val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-alpha06"
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
-    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-beta03"
+    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-beta04"
 
     object Media {
-      val widget = "androidx.media2:media2-widget:1.0.0-beta01"
-      val common = "androidx.media2:media2-common:1.0.0-rc01"
-      val player = "androidx.media2:media2-player:1.0.0-rc01"
-      val session = "androidx.media2:media2-session:1.0.0-rc01"
+      val widget = "androidx.media2:media2-widget:1.0.0"
+      val common = "androidx.media2:media2-common:1.0.0"
+      val player = "androidx.media2:media2-player:1.0.0"
+      val session = "androidx.media2:media2-session:1.0.0"
     }
 
     object Navigation {
-      private const val version = "2.2.0-alpha01"
+      private const val version = "2.2.0-alpha03"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
@@ -100,7 +100,7 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.0-alpha02"
+      private const val version = "1.2.0-alpha04"
       val fragment = "androidx.fragment:fragment:$version"
       val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
@@ -111,10 +111,10 @@ object Libs {
       val runner = "androidx.test:runner:$version"
       val rules = "androidx.test:rules:$version"
 
-      val espressoCore = "androidx.test.espresso:espresso-core:3.2.0"
+      val espressoCore = "androidx.test.espresso:espresso-core:3.3.0-alpha02"
     }
 
-    val archCoreTesting = "androidx.arch.core:core-testing:2.0.1"
+    val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
 
     object Paging {
       private const val version = "2.1.0"
@@ -122,15 +122,15 @@ object Libs {
       val runtime = "androidx.paging:paging-runtime-ktx:$version"
     }
 
-    val preference = "androidx.preference:preference:1.1.0-rc01"
+    val preference = "androidx.preference:preference-ktx:1.1.0"
 
     val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta2"
 
-    val core = "androidx.core:core:1.2.0-alpha02"
-    val coreKtx = "androidx.core:core-ktx:1.2.0-alpha02"
+    val core = "androidx.core:core:1.2.0-alpha04"
+    val coreKtx = "androidx.core:core-ktx:1.2.0-alpha04"
 
     object Lifecycle {
-      private const val version = "2.2.0-alpha03"
+      private const val version = "2.2.0-alpha05"
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
@@ -141,7 +141,7 @@ object Libs {
     }
 
     object Room {
-      private const val version = "2.2.0-alpha02"
+      private const val version = "2.2.0-rc01"
       val common = "androidx.room:room-common:$version"
       val runtime = "androidx.room:room-runtime:$version"
       val compiler = "androidx.room:room-compiler:$version"
@@ -150,7 +150,7 @@ object Libs {
     }
 
     object Work {
-      private const val version = "2.2.0"
+      private const val version = "2.3.0-alpha01"
       val runtimeKtx = "androidx.work:work-runtime-ktx:$version"
     }
   }
@@ -184,17 +184,17 @@ object Libs {
   }
 
   object Google {
-    val material = "com.google.android.material:material:1.1.0-alpha09"
-    val gmsGoogleServices = "com.google.gms:google-services:4.3.0"
-    val firebaseCore = "com.google.firebase:firebase-core:17.0.0"
-    val fabricPlugin = "io.fabric.tools:gradle:1.29.0"
+    val material = "com.google.android.material:material:1.1.0-alpha10"
+    val gmsGoogleServices = "com.google.gms:google-services:4.3.2"
+    val firebaseCore = "com.google.firebase:firebase-core:17.2.0"
+    val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.2.0"
+    val fabricPlugin = "io.fabric.tools:gradle:1.31.1"
     val crashlytics = "com.crashlytics.sdk.android:crashlytics:2.10.1"
 
-    private const val apiVersion = "1.30.1"
-    val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20190513-$apiVersion"
-    val httpClientAndroid = "com.google.http-client:google-http-client-android:$apiVersion"
-    val apiClientAndroid = "com.google.http-client:google-http-client-android:$apiVersion"
-    val apiClientGson = "com.google.api-client:google-api-client-gson:$apiVersion"
+    val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20190827-1.30.1"
+    val httpClientAndroid = "com.google.http-client:google-http-client-android:1.32.1"
+    val apiClientAndroid = "com.google.api-client:google-api-client-android:1.30.4"
+    val apiClientGson = "com.google.api-client:google-api-client-gson:1.30.4"
   }
 
   object Dagger {
@@ -208,18 +208,18 @@ object Libs {
   object Square {
     val moshi = "com.squareup.moshi:moshi:1.8.0"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:1.8.0"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-2"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-3"
     val okio = "com.squareup.okio:okio:2.2.2"
   }
 
   object Glide {
-    private const val version = "4.9.0"
+    private const val version = "4.10.0"
     val glide = "com.github.bumptech.glide:glide:$version"
     val compiler = "com.github.bumptech.glide:compiler:$version"
   }
 
   object Other {
     val androidSvg = "com.caverock:androidsvg-aar:1.4"
-    val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.3"
+    val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.4"
   }
 }

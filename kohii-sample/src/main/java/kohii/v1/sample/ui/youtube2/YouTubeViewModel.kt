@@ -25,6 +25,7 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.youtube.YouTube
 import kohii.v1.sample.BuildConfig
+import kohii.v1.sample.DemoApp
 import kohii.v1.sample.youtube.data.YouTubePlaylistRepository
 import java.util.concurrent.Executors
 
@@ -44,7 +45,7 @@ class YouTubeViewModel(application: Application) : AndroidViewModel(application)
 
   private val repository =
     YouTubePlaylistRepository(
-        BuildConfig.YT_API_KEY, youtube, Executors.newSingleThreadExecutor()
+        (application as DemoApp).youtubeApiKey, youtube, Executors.newSingleThreadExecutor()
     )
 
   private val playlistId = MutableLiveData<String>()

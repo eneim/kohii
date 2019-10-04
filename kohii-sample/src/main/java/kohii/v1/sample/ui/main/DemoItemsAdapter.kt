@@ -20,6 +20,7 @@ import android.view.ViewGroup
 import androidx.core.text.HtmlCompat
 import androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT
 import androidx.recyclerview.widget.RecyclerView.Adapter
+import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.ui.combo.ComboFragment
@@ -38,28 +39,37 @@ import kohii.v1.sample.ui.youtube1.YouTube1Fragment
 import kohii.v1.sample.ui.youtube2.YouTube2Fragment
 
 class DemoItemsAdapter(
+  app: DemoApp,
   private val onClick: (DemoItem) -> Unit
 ) : Adapter<BaseViewHolder>() {
 
   private val items: List<DemoItem>
 
   init {
-    items = arrayListOf(
+    val youtubeDemos: Collection<DemoItem> = if (app.youtubeApiKey.isNotEmpty()) {
+      listOf(
+          DemoItem(
+              R.string.demo_title_youtube_1,
+              R.string.demo_desc_youtube_1,
+              YouTube1Fragment::class.java
+          ),
+          DemoItem(
+              R.string.demo_title_youtube_2,
+              R.string.demo_desc_youtube_2,
+              YouTube2Fragment::class.java
+          )
+      )
+    } else {
+      emptyList()
+    }
+
+    items = listOf(
         DemoItem(
             R.string.demo_title_fbook,
             R.string.demo_desc_fbook,
             FbookFragment::class.java
-        ),
-        DemoItem(
-            R.string.demo_title_youtube_1,
-            R.string.demo_desc_youtube_1,
-            YouTube1Fragment::class.java
-        ),
-        DemoItem(
-            R.string.demo_title_youtube_2,
-            R.string.demo_desc_youtube_2,
-            YouTube2Fragment::class.java
-        ),
+        )
+    ) + youtubeDemos + listOf(
         DemoItem(
             R.string.demo_title_recycler_view_1,
             R.string.demo_desc_recycler_view_1,

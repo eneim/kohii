@@ -24,9 +24,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import kohii.v1.Kohii
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.getDisplayPoint
 import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
@@ -68,7 +68,7 @@ class Pager1Fragment : BaseFragment() {
 
     this.viewPager.also {
       it.adapter =
-        VideoPagerAdapter(childFragmentManager, (requireActivity().application as DemoApp).videos)
+        VideoPagerAdapter(childFragmentManager, getApp().videos)
       it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
       val clientWidth =
         (requireActivity().getDisplayPoint().x - it.paddingStart - it.paddingEnd).toFloat()

@@ -24,6 +24,7 @@ import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.SelectionTracker.SelectionObserver
@@ -42,11 +43,11 @@ import kohii.v1.Playback
 import kohii.v1.Rebinder
 import kohii.v1.Scope
 import kohii.v1.TargetHost
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.TransitionListenerAdapter
+import kohii.v1.sample.common.getApp
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.actionButton
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.bottomSheet
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.recyclerView
@@ -96,7 +97,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       rvHost = manager.registerTargetHost(TargetHost.Builder(recyclerView))!!
     }
 
-    val videoAdapter = VideoItemsAdapter((requireActivity().application as DemoApp).videos, kohii)
+    val videoAdapter = VideoItemsAdapter(getApp().videos, kohii)
     recyclerView.apply {
       setHasFixedSize(true)
       layoutManager = LinearLayoutManager(context)
@@ -104,11 +105,11 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     }
 
     volumeViewModel.apply {
-      overlayVolume.observe({ viewLifecycleOwner.lifecycle }) {
+      overlayVolume.observe(viewLifecycleOwner) {
         kohii.applyVolumeInfo(it, overlayHost, Scope.HOST)
       }
 
-      recyclerViewVolume.observe({ viewLifecycleOwner.lifecycle }) {
+      recyclerViewVolume.observe(viewLifecycleOwner) {
         kohii.applyVolumeInfo(it, rvHost, Scope.HOST)
         actionButton.text = "Mute RV: ${it.mute}"
       }
@@ -143,13 +144,12 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     overlaySheet = sheet
 
     if (savedInstanceState == null) sheet.state = STATE_HIDDEN
-    sheet.setBottomSheetCallback(object : BottomSheetCallback() {
+    sheet.bottomSheetCallback = object : BottomSheetCallback() {
       override fun onSlide(
         bottomSheet: View,
         slideOffset: Float
       ) {
-        (this@OverlayViewFragment.videoOverlay as MotionLayout).progress =
-          1 - slideOffset.coerceIn(0F, 1F)
+        (videoOverlay as MotionLayout).progress = 1 - slideOffset.coerceIn(0F, 1F)
       }
 
       override fun onStateChanged(
@@ -173,7 +173,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
           playback = null
         }
       }
-    })
+    }
 
     selectionTracker.addObserver(object : SelectionObserver<Rebinder<PlayerView>>() {
       override fun onItemStateChanged(

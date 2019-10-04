@@ -53,11 +53,6 @@
         android:label="@string/demo_title_youtube_1"
         android:theme="@style/AppTheme.Dark">
     </activity>
-
-    <meta-data
-        android:name="io.fabric.ApiKey"
-        android:value="${fabric_api_key}"
-        />
   </application>
 
 </manifest>

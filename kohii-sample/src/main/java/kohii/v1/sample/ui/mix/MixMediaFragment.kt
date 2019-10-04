@@ -29,6 +29,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 import okio.buffer
 import okio.source
@@ -45,7 +46,7 @@ class MixMediaFragment : BaseFragment() {
   }
 
   private val videos: List<Item> by lazy {
-    val asset = requireActivity().application.assets
+    val asset = getApp().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())

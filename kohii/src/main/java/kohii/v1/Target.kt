@@ -24,7 +24,7 @@ interface Target<CONTAINER : Any, RENDERER : Any> {
 
   fun attachRenderer(renderer: RENDERER)
 
-  // Returning true if the Player has done anything,
+  // Returning true if the detachment did something meaningful,
   // For example: ViewGroup remove the PlayerView.
   fun detachRenderer(renderer: RENDERER): Boolean
 }

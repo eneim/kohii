@@ -25,9 +25,9 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.ViewTarget
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager_2_vertical.viewPager
@@ -100,7 +100,6 @@ class Pager3Fragment : BaseFragment() {
     val kohii = Kohii[this]
     kohii.register(this, viewPager, viewPager.getChildAt(0))
 
-    this.viewPager.adapter =
-      VideoPagerAdapter(kohii, (requireActivity().application as DemoApp).videos)
+    this.viewPager.adapter = VideoPagerAdapter(kohii, getApp().videos)
   }
 }

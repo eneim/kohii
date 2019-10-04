@@ -26,6 +26,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * Manage an [FragmentActivity], to control [PlaybackManager]s inside.
@@ -46,7 +47,7 @@ class PlaybackManagerGroup(
 ) : LifecycleObserver, Playback.Callback {
 
   private var promotedManager: PlaybackManager? = null
-  private val stickyManagers by lazy { LinkedHashSet<PlaybackManager>() }
+  private val stickyManagers by lazy(NONE) { LinkedHashSet<PlaybackManager>() }
   private val commonManagers = ArraySet<PlaybackManager>()
 
   private val dispatcher = PlaybackManagerDispatcher(this)
@@ -137,7 +138,7 @@ class PlaybackManagerGroup(
         .clear()
 
     owner.lifecycle.removeObserver(this)
-    dispatcher.onContainerDestroyed()
+    dispatcher.onDestroyed()
     if (owner is Activity) kohii.groups.remove(owner)
   }
 

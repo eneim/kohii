@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnNextLayout
+import androidx.fragment.app.commit
 import com.google.android.exoplayer2.ui.PlayerView
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -31,6 +32,7 @@ import kohii.v1.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.PlayerViewCreator
+import kohii.v1.sample.common.getApp
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.ui.player.InitData
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
@@ -44,7 +46,7 @@ class ComboFragment : BaseFragment() {
   }
 
   private val videos: List<Item> by lazy {
-    val asset = requireActivity().application.assets
+    val asset = getApp().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -83,11 +85,11 @@ class ComboFragment : BaseFragment() {
                 InitData(it.tag, holder.aspectRatio)
             )
 
-            fragmentManager!!.beginTransaction()
-                .setReorderingAllowed(true) // required for Activity-like lifecycle changing.
-                .replace(R.id.fragmentContainer, player, it.tag)
-                .addToBackStack(null)
-                .commit()
+            parentFragmentManager.commit {
+              setReorderingAllowed(true) // required for Activity-like lifecycle changing.
+              replace(R.id.fragmentContainer, player, it.tag)
+              addToBackStack(null)
+            }
           }
         }
     )

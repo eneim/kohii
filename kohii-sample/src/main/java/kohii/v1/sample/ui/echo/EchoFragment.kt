@@ -25,9 +25,9 @@ import kohii.media.VolumeInfo
 import kohii.v1.Kohii
 import kohii.v1.Scope
 import kohii.v1.TargetHost
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 // Change VolumeInfo of each Playback individually, and store that info across config change.
@@ -59,7 +59,7 @@ class EchoFragment : BaseFragment() {
     rvHost = kohii.register(this).registerTargetHost(TargetHost.Builder(recyclerView))!!
 
     val adapter =
-      VideoItemsAdapter((requireActivity().application as DemoApp).videos, kohii, viewModel) {
+      VideoItemsAdapter(getApp().videos, kohii, viewModel) {
         val current = it.volumeInfo
         kohii.applyVolumeInfo(VolumeInfo(!current.mute, current.volume), it, Scope.PLAYBACK)
       }

@@ -21,13 +21,14 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import okio.buffer
 import okio.source
 
 abstract class BaseNestedFragment : BaseFragment() {
 
   protected val videos: List<Item> by lazy {
-    val asset = requireActivity().application.assets
+    val asset = getApp().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())

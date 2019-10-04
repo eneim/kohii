@@ -24,9 +24,9 @@ import androidx.viewpager.widget.PagerAdapter
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.ViewTarget
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlinx.android.synthetic.main.widget_video_container.view.videoFrame
@@ -102,7 +102,6 @@ class PagerViewsFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this].also { it.register(this, viewPager) }
 
-    this.viewPager.adapter =
-      PagerPagesAdapter(kohii, (requireActivity().application as DemoApp).videos)
+    this.viewPager.adapter = PagerPagesAdapter(kohii, getApp().videos)
   }
 }

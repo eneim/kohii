@@ -23,9 +23,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import kohii.v1.Kohii
-import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.pager1.PageFragment
 import kotlinx.android.synthetic.main.fragment_pager_2_horizontal.viewPager
@@ -65,7 +65,6 @@ class Pager2Fragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this, viewPager)
-    this.viewPager.adapter =
-      VideoPagerAdapter((requireActivity().application as DemoApp).videos, this)
+    this.viewPager.adapter = VideoPagerAdapter(getApp().videos, this)
   }
 }

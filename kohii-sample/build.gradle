@@ -61,10 +61,6 @@ android {
     versionCode BuildConfig.releaseVersionCode
     versionName BuildConfig.releaseVersionName
 
-    manifestPlaceholders = [
-        fabric_api_key: "${fabric_api_key}"
-    ]
-
     buildConfigField("String", "YT_API_KEY", "\"${kohii_yt_api_key}\"")
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -160,7 +156,7 @@ dependencies {
   implementation Libs.Google.apiClientAndroid
   implementation Libs.Google.apiClientGson
 
-  implementation Libs.Google.firebaseCore
+  implementation Libs.Google.firebaseAnalytics
   implementation Libs.Other.youtubePlayer
 
   debugImplementation Libs.Square.leakCanary

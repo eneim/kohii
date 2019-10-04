@@ -20,8 +20,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.commit
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class MainFragment : BaseFragment() {
@@ -43,17 +45,15 @@ class MainFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    recyclerView.adapter = DemoItemsAdapter {
+    recyclerView.adapter = DemoItemsAdapter(getApp()) {
       requireActivity().title = getString(it.title)
-      fragmentManager?.also { fm ->
-        fm.beginTransaction()
-            .setReorderingAllowed(true) // Optimize for shared element transition
-            .replace(
-                R.id.fragmentContainer, it.fragmentClass.newInstance(),
-                it.fragmentClass.canonicalName
-            )
-            .addToBackStack(null)
-            .commit()
+      parentFragmentManager.commit {
+        setReorderingAllowed(true) // Optimize for shared element transition
+        replace(
+            R.id.fragmentContainer, it.fragmentClass.newInstance(),
+            it.fragmentClass.canonicalName
+        )
+        addToBackStack(null)
       }
     }
   }

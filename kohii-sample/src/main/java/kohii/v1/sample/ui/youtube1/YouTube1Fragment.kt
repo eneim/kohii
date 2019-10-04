@@ -49,9 +49,7 @@ class YouTube1Fragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     val kh = Kohii[this].also { it.register(this, recyclerView) }
-    // val creator = (requireActivity().application as DemoApp).youTubePlayableCreator
     val creator = kohii.v1.ytb.YouTubePlayableCreator(kh)
-    // val creator = YouTubePlayableCreator(kohii)
     val adapter = YouTubeItemsAdapter(creator, childFragmentManager)
     recyclerView.adapter = adapter
 
