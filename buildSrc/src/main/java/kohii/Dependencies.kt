@@ -70,27 +70,28 @@ object Libs {
   object AndroidX {
     val appcompat = "androidx.appcompat:appcompat:1.1.0"
     val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
-    val activityKtx = "androidx.activity:activity-ktx:1.1.0-alpha03"
+    val activityKtx = "androidx.activity:activity-ktx:1.1.0-beta01"
     val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
     val browser = "androidx.browser:browser:1.0.0"
     val palette = "androidx.palette:palette:1.0.0"
     val emoji = "androidx.emoji:emoji:1.0.0"
 
-    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0-beta04"
+    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0-beta05"
     val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-alpha06"
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
-    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-beta04"
+    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-beta05"
 
     object Media {
-      val widget = "androidx.media2:media2-widget:1.0.0"
-      val common = "androidx.media2:media2-common:1.0.0"
-      val player = "androidx.media2:media2-player:1.0.0"
-      val session = "androidx.media2:media2-session:1.0.0"
+      private const val version = "1.0.1"
+      val widget = "androidx.media2:media2-widget:$version"
+      val common = "androidx.media2:media2-common:$version"
+      val player = "androidx.media2:media2-player:$version"
+      val session = "androidx.media2:media2-session:$version"
     }
 
     object Navigation {
-      private const val version = "2.2.0-alpha03"
+      private const val version = "2.2.0-beta01"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
@@ -100,7 +101,7 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.0-alpha04"
+      private const val version = "1.2.0-beta02"
       val fragment = "androidx.fragment:fragment:$version"
       val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
@@ -126,11 +127,11 @@ object Libs {
 
     val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta2"
 
-    val core = "androidx.core:core:1.2.0-alpha04"
-    val coreKtx = "androidx.core:core-ktx:1.2.0-alpha04"
+    val core = "androidx.core:core:1.2.0-beta01"
+    val coreKtx = "androidx.core:core-ktx:1.2.0-beta01"
 
     object Lifecycle {
-      private const val version = "2.2.0-alpha05"
+      private const val version = "2.2.0-beta01"
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
@@ -141,7 +142,7 @@ object Libs {
     }
 
     object Room {
-      private const val version = "2.2.0-rc01"
+      private const val version = "2.2.0"
       val common = "androidx.room:room-common:$version"
       val runtime = "androidx.room:room-runtime:$version"
       val compiler = "androidx.room:room-compiler:$version"
@@ -150,7 +151,7 @@ object Libs {
     }
 
     object Work {
-      private const val version = "2.3.0-alpha01"
+      private const val version = "2.3.0-alpha02"
       val runtimeKtx = "androidx.work:work-runtime-ktx:$version"
     }
   }
@@ -220,6 +221,6 @@ object Libs {
 
   object Other {
     val androidSvg = "com.caverock:androidsvg-aar:1.4"
-    val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.4"
+    val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"
   }
 }
