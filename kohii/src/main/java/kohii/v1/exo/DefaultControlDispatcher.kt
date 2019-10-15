@@ -38,7 +38,7 @@ open class DefaultControlDispatcher(
     windowIndex: Int,
     positionMs: Long
   ): Boolean {
-    return manager.findPlaybackForOutput(playerView)?.let {
+    return manager.findPlaybackForRenderer(playerView)?.let {
       it.seekTo(positionMs)
       true
     } ?: false
@@ -55,7 +55,7 @@ open class DefaultControlDispatcher(
     player: Player?,
     playWhenReady: Boolean
   ): Boolean {
-    return manager.findPlaybackForOutput(playerView)?.let {
+    return manager.findPlaybackForRenderer(playerView)?.let {
       if (playWhenReady) manager.play(it)
       else manager.pause(it)
       true
@@ -66,7 +66,7 @@ open class DefaultControlDispatcher(
     player: Player?,
     repeatMode: Int
   ): Boolean {
-    return manager.findPlaybackForOutput(playerView)?.let {
+    return manager.findPlaybackForRenderer(playerView)?.let {
       it.repeatMode = repeatMode
       true
     } ?: false

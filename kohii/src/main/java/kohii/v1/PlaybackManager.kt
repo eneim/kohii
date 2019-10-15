@@ -490,14 +490,14 @@ abstract class PlaybackManager(
   }
 
   @Suppress("UNCHECKED_CAST")
-  internal fun <OUTPUT : Any> findPlaybackForPlayable(playable: Playable<OUTPUT>): Playback<OUTPUT>? =
+  internal fun <RENDERER : Any> findPlaybackForPlayable(playable: Playable<RENDERER>): Playback<RENDERER>? =
     this.mapTargetToPlayback.values.firstOrNull {
       it.playable === playable // this will also guaranty the type check.
-    } as? Playback<OUTPUT>?
+    } as? Playback<RENDERER>?
 
   @Suppress("UNCHECKED_CAST")
-  internal fun <OUTPUT : Any> findPlaybackForOutput(output: OUTPUT): Playback<OUTPUT>? =
-    this.mapTargetToPlayback.values.firstOrNull { it.renderer === output } as? Playback<OUTPUT>
+  internal fun <RENDERER : Any> findPlaybackForRenderer(output: RENDERER): Playback<RENDERER>? =
+    this.mapTargetToPlayback.values.firstOrNull { it.renderer === output } as? Playback<RENDERER>
 
   internal fun findHostForContainer(container: Any) =
     targetHosts.firstOrNull { it.accepts(container) }
