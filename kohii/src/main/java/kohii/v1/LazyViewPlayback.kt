@@ -17,7 +17,7 @@
 package kohii.v1
 
 import android.view.ViewGroup
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 open class LazyViewPlayback<RENDERER : Any>(
   kohii: Kohii,
@@ -34,22 +34,21 @@ open class LazyViewPlayback<RENDERER : Any>(
     require(boxedTarget !is IdenticalTarget<*>) { "IdenticalTarget is not allowed here." }
   }
 
-  private var _renderer: RENDERER? by Delegates.observable(null as RENDERER?,
-      onChange = { _, prev, next ->
-        if (next === prev) return@observable
-        // 1. Release previous value to Pool
-        if (prev != null) {
-          if (boxedTarget.detachRenderer(prev)) {
-            rendererPool.releaseRenderer(boxedTarget, prev, playable.media)
-            this.playable.onPlayerInActive(this@LazyViewPlayback, prev)
-          }
-        }
-        // 2. If next value is not null, attach and notify its value
-        if (next != null) {
-          boxedTarget.attachRenderer(next)
-          this.playable.onPlayerActive(this@LazyViewPlayback, next)
-        }
-      })
+  private var _renderer: RENDERER? by observable(null as RENDERER?, onChange = { _, prev, next ->
+    if (next === prev) return@observable
+    // 1. Release previous value to Pool
+    if (prev != null) {
+      if (boxedTarget.detachRenderer(prev)) {
+        rendererPool.releaseRenderer(boxedTarget, prev, playable.media)
+        this.playable.onPlayerInActive(this@LazyViewPlayback, prev)
+      }
+    }
+    // 2. If next value is not null, attach and notify its value
+    if (next != null) {
+      boxedTarget.attachRenderer(next)
+      this.playable.onPlayerActive(this@LazyViewPlayback, next)
+    }
+  })
 
   override val renderer: RENDERER?
     get() = this._renderer
