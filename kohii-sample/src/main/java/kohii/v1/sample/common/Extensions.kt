@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Point
+import android.util.SparseArray
 import android.util.TypedValue
 import android.view.View
 import android.view.Window
@@ -69,3 +70,8 @@ fun Activity.isLandscape(): Boolean {
 fun DialogFragment.requireWindow(): Window = checkNotNull(requireDialog().window) {
   "Window of Dialog is null"
 }
+
+inline fun <T> SparseArray<T>.getOrPut(
+  key: Int,
+  defaultValue: () -> T
+) = get(key) ?: defaultValue().also { put(key, it) }

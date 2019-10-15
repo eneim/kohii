@@ -19,15 +19,20 @@ package kohii.v1.sample.ui.echo
 import android.util.SparseArray
 import androidx.lifecycle.ViewModel
 import kohii.media.VolumeInfo
+import kohii.v1.sample.common.getOrPut
 
-class VolumeStateVideoModel : ViewModel() {
+class VolumeStateViewModel : ViewModel(), VolumeStore {
 
-  val volumeInfoStore = SparseArray<VolumeInfo>()
+  private val volumeInfoStore = SparseArray<VolumeInfo>()
 
-  fun saveVolumeInfo(
+  override fun set(
     key: Int,
     volumeInfo: VolumeInfo
   ) {
     volumeInfoStore.put(key, volumeInfo)
+  }
+
+  override fun get(key: Int): VolumeInfo {
+    return volumeInfoStore.getOrPut(key) { VolumeInfo() }
   }
 }
