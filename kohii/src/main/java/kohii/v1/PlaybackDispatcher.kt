@@ -19,11 +19,14 @@ package kohii.v1
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import kohii.logDebug
 
 /**
  *
  * @since 2018/12/26
+ *
+ * Dispatch the play/pause action to [Playback].
+ * As [Playback] supports deplayed start, this class correctly dispatch that start action at proper timing.
+ * It also synchronize the play/pause behavior with [Kohii]'s global states like manual playback.
  *
  */
 class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
@@ -40,11 +43,11 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
 
   private var handler: Handler? = null
 
-  internal fun onAttached() {
+  internal fun onStart() {
     if (handler == null) handler = Handler(Looper.getMainLooper(), this)
   }
 
-  internal fun onDetached() {
+  internal fun onStop() {
     handler?.removeCallbacksAndMessages(null)
     handler = null
   }
@@ -69,7 +72,6 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
   }
 
   internal fun play(playback: Playback<*>) {
-    "Play: ${playback.tag}".logDebug()
     playback.playable.ensurePreparation()
 
     val controller = playback.controller
@@ -103,7 +105,6 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
   }
 
   internal fun pause(playback: Playback<*>) {
-    "Pause: ${playback.tag}".logDebug()
     // There is PlaybackManagerGroup whose selection is not empty.
     if (playback.kohii.groups.filter { it.value.selection.isNotEmpty() }.isNotEmpty()) {
       justPause(playback)

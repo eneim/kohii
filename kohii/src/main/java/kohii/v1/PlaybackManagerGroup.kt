@@ -19,8 +19,9 @@ package kohii.v1
 import android.app.Activity
 import androidx.collection.ArraySet
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.Lifecycle.Event.ON_START
+import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
@@ -109,14 +110,19 @@ class PlaybackManagerGroup(
     dispatcher.dispatchRefresh()
   }
 
-  @OnLifecycleEvent(ON_CREATE)
-  fun onOwnerCreate() {
-    playbackDispatcher.onAttached()
+  @OnLifecycleEvent(ON_START)
+  fun onOwnerStart() {
+    playbackDispatcher.onStart()
+  }
+
+  @OnLifecycleEvent(ON_STOP)
+  fun onOwnerStop() {
+    playbackDispatcher.onStop()
   }
 
   @OnLifecycleEvent(ON_DESTROY)
   fun onOwnerDestroy(owner: LifecycleOwner) {
-    playbackDispatcher.onDetached()
+    // playbackDispatcher.onStop()
     selection.clear()
     if (!activity.isChangingConfigurations) {
       kohii.manualPlayableRecord.clear()
@@ -213,8 +219,8 @@ class PlaybackManagerGroup(
       val selected = selector(toPlay)
       this.selection.addAll(selected)
       (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
-      selected.forEach { playbackDispatcher.play(it) }
-      selected.groupBy { it.manager }
+      selected.onEach { playbackDispatcher.play(it) }
+          .groupBy { it.manager }
           .forEach { (m, p) -> m.selectionCallbacks.value.onSelection(p) }
     }
   }
