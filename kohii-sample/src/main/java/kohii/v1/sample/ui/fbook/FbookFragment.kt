@@ -28,6 +28,7 @@ import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.forceCast
 import kohii.media.VolumeInfo
@@ -85,13 +86,13 @@ class FbookFragment : BaseFragment(),
 
   internal var currentPlayerInfo
       by Delegates.observable<OverlayPlayerInfo?>(null) { _, oldVal, newVal ->
-        if (newVal == null) {
+        if (newVal == null) { // dismiss the overlay player.
           if (oldVal != null) {
             clearPlayerSelection(oldVal.rebinder)
             closeDialogPlayer(oldVal.rebinder)
             closeFloatPlayer(oldVal.rebinder)
           }
-        } else {
+        } else { // open overlay player
           val (mode, rebinder) = newVal
           when (mode) {
             OverlayPlayerInfo.MODE_DIALOG -> {
@@ -137,7 +138,7 @@ class FbookFragment : BaseFragment(),
     })
 
     viewModel.apply {
-      timelineVolume.observe({ viewLifecycleOwner.lifecycle }) {
+      timelineVolume.observe(viewLifecycleOwner) {
         kohii.applyVolumeInfo(it, rvHost, Scope.HOST)
         val adapter = recyclerView.adapter
         if (adapter != null) {
@@ -146,7 +147,7 @@ class FbookFragment : BaseFragment(),
         }
       }
 
-      overlayPlayerInfo.observe({ viewLifecycleOwner.lifecycle }) {
+      overlayPlayerInfo.observe(viewLifecycleOwner) {
         currentPlayerInfo = it
       }
     }
@@ -172,7 +173,9 @@ class FbookFragment : BaseFragment(),
     if (savedBinder != null) {
       if (requireActivity().isLandscape()) {
         val info = OverlayPlayerInfo(OverlayPlayerInfo.MODE_DIALOG, savedBinder)
-        viewModel.overlayPlayerInfo.value = info
+        recyclerView.doOnLayout {
+          viewModel.overlayPlayerInfo.value = info
+        }
       }
     }
   }

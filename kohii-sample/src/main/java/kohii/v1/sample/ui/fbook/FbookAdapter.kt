@@ -93,9 +93,9 @@ internal class FbookAdapter(
     position: Int,
     payloads: MutableList<Any>
   ) {
-    val payload = payloads.firstOrNull { it is VolumeInfo }
+    val payload = payloads.firstOrNull { it is VolumeInfo } as VolumeInfo?
     if (payload != null && holder is VideoViewHolder) {
-      holder.volume.isSelected = !(payload as VolumeInfo).mute
+      holder.volume.isSelected = !payload.mute
     } else {
       super.onBindViewHolder(holder, position, payloads)
     }
