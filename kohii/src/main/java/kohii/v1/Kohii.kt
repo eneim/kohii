@@ -56,8 +56,8 @@ import kohii.v1.exo.DefaultMediaSourceFactoryProvider
 import kohii.v1.exo.PlayerViewBridgeProvider
 import kohii.v1.exo.PlayerViewPlayableCreator
 import java.io.File
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.LazyThreadSafetyMode.NONE
+import kotlin.properties.Delegates
 
 /**
  * @author eneim (2018/06/24).
@@ -85,9 +85,10 @@ class Kohii(context: Context) : PlayableManager {
   // REQUIRED: Playable Tag is globally unique.
   internal val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
-  private val headlessPlayback by lazy(NONE) {
-    AtomicReference<HeadlessPlayback?>(null)
-  }
+  private var headlessPlayback by Delegates.observable<HeadlessPlayback?>(
+      null, onChange = { _, oldVal, newVal ->
+    if (newVal !== oldVal) oldVal?.dismiss()
+  })
 
   @ExoPlayer
   internal val defaultBridgeProvider by lazy(NONE) {
@@ -161,14 +162,10 @@ class Kohii(context: Context) : PlayableManager {
   // instance methods
 
   internal fun setHeadlessPlayback(headlessPlayback: HeadlessPlayback?) {
-    if (this.headlessPlayback.get() !== headlessPlayback) {
-      this.headlessPlayback.get()
-          ?.dismiss()
-    }
-    this.headlessPlayback.set(headlessPlayback)
+    this.headlessPlayback = headlessPlayback
   }
 
-  internal fun getHeadlessPlayback(): HeadlessPlayback? = this.headlessPlayback.get()
+  internal fun getHeadlessPlayback(): HeadlessPlayback? = this.headlessPlayback
 
   internal fun enterHeadlessPlayback(
     playback: Playback<*>,
@@ -293,15 +290,15 @@ class Kohii(context: Context) : PlayableManager {
 
   // Expose to client.
   fun register(
-    provider: Any,
+    container: Any,
     vararg hosts: View
   ): PlaybackManager {
     val (activity, lifecycleOwner) =
-      when (provider) {
-        is Fragment -> Pair(provider.requireActivity(), provider.viewLifecycleOwner)
-        is FragmentActivity -> Pair(provider, provider)
+      when (container) {
+        is Fragment -> Pair(container.requireActivity(), container.viewLifecycleOwner)
+        is FragmentActivity -> Pair(container, container)
         else -> throw IllegalArgumentException(
-            "Unsupported provider: $provider. Kohii only supports Fragment, FragmentActivity."
+            "Unsupported container: $container. Kohii only supports Fragment, FragmentActivity."
         )
       }
     val managerGroup = groups.getOrPut(activity) {
@@ -312,7 +309,7 @@ class Kohii(context: Context) : PlayableManager {
     val manager = managers.getOrPut(lifecycleOwner) {
       // Create new in case of no cache found.
       require(lifecycleOwner !is Service) { "Service is not supported yet." }
-      return@getOrPut ViewPlaybackManager(this, provider, managerGroup, lifecycleOwner)
+      return@getOrPut ViewPlaybackManager(this, container, managerGroup, lifecycleOwner)
     }
 
     hosts.mapNotNull {
