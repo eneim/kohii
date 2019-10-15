@@ -32,6 +32,7 @@ import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.exo.PlayerViewBridge
 import kohii.v1.exo.PlayerViewPlayable
+import kotlin.LazyThreadSafetyMode.NONE
 
 internal class HeadlessPlaybackService : LifecycleService(),
     HeadlessPlayback,
@@ -42,16 +43,15 @@ internal class HeadlessPlaybackService : LifecycleService(),
     const val KEY_PLAYABLE = "kohii::v1::service::playable"
   }
 
-  internal lateinit var kohii: Kohii
-  internal lateinit var playable: Playable<*>
+  private val kohii: Kohii by lazy(NONE) { Kohii[this] }
 
+  private lateinit var playable: Playable<*>
   private var playerNotificationManager: PlayerNotificationManager? = null
   private var bitmapAsyncTask: BitmapAsyncTask? = null
   internal var bitmapCallback: BitmapCallback? = null
 
   override fun onCreate() {
     super.onCreate()
-    kohii = Kohii[this]
     kohii.setHeadlessPlayback(this)
   }
 
@@ -62,21 +62,19 @@ internal class HeadlessPlaybackService : LifecycleService(),
   ): Int {
     val extras = intent?.extras ?: throw IllegalArgumentException("Service has no extras.")
     // Get the Playable.
-    val playableTag = extras.getString(KEY_PLAYABLE)
-        ?: throw IllegalArgumentException("No playable tag provided.")
+    val playableTag = requireNotNull(extras.getString(KEY_PLAYABLE))
     val cache = kohii.mapTagToPlayable[playableTag]
     if (cache == null) {
       stopSelf()
       return super.onStartCommand(intent, flags, startId)
     }
 
-    val params = extras.getParcelable<HeadlessPlaybackParams>(KEY_PARAMS)
+    val params = requireNotNull(extras.getParcelable<HeadlessPlaybackParams>(KEY_PARAMS))
 
     val playable = cache.first
     this.playable = playable
-    if (params != null && playable is PlayerViewPlayable) {
-      val bridge = playable.bridge as PlayerViewBridge
-      playerNotificationManager = PlayerNotificationManager.createWithNotificationChannel(
+    if (playable is PlayerViewPlayable && playable.bridge is PlayerViewBridge) {
+      val notificationManager = PlayerNotificationManager.createWithNotificationChannel(
           this,
           params.channelId,
           params.channelName,
@@ -103,10 +101,10 @@ internal class HeadlessPlaybackService : LifecycleService(),
               return null
             }
           },
-          this
+          this@HeadlessPlaybackService
       )
-
-      playerNotificationManager?.setPlayer(bridge.player)
+      notificationManager.setPlayer(playable.bridge.player)
+      this.playerNotificationManager = notificationManager
     }
     return super.onStartCommand(intent, flags, startId)
   }
@@ -114,8 +112,9 @@ internal class HeadlessPlaybackService : LifecycleService(),
   override fun onDestroy() {
     super.onDestroy()
     bitmapAsyncTask?.cancel(true)
+    playerNotificationManager?.setPlayer(null)
     if (::playable.isInitialized) {
-      if (kohii.mapPlayableToManager[playable] == kohii) {
+      if (kohii.mapPlayableToManager[playable] === kohii) {
         kohii.mapPlayableToManager.remove(playable)
       }
 
@@ -123,10 +122,7 @@ internal class HeadlessPlaybackService : LifecycleService(),
         kohii.releasePlayable(playable.tag, playable)
       }
     }
-    playerNotificationManager?.setPlayer(null)
-    if (kohii.shouldCleanUp()) {
-      kohii.cleanUp()
-    }
+    if (kohii.shouldCleanUp()) kohii.cleanUp()
     kohii.setHeadlessPlayback(null)
   }
 
@@ -151,7 +147,7 @@ internal class HeadlessPlaybackService : LifecycleService(),
     startForeground(notificationId, notification)
     playable.config.cover?.let { lazyBitmap ->
       bitmapAsyncTask = BitmapAsyncTask(lazyBitmap, bitmapCallback).also {
-        it.executeOnExecutor(BitmapAsyncTask.SINGLE_THREAD_EXECUTOR)
+        it.loadBitmap()
       }
     }
   }
