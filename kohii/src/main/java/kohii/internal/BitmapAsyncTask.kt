@@ -31,19 +31,19 @@ internal class BitmapAsyncTask(
 ) : AsyncTask<Void, Void, Bitmap?>() {
 
   companion object {
-    private val threadFactory by lazy(NONE) {
-      object : ThreadFactory {
+    private val SINGLE_THREAD_EXECUTOR by lazy(NONE) {
+      Executors.newSingleThreadExecutor(object : ThreadFactory {
         private val mCount = AtomicInteger(1)
 
         override fun newThread(r: Runnable): Thread {
-          return Thread(r, "BitmapAsyncTask #" + mCount.getAndIncrement())
+          return Thread(r, "Kohii - BitmapAsyncTask #" + mCount.getAndIncrement())
         }
-      }
+      })
     }
+  }
 
-    internal val SINGLE_THREAD_EXECUTOR by lazy(NONE) {
-      Executors.newSingleThreadExecutor(threadFactory)
-    }
+  internal fun loadBitmap() {
+    this.executeOnExecutor(SINGLE_THREAD_EXECUTOR)
   }
 
   override fun doInBackground(vararg params: Void?): Bitmap? {
