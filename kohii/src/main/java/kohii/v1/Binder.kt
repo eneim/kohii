@@ -118,7 +118,7 @@ open class Binder<RENDERER : Any> internal constructor(
       if (tag != null) {
         val cache = kohii.mapTagToPlayable[tag]
         if (cache?.second !== playableCreator.rendererType) {
-          // cached Playable of different output type will be replaced.
+          // cached Playable of different renderer type will be replaced.
           if (cache?.first != null) kohii.releasePlayable(tag, cache.first) // Added [20190726]
           toCreate.also {
             kohii.mapTagToPlayable[tag] = Pair(it, playableCreator.rendererType)

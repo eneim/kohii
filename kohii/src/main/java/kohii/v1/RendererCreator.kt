@@ -21,9 +21,9 @@ import kohii.media.Media
 // In theory, instance of this interface doesn't need to be scoped in Activity lifecycle.
 interface RendererCreator<RENDERER : Any> {
 
-  // Return output type for a Media object, as an integer.
-  // This value will be used to cache the Output Holder used for this Media object.
-  // Same type Media object will use same type Output Holder.
+  // Return renderer type for a Media object, as an integer.
+  // This value will be used to cache the renderer used for this Media object.
+  // Same type Media object will use same type renderer.
   fun getMediaType(media: Media): Int = R.layout.kohii_player_surface_view
 
   fun getContainerType(container: Any): Int = 0
