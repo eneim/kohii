@@ -23,7 +23,7 @@ import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
 import kohii.doOnAttach
 import kohii.doOnDetach
 import kohii.findSuitableParent
-import kohii.media.VolumeInfo
+import kohii.v1.Kohii
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import kohii.v1.TargetHost
@@ -40,7 +40,6 @@ abstract class BaseTargetHost<V : Any>(
   private val targets = HashMap<Any, Any>()
 
   override var lock = false
-  override var volumeInfo: VolumeInfo = VolumeInfo()
 
   private val lazyHashCode by lazy(NONE) {
     var result = host.hashCode()
@@ -119,8 +118,9 @@ abstract class BaseTargetHost<V : Any>(
     val manualCandidate by lazy {
       val sorted = grouped.getValue(true)
           .sortedWith(comparators.getValue(orientation))
-      val manuallyStarted =
-        sorted.firstOrNull { playback -> manager.kohii.manualPlayableRecord[playback.playable] == true }
+      val manuallyStarted = sorted.firstOrNull { playback ->
+        manager.kohii.manualPlayableRecord[playback.playable] == Kohii.PENDING_PLAY
+      }
       return@lazy listOfNotNull(manuallyStarted ?: sorted.firstOrNull())
     }
 

@@ -38,6 +38,10 @@ data class VolumeInfo(
     this.volume = volume
   }
 
+  fun setTo(volumeInfo: VolumeInfo) {
+    this.setTo(volumeInfo.mute, volumeInfo.volume)
+  }
+
   companion object {
     val SCRAP = VolumeInfo(false, 1F)
   }

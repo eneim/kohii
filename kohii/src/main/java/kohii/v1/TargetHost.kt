@@ -100,7 +100,7 @@ abstract class TargetHost(
   // state
   internal abstract var lock: Boolean
 
-  internal abstract var volumeInfo: VolumeInfo
+  internal val volumeInfo: VolumeInfo = VolumeInfo()
 
   internal open fun onAdded() {}
 
