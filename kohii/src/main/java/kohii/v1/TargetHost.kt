@@ -81,8 +81,6 @@ abstract class TargetHost(
       }
     }
 
-    val PRESENT = Any()
-
     internal fun changed(
       left: Int,
       top: Int,

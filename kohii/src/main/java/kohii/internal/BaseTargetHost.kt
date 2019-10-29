@@ -37,7 +37,7 @@ abstract class BaseTargetHost<V : Any>(
     View.OnAttachStateChangeListener,
     View.OnLayoutChangeListener {
 
-  private val targets = HashMap<Any, Any>()
+  private val targets = mutableSetOf<Any>()
 
   override var lock = false
 
@@ -74,7 +74,7 @@ abstract class BaseTargetHost<V : Any>(
   }
 
   override fun <T : Any> attachTarget(target: T) {
-    if (targets.put(target, PRESENT) == null) { // null --> no previous map
+    if (targets.add(target)) { // true --> added to the set
       if (target is View) {
         if (ViewCompat.isAttachedToWindow(target)) {
           this.onViewAttachedToWindow(target)
@@ -85,7 +85,7 @@ abstract class BaseTargetHost<V : Any>(
   }
 
   override fun <T : Any> detachTarget(target: T) {
-    if (targets.remove(target) != null) { // non-null --> was mapped with a value
+    if (targets.remove(target)) { // true --> was removed from the set
       if (target is View) {
         target.removeOnAttachStateChangeListener(this)
         target.removeOnLayoutChangeListener(this)
