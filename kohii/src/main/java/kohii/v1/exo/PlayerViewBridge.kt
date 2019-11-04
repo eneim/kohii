@@ -35,6 +35,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.util.ErrorMessageProvider
 import kohii.addEventListener
 import kohii.getVolumeInfo
+import kohii.logWarn
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.PlaybackInfo.Companion.INDEX_UNSET
@@ -112,6 +113,7 @@ internal open class PlayerViewBridge(
   override var playerView: PlayerView? = null
     set(value) {
       if (field === value) return // same reference
+      "Player: $field --> $value".logWarn("Kohii::Dev")
       this.lastSeenTrackGroupArray = null
       this.inErrorState = false
       if (value == null) {

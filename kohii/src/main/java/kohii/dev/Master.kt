@@ -19,6 +19,9 @@ package kohii.dev
 import android.app.Application
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ComponentActivity
@@ -27,7 +30,6 @@ import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.logInfo
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
@@ -35,9 +37,11 @@ import kohii.v1.Kohii
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
-class Master(context: Context) {
+class Master(context: Context) : PlayableManager {
 
   companion object {
+
+    private const val MSG_STARTUP = 100
 
     internal val NO_TAG = Any()
 
@@ -55,24 +59,9 @@ class Master(context: Context) {
   val app = context.applicationContext as Application
   val kohii = Kohii[app]
 
-  internal val groups = mutableSetOf<Group>()
-  internal val playables = mutableMapOf<Playable<*>, Any /* tag */>()
+  private val groups = mutableSetOf<Group>()
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
-
-  fun register(
-    fragment: Fragment,
-    vararg views: View
-  ): Manager {
-    val (activity, managerLifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
-    return registerInternal(activity, fragment, managerLifecycleOwner, *views)
-  }
-
-  fun register(
-    activity: ComponentActivity,
-    vararg views: View
-  ): Manager {
-    return registerInternal(activity, activity, activity, *views)
-  }
+  internal val playables = mutableMapOf<Playable<*>, Any /* tag */>()
 
   private fun registerInternal(
     activity: ComponentActivity,
@@ -109,9 +98,9 @@ class Master(context: Context) {
 
       val createNew by lazy(NONE) {
         if (host.manager.group.hasRendererProviderForType(container.javaClass))
-          Playback(host.manager, container, host)
+          Playback(host.manager, host, container)
         else
-          LazyPlayback(host.manager, container, host)
+          LazyPlayback(host.manager, host, container)
       }
 
       val sameContainer = host.manager.playbacks[container]
@@ -192,12 +181,12 @@ class Master(context: Context) {
     playable.onPause()
     playable.onRelease()
     playables.remove(playable)
+    playbackInfoStore.remove(playable.tag)
   }
 
   internal fun trySavePlaybackInfo(playable: Playable<*>) {
     if (playable.tag === NO_TAG) return
     if (!playbackInfoStore.containsKey(playable.tag)) {
-      "Save: ${playable.tag}".logInfo("Kohii::Dev")
       playbackInfoStore[playable.tag] = playable.playbackInfo
     }
   }
@@ -205,13 +194,56 @@ class Master(context: Context) {
   internal fun tryRestorePlaybackInfo(playable: Playable<*>) {
     if (playable.tag === NO_TAG) return
     val cache = playbackInfoStore.remove(playable.tag)
-    if (cache != null) {
-      "Restore: ${playable.tag}, ${cache.resumePosition}".logInfo("Kohii::Dev")
-      playable.playbackInfo = cache
+    if (cache != null) playable.playbackInfo = cache
+  }
+
+  private fun checkPlayables() {
+    playables.filter { it.key.manager === this }
+        .keys.toMutableList()
+        .onEach {
+          it.manager = null
+          tearDown(it)
+        }
+        .clear()
+  }
+
+  private val dispatcher = Dispatcher(this)
+
+  internal fun onGroupCreated(group: Group) {
+    groups.add(group)
+    dispatcher.sendEmptyMessage(MSG_STARTUP)
+  }
+
+  internal fun onGroupDestroyed(group: Group) {
+    groups.remove(group)
+    if (groups.isEmpty()) dispatcher.removeCallbacksAndMessages(null)
+  }
+
+  private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
+
+    override fun handleMessage(msg: Message) {
+      if (msg.what == MSG_STARTUP) {
+        master.checkPlayables()
+      }
     }
   }
 
   // Public APIs
+
+  fun register(
+    fragment: Fragment,
+    vararg views: View
+  ): Manager {
+    val (activity, managerLifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
+    return registerInternal(activity, fragment, managerLifecycleOwner, *views)
+  }
+
+  fun register(
+    activity: ComponentActivity,
+    vararg views: View
+  ): Manager {
+    return registerInternal(activity, activity, activity, *views)
+  }
 
   fun setUp(media: Media): Binder<PlayerView> {
     return Binder(this, media, defaultPlayableProvider)

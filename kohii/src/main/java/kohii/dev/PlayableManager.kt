@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample
+package kohii.dev
 
-import android.os.Bundle
-import kohii.v1.sample.common.BaseActivity
-
-class DebugActivity : BaseActivity() {
-
-  companion object {
-    const val videoUrl = "https://content.jwplatform.com/manifests/146UwF4L.m3u8"
-  }
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_debug)
-  }
-}
+interface PlayableManager

@@ -18,7 +18,6 @@ package kohii.dev
 
 import kohii.dev.Playback.Callback
 import kohii.logDebug
-import kohii.logInfo
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.v1.Bridge
@@ -28,8 +27,8 @@ open class Playable<RENDERER : Any>(
   val master: Master,
   val media: Media,
   val config: Config,
-  val rendererType: Class<RENDERER>,
-  val bridge: Bridge<RENDERER>
+  internal val rendererType: Class<RENDERER>,
+  internal val bridge: Bridge<RENDERER>
 ) : Callback {
 
   data class Config(
@@ -46,7 +45,6 @@ open class Playable<RENDERER : Any>(
       playRequested = true
       bridge.ensurePreparation()
       bridge.play()
-      "Play ${this.tag}".logDebug("Kohii::Dev")
     }
   }
 
@@ -54,7 +52,6 @@ open class Playable<RENDERER : Any>(
     if (playRequested) {
       playRequested = false
       bridge.pause()
-      "Pause ${this.tag}".logDebug("Kohii::Dev")
     }
   }
 
@@ -62,11 +59,10 @@ open class Playable<RENDERER : Any>(
     "Release ${this.tag}".logDebug("Kohii::Dev")
   }
 
-  internal var manager: Manager? by Delegates.observable<Manager?>(
+  internal var manager: PlayableManager? by Delegates.observable<PlayableManager?>(
       null,
       onChange = { _, prev, next ->
         if (prev === next) return@observable
-        // "$this -- Manager: $prev --> $next".logInfo("Kohii::Dev")
       }
   )
 
@@ -89,27 +85,27 @@ open class Playable<RENDERER : Any>(
 
   override fun onActive(playback: Playback<*>) {
     check(playback === this.playback)
-    "Active ${this.tag} -- $playback".logInfo("Kohii::Dev")
     bridge.prepare(false) // TODO when should prepare?
-    bridge.playerView = manager?.acquireRenderer(playback, this)
+    bridge.playerView = (manager as? Manager)?.acquireRenderer(playback, this)
     master.tryRestorePlaybackInfo(this)
   }
 
   override fun onInActive(playback: Playback<*>) {
     check(playback === this.playback)
-    "InActive ${this.tag} -- $playback".logInfo("Kohii::Dev")
-    master.trySavePlaybackInfo(this)
-    manager?.releaseRenderer(playback, this)
+    if (!playback.manager.group.activity.isChangingConfigurations) {
+      master.trySavePlaybackInfo(this)
+    }
+    (manager as? Manager)?.releaseRenderer(playback, this)
     bridge.playerView = null
   }
 
   override fun onAdded(playback: Playback<*>) {
-    "Add ${this.tag} -- $playback".logInfo("Kohii::Dev")
+    // Do nothing
   }
 
   override fun onRemoved(playback: Playback<*>) {
-    "Remove ${this.tag} -- $playback".logInfo("Kohii::Dev")
-    if (this.playback === playback) this.playback = null
+    if (this.playback === playback) this.playback = null // Will also clear current Manager
+    if (playback.manager.group.activity.isChangingConfigurations) this.manager = master
     if (this.manager == null) master.tearDown(this)
   }
 }

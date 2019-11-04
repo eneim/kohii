@@ -28,9 +28,9 @@ import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
 
 open class Playback<CONTAINER : ViewGroup>(
-  val manager: Manager,
-  val container: CONTAINER,
-  val host: Host
+  internal val manager: Manager,
+  internal val host: Host,
+  val container: CONTAINER
 ) {
 
   companion object {

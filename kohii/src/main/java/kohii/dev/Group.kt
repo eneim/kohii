@@ -29,8 +29,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 
 class Group(
-  val master: Master,
-  val activity: ComponentActivity
+  internal val master: Master,
+  internal val activity: ComponentActivity
 ) : LifecycleObserver, Handler.Callback {
 
   companion object {
@@ -64,7 +64,7 @@ class Group(
 
   @OnLifecycleEvent(ON_CREATE)
   internal fun onCreate() {
-    master.groups.add(this)
+    master.onGroupCreated(this)
   }
 
   @OnLifecycleEvent(ON_DESTROY)
@@ -73,7 +73,7 @@ class Group(
     rendererProviders.onEach { it.value.clear() }
         .clear()
     owner.lifecycle.removeObserver(this)
-    master.groups.remove(this)
+    master.onGroupDestroyed(this)
   }
 
   internal fun findHostForContainer(container: ViewGroup): Host? {

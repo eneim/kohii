@@ -33,10 +33,10 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.partitionToArrayLists
 
 class Manager(
-  val group: Group,
-  val host: Any,
-  val lifecycleOwner: LifecycleOwner
-) : LifecycleObserver {
+  internal val group: Group,
+  internal val host: Any,
+  internal val lifecycleOwner: LifecycleOwner
+) : PlayableManager, LifecycleObserver {
 
   private val hosts = linkedSetOf<Host>()
   // All Playbacks, including attached/detached ones.

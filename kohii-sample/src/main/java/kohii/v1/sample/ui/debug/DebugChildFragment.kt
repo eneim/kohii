@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.dev.Master
@@ -28,14 +29,16 @@ import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.inflateView
 import kohii.v1.sample.ui.manual.videoUrl
-import kotlinx.android.synthetic.main.fragment_debug_child.container
 
 class ItemViewHolder(itemView: View) : ViewHolder(itemView) {
 
   val content = itemView.findViewById(R.id.playerContainer) as ViewGroup
 }
 
-class ItemsAdapter(private val master: Master) : Adapter<ItemViewHolder>() {
+class ItemsAdapter(
+  private val master: Master,
+  private val host: Any
+) : Adapter<ItemViewHolder>() {
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
@@ -74,8 +77,8 @@ class DebugChildFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     val master = Master[this]
+    val container = view.findViewById(R.id.container) as RecyclerView
     master.register(this, container)
-
-    container.adapter = ItemsAdapter(master)
+    container.adapter = ItemsAdapter(master, this)
   }
 }

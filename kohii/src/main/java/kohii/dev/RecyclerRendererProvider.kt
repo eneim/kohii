@@ -61,7 +61,7 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(
     media: Media,
     renderer: RENDERER?
   ) {
-    if (renderer == null) return
+    if (renderer == null || playback.container === renderer) return
     val containerType = getContainerType(playback.container)
     val mediaType = getMediaType(media)
     val poolKey = poolKey(containerType, mediaType)

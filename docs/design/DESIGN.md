@@ -5,8 +5,8 @@
   - [x] Automatically update the playbacks in RecyclerView, NestedScrollView or general ViewGroup.
   - [x] Automatically update the playbacks in ViewPager, ViewPager2.
 
-- [ ] Handle configuration change
-  - [ ] Retain resource on configuration changes.
+- [x] Handle configuration change
+  - [x] Retain resource on configuration changes.
 
 - [ ] Manual control over Playbacks
   - [ ] Allow client to have full control over Playbacks: client can start/pause any Playback without the control of system/Kohii.
