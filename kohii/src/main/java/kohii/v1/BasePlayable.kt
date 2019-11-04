@@ -16,14 +16,20 @@
 
 package kohii.v1
 
+import android.view.ViewGroup
+import androidx.core.view.doOnAttach
+import kohii.logDebug
+import kohii.logWarn
 import kohii.media.Media
 import kohii.media.VolumeInfo
 import kohii.v1.Playable.Companion.NO_TAG
 import kohii.v1.Playback.Config
+import java.lang.ref.WeakReference
+import kotlin.properties.Delegates
 
 // RENDERER is what to render the content to. In Kohii, PlayerView is supported out of the box.
 abstract class BasePlayable<RENDERER : Any>(
-  protected val kohii: Kohii,
+  override val kohii: Kohii,
   override val media: Media,
   override val config: Playable.Config,
   internal val bridge: Bridge<RENDERER>,
@@ -50,7 +56,7 @@ abstract class BasePlayable<RENDERER : Any>(
     this.bridge.removeEventListener(playback)
 
     // Note|eneim|20190113: only call release when there is no more Manager manages this.
-    if (kohii.mapPlayableToManager[this] == null) {
+    if (this.manager == null) {
       // There is no other Manager to manage this Playable, and we are removing the last one, so ...
       kohii.releasePlayable(config.tag, this)
       kohii.mapPlayableTagToInfo.remove(this.tag)
@@ -58,25 +64,48 @@ abstract class BasePlayable<RENDERER : Any>(
   }
 
   override fun onRelease(playback: Playback<*>) {
-    if (kohii.mapPlayableToManager[this] == null || !playback.manager.isActive(playback)) {
+    if (this.manager == null || !playback.manager.isActive(playback)) {
       this.release()
     }
   }
 
-  override fun <CONTAINER : Any> bind(
+  override fun <CONTAINER : ViewGroup> bind(
     target: Target<CONTAINER, RENDERER>,
     config: Config,
     onDone: ((Playback<RENDERER>) -> Unit)?
   ) {
-    val manager = kohii.findManagerForContainer(target.container)
-        ?: throw IllegalStateException("There is no manager for $target. Forget to register one?")
-
-    val result = manager.performBindPlayable(
-        this, target, config,
-        playbackCreator
-    )
-    onDone?.invoke(result)
+    val container = target.container
+    val weakOnDone = WeakReference(onDone)
+    container.doOnAttach {
+      val manager = kohii.findManagerForContainer(container) ?: throw IllegalStateException(
+          "There is no manager for $target. Forget to register one?"
+      )
+      val result = manager.performBindPlayable(
+          this, target, config,
+          playbackCreator
+      )
+      weakOnDone.get()
+          ?.invoke(result)
+    }
   }
+
+  override var manager by Delegates.observable<PlayableManager?>(
+      initialValue = null,
+      onChange = { _, oldVal, newVal ->
+        if (oldVal !== newVal) {
+          "$this -- DIFF:MANAGER: from $oldVal to $newVal".logDebug()
+          if (newVal != null) kohii.playables.add(this)
+          else kohii.playables.remove(this)
+        }
+      })
+
+  override var playback: Playback<RENDERER>? by Delegates.observable<Playback<RENDERER>?>(
+      initialValue = null,
+      onChange = { _, prev, next ->
+        if (prev === next) return@observable
+        "$this -- DIFF:PLAYBACK: from $prev to $next".logWarn()
+      }
+  )
 
   override val tag: Any
     get() = config.tag ?: NO_TAG
@@ -135,18 +164,18 @@ abstract class BasePlayable<RENDERER : Any>(
   override val volumeInfo: VolumeInfo
     get() = this.bridge.volumeInfo
 
-  override fun onPlayerActive(
+  override fun onPlaybackActive(
     playback: Playback<RENDERER>,
-    player: RENDERER
+    renderer: RENDERER
   ) {
-    bridge.playerView = player
+    bridge.playerView = renderer
   }
 
-  override fun onPlayerInActive(
+  override fun onPlaybackInActive(
     playback: Playback<RENDERER>,
-    player: RENDERER?
+    renderer: RENDERER?
   ) {
-    if (bridge.playerView === player) {
+    if (bridge.playerView === renderer) {
       bridge.playerView = null
     }
   }

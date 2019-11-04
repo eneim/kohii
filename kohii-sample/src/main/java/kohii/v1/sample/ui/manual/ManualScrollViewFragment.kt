@@ -20,23 +20,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.text.parseAsHtml
+import androidx.core.view.isVisible
 import kohii.v1.Kohii
 import kohii.v1.Playable
 import kohii.v1.PlaybackManager
 import kohii.v1.exo.DefaultControlDispatcher
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kotlinx.android.synthetic.main.fragment_manual_scroll_view.libIntro
 import kotlinx.android.synthetic.main.fragment_manual_scroll_view.playerView1
 import kotlinx.android.synthetic.main.fragment_manual_scroll_view.playerView2
 import kotlinx.android.synthetic.main.fragment_manual_scroll_view.scrollView
 
-class NoOpsContainerFragment : BaseFragment() {
+class ManualScrollViewFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = NoOpsContainerFragment()
-
-    // Big Buck Bunny
-    const val videoUrl = "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8"
+    fun newInstance() = ManualScrollViewFragment()
   }
 
   private val videoTag1 by lazy { "${javaClass.canonicalName}::$videoUrl::1" }
@@ -63,14 +63,19 @@ class NoOpsContainerFragment : BaseFragment() {
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
+    libIntro.text = getString(R.string.lib_intro).parseAsHtml()
+
+    playerView1.isVisible = true
+    playerView2.isVisible = true
+
     kohii.setUp(videoUrl)
         .with {
           tag = videoTag1
           repeatMode = Playable.REPEAT_MODE_ONE
           controller = DefaultControlDispatcher(
               manager, playerView1,
-              startBySystem = false,
-              pauseBySystem = false
+              kohiiCanStart = true,
+              kohiiCanPause = false
           )
         }
         .bind(playerView1)
@@ -81,8 +86,8 @@ class NoOpsContainerFragment : BaseFragment() {
           repeatMode = Playable.REPEAT_MODE_ONE
           controller = DefaultControlDispatcher(
               manager, playerView2,
-              startBySystem = true,
-              pauseBySystem = false
+              kohiiCanStart = true,
+              kohiiCanPause = false
           )
         }
         .bind(playerView2)

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +19,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     >
 
   <androidx.core.widget.NestedScrollView
@@ -34,26 +34,37 @@
         android:orientation="vertical"
         >
 
+      <androidx.appcompat.widget.AppCompatTextView
+          android:id="@+id/dummyText"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="@dimen/activity_vertical_margin"
+          android:lineSpacingMultiplier="1.15"
+          android:padding="@dimen/activity_vertical_margin"
+          android:text="@string/lib_intro"
+          />
+
       <com.google.android.exoplayer2.ui.PlayerView
           android:id="@+id/playerView1"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="@dimen/activity_vertical_margin"
-          android:minHeight="120dp"
-          app:resize_mode="fixed_width"
+          android:minHeight="240dp"
+          />
+
+      <Space
+          android:layout_width="match_parent"
+          android:layout_height="48dp"
           />
 
       <com.google.android.exoplayer2.ui.PlayerView
           android:id="@+id/playerView2"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="@dimen/activity_vertical_margin"
-          android:minHeight="120dp"
-          app:resize_mode="fixed_width"
+          android:minHeight="240dp"
           />
 
       <androidx.appcompat.widget.AppCompatTextView
-          android:id="@+id/dummyText"
+          android:id="@+id/longText"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginTop="@dimen/activity_vertical_margin"
@@ -74,46 +85,20 @@
       android:orientation="vertical"
       >
 
-    <RadioGroup
-        android:id="@+id/scopes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:checkedButton="@id/scopePlayback"
-        android:orientation="horizontal"
-        >
-
-      <com.google.android.material.radiobutton.MaterialRadioButton
-          android:id="@+id/scopePlayback"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Playback"
-          />
-
-      <com.google.android.material.radiobutton.MaterialRadioButton
-          android:id="@+id/scopeHost"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Host"
-          />
-
-      <com.google.android.material.radiobutton.MaterialRadioButton
-          android:id="@+id/scopeManager"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Manager"
-          />
-
-    </RadioGroup>
-
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/muteSwitch"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bindView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_horizontal_margin"
-        android:checked="false"
-        android:text="Mute/UnMute"
-        app:useMaterialThemeColors="true"
+        android:text="Bind/Rebind to PlayerView 1"
         />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bindView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bind/Rebind to PlayerView 2"
+        />
+
   </androidx.appcompat.widget.LinearLayoutCompat>
 
 </FrameLayout>

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +18,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="kohii.v1.sample">
 
-  <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION"/>
-  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
   <application
       android:name=".DemoApp"
@@ -33,26 +32,27 @@
       tools:ignore="GoogleAppIndexingWarning"
       tools:targetApi="n">
     <activity
+        android:name=".DevActivity"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme.Light">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    <activity
         android:name=".MainActivity"
         android:supportsPictureInPicture="true"
         android:theme="@style/AppTheme.Light"
-        android:uiOptions="splitActionBarWhenNarrow">
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-
-        <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
-    </activity>
-
+        android:uiOptions="splitActionBarWhenNarrow" />
     <activity
         android:name=".ui.player.PlayerActivity"
-        android:theme="@style/AppTheme.Dark"/>
-
+        android:theme="@style/AppTheme.Dark" />
     <activity
         android:name=".YouTubeActivity"
         android:label="@string/demo_title_youtube_1"
-        android:theme="@style/AppTheme.Dark">
-    </activity>
+        android:theme="@style/AppTheme.Dark" />
   </application>
 
 </manifest>

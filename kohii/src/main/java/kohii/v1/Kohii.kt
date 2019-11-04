@@ -62,6 +62,8 @@ import kotlin.properties.Delegates
 /**
  * @author eneim (2018/06/24).
  */
+inline class PendingState(val value: Boolean)
+
 class Kohii(context: Context) : PlayableManager {
 
   val app = context.applicationContext as Application
@@ -70,25 +72,27 @@ class Kohii(context: Context) : PlayableManager {
   internal val groups = ArrayMap<Activity, PlaybackManagerGroup>(2)
   internal val managers = ArrayMap<LifecycleOwner, PlaybackManager>()
 
-  // Which Playable is managed by which Manager
-  internal val mapPlayableToManager = HashMap<Playable<*>, PlayableManager>()
+  internal val playables = mutableSetOf<Playable<*>>()
 
   // Map the playback state of Playable made by client (manually)
-  // true = the Playable is started by Client/User, not by Kohii.
-  internal val manualPlayableRecord = HashMap<Playable<*>, Boolean>()
+  // true = the Playable is pending to be started.
+  // false = the Playable is pending to be paused.
+  internal val manualPlayableRecord by lazy(NONE) { HashMap<Playable<*>, PendingState>() }
   // To mark a Playable as high priority once it is started manually.
-  internal val manualPlayables = ArraySet<Playable<*>>()
+  internal val activeManualPlayable by lazy(NONE) { ArraySet<Playable<*>>() }
 
   // Store playable whose tag is available. Non tagged playable are always ignored.
   internal val mapTagToPlayable = HashMap<Any /* ⬅ playable tag */, Pair<Playable<*>, Class<*>>>()
   // In critical situation, this map may hold a lot of entries, so use HashMap.
   // REQUIRED: Playable Tag is globally unique.
+  // TODO consider a 'Paging' approach which may save old records to DB/Files to save RAM.
   internal val mapPlayableTagToInfo = HashMap<Any /* Playable tag */, PlaybackInfo>()
 
   private var headlessPlayback by Delegates.observable<HeadlessPlayback?>(
-      null, onChange = { _, oldVal, newVal ->
-    if (newVal !== oldVal) oldVal?.dismiss()
-  })
+      initialValue = null,
+      onChange = { _, oldVal, newVal ->
+        if (newVal !== oldVal) oldVal?.dismiss()
+      })
 
   @ExoPlayer
   internal val defaultBridgeProvider by lazy(NONE) {
@@ -131,6 +135,8 @@ class Kohii(context: Context) : PlayableManager {
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
     private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
+    internal val PENDING_PLAY = PendingState(true)
+    internal val PENDING_PAUSE = PendingState(false)
 
     @Volatile private var kohii: Kohii? = null
 
@@ -167,12 +173,13 @@ class Kohii(context: Context) : PlayableManager {
 
   internal fun getHeadlessPlayback(): HeadlessPlayback? = this.headlessPlayback
 
+  // TODO revise headless playback. !Important.
   internal fun enterHeadlessPlayback(
     playback: Playback<*>,
     params: HeadlessPlaybackParams
   ) {
     // A HeadlessPlayback will be managed by Kohii.
-    mapPlayableToManager[playback.playable] = this
+    playback.playable.manager = this
     val intent = Intent(app, HeadlessPlaybackService::class.java)
     val extras = Bundle().apply {
       putString(HeadlessPlaybackService.KEY_PLAYABLE, playback.tag.toString())
@@ -196,7 +203,8 @@ class Kohii(context: Context) : PlayableManager {
       }
     }
     manualPlayableRecord.remove(playable)
-    manualPlayables.remove(playable)
+    activeManualPlayable.remove(playable)
+    mapPlayableTagToInfo.remove(playable.tag)
   }
 
   internal fun onFirstManagerOnline() {
@@ -215,18 +223,11 @@ class Kohii(context: Context) : PlayableManager {
   internal fun play(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
-      val manager = playback.manager
-      val properHost = manager.targetHosts.firstOrNull { it.accepts(playback.target) }
-      if (properHost != null && playback.targetHost !== properHost) {
-        playback.targetHost.detachTarget(playback.target)
-        playback.targetHost = properHost
-        playback.targetHost.attachTarget(playback.target)
-      }
+      playback.doubleCheckHost()
       if (playback.token.shouldPrepare()) playback.playable.prepare()
-
-      manualPlayableRecord[playback.playable] = true
-      if (!controller.pauseBySystem()) {
-        manualPlayables.add(playback.playable)
+      manualPlayableRecord[playback.playable] = PENDING_PLAY
+      if (!controller.kohiiCanPause()) {
+        activeManualPlayable.add(playback.playable)
       }
     }
     playback.manager.dispatchRefreshAll()
@@ -235,14 +236,14 @@ class Kohii(context: Context) : PlayableManager {
   internal fun pause(playback: Playback<*>) {
     val controller = playback.controller
     if (controller != null) {
-      manualPlayableRecord[playback.playable] = false
-      manualPlayables.remove(playback.playable)
+      manualPlayableRecord[playback.playable] = PENDING_PAUSE
+      activeManualPlayable.remove(playback.playable)
     }
     playback.manager.dispatchRefreshAll()
   }
 
   internal fun shouldCleanUp(): Boolean {
-    return this.managers.isEmpty && this.mapPlayableToManager.isEmpty()
+    return this.managers.isEmpty && this.playables.isEmpty()
   }
 
   // Gat called when Kohii should free all resources.
@@ -256,9 +257,9 @@ class Kohii(context: Context) : PlayableManager {
         .max() // Manager with highest priority.
   }
 
-  internal fun <OUTPUT : Any> cleanUpPool(
+  internal fun <RENDERER : Any> cleanUpPool(
     owner: LifecycleOwner,
-    rendererPool: RendererPool<OUTPUT>
+    rendererPool: RendererPool<RENDERER>
   ) {
     this.managers[owner]?.apply {
       parent.rendererPools.filter { it.value === rendererPool }
@@ -293,7 +294,7 @@ class Kohii(context: Context) : PlayableManager {
     container: Any,
     vararg hosts: View
   ): PlaybackManager {
-    val (activity, lifecycleOwner) =
+    val (activity, managerLifecycleOwner) =
       when (container) {
         is Fragment -> Pair(container.requireActivity(), container.viewLifecycleOwner)
         is FragmentActivity -> Pair(container, container)
@@ -306,21 +307,22 @@ class Kohii(context: Context) : PlayableManager {
       activity.lifecycle.addObserver(result)
       return@getOrPut result
     }
-    val manager = managers.getOrPut(lifecycleOwner) {
+    val manager = managers.getOrPut(managerLifecycleOwner) {
       // Create new in case of no cache found.
-      require(lifecycleOwner !is Service) { "Service is not supported yet." }
-      return@getOrPut ViewPlaybackManager(this, container, managerGroup, lifecycleOwner)
+      require(managerLifecycleOwner !is Service) { "Service is not supported yet." }
+      return@getOrPut ViewPlaybackManager(this, container, managerGroup, managerLifecycleOwner)
     }
 
-    hosts.mapNotNull {
-      if (it is TargetHost) it
-      else TargetHost.createTargetHost(it, manager)
-    }
+    hosts.asSequence() // Will drop the null TargetHost.
+        .mapNotNull {
+          if (it is TargetHost) it // TODO why do we need this?
+          else TargetHost.createTargetHost(it, manager)
+        }
         .forEach {
           manager.registerTargetHost(it)
         }
 
-    lifecycleOwner.lifecycle.addObserver(manager)
+    managerLifecycleOwner.lifecycle.addObserver(manager)
     managerGroup.attachPlaybackManager(manager)
     return manager
   }

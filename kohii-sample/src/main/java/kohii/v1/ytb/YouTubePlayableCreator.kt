@@ -72,25 +72,21 @@ class YouTubePlayableCreator(
     return YouTubePlayable(kohii, media, config, YouTubeBridge(media), this)
   }
 
-  override fun <CONTAINER : Any> createPlayback(
+  override fun <CONTAINER : ViewGroup> createPlayback(
     manager: PlaybackManager,
     target: Target<CONTAINER, YouTubePlayerFragment>,
     playable: Playable<YouTubePlayerFragment>,
     config: Playback.Config
   ): Playback<YouTubePlayerFragment> {
-    if (target.container !is ViewGroup) {
-      throw IllegalArgumentException("Only accept ViewGroup container")
-    }
     val outputHolderPool = manager.fetchRendererPool(YouTubePlayerFragment::class.java)
         ?: rendererPoolCreator().also {
           manager.registerRendererPool(YouTubePlayerFragment::class.java, it)
         }
-    @Suppress("UNCHECKED_CAST")
     return LazyViewPlayback(
         kohii,
         playable,
         manager,
-        target as Target<ViewGroup, YouTubePlayerFragment>,
+        target,
         config,
         outputHolderPool
     )

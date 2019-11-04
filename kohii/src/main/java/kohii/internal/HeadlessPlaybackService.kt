@@ -114,11 +114,11 @@ internal class HeadlessPlaybackService : LifecycleService(),
     bitmapAsyncTask?.cancel(true)
     playerNotificationManager?.setPlayer(null)
     if (::playable.isInitialized) {
-      if (kohii.mapPlayableToManager[playable] === kohii) {
-        kohii.mapPlayableToManager.remove(playable)
+      if (playable.manager === kohii) {
+        playable.manager = null
       }
 
-      if (kohii.mapPlayableToManager[playable] == null) {
+      if (playable.manager == null) {
         kohii.releasePlayable(playable.tag, playable)
       }
     }

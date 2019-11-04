@@ -137,7 +137,7 @@ internal open class PlayerViewBridge(
   }
 
   override fun play() {
-    player!!.playWhenReady = true
+    requireNotNull(player).playWhenReady = true
   }
 
   override fun pause() {

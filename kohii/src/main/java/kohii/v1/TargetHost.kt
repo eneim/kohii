@@ -44,7 +44,7 @@ abstract class TargetHost(
   val host: Any,
   val manager: PlaybackManager,
   val selector: Selector? = null
-) /* : Comparable<TargetHost> */ {
+) {
 
   companion object {
     internal const val VERTICAL = RecyclerView.VERTICAL
@@ -80,19 +80,6 @@ abstract class TargetHost(
         else -> null
       }
     }
-
-    internal fun changed(
-      left: Int,
-      top: Int,
-      right: Int,
-      bottom: Int,
-      oldLeft: Int,
-      oldTop: Int,
-      oldRight: Int,
-      oldBottom: Int
-    ): Boolean {
-      return top != oldTop || bottom != oldBottom || left != oldLeft || right != oldRight
-    }
   }
 
   // state
@@ -104,23 +91,23 @@ abstract class TargetHost(
 
   internal open fun onRemoved() {}
 
-  internal abstract fun <T : Any> attachTarget(target: T)
+  internal abstract fun <T : Any> attachContainer(container: T)
 
-  internal abstract fun <T : Any> detachTarget(target: T)
+  internal abstract fun <T : Any> detachContainer(container: T)
 
   /**
-   * Returns true if this TargetHost accepts a target. When a TargetHost accepts a target, it keeps track
-   * of that target's state and send signal to the PlaybackManager when needed. A PlaybackManager has the
-   * power to change a target's Host base on certain situation.
+   * Returns true if this TargetHost accepts a container. When a TargetHost accepts a container, it keeps track
+   * of that container's state and send signal to the PlaybackManager when needed. A PlaybackManager has the
+   * power to change a container's Host base on certain situation.
    */
-  internal abstract fun accepts(target: Any): Boolean
+  internal abstract fun accepts(container: Any): Boolean
 
   // Must contain and allow it to play.
   internal abstract fun allowsToPlay(playback: Playback<*>): Boolean
 
   internal open fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
     if (selector != null) return selector.select(candidates)
-    return if (candidates.isNotEmpty()) arrayListOf(candidates.first()) else emptyList()
+    return listOfNotNull(candidates.firstOrNull())
   }
 
   interface Selector {

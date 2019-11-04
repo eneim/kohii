@@ -19,9 +19,9 @@ package kohii.internal
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
+import androidx.core.view.doOnAttach
+import androidx.core.view.doOnDetach
 import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
-import kohii.doOnAttach
-import kohii.doOnDetach
 import kohii.findSuitableParent
 import kohii.v1.Kohii
 import kohii.v1.Playback
@@ -37,6 +37,21 @@ abstract class BaseTargetHost<V : Any>(
     View.OnAttachStateChangeListener,
     View.OnLayoutChangeListener {
 
+  companion object {
+    internal fun changed(
+      left: Int,
+      top: Int,
+      right: Int,
+      bottom: Int,
+      oldLeft: Int,
+      oldTop: Int,
+      oldRight: Int,
+      oldBottom: Int
+    ): Boolean {
+      return top != oldTop || bottom != oldBottom || left != oldLeft || right != oldRight
+    }
+  }
+
   private val targets = mutableSetOf<Any>()
 
   override var lock = false
@@ -49,21 +64,23 @@ abstract class BaseTargetHost<V : Any>(
 
   override fun onAdded() {
     super.onAdded()
-    (host as? View)?.apply {
-      doOnAttach {
-        val foundParent = findSuitableParent(manager.parent.activity.window.peekDecorView(), it)
-        val param = foundParent?.layoutParams as? CoordinatorLayout.LayoutParams
-        if (param != null && param.behavior is ScrollingViewBehavior) {
-          val behaviorWrapper = BehaviorWrapper(param.behavior!!, manager)
-          param.behavior = behaviorWrapper
+    if (host is View) {
+      host.apply {
+        doOnAttach {
+          val foundParent = findSuitableParent(manager.parent.activity.window.peekDecorView(), it)
+          val param = foundParent?.layoutParams as? CoordinatorLayout.LayoutParams
+          if (param != null && param.behavior is ScrollingViewBehavior) {
+            val behaviorWrapper = BehaviorWrapper(param.behavior!!, manager)
+            param.behavior = behaviorWrapper
+          }
         }
-      }
 
-      doOnDetach {
-        val foundParent = findSuitableParent(manager.parent.activity.window.peekDecorView(), it)
-        val param = foundParent?.layoutParams as? CoordinatorLayout.LayoutParams
-        if (param != null && param.behavior is BehaviorWrapper) {
-          (param.behavior as BehaviorWrapper).onDetach()
+        doOnDetach {
+          val foundParent = findSuitableParent(manager.parent.activity.window.peekDecorView(), it)
+          val param = foundParent?.layoutParams as? CoordinatorLayout.LayoutParams
+          if (param != null && param.behavior is BehaviorWrapper) {
+            (param.behavior as BehaviorWrapper).onDetach()
+          }
         }
       }
     }
@@ -73,29 +90,29 @@ abstract class BaseTargetHost<V : Any>(
     this.targets.clear()
   }
 
-  override fun <T : Any> attachTarget(target: T) {
-    if (targets.add(target)) { // true --> added to the set
-      if (target is View) {
-        if (ViewCompat.isAttachedToWindow(target)) {
-          this.onViewAttachedToWindow(target)
+  override fun <T : Any> attachContainer(container: T) {
+    if (targets.add(container)) { // true --> added to the set
+      if (container is View) {
+        if (ViewCompat.isAttachedToWindow(container)) {
+          this.onViewAttachedToWindow(container)
         }
-        target.addOnAttachStateChangeListener(this)
+        container.addOnAttachStateChangeListener(this)
       }
     }
   }
 
-  override fun <T : Any> detachTarget(target: T) {
-    if (targets.remove(target)) { // true --> was removed from the set
-      if (target is View) {
-        target.removeOnAttachStateChangeListener(this)
-        target.removeOnLayoutChangeListener(this)
+  override fun <T : Any> detachContainer(container: T) {
+    if (targets.remove(container)) { // true --> was removed from the set
+      if (container is View) {
+        container.removeOnAttachStateChangeListener(this)
+        container.removeOnLayoutChangeListener(this)
       }
     }
   }
 
   override fun onViewAttachedToWindow(v: View?) {
     if (v != null) {
-      manager.onTargetAttached(v)
+      manager.onContainerAttachedToWindow(v)
       v.addOnLayoutChangeListener(this)
     }
   }
@@ -103,7 +120,7 @@ abstract class BaseTargetHost<V : Any>(
   override fun onViewDetachedFromWindow(v: View?) {
     if (v != null) {
       v.removeOnLayoutChangeListener(this)
-      manager.onTargetDetached(v)
+      manager.onContainerDetachedFromWindow(v)
     }
   }
 
@@ -111,26 +128,25 @@ abstract class BaseTargetHost<V : Any>(
     candidates: Collection<Playback<*>>,
     orientation: Int
   ): Collection<Playback<*>> {
+    val comparator = comparators.getValue(orientation)
     val grouped = candidates.filter { !it.config.disabled() } // ignore those are disabled.
         .groupBy { it.controller != null }
         .withDefault { emptyList() }
 
-    val manualCandidate by lazy {
+    val manualCandidates by lazy(NONE) {
       val sorted = grouped.getValue(true)
-          .sortedWith(comparators.getValue(orientation))
+          .sortedWith(comparator)
       val manuallyStarted = sorted.firstOrNull { playback ->
         manager.kohii.manualPlayableRecord[playback.playable] == Kohii.PENDING_PLAY
       }
       return@lazy listOfNotNull(manuallyStarted ?: sorted.firstOrNull())
     }
 
-    val automaticCandidate by lazy {
-      listOfNotNull(
-          grouped.getValue(false).sortedWith(comparators.getValue(orientation)).firstOrNull()
-      )
+    val automaticCandidates by lazy(NONE) {
+      listOfNotNull(grouped.getValue(false).sortedWith(comparator).firstOrNull())
     }
 
-    return if (manualCandidate.isNotEmpty()) manualCandidate else automaticCandidate
+    return if (manualCandidates.isNotEmpty()) manualCandidates else automaticCandidates
   }
 
   override fun onLayoutChange(
@@ -145,7 +161,7 @@ abstract class BaseTargetHost<V : Any>(
     oldBottom: Int
   ) {
     if (v != null && changed(left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)) {
-      manager.onTargetUpdated(v)
+      manager.onContainerUpdated(v)
     }
   }
 

@@ -17,6 +17,8 @@
 package kohii.v1
 
 import android.graphics.Bitmap
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY
 import com.google.android.exoplayer2.PlaybackParameters
@@ -90,7 +92,7 @@ open class Binder<RENDERER : Any> internal constructor(
     return this
   }
 
-  fun <CONTAINER : Any> bind(
+  fun <CONTAINER : ViewGroup> bind(
     target: Target<CONTAINER, RENDERER>,
     onDone: ((Playback<RENDERER>) -> Unit)? = null
   ): Rebinder<RENDERER>? {
@@ -104,8 +106,9 @@ open class Binder<RENDERER : Any> internal constructor(
     renderer: RENDERER,
     onDone: ((Playback<RENDERER>) -> Unit)? = null
   ): Rebinder<RENDERER>? {
-    require(renderer !is Target<*, *>) { "Target type is not allowed here." }
-    return this.bind(IdenticalTarget(renderer), onDone)
+    require(renderer is ViewGroup) { "Target type is not allowed here." }
+    @Suppress("UNCHECKED_CAST")
+    return this.bind(IdenticalTarget(renderer) as Target<ViewGroup, RENDERER>, onDone)
   }
 
   private fun requestPlayable(config: Playable.Config): Playable<RENDERER> {
@@ -121,7 +124,7 @@ open class Binder<RENDERER : Any> internal constructor(
           // cached Playable of different renderer type will be replaced.
           if (cache?.first != null) kohii.releasePlayable(tag, cache.first) // Added [20190726]
           toCreate.also {
-            kohii.mapTagToPlayable[tag] = Pair(it, playableCreator.rendererType)
+            kohii.mapTagToPlayable[tag] = it to playableCreator.rendererType
           }
         } else {
           @Suppress("UNCHECKED_CAST")
@@ -131,7 +134,7 @@ open class Binder<RENDERER : Any> internal constructor(
         toCreate
       }
 
-    kohii.mapPlayableToManager.remove(playable)
+    playable.manager = null
     return playable
   }
 }

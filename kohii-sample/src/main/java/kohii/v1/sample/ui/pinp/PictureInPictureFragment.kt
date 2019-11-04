@@ -66,7 +66,7 @@ class PictureInPictureFragment : BaseFragment() {
         .with {
           tag = "${javaClass.name}::videoUrl"
           controller = object : Controller {
-            override fun pauseBySystem(): Boolean {
+            override fun kohiiCanPause(): Boolean {
               return true
             }
           }

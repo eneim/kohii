@@ -50,18 +50,18 @@ internal class PlayerViewPlayable internal constructor(
       kohii, media, config, bridgeProvider.provideBridge(kohii, media, config), playbackCreator
   )
 
-  override fun onPlayerActive(
+  override fun onPlaybackActive(
     playback: Playback<PlayerView>,
-    player: PlayerView
+    renderer: PlayerView
   ) {
-    super.onPlayerActive(playback, player)
+    super.onPlaybackActive(playback, renderer)
     val controller = playback.controller
     if (controller != null) {
-      player.useController = true
-      if (controller is ControlDispatcher) player.setControlDispatcher(controller)
+      renderer.useController = true
+      if (controller is ControlDispatcher) renderer.setControlDispatcher(controller)
     } else {
       // Force PlayerView to not use Controller.
-      player.useController = false
+      renderer.useController = false
     }
   }
 }

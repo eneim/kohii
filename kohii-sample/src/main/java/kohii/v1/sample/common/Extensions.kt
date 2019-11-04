@@ -22,7 +22,9 @@ import android.content.res.Resources
 import android.graphics.Point
 import android.util.SparseArray
 import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
 
@@ -75,3 +77,8 @@ inline fun <T> SparseArray<T>.getOrPut(
   key: Int,
   defaultValue: () -> T
 ) = get(key) ?: defaultValue().also { put(key, it) }
+
+fun ViewGroup.inflateView(layoutId: Int): View {
+  return LayoutInflater.from(context)
+      .inflate(layoutId, this, false)
+}

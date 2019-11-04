@@ -45,7 +45,6 @@ open class MediaItem(
     if (uri != other.uri) return false
     if (type != other.type) return false
     if (mediaDrm != other.mediaDrm) return false
-
     return true
   }
 

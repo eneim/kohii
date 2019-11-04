@@ -76,25 +76,27 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
 
     val controller = playback.controller
     if (controller != null) {
-      if (kohii.manualPlayables.isNotEmpty() /* has playback started by User */ &&
-          !kohii.manualPlayables.contains(playback.playable) /* but not this playback */) {
+      if (kohii.activeManualPlayable.isNotEmpty() /* has playback started by User */ &&
+          !kohii.activeManualPlayable.contains(playback.playable) /* but not this playback */) {
         justPause(playback) // has lower priority --> pause if need.
         return
       }
 
       val state = kohii.manualPlayableRecord[playback.playable]
       if (state != null) { // playback is started or paused by User --> we do not override that action.
-        if (state != true) justPause(playback) // User paused this playback, so ensure that.
-        else justPlay(playback) // User played this playback, so ensure that.
+        if (state == Kohii.PENDING_PLAY)
+          justPlay(playback) // User started this playback, so ensure that.
+        else
+          justPause(playback) // User paused this playback before, so ensure that.
         return
       } else {
-        // no history of User action, let's determine next action by System
-        if (controller.startBySystem()) {
-          // should start by System.
-          kohii.manualPlayableRecord[playback.playable] = true
-          if (!controller.pauseBySystem()) {
-            // mark a Playable as being played by User --> System will not pause it.
-            kohii.manualPlayables.add(playback.playable)
+        // No of User action history, let's determine next action by System
+        if (controller.kohiiCanStart()) {
+          // Should start.
+          kohii.manualPlayableRecord[playback.playable] = Kohii.PENDING_PLAY
+          if (!controller.kohiiCanPause()) {
+            // Mark a Playable as started by User --> System will not pause it.
+            kohii.activeManualPlayable.add(playback.playable)
           }
           justPlay(playback)
         }
@@ -106,23 +108,25 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
 
   internal fun pause(playback: Playback<*>) {
     // There is PlaybackManagerGroup whose selection is not empty.
-    if (playback.kohii.groups.filter { it.value.selection.isNotEmpty() }.isNotEmpty()) {
+    // -> Regardless of who is pausing this Playback, it must be paused.
+    if (playback.kohii.groups.filter { it.value.organizer.selection.isNotEmpty() }.isNotEmpty()) {
       justPause(playback)
       return
     }
 
+    // From here: take into account who is pausing the Playback: user reaction or system.
     val controller = playback.controller
     if (controller != null) {
-      if (kohii.manualPlayables.isNotEmpty() /* has playback started by User */ &&
-          !kohii.manualPlayables.contains(playback.playable) /* but not this playback */) {
+      if (kohii.activeManualPlayable.isNotEmpty() /* has playback started by User */ &&
+          !kohii.activeManualPlayable.contains(playback.playable) /* but not this playback */) {
         justPause(playback)
         return
       }
 
       val state = kohii.manualPlayableRecord[playback.playable]
-      if (state != null && state == false) {
+      if (state != null && state == Kohii.PENDING_PAUSE) {
         justPause(playback)
-      } else if (controller.pauseBySystem()) {
+      } else if (controller.kohiiCanPause()) {
         justPause(playback)
       }
     } else {

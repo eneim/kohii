@@ -16,11 +16,12 @@
 
 package kohii.v1
 
+import android.view.ViewGroup
 import kohii.v1.Playback.Config
 
 interface PlaybackCreator<RENDERER : Any> {
 
-  fun <CONTAINER : Any> createPlayback(
+  fun <CONTAINER : ViewGroup> createPlayback(
     manager: PlaybackManager,
     target: Target<CONTAINER, RENDERER>,
     playable: Playable<RENDERER>,

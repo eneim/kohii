@@ -17,6 +17,7 @@
 package kohii.v1
 
 import android.os.Parcelable
+import android.view.ViewGroup
 import kohii.v1.Binder.Params
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
@@ -52,16 +53,17 @@ data class Rebinder<RENDERER : Any>(
       val playable = if (this.rendererType.isAssignableFrom(cache.second)) cache.first else null
       check(playable != null) { "No Playable found for tag ${this.tag}" }
       if (reset) playable.reset()
-      @Suppress("UNCHECKED_CAST") // it should be safe, as we've checked target type above.
+      @Suppress("UNCHECKED_CAST") // it should be safe, as we've checked container type above.
       (playable as Playable<RENDERER>).bind(
-          IdenticalTarget(target), this.params.createPlaybackConfig(), onDone
+          IdenticalTarget(target) as Target<ViewGroup, RENDERER>,
+          this.params.createPlaybackConfig(), onDone
       )
     } else check(!BuildConfig.DEBUG) { "No Playable found for tag ${this.tag}." }
     params = Params()
     return this
   }
 
-  fun <CONTAINER : Any> rebind(
+  fun <CONTAINER : ViewGroup> rebind(
     kohii: Kohii,
     target: Target<CONTAINER, RENDERER>,
     reset: Boolean = false,
@@ -76,7 +78,7 @@ data class Rebinder<RENDERER : Any>(
       val playable = if (this.rendererType.isAssignableFrom(cache.second)) cache.first else null
       check(playable != null) { "No Playable found for tag ${this.tag}" }
       if (reset) playable.reset()
-      @Suppress("UNCHECKED_CAST") // it should be safe, as we've checked target type above.
+      @Suppress("UNCHECKED_CAST") // it should be safe, as we've checked container type above.
       (playable as Playable<RENDERER>).bind(target, this.params.createPlaybackConfig(), onDone)
     } else {
       check(!BuildConfig.DEBUG) { "No Playable found for tag ${this.tag}." }

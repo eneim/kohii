@@ -54,6 +54,7 @@ import kotlinx.android.synthetic.main.fragment_recycler_view_motion.recyclerView
 import kotlinx.android.synthetic.main.fragment_recycler_view_motion.videoOverlay
 import kotlinx.android.synthetic.main.video_overlay_fullscreen.overlayPlayerView
 import kotlinx.android.synthetic.main.video_overlay_fullscreen.video_player_container
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * @author eneim (2018/07/06).
@@ -76,6 +77,39 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   private lateinit var rvHost: TargetHost
   private lateinit var overlayHost: TargetHost
   private val volumeViewModel: VolumeViewModel by viewModels()
+
+  private val sheetCallback by lazy(NONE) {
+    object : BottomSheetCallback() {
+      override fun onSlide(
+        bottomSheet: View,
+        slideOffset: Float
+      ) {
+        (videoOverlay as MotionLayout).progress = 1 - slideOffset.coerceIn(0F, 1F)
+      }
+
+      override fun onStateChanged(
+        bottomSheet: View,
+        state: Int
+      ) {
+        if (state == STATE_HIDDEN) {
+          // When the overlay panel is dismissed, it is equal to that the overlay Playback also disappears.
+          // In that case, if the ViewHolder of the same Video does not present on the screen,
+          //   We need to unbind the Playback, so that the list can refresh the Videos and start new Playbacks.
+          // If that ViewHolder still presents, note that the call to "clearSelection" will ask the
+          // Adapter to update its content, which will rebind the Video to its PlayerView. After that,
+          // we can see that the list is back to normal playback.
+          selectionTracker.clearSelection()
+          rebinder?.also {
+            val pos = keyProvider.getPosition(it)
+            val vh = recyclerView.findViewHolderForAdapterPosition(pos)
+            if (vh == null) playback?.unbind() // the VH is out of viewport.
+          }
+          rebinder = null
+          playback = null
+        }
+      }
+    }
+  }
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -144,36 +178,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     overlaySheet = sheet
 
     if (savedInstanceState == null) sheet.state = STATE_HIDDEN
-    sheet.bottomSheetCallback = object : BottomSheetCallback() {
-      override fun onSlide(
-        bottomSheet: View,
-        slideOffset: Float
-      ) {
-        (videoOverlay as MotionLayout).progress = 1 - slideOffset.coerceIn(0F, 1F)
-      }
-
-      override fun onStateChanged(
-        bottomSheet: View,
-        state: Int
-      ) {
-        if (state == STATE_HIDDEN) {
-          // When the overlay panel is dismissed, it is equal to that the overlay Playback also disappears.
-          // In that case, if the ViewHolder of the same Video does not present on the screen,
-          //   We need to unbind the Playback, so that the list can refresh the Videos and start new Playbacks.
-          // If that ViewHolder still presents, note that the call to "clearSelection" will ask the
-          // Adapter to update its content, which will rebind the Video to its PlayerView. After that,
-          // we can see that the list is back to normal playback.
-          selectionTracker.clearSelection()
-          rebinder?.also {
-            val pos = keyProvider.getPosition(it)
-            val vh = recyclerView.findViewHolderForAdapterPosition(pos)
-            if (vh == null) playback?.unbind() // the VH is out of viewport.
-          }
-          rebinder = null
-          playback = null
-        }
-      }
-    }
+    sheet.addBottomSheetCallback(sheetCallback)
 
     selectionTracker.addObserver(object : SelectionObserver<Rebinder<PlayerView>>() {
       override fun onItemStateChanged(
@@ -216,6 +221,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
   override fun onDestroyView() {
     super.onDestroyView()
+    overlaySheet?.removeBottomSheetCallback(sheetCallback)
     recyclerView.adapter = null
   }
 

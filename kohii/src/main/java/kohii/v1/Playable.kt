@@ -17,6 +17,7 @@
 package kohii.v1
 
 import android.graphics.Bitmap
+import android.view.ViewGroup
 import androidx.annotation.IntDef
 import com.google.android.exoplayer2.Player
 import kohii.media.Media
@@ -55,6 +56,12 @@ interface Playable<RENDERER : Any> {
   @IntDef(STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_END)
   annotation class State
 
+  val kohii: Kohii
+
+  var manager: PlayableManager?
+
+  var playback: Playback<RENDERER>?
+
   val playbackState: Int
 
   val tag: Any
@@ -66,7 +73,7 @@ interface Playable<RENDERER : Any> {
   @RepeatMode
   var repeatMode: Int
 
-  fun <CONTAINER : Any> bind(
+  fun <CONTAINER : ViewGroup> bind(
     target: Target<CONTAINER, RENDERER>,
     config: Playback.Config = Playback.Config(),
     onDone: ((Playback<RENDERER>) -> Unit)? = null
@@ -98,14 +105,14 @@ interface Playable<RENDERER : Any> {
   // Setter/Getter
   var playbackInfo: PlaybackInfo
 
-  fun onPlayerActive(
+  fun onPlaybackActive(
     playback: Playback<RENDERER>,
-    player: RENDERER
+    renderer: RENDERER
   )
 
-  fun onPlayerInActive(
+  fun onPlaybackInActive(
     playback: Playback<RENDERER>,
-    player: RENDERER?
+    renderer: RENDERER?
   )
 
   /**

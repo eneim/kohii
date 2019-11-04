@@ -16,7 +16,7 @@
 
 package kohii.v1
 
-internal interface PlayableManager
+interface PlayableManager
 
 internal interface HeadlessPlayback {
 
@@ -28,3 +28,7 @@ interface Prioritized : Comparable<Prioritized> {
     return 0
   }
 }
+
+interface TargetHolder
+
+interface PlayableHolder

@@ -26,6 +26,18 @@ Kohii is a high level Video playback library, built from the experience creating
 Add to your module's build.gradle dependencies
 
 ```groovy
+// Update top level build.gradle
+allprojects {
+  repositories {
+    // ⬆ Other repositories
+    // Add this one below:
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+  }
+}
+```
+
+```groovy
+// Add these to app level build.gradle (or to module that will use Kohii)
 implementation "im.ene.kohii:kohii:1.0.0.2010004-A11"
 implementation "com.google.android.exoplayer:exoplayer:2.10.4"
 ```
@@ -33,7 +45,15 @@ implementation "com.google.android.exoplayer:exoplayer:2.10.4"
 ## Start a playback
 
 ```kotlin
-// have a videoUrl first.
-// TODO other initializations
-Kohii[fragment].setUp(videoUrl).bind(playerView)
+// TODO: Have a videoUrl first.
+// 1. Initialization
+// Obtain global instance of Kohii
+val kohii = Kohii[this].also {
+  // Register the ViewGroup whose scroll will affect the Playback status.
+  // App developer must be aware of this ViewGroup and decide by yourself.
+  it.register(this, this.recyclerView)
+ }
+
+// 2. Now bind the video to the PlayerView inside ViewGroup above (PlayerView must be the ViewGroup's descendant).  
+kohii.setUp(videoUrl).bind(playerView)
 ```

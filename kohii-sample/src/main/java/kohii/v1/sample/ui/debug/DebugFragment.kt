@@ -17,22 +17,20 @@
 package kohii.v1.sample.ui.debug
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.doOnLayout
+import androidx.appcompat.widget.LinearLayoutCompat
+import kohii.dev.Master
 import kohii.media.MediaItem
-import kohii.media.VolumeInfo
-import kohii.v1.Kohii
-import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
-import kohii.v1.Scope
-import kohii.v1.exo.HybridMediaItem
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kotlinx.android.synthetic.main.fragment_debug.muteSwitch
+import kotlinx.android.synthetic.main.fragment_debug.bindView1
+import kotlinx.android.synthetic.main.fragment_debug.bindView2
+import kotlinx.android.synthetic.main.fragment_debug.content
 import kotlinx.android.synthetic.main.fragment_debug.playerView1
-import kotlinx.android.synthetic.main.fragment_debug.scopes
+import kotlinx.android.synthetic.main.fragment_debug.playerView2
 import kotlinx.android.synthetic.main.fragment_debug.scrollView
 
 @Suppress("unused")
@@ -50,56 +48,29 @@ class DebugFragment : BaseFragment() {
     return inflater.inflate(R.layout.fragment_debug, container, false)
   }
 
-  lateinit var playback: Playback<*>
-
   override fun onViewCreated(
     view: View,
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this]
-    val manager = kohii.register(this, scrollView)
-
     val media = MediaItem(videoUrl)
-    val mediaSource = kohii.createMediaSource(media)
-    val hybridMediaItem = HybridMediaItem(media, mediaSource)
+    val content = content as LinearLayoutCompat
 
-    kohii.setUp(hybridMediaItem)
-        .with { tag = "$videoUrl::1" }
-        .bind(playerView1) {
-          it.addPlaybackEventListener(object : PlaybackEventListener {
-            override fun onFirstFrameRendered(playback: Playback<*>) {
-              super.onFirstFrameRendered(playback)
-              this@DebugFragment.playback = playback
-            }
-          })
-        }
+    val master = Master[this]
+    master.register(this, scrollView)
 
-    val scopeMap = mapOf(
-        R.id.scopePlayback to Scope.PLAYBACK,
-        R.id.scopeHost to Scope.HOST,
-        R.id.scopeManager to Scope.MANAGER
-    )
-
-    var currentScope: Scope = scopeMap[scopes.checkedRadioButtonId] ?: Scope.PLAYBACK.also {
-      scopes.check(R.id.scopePlayback)
+    bindView1.setOnClickListener {
+      master.setUp(media)
+          .bind(playerView1) {
+            Log.d("Kohii::Dev", "bound: $it")
+          }
     }
 
-    val unmuteVolume = VolumeInfo()
-    val muteVolume = VolumeInfo(true)
-
-    scopes.setOnCheckedChangeListener { _, checkedId ->
-      currentScope = scopeMap[checkedId] ?: error("No scope found for $checkedId")
-    }
-
-    view.doOnLayout {
-      muteSwitch.setOnCheckedChangeListener { _, isChecked ->
-        if (isChecked) {
-          manager.applyVolumeInfo(muteVolume, playback, currentScope)
-        } else {
-          manager.applyVolumeInfo(unmuteVolume, playback, currentScope)
-        }
-      }
+    bindView2.setOnClickListener {
+      master.setUp(media)
+          .bind(playerView2) {
+            Log.w("Kohii::Dev", "bound: $it")
+          }
     }
   }
 }

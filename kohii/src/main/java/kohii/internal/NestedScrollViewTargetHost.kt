@@ -57,9 +57,9 @@ internal class NestedScrollViewTargetHost(
     return super.selectByOrientation(candidates, VERTICAL)
   }
 
-  override fun accepts(target: Any): Boolean {
-    if (target !is View) return false
-    var view = target
+  override fun accepts(container: Any): Boolean {
+    if (container !is View) return false
+    var view = container
     var parent = view.parent
     while (parent != null && parent !== this.host && parent is View) {
       @Suppress("USELESS_CAST")

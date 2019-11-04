@@ -35,7 +35,7 @@ class PlayerViewPlaybackCreator(
   private val rendererCreator: RendererCreator<PlayerView> = PlayerViewCreator()
 ) : PlaybackCreator<PlayerView> {
 
-  override fun <CONTAINER : Any> createPlayback(
+  override fun <CONTAINER : ViewGroup> createPlayback(
     manager: PlaybackManager,
     target: Target<CONTAINER, PlayerView>,
     playable: Playable<PlayerView>,
@@ -52,24 +52,22 @@ class PlayerViewPlaybackCreator(
         )
       }
 
-      is ViewGroup -> {
+      else -> {
         val rendererPool =
           manager.fetchRendererPool(PlayerView::class.java)
               ?: DefaultRendererPool(kohii, creator = rendererCreator).also {
                 manager.registerRendererPool(PlayerView::class.java, it)
               }
 
-        @Suppress("UNCHECKED_CAST")
-        (LazyViewPlayback(
+        LazyViewPlayback(
             kohii,
             playable,
             manager,
-            boxedTarget = target as Target<ViewGroup, PlayerView>,
+            target,
             options = config,
             rendererPool = rendererPool
-        ))
+        )
       }
-      else -> throw IllegalArgumentException("Unsupported container type: ${container::javaClass}")
     }
   }
 }

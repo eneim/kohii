@@ -44,28 +44,23 @@ import kotlin.LazyThreadSafetyMode.NONE
 class PlaybackManagerGroup(
   internal val kohii: Kohii,
   internal val activity: FragmentActivity,
-  private val selector: (Collection<Playback<*>>) -> Collection<Playback<*>> = defaultSelector
+  internal val organizer: PlaybackOrganizer = SinglePlayerOrganizer()
 ) : LifecycleObserver, Playback.Callback {
 
   private var promotedManager: PlaybackManager? = null
   private val stickyManagers by lazy(NONE) { LinkedHashSet<PlaybackManager>() }
   private val commonManagers = ArraySet<PlaybackManager>()
 
-  private val dispatcher = PlaybackManagerDispatcher(this)
+  private val managerDispatcher = PlaybackManagerDispatcher(this)
   private val playbackDispatcher = PlaybackDispatcher(kohii)
 
-  // Make this internally accessible so that Kohii can filter the selected Playbacks of each Container.
-  internal val selection = ArrayList<Playback<*>>()
   internal val lock = AtomicBoolean(false)
-  internal var volumeInfo = VolumeInfo()
+  internal val volumeInfo = VolumeInfo()
 
   internal val rendererPools = HashMap<Class<*>, RendererPool<*>>()
 
   companion object {
-    val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
-    val defaultSelector: (Collection<Playback<*>>) -> Collection<Playback<*>> =
-      // { listOfNotNull(it.firstOrNull()) }
-      { it }
+    internal val managerComparator = Comparator<PlaybackManager> { o1, o2 -> o2.compareTo(o1) }
   }
 
   internal fun attachPlaybackManager(playbackManager: PlaybackManager): Boolean {
@@ -88,8 +83,8 @@ class PlaybackManagerGroup(
       updated = commonManagers.add(playbackManager)
     }
     if (updated) {
-      playbackManager.volumeInfo = this.volumeInfo
-      playbackManager.targetHosts.forEach { it.volumeInfo = this.volumeInfo }
+      playbackManager.volumeInfo.setTo(this.volumeInfo)
+      playbackManager.targetHosts.forEach { it.volumeInfo.setTo(this.volumeInfo) }
     }
     return updated
   }
@@ -107,7 +102,7 @@ class PlaybackManagerGroup(
 
   internal fun onManagerRefresh() {
     // Will dispatch with a small delay, to prevent aggressive pushing.
-    dispatcher.dispatchRefresh()
+    managerDispatcher.dispatchRefresh()
   }
 
   @OnLifecycleEvent(ON_START)
@@ -123,19 +118,16 @@ class PlaybackManagerGroup(
   @OnLifecycleEvent(ON_DESTROY)
   fun onOwnerDestroy(owner: LifecycleOwner) {
     // playbackDispatcher.onStop()
-    selection.clear()
+    organizer.deselect(organizer.selection)
+    val managers = this.managers()
     if (!activity.isChangingConfigurations) {
-      kohii.manualPlayableRecord.clear()
+      managers.flatMap { m -> kohii.playables.filter { it.manager === m } }
+          .forEach { kohii.manualPlayableRecord.remove(it) }
     }
     // Eagerly detach all PlaybackManager if there is any.
     // Each operation will also modify the related Set.
-    this.managers()
-        .onEach {
-          it.onOwnerDestroy(it.owner)
-          // detachPlaybackManager(it) <-- will be called by it.onOwnerDestroy(it.owner)
-        }
+    managers.onEach { it.onOwnerDestroy(it.owner) }
         .clear()
-    // promotedManager?.let { this.detachPlaybackManager(it) } <-- handled above
     stickyManagers.clear()
     commonManagers.clear()
     promotedManager = null
@@ -144,7 +136,7 @@ class PlaybackManagerGroup(
         .clear()
 
     owner.lifecycle.removeObserver(this)
-    dispatcher.onDestroyed()
+    managerDispatcher.onDestroyed()
     if (owner is Activity) kohii.groups.remove(owner)
   }
 
@@ -208,20 +200,41 @@ class PlaybackManagerGroup(
             toPause.addAll(canPause)
           }
     } else { // Other managers are prioritized, here we just collect Playback to pause.
-      commonManagers.flatMap { it.refreshPlaybacks() }
+      commonManagers.flatMap {
+        it.refreshPlaybackStates()
+            .let { pair -> pair.first + pair.second }
+      }
           .also { toPause.addAll(it) }
     }
 
-    selection.clear()
     if (lock.get()) {
-      (toPause + toPlay).forEach { playbackDispatcher.pause(it) }
+      organizer.deselect(organizer.selection)
+      (toPause + toPlay).forEach {
+        playbackDispatcher.pause(it)
+      }
     } else {
-      val selected = selector(toPlay)
-      this.selection.addAll(selected)
-      (toPause + toPlay - selected).forEach { playbackDispatcher.pause(it) }
-      selected.onEach { playbackDispatcher.play(it) }
-          .groupBy { it.manager }
-          .forEach { (m, p) -> m.selectionCallbacks.value.onSelection(p) }
+      val oldSelection = organizer.selection
+      val newSelection = organizer.select(toPlay)
+      (toPause + toPlay - newSelection - oldSelection).forEach {
+        playbackDispatcher.pause(it)
+      }
+
+      if (newSelection.isNotEmpty()) {
+        oldSelection.forEach { playbackDispatcher.pause(it) }
+        newSelection.onEach { playbackDispatcher.play(it) }
+            .groupBy { it.manager }
+            .forEach { (m, p) -> m.selectionCallbacks.value.onSelection(p) }
+      } else {
+        // TODO consider headless playback params here?
+        val playback = oldSelection.firstOrNull()
+//        if (playback != null) {
+//          val playable = playback.playable
+//          val params = playable.config.headlessPlaybackParams
+//          if (playable.isPlaying() && params != null && params.enabled) {
+//            kohii.enterHeadlessPlayback(playback, params)
+//          }
+//        }
+      }
     }
   }
 

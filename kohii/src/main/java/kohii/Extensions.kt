@@ -18,15 +18,17 @@ package kohii
 
 import android.util.Log
 import android.view.View
-import android.view.View.OnAttachStateChangeListener
-import androidx.collection.SparseArrayCompat
+import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.Pools.Pool
-import androidx.core.view.ViewCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig
+import kohii.v1.Kohii
+import kohii.v1.PlaybackManager
 import kohii.v1.PlayerEventListener
 import kohii.v1.Rebinder
 import kohii.v1.VolumeInfoController
@@ -97,7 +99,7 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   } while (true)
 }
 
-// Return a View that is ancestor of target, and has direct parent is a CoordinatorLayout
+// Return a View that is ancestor of container, and has direct parent is a CoordinatorLayout
 @Suppress("unused")
 fun findSuitableParent(
   root: View,
@@ -120,66 +122,43 @@ fun findSuitableParent(
   return null
 }
 
-internal inline fun View.doOnAttach(crossinline action: (View) -> Unit) {
-  if (ViewCompat.isAttachedToWindow(this)) {
-    action(this)
-  } else {
-    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
-      override fun onViewDetachedFromWindow(v: View?) {
-        // ignore
-      }
+//inline fun <E> SparseArrayCompat<E>.getOrPut(
+//  key: Int,
+//  creator: () -> E
+//): E {
+//  var result = this[key]
+//  if (result == null) {
+//    result = creator.invoke()
+//    this.put(key, result)
+//  }
+//  return result!!
+//}
+//
+//inline fun <E> SparseArrayCompat<E>.forEach(actor: (E, Int) -> Unit) {
+//  val size = this.size()
+//  if (size > 0) {
+//    for (index in 0 until size) {
+//      val key = this.keyAt(index)
+//      val value = this.valueAt(index)
+//      actor.invoke(value, key)
+//    }
+//  }
+//}
 
-      override fun onViewAttachedToWindow(v: View?) {
-        v?.removeOnAttachStateChangeListener(this)
-        action(this@doOnAttach)
-      }
-    })
-  }
-}
-
-internal inline fun View.doOnDetach(crossinline action: (View) -> Unit) {
-  if (!ViewCompat.isAttachedToWindow(this)) {
-    action(this)
-  } else {
-    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
-      override fun onViewDetachedFromWindow(v: View?) {
-        v?.removeOnAttachStateChangeListener(this)
-        action(this@doOnDetach)
-      }
-
-      override fun onViewAttachedToWindow(v: View?) {
-        // ignore
-      }
-    })
-  }
-}
-
-inline fun <E> SparseArrayCompat<E>.getOrPut(
-  key: Int,
-  creator: () -> E
-): E {
-  var result = this[key]
-  if (result == null) {
-    result = creator.invoke()
-    this.put(key, result)
-  }
-  return result!!
-}
-
-inline fun <E> SparseArrayCompat<E>.forEach(actor: (E, Int) -> Unit) {
-  val size = this.size()
-  if (size > 0) {
-    for (index in 0 until size) {
-      val key = this.keyAt(index)
-      val value = this.valueAt(index)
-      actor.invoke(value, key)
+internal inline fun <T, R> Sequence<T>.partitionToArrayLists(
+  predicate: (T) -> Boolean,
+  transform: (T) -> R
+): Pair<ArrayList<R>, ArrayList<R>> {
+  val first = ArrayList<R>()
+  val second = ArrayList<R>()
+  for (element in this) {
+    if (predicate(element)) {
+      first.add(transform(element))
+    } else {
+      second.add(transform(element))
     }
   }
-}
-
-fun <T> Set<T>.plusNotNull(element: T?): Set<T> {
-  if (element != null) return this + element
-  return this
+  return Pair(first, second)
 }
 
 // Because I want to compose the message first, then log it.

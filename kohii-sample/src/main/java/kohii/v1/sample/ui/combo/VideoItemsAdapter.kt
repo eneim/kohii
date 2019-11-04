@@ -67,7 +67,7 @@ class VideoItemsAdapter(
 
     holder.videoTitle.text = item.name
 
-    // Create a target that contains a thumbnail.
+    // Create a container that contains a thumbnail.
     val target = object : ViewTarget<ViewGroup, PlayerView>(holder.playerContainer) {
       override fun attachRenderer(renderer: PlayerView) {
         container.findViewById<ImageView>(R.id.thumbnail)

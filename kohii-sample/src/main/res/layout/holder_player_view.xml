@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +14,13 @@
   ~ limitations under the License.
   -->
 
-<com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.exoplayer2.ui.AspectRatioFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@id/playerContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="4dp"
     android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
     android:minHeight="1dp"
     app:resize_mode="fixed_width"
     >
@@ -32,6 +30,7 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_gravity="center"
+      android:minHeight="320dp"
       app:keep_content_on_player_reset="true"
       app:resize_mode="fixed_width"
       app:show_buffering="when_playing"

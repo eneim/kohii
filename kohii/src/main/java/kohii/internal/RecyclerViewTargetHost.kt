@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import kohii.v1.Playback
 import kohii.v1.PlaybackManager
 import java.lang.ref.WeakReference
+import kotlin.LazyThreadSafetyMode.NONE
 
 internal class RecyclerViewTargetHost(
   host: RecyclerView,
@@ -52,7 +53,7 @@ internal class RecyclerViewTargetHost(
     }
   }
 
-  private val scrollListener by lazy { SimpleOnScrollListener(manager) }
+  private val scrollListener by lazy(NONE) { SimpleOnScrollListener(manager) }
 
   override fun onAdded() {
     super.onAdded()
@@ -68,15 +69,15 @@ internal class RecyclerViewTargetHost(
   }
 
   override fun allowsToPlay(playback: Playback<*>): Boolean {
-    val target = playback.target
-    return target is View &&
-        this.actualHost.findContainingViewHolder(target) != null &&
+    val container = playback.container
+    return container is View &&
+        this.actualHost.findContainingViewHolder(container) != null &&
         playback.token.shouldPlay()
   }
 
-  override fun accepts(target: Any): Boolean {
-    if (target !is View) return false
-    val params = RecycleViewUtils.fetchItemViewParams(target)
+  override fun accepts(container: Any): Boolean {
+    if (container !is View) return false
+    val params = RecycleViewUtils.fetchItemViewParams(container)
     return RecycleViewUtils.checkParams(actualHost, params)
   }
 

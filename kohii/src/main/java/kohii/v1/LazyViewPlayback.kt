@@ -19,36 +19,38 @@ package kohii.v1
 import android.view.ViewGroup
 import kotlin.properties.Delegates.observable
 
-open class LazyViewPlayback<RENDERER : Any>(
+open class LazyViewPlayback<CONTAINER : ViewGroup, RENDERER : Any>(
   kohii: Kohii,
   playable: Playable<RENDERER>,
   manager: PlaybackManager,
-  private val boxedTarget: Target<ViewGroup, RENDERER>,
+  private val target: Target<CONTAINER, RENDERER>,
   options: Config,
   private val rendererPool: RendererPool<RENDERER>
-) : ViewPlayback<ViewGroup, RENDERER>(
-    kohii, playable, manager, boxedTarget.container, options
+) : ViewPlayback<CONTAINER, RENDERER>(
+    kohii, playable, manager, target.container, options
 ) {
 
   init {
-    require(boxedTarget !is IdenticalTarget<*>) { "IdenticalTarget is not allowed here." }
+    require(target !is IdenticalTarget<*>) { "IdenticalTarget is not allowed here." }
   }
 
-  private var _renderer: RENDERER? by observable(null as RENDERER?, onChange = { _, prev, next ->
-    if (next === prev) return@observable
-    // 1. Release previous value to Pool
-    if (prev != null) {
-      if (boxedTarget.detachRenderer(prev)) {
-        rendererPool.releaseRenderer(boxedTarget, prev, playable.media)
-        this.playable.onPlayerInActive(this@LazyViewPlayback, prev)
-      }
-    }
-    // 2. If next value is not null, attach and notify its value
-    if (next != null) {
-      boxedTarget.attachRenderer(next)
-      this.playable.onPlayerActive(this@LazyViewPlayback, next)
-    }
-  })
+  private var _renderer: RENDERER? by observable<RENDERER?>(
+      initialValue = null,
+      onChange = { _, prev, next ->
+        if (next === prev) return@observable
+        // 1. Release previous value to Pool
+        if (prev != null) {
+          if (target.detachRenderer(prev)) {
+            rendererPool.releaseRenderer(target, prev, playable.media)
+            this.playable.onPlaybackInActive(this@LazyViewPlayback, prev)
+          }
+        }
+        // 2. If next value is not null, attach and notify its value
+        if (next != null) {
+          target.attachRenderer(next)
+          this.playable.onPlaybackActive(this@LazyViewPlayback, next)
+        }
+      })
 
   override val renderer: RENDERER?
     get() = this._renderer
@@ -56,7 +58,7 @@ open class LazyViewPlayback<RENDERER : Any>(
   override fun beforePlayInternal() {
     super.beforePlayInternal()
     if (_renderer == null) {
-      _renderer = rendererPool.acquireRenderer(this, this.boxedTarget, playable.media)
+      _renderer = rendererPool.acquireRenderer(this, this.target, playable.media)
     }
   }
 

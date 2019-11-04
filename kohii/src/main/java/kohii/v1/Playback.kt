@@ -30,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
- * Instance of this class will be tight to a Target. And that target is not reusable, so instance
+ * Instance of this class will be tight to a Target. And that container is not reusable, so instance
  * of this class must not be passed around out of Activity's scope.
  *
  * @author eneim (2018/06/24).
@@ -39,24 +39,24 @@ abstract class Playback<RENDERER : Any> internal constructor(
   internal val kohii: Kohii,
   internal val playable: Playable<RENDERER>,
   val manager: PlaybackManager,
-  val target: Any,
+  val container: Any, // TODO rename to 'container'
   val config: Config
-) : PlayerEventListener {
+) : TargetHolder, PlayableHolder, PlayerEventListener {
 
   companion object {
     const val TAG = BuildConfig.LIBRARY_PACKAGE_NAME
     const val DELAY_INFINITE = -1L
 
     val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWidth(o2, TargetHost.VERTICAL)
+      return@Comparator o1.compareWith(o2, TargetHost.VERTICAL)
     }
 
     val HORIZONTAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWidth(o2, TargetHost.HORIZONTAL)
+      return@Comparator o1.compareWith(o2, TargetHost.HORIZONTAL)
     }
 
     val BOTH_AXIS_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWidth(o2, TargetHost.BOTH_AXIS)
+      return@Comparator o1.compareWith(o2, TargetHost.BOTH_AXIS)
     }
   }
 
@@ -93,10 +93,10 @@ abstract class Playback<RENDERER : Any> internal constructor(
 
   // This verification is later than expected, but we do not want to expose many internal things.
   // Ideally, targetHost should be verified before creating a Playback.
-  // But doing so on a custom Playable/PlaybackCreator will requires PlaybackManager.findHostForContainer to be accessible
-  // from client, which is not good.
-  internal var targetHost = manager.findHostForContainer(target)
-      ?: throw IllegalStateException("No host found for target: $target")
+  // But doing so on a custom Playable/PlaybackCreator will requires PlaybackManager.findHostForContainer
+  // to be accessible from client, which is not good.
+  internal var targetHost = manager.findHostForContainer(container)
+      ?: throw IllegalStateException("No host found for container: $container")
 
   // Internal callbacks
   private val listeners = CopyOnWriteArraySet<PlaybackEventListener>()
@@ -206,7 +206,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
 
   // Lifecycle
 
-  protected open fun compareWidth(
+  protected open fun compareWith(
     other: Playback<*>,
     orientation: Int
   ): Int {
@@ -242,6 +242,18 @@ abstract class Playback<RENDERER : Any> internal constructor(
     listeners.forEach { it.onFirstFrameRendered(this@Playback) }
   }
 
+  // Scenario: in first bind of RV, VH's itemView has null Parent, but might has LayoutParams
+  // of RV, we 'temporarily' ask any RV to accept it. When it is updated, we find the correct one.
+  // This operation should not happen always, ideally up to 1 time.
+  internal fun doubleCheckHost() {
+    val properHost = manager.targetHosts.firstOrNull { it.accepts(this.container) }
+    if (properHost != null && this.targetHost !== properHost) {
+      this.targetHost.detachContainer(this.container)
+      this.targetHost = properHost
+      this.targetHost.attachContainer(this.container)
+    }
+  }
+
   internal fun playInternal() {
     this.beforePlayInternal()
     this.play()
@@ -267,24 +279,25 @@ abstract class Playback<RENDERER : Any> internal constructor(
   }
 
   // Being added to Manager
-  // The target may not be attached to View/Window yet.
+  // The container may not be attached to View/Window yet.
   @CallSuper
   internal open fun onAdded() {
     this.playable.onAdded(this)
     for (callback in this.callbacks) {
       callback.onAdded(this)
     }
-    targetHost.attachTarget(target)
+    targetHost.attachContainer(container)
   }
 
   // Being removed from Manager
   @CallSuper
   internal open fun onRemoved() {
+    if (playable.playback === this) playable.playback = null
     this.playable.onRemoved(this)
     for (callback in this.callbacks) {
       callback.onRemoved(this)
     }
-    targetHost.detachTarget(target)
+    targetHost.detachContainer(container)
     this.callbacks.clear()
     this.listeners.clear()
   }
@@ -305,10 +318,10 @@ abstract class Playback<RENDERER : Any> internal constructor(
     /** Called when the Playback is added to the PlaybackManager */
     fun onAdded(playback: Playback<*>) {}
 
-    /** Called when the Playback becomes active. It is equal to that the target PlayerView is attached to the Window */
+    /** Called when the Playback becomes active. It is equal to that the container PlayerView is attached to the Window */
     fun onActive(playback: Playback<*>) {}
 
-    /** Called when the Playback becomes inactive. It is equal to that the target PlayerView is detached from the Window */
+    /** Called when the Playback becomes inactive. It is equal to that the container PlayerView is detached from the Window */
     fun onInActive(playback: Playback<*>) {}
 
     /** Called when the Playback is removed from the PlaybackManager */
@@ -320,15 +333,18 @@ abstract class Playback<RENDERER : Any> internal constructor(
     // true = half manual.
     // When true:
     // - If user starts a Playback, it will not be paused until Playback is not visible enough
-    // (controlled by Playback.Config), or user starts other Playback (priority override).
+    // (controlled by Playback.Config), or user starts other Playback (priority overridden).
     // - If user pauses a Playback, it will not be played until user resumes it.
     // - If user scrolls a Playback so that a it is not visible enough, system will pause the Playback.
     // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously played by User,
     // or pause it if it was paused by User before (= do nothing).
-    fun pauseBySystem(): Boolean = true
+    fun kohiiCanPause(): Boolean = true
 
     // - Allow System to start a Playback.
-    fun startBySystem(): Boolean = false
+    // When true:
+    // - Kohii can start a Playback automatically. But once user pause it manually, Only user can resume it,
+    // Kohii should never start/resume the Playback.
+    fun kohiiCanStart(): Boolean = false
   }
 
   fun onTargetAttached() {}
@@ -336,33 +352,33 @@ abstract class Playback<RENDERER : Any> internal constructor(
   fun onTargetDetached() {}
 
   @CallSuper
-  open fun onTargetActive() {
+  open fun onActive() {
     for (callback in this.callbacks) {
       callback.onActive(this)
     }
 
-    if (kohii.mapPlayableToManager[playable] === this.manager) {
-      // val current = manager.mapTargetToPlayback[this.target]
+    if (playable.manager === this.manager) {
+      // val current = manager.mapTargetToPlayback[this.container]
       // if (current?.playable !== this.playable) return
       val player = this.renderer
-      if (player === this.target) {
-        this.playable.onPlayerActive(this, player)
+      if (player === this.container) {
+        this.playable.onPlaybackActive(this, player)
       }
     }
   }
 
   @CallSuper
-  open fun onTargetInActive() {
+  open fun onInActive() {
     for (callback in this.callbacks) {
       callback.onInActive(this)
     }
 
-    if (kohii.mapPlayableToManager[playable] === this.manager) {
-      // val current = manager.mapTargetToPlayback[this.target]
+    if (playable.manager === this.manager) {
+      // val current = manager.mapTargetToPlayback[this.container]
       // if (current?.playable !== this.playable) return
       val player = this.renderer
-      if (player === this.target) {
-        this.playable.onPlayerInActive(this, player)
+      if (player === this.container) {
+        this.playable.onPlaybackInActive(this, player)
       }
     }
   }

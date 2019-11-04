@@ -70,17 +70,17 @@ object Libs {
   object AndroidX {
     val appcompat = "androidx.appcompat:appcompat:1.1.0"
     val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
-    val activityKtx = "androidx.activity:activity-ktx:1.1.0-beta01"
+    val activityKtx = "androidx.activity:activity-ktx:1.1.0-rc01"
     val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
-    val browser = "androidx.browser:browser:1.0.0"
-    val palette = "androidx.palette:palette:1.0.0"
+    val browser = "androidx.browser:browser:1.2.0-alpha09"
+    val palette = "androidx.palette:palette-ktx:1.0.0"
     val emoji = "androidx.emoji:emoji:1.0.0"
 
-    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0-beta05"
+    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0-rc01"
     val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-alpha06"
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
-    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-beta05"
+    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-rc01"
 
     object Media {
       private const val version = "1.0.1"
@@ -91,7 +91,7 @@ object Libs {
     }
 
     object Navigation {
-      private const val version = "2.2.0-beta01"
+      private const val version = "2.2.0-rc01"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
@@ -101,7 +101,7 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.0-beta02"
+      private const val version = "1.2.0-rc01"
       val fragment = "androidx.fragment:fragment:$version"
       val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
@@ -125,13 +125,13 @@ object Libs {
 
     val preference = "androidx.preference:preference-ktx:1.1.0"
 
-    val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta2"
+    val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
 
     val core = "androidx.core:core:1.2.0-beta01"
     val coreKtx = "androidx.core:core-ktx:1.2.0-beta01"
 
     object Lifecycle {
-      private const val version = "2.2.0-beta01"
+      private const val version = "2.2.0-rc01"
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
@@ -142,7 +142,7 @@ object Libs {
     }
 
     object Room {
-      private const val version = "2.2.0"
+      private const val version = "2.2.1"
       val common = "androidx.room:room-common:$version"
       val runtime = "androidx.room:room-runtime:$version"
       val compiler = "androidx.room:room-compiler:$version"
@@ -151,7 +151,7 @@ object Libs {
     }
 
     object Work {
-      private const val version = "2.3.0-alpha02"
+      private const val version = "2.3.0-alpha03"
       val runtimeKtx = "androidx.work:work-runtime-ktx:$version"
     }
   }
@@ -185,7 +185,7 @@ object Libs {
   }
 
   object Google {
-    val material = "com.google.android.material:material:1.1.0-alpha10"
+    val material = "com.google.android.material:material:1.1.0-beta01"
     val gmsGoogleServices = "com.google.gms:google-services:4.3.2"
     val firebaseCore = "com.google.firebase:firebase-core:17.2.0"
     val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.2.0"

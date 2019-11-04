@@ -23,6 +23,6 @@ interface BridgeProvider<RENDERER : Any> {
   fun provideBridge(
     kohii: Kohii,
     media: Media,
-    config: Playable.Config
+    config: Playable.Config = Playable.Config()
   ): Bridge<RENDERER>
 }

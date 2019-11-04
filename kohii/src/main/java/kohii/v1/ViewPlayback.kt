@@ -32,13 +32,13 @@ open class ViewPlayback<V : View, RENDERER : Any>(
   kohii: Kohii,
   playable: Playable<RENDERER>,
   manager: PlaybackManager,
-  target: V,
+  container: V,
   options: Config
 ) : Playback<RENDERER>(
     kohii,
     playable,
     manager,
-    target,
+    container,
     options
 ) {
 
@@ -46,15 +46,15 @@ open class ViewPlayback<V : View, RENDERER : Any>(
     object : PlaybackEventListener {
 
       override fun beforePlay(playback: Playback<*>) {
-        target.keepScreenOn = true
+        container.keepScreenOn = true
       }
 
       override fun afterPause(playback: Playback<*>) {
-        target.keepScreenOn = false
+        container.keepScreenOn = false
       }
 
       override fun onEnd(playback: Playback<*>) {
-        target.keepScreenOn = false
+        container.keepScreenOn = false
       }
     }
   }
@@ -98,24 +98,23 @@ open class ViewPlayback<V : View, RENDERER : Any>(
   // TODO [20190112] deal with scaled/transformed View and/or its Parent.
   override val token: ViewToken
     get() {
-      val viewTarget = target as View
+      val viewContainer = container as View
       val playerRect = Rect()
-      if (!ViewCompat.isAttachedToWindow(viewTarget)) {
+      if (!ViewCompat.isAttachedToWindow(viewContainer)) {
         return ViewToken(this.config, playerRect, -1F)
       }
 
-      val visible = viewTarget.getGlobalVisibleRect(playerRect, Point())
+      val visible = viewContainer.getGlobalVisibleRect(playerRect, Point())
       if (!visible) return ViewToken(this.config, playerRect, -1F)
 
       val drawRect = Rect()
-      viewTarget.getDrawingRect(drawRect)
+      viewContainer.getDrawingRect(drawRect)
       val drawArea = drawRect.width() * drawRect.height()
 
-      var offset = 0f
-      if (drawArea > 0) {
+      val offset = if (drawArea > 0) {
         val visibleArea = playerRect.height() * playerRect.width()
-        offset = visibleArea / drawArea.toFloat()
-      }
+        visibleArea / drawArea.toFloat()
+      } else 0f
 
       return ViewToken(this.config, playerRect, offset)
     }
@@ -134,7 +133,7 @@ open class ViewPlayback<V : View, RENDERER : Any>(
     super.onRemoved()
   }
 
-  override fun compareWidth(
+  override fun compareWith(
     other: Playback<*>,
     orientation: Int
   ): Int {
@@ -162,9 +161,9 @@ open class ViewPlayback<V : View, RENDERER : Any>(
 
   @Suppress("UNCHECKED_CAST")
   override val renderer: RENDERER?
-    get() = this.target as? RENDERER
+    get() = this.container as? RENDERER
 
-  // Location on screen, with visible offset within target's parent.
+  // Location on screen, with visible offset within container's parent.
   data class ViewToken constructor(
     val config: Config,
     val viewRect: Rect,

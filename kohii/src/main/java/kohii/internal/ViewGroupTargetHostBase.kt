@@ -36,9 +36,9 @@ internal open class ViewGroupTargetHostBase(
     return playback.token.shouldPlay()
   }
 
-  override fun accepts(target: Any): Boolean {
-    return if (target is View) {
-      var view = target
+  override fun accepts(container: Any): Boolean {
+    return if (container is View) {
+      var view = container
       var parent = view.parent
       while (parent != null && parent !== this.host && parent is View) {
         @Suppress("USELESS_CAST")
