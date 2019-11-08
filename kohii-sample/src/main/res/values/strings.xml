@@ -262,4 +262,12 @@
   <string name="demo_desc_youtube_2">
     Kohii with YouTube videos using https://github.com/PierfrancescoSoffritti/android-youtube-player library.
   </string>
+
+  <string name="demo_title_debug">
+    Kohii + Debug
+  </string>
+
+  <string name="demo_desc_debug">
+    Debug Kohii
+  </string>
 </resources>

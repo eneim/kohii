@@ -54,7 +54,7 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
       val id = holder.getItemId()
       if (id != NO_ID) {
         val key = holder.rebinder
-        if (position != NO_POSITION && id != NO_ID && key != null) {
+        if (position != NO_POSITION && key != null) {
           positionToKey.put(position, key)
           keyToPosition[key] = position
         }

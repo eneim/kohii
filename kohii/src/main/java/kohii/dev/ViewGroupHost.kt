@@ -24,7 +24,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 open class ViewGroupHost(
   manager: Manager,
   root: ViewGroup
-) : BaseHost<ViewGroup>(manager, root) {
+) : Host<ViewGroup>(manager, root) {
 
   private val globalScrollChangeListener by lazy(NONE) {
     OnScrollChangedListener { manager.refresh() }
@@ -62,7 +62,10 @@ open class ViewGroupHost(
     return playback.token.shouldPlay()
   }
 
-  override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    return selectByOrientation(candidates, NONE_AXIS)
+  override fun selectToPlay(
+    candidates: Collection<Playback<*>>,
+    all: Collection<Playback<*>>
+  ): Collection<Playback<*>> {
+    return selectByOrientation(candidates, all, orientation = NONE_AXIS)
   }
 }

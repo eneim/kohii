@@ -18,6 +18,7 @@ package kohii.dev
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.ArraySet
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
@@ -29,22 +30,23 @@ import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import com.google.android.exoplayer2.ui.PlayerView
+import kohii.dev.Master.MemoryMode
+import kohii.dev.Master.MemoryMode.LOW
 import kohii.partitionToArrayLists
+import kotlin.properties.Delegates
 
 class Manager(
+  internal val master: Master,
   internal val group: Group,
   internal val host: Any,
-  internal val lifecycleOwner: LifecycleOwner
+  internal val lifecycleOwner: LifecycleOwner,
+  internal val memoryMode: MemoryMode = LOW
 ) : PlayableManager, LifecycleObserver {
 
-  private val hosts = linkedSetOf<Host>()
+  private val hosts = linkedSetOf<Host<*>>()
+
   // All Playbacks, including attached/detached ones.
-  internal val playbacks = mutableMapOf<Any, Playback<*>>()
-  // Attached Playbacks only.
-  // True -> Attached, Active, False -> Attached, InActive.
-  private val playbackStates = mutableMapOf<Playback<*>, Boolean>()
-  private val playerViewProvider = PlayerViewProvider()
+  internal val playbacks = mutableMapOf<Any /* container */, Playback<*>>()
 
   @OnLifecycleEvent(ON_ANY)
   internal fun onAnyEvent(owner: LifecycleOwner) {
@@ -53,33 +55,36 @@ class Manager(
 
   @OnLifecycleEvent(ON_CREATE)
   internal fun onCreate() {
-    group.managers.add(this)
-    this.registerRendererProvider(PlayerView::class.java, playerViewProvider)
+    group.onManagerCreated(this)
   }
 
   @OnLifecycleEvent(ON_DESTROY)
   internal fun onDestroy(owner: LifecycleOwner) {
-    ArrayList(playbacks.values)
-        .onEach { removePlayback(it) /* also modify playbacks */ }
+    playbacks.values.toMutableList()
+        .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
-    this.unregisterRendererProvider(playerViewProvider)
     owner.lifecycle.removeObserver(this)
-    group.managers.remove(this)
+    group.onManagerDestroyed(this)
   }
 
   @OnLifecycleEvent(ON_START)
   internal fun onStart() {
-    refresh()
+    refresh() // This will also update active/inactive Playbacks accordingly.
   }
 
   @OnLifecycleEvent(ON_STOP)
   internal fun onStop() {
-    playbackStates.filterValues { it }
-        .forEach { onPlaybackInActive(it.key) }
+    playbacks.filterValues { it.isActive }
+        .forEach { onPlaybackInActive(it.value) }
     refresh()
   }
 
-  internal fun findHostForContainer(container: ViewGroup): Host? {
+  internal fun findPlayableForContainer(container: ViewGroup): Playable<*>? {
+    val playback = playbacks[container]
+    return master.playables.keys.firstOrNull { it.playback === playback }
+  }
+
+  internal fun findHostForContainer(container: ViewGroup): Host<*>? {
     require(ViewCompat.isAttachedToWindow(container))
     return hosts.firstOrNull { it.accepts(container) }
   }
@@ -97,9 +102,8 @@ class Manager(
     // A detached Container can be re-attached (in case of RecyclerView)
     val playback = playbacks[container]
     if (playback != null) {
-      val state = playbackStates[playback]
-      if (state != null) {
-        if (state) onPlaybackInActive(playback)
+      if (playback.isAttached) { // Attached
+        if (playback.isActive) onPlaybackInActive(playback)
         onPlaybackDetached(playback)
       }
       refresh()
@@ -113,17 +117,19 @@ class Manager(
     }
   }
 
-  internal fun registerHost(view: View) {
+  private fun attachHost(view: View) {
+    val existing = hosts.find { it.root === view }
+    require(existing == null) { "This host ${existing?.root} is attached already." }
     view.doOnAttach { v ->
       val host = Host[this@Manager, v]
       if (hosts.add(host)) host.onAdded()
     }
-    view.doOnDetach { v ->
-      hosts.filter { it.hostRoot === v }
-          .forEach {
-            if (hosts.remove(it)) it.onRemoved()
-          }
-    }
+    view.doOnDetach { v -> detachHost(v) }
+  }
+
+  private fun detachHost(view: View) {
+    hosts.filter { it.root === view }
+        .forEach { if (hosts.remove(it)) it.onRemoved() }
   }
 
   internal fun refresh() {
@@ -131,19 +137,45 @@ class Manager(
   }
 
   private fun refreshPlaybackStates(): Pair<MutableCollection<Playback<*>> /* Active */, MutableCollection<Playback<*>> /* InActive */> {
-    val toActive = playbackStates.filter { !it.value && it.key.token.shouldPrepare() }
-        .keys
-    val toInActive = playbackStates.filter { it.value && !it.key.token.shouldPrepare() }
-        .keys
+    val toActive = playbacks.filterValues { !it.isActive && it.token.shouldPrepare() }
+        .values
+    val toInActive = playbacks.filterValues { it.isActive && !it.token.shouldPrepare() }
+        .values
 
     toActive.forEach { onPlaybackActive(it) }
     toInActive.forEach { onPlaybackInActive(it) }
 
-    return playbackStates.asSequence()
+    return playbacks.asSequence()
+        .filter { it.value.isAttached }
         .partitionToArrayLists(
-            predicate = { it.value },
-            transform = { it.key }
+            predicate = { it.value.isActive },
+            transform = { it.value }
         )
+  }
+
+  internal fun splitPlaybacks(): Pair<Collection<Playback<*>> /* toPlay */, Collection<Playback<*>> /* toPause */> {
+    val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
+    val toPlay = ArraySet<Playback<*>>()
+
+    val hostToPlaybacks = playbacks.values.groupBy { it.host }
+    hosts.asSequence()
+        .filter { !hostToPlaybacks[it].isNullOrEmpty() }
+        .map {
+          val all = hostToPlaybacks.getValue(it)
+          val candidates = all.filter { playback -> it.allowToPlay(playback) }
+          Triple(it, candidates, all)
+        }
+        .map { (host, candidates, all) ->
+          host.selectToPlay(candidates, all)
+        }
+        .firstOrNull { it.isNotEmpty() }
+        ?.also {
+          toPlay.addAll(it)
+          activePlaybacks.removeAll(it)
+        }
+
+    activePlaybacks.addAll(inactivePlaybacks)
+    return toPlay to activePlaybacks
   }
 
   internal fun addPlayback(playback: Playback<*>) {
@@ -156,52 +188,31 @@ class Manager(
   }
 
   internal fun removePlayback(playback: Playback<*>) {
-    val state = playbackStates[playback]
-    if (state != null) {
-      if (state) onPlaybackInActive(playback)
+    if (playback.isAttached) {
+      if (playback.isActive) onPlaybackInActive(playback)
       onPlaybackDetached(playback)
     }
     if (playbacks.remove(playback.container) === playback) playback.onRemoved()
   }
 
+  internal fun onRemoveContainer(container: Any) {
+    playbacks[container]?.let { removePlayback(it) }
+  }
+
   private fun onPlaybackAttached(playback: Playback<*>) {
-    playbackStates[playback] = false
     playback.onAttached()
   }
 
   private fun onPlaybackDetached(playback: Playback<*>) {
-    playbackStates.remove(playback)
     playback.onDetached()
   }
 
   private fun onPlaybackActive(playback: Playback<*>) {
-    playbackStates[playback] = true
     playback.onActive()
   }
 
   private fun onPlaybackInActive(playback: Playback<*>) {
-    playbackStates[playback] = false
     playback.onInActive()
-  }
-
-  internal fun splitPlaybacks(): Pair<Collection<Playback<*>> /* toPlay */, Collection<Playback<*>> /* toPause */> {
-    val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
-    val toPlay = HashSet<Playback<*>>()
-
-    val hostToPlaybacks = activePlaybacks.filter { it.host.allowToPlay(it) }
-        .groupBy { it.host }
-
-    hosts.asSequence()
-        .filter { !hostToPlaybacks[it].isNullOrEmpty() }
-        .map { it.selectToPlay(hostToPlaybacks.getValue(it)) }
-        .firstOrNull { it.isNotEmpty() }
-        ?.also {
-          toPlay.addAll(it)
-          activePlaybacks.removeAll(it)
-        }
-
-    activePlaybacks.addAll(inactivePlaybacks)
-    return toPlay to activePlaybacks
   }
 
   internal fun <RENDERER : Any> acquireRenderer(
@@ -224,6 +235,8 @@ class Manager(
         .releaseRenderer(playback, playable.media, playable.bridge.playerView)
   }
 
+  // Public APIs
+
   @Suppress("MemberVisibilityCanBePrivate")
   fun <RENDERER : Any> registerRendererProvider(
     type: Class<RENDERER>,
@@ -235,5 +248,26 @@ class Manager(
   @Suppress("MemberVisibilityCanBePrivate")
   fun <RENDERER : Any> unregisterRendererProvider(provider: RendererProvider<RENDERER>) {
     group.unregisterRendererProvider(provider)
+  }
+
+  fun attach(vararg views: View): Manager {
+    views.forEach { this.attachHost(it) }
+    return this
+  }
+
+  fun attach(vararg hosts: Host<*>): Manager {
+    hosts.forEach { host ->
+      require(host.manager === this)
+      val existing = this.hosts.find { it.root === host.root }
+      require(existing == null) { "This host ${existing?.root} is attached already." }
+      if (this.hosts.add(host)) host.onAdded()
+    }
+    return this
+  }
+
+  @Suppress("unused")
+  fun detach(vararg views: View): Manager {
+    views.forEach { this.detachHost(it) }
+    return this
   }
 }

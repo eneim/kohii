@@ -17,28 +17,43 @@
 package kohii.v1.sample.ui.debug
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.LinearLayoutCompat
-import kohii.dev.Master
-import kohii.media.MediaItem
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
+import kohii.dev.PlayerViewRebinder
+import kohii.dev.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kotlinx.android.synthetic.main.fragment_debug.bindView1
-import kotlinx.android.synthetic.main.fragment_debug.bindView2
-import kotlinx.android.synthetic.main.fragment_debug.content
-import kotlinx.android.synthetic.main.fragment_debug.playerView1
-import kotlinx.android.synthetic.main.fragment_debug.playerView2
-import kotlinx.android.synthetic.main.fragment_debug.scrollView
+import kotlin.LazyThreadSafetyMode.NONE
+import kotlin.properties.Delegates
 
 @Suppress("unused")
-class DebugFragment : BaseFragment() {
+class DebugFragment : BaseFragment(), DebugChildFragment.Callback, SinglePlayerFragment.Callback {
 
   companion object {
     fun newInstance() = DebugFragment()
   }
+
+  private val viewModel: VideosViewModel by viewModels()
+  private val videoFragment by lazy(NONE) {
+    childFragmentManager.findFragmentById(R.id.mainPanel) as DebugChildFragment
+  }
+  private var selected: PlayerViewRebinder? by Delegates.observable<PlayerViewRebinder?>(
+      null,
+      onChange = { _, from, to ->
+        if (from == to /* equals */) return@observable
+        if (to != null) {
+          videoFragment.select(to)
+          val tag = to.tag.toString()
+          childFragmentManager.findFragmentByTag(tag)
+              ?: SinglePlayerFragment.newInstance(to)
+                  .show(childFragmentManager, tag)
+        } else {
+          if (from != null) videoFragment.deselect(from)
+        }
+      })
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -53,24 +68,24 @@ class DebugFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val media = MediaItem(videoUrl)
-    val content = content as LinearLayoutCompat
-
-    val master = Master[this]
-    master.register(this, scrollView)
-
-    bindView1.setOnClickListener {
-      master.setUp(media)
-          .bind(playerView1) {
-            Log.d("Kohii::Dev", "bound: $it")
-          }
+    viewModel.selectedRebinder.observe(viewLifecycleOwner) { rebinder ->
+      this.selected = rebinder
     }
+  }
 
-    bindView2.setOnClickListener {
-      master.setUp(media)
-          .bind(playerView2) {
-            Log.w("Kohii::Dev", "bound: $it")
-          }
-    }
+  // DebugChildFragment.Callback
+
+  override fun onSelected(rebinder: Rebinder<*>) {
+    if (rebinder is PlayerViewRebinder) viewModel.selectedRebinder.value = rebinder
+  }
+
+  // SinglePlayerFragment.Callback
+
+  override fun onShown(rebinder: PlayerViewRebinder) {
+    viewModel.selectedRebinder.value = rebinder
+  }
+
+  override fun onDismiss(rebinder: PlayerViewRebinder) {
+    viewModel.selectedRebinder.value = null
   }
 }

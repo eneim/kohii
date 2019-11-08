@@ -70,7 +70,7 @@ interface Bridge<RENDERER : Any> {
    * Reset all resource, so that the playback can start all over again. This is to cleanup the
    * playback for reuse. The ExoPlayer instance must be still usable without calling [prepare].
    */
-  fun reset()
+  fun reset(resetPlayer: Boolean = true)
 
   /**
    * Release all resource. After this, the Player instance is released to the Player pool and the

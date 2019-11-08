@@ -25,7 +25,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 class ViewPager2Host(
   manager: Manager,
   root: ViewPager2
-) : BaseHost<ViewPager2>(manager, root) {
+) : Host<ViewPager2>(manager, root) {
 
   private class SimplePageChangeCallback(manager: Manager) : ViewPager2.OnPageChangeCallback() {
     val weakManager = WeakReference(manager)
@@ -67,7 +67,10 @@ class ViewPager2Host(
     return playback.token.shouldPlay()
   }
 
-  override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    return selectByOrientation(candidates, root.orientation)
+  override fun selectToPlay(
+    candidates: Collection<Playback<*>>,
+    all: Collection<Playback<*>>
+  ): Collection<Playback<*>> {
+    return selectByOrientation(candidates, all, orientation = root.orientation)
   }
 }

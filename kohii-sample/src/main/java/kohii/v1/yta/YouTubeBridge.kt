@@ -178,7 +178,7 @@ class YouTubeBridge(
     player?.pause()
   }
 
-  override fun reset() {
+  override fun reset(resetPlayer: Boolean) {
     resetPlaybackInfo()
     player?.pause()
   }

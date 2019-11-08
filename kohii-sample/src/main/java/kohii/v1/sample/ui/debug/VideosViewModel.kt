@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample
+package kohii.v1.sample.ui.debug
 
-import android.os.Bundle
-import kohii.v1.sample.common.BaseActivity
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import kohii.dev.PlayerViewRebinder
 
-class DebugActivity : BaseActivity() {
+class VideosViewModel : ViewModel() {
 
-  companion object {
-    const val videoUrl = "https://content.jwplatform.com/manifests/146UwF4L.m3u8"
-  }
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_debug)
-  }
+  val selectedRebinder = MutableLiveData<PlayerViewRebinder>(null)
 }

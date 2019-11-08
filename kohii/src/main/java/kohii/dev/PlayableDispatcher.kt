@@ -16,13 +16,106 @@
 
 package kohii.dev
 
-internal class PlayableDispatcher {
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
+import kohii.v1.Kohii
+import kotlin.LazyThreadSafetyMode.NONE
+
+internal class PlayableDispatcher(val master: Master) : Handler.Callback {
+
+  companion object {
+    private const val MSG_PLAY = 100
+  }
+
+  override fun handleMessage(msg: Message): Boolean {
+    if (msg.what == MSG_PLAY) (msg.obj as Playable<*>).onPlay()
+    return true
+  }
+
+  private val handler = lazy(NONE) { Handler(Looper.getMainLooper(), this) }
+
+  internal fun onStart() {
+    // Do nothing
+  }
+
+  internal fun onStop() {
+    if (handler.isInitialized()) handler.value.removeCallbacksAndMessages(null)
+  }
 
   internal fun play(playable: Playable<*>) {
-    playable.onPlay()
+    playable.onReady()
+
+    val controller = playable.playback?.config?.controller
+    if (playable.tag === Master.NO_TAG || controller == null) {
+      justPlay(playable)
+    } else {
+      // Has manual controller.
+      if (master.playablesStartedByClient.isNotEmpty() /* has Playable started by client */ &&
+          !master.playablesStartedByClient.contains(playable.tag) /* but not this one */
+      ) {
+        // Pause due to lower priority.
+        justPause(playable)
+        return
+      }
+
+      val nextState = master.playablesPendingStates[playable.tag]
+      if (nextState != null) { // We set a flag somewhere by User/Client reaction.
+        if (nextState == Kohii.PENDING_PLAY) justPlay(playable)
+        else justPause(playable)
+      } else {
+        if (controller.kohiiCanStart()) {
+          master.playablesPendingStates[playable.tag] = Kohii.PENDING_PLAY
+          if (!controller.kohiiCanPause()) {
+            // Mark a Playable as started by User --> System will not pause it.
+            master.playablesStartedByClient.add(playable.tag)
+          }
+          justPlay(playable)
+        }
+      }
+    }
   }
 
   internal fun pause(playable: Playable<*>) {
+    if (master.groups.find { it.organizer.selection.isNotEmpty() } != null) {
+      justPause(playable)
+      return
+    }
+
+    val controller = playable.playback?.config?.controller
+    if (playable.tag === Master.NO_TAG || controller == null) {
+      justPause(playable)
+    } else {
+      // Has manual controller
+      if (master.playablesStartedByClient.isNotEmpty() /* has Playable started by client */ &&
+          !master.playablesStartedByClient.contains(playable.tag) /* but not this one */
+      ) {
+        justPause(playable)
+        return
+      }
+
+      val nextState = master.playablesPendingStates[playable.tag]
+      if (nextState != null && nextState == Kohii.PENDING_PAUSE) {
+        justPause(playable)
+      } else if (controller.kohiiCanPause()) {
+        justPause(playable)
+      }
+    }
+  }
+
+  private fun justPlay(playable: Playable<*>) {
+    val delay = playable.playback?.config?.delay ?: 0
+    if (handler.isInitialized()) handler.value.removeMessages(MSG_PLAY, playable)
+    if (delay > 0) {
+      val msg = handler.value.obtainMessage(MSG_PLAY, playable)
+      handler.value.sendMessageDelayed(msg, delay.toLong())
+    } else {
+      playable.onPlay()
+    }
+  }
+
+  private fun justPause(playable: Playable<*>) {
+    if (handler.isInitialized()) handler.value.removeMessages(MSG_PLAY, playable)
     playable.onPause()
   }
 }

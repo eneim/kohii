@@ -24,6 +24,7 @@ import kohii.v1.sample.DemoApp
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.ui.combo.ComboFragment
+import kohii.v1.sample.ui.debug.DebugChildFragment
 import kohii.v1.sample.ui.echo.EchoFragment
 import kohii.v1.sample.ui.fbook.FbookFragment
 import kohii.v1.sample.ui.motion.MotionFragment
@@ -64,6 +65,11 @@ class DemoItemsAdapter(
     }
 
     items = listOf(
+        DemoItem(
+            R.string.demo_title_debug,
+            R.string.demo_desc_debug,
+            DebugChildFragment::class.java
+        ),
         DemoItem(
             R.string.demo_title_fbook,
             R.string.demo_desc_fbook,

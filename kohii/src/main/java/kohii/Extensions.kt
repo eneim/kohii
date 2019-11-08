@@ -18,17 +18,12 @@ package kohii
 
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.Pools.Pool
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig
-import kohii.v1.Kohii
-import kohii.v1.PlaybackManager
 import kohii.v1.PlayerEventListener
 import kohii.v1.Rebinder
 import kohii.v1.VolumeInfoController
@@ -121,29 +116,6 @@ fun findSuitableParent(
   } while (view != null)
   return null
 }
-
-//inline fun <E> SparseArrayCompat<E>.getOrPut(
-//  key: Int,
-//  creator: () -> E
-//): E {
-//  var result = this[key]
-//  if (result == null) {
-//    result = creator.invoke()
-//    this.put(key, result)
-//  }
-//  return result!!
-//}
-//
-//inline fun <E> SparseArrayCompat<E>.forEach(actor: (E, Int) -> Unit) {
-//  val size = this.size()
-//  if (size > 0) {
-//    for (index in 0 until size) {
-//      val key = this.keyAt(index)
-//      val value = this.valueAt(index)
-//      actor.invoke(value, key)
-//    }
-//  }
-//}
 
 internal inline fun <T, R> Sequence<T>.partitionToArrayLists(
   predicate: (T) -> Boolean,

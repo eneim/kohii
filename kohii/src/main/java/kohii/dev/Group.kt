@@ -24,9 +24,12 @@ import androidx.core.app.ComponentActivity
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.Lifecycle.Event.ON_START
+import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.google.android.exoplayer2.ui.PlayerView
 
 class Group(
   internal val master: Master,
@@ -43,12 +46,13 @@ class Group(
     return true
   }
 
-  private val handler = Handler(this)
-  private val organizer = Organizer()
-  private val dispatcher = PlayableDispatcher()
-  private val rendererProviders = mutableMapOf<Class<*>, RendererProvider<*>>()
+  internal val managers = linkedSetOf<Manager>()
+  internal val organizer = Organizer()
 
-  internal val managers = mutableSetOf<Manager>()
+  private val handler = Handler(this)
+  private val dispatcher = PlayableDispatcher(master)
+  private val rendererProviders = mutableMapOf<Class<*>, RendererProvider<*>>()
+  private val defaultRendererProvider = PlayerViewProvider()
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -62,9 +66,13 @@ class Group(
     return activity.hashCode()
   }
 
+  internal val playbacks: Collection<Playback<*>>
+    get() = managers.flatMap { it.playbacks.values }
+
   @OnLifecycleEvent(ON_CREATE)
   internal fun onCreate() {
     master.onGroupCreated(this)
+    this.registerRendererProvider(PlayerView::class.java, defaultRendererProvider)
   }
 
   @OnLifecycleEvent(ON_DESTROY)
@@ -73,10 +81,21 @@ class Group(
     rendererProviders.onEach { it.value.clear() }
         .clear()
     owner.lifecycle.removeObserver(this)
+    this.unregisterRendererProvider(defaultRendererProvider)
     master.onGroupDestroyed(this)
   }
 
-  internal fun findHostForContainer(container: ViewGroup): Host? {
+  @OnLifecycleEvent(ON_START)
+  internal fun onStart() {
+    dispatcher.onStart()
+  }
+
+  @OnLifecycleEvent(ON_STOP)
+  internal fun onStop() {
+    dispatcher.onStop()
+  }
+
+  internal fun findHostForContainer(container: ViewGroup): Host<*>? {
     require(ViewCompat.isAttachedToWindow(container))
     return managers.asSequence()
         .mapNotNull { it.findHostForContainer(container) }
@@ -107,7 +126,7 @@ class Group(
         }
   }
 
-  internal fun <RENDERER : Any> hasRendererProviderForType(type: Class<RENDERER>): Boolean {
+  internal fun hasRendererProviderForType(type: Class<*>): Boolean {
     return rendererProviders.containsKey(type)
   }
 
@@ -121,24 +140,30 @@ class Group(
     val toPause = ArraySet<Playback<*>>()
 
     managers.forEach {
-      val (canPlay, canPause) = it.splitPlaybacks()
-      toPlay.addAll(canPlay)
-      toPause.addAll(canPause)
-    }
+          val (canPlay, canPause) = it.splitPlaybacks()
+          toPlay.addAll(canPlay)
+          toPause.addAll(canPause)
+        }
 
     val oldSelection = organizer.selection
     val newSelection = organizer.select(toPlay)
 
     (toPause + toPlay + oldSelection - newSelection)
-        .mapNotNull { playback ->
-          master.playables.keys.find { it.playback === playback }
-        }
+        .mapNotNull { playback -> master.playables.keys.find { it.playback === playback } }
         .forEach { dispatcher.pause(it) }
 
     newSelection
-        .mapNotNull { playback ->
-          master.playables.keys.find { it.playback === playback }
-        }
+        .mapNotNull { playback -> master.playables.keys.find { it.playback === playback } }
         .forEach { dispatcher.play(it) }
+  }
+
+  internal fun onManagerDestroyed(manager: Manager) {
+    managers.remove(manager)
+    master.onGroupUpdated(this)
+  }
+
+  internal fun onManagerCreated(manager: Manager) {
+    managers.add(manager)
+    master.onGroupUpdated(this)
   }
 }

@@ -27,19 +27,21 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import kohii.logError
+import kotlin.LazyThreadSafetyMode.NONE
 
-abstract class Host internal constructor(
+abstract class Host<V : View> constructor(
   val manager: Manager,
-  val hostRoot: View
+  val root: V
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
   companion object {
-    internal const val VERTICAL = RecyclerView.VERTICAL
-    internal const val HORIZONTAL = RecyclerView.HORIZONTAL
-    internal const val BOTH_AXIS = -1
-    internal const val NONE_AXIS = -2
+    const val VERTICAL = RecyclerView.VERTICAL
+    const val HORIZONTAL = RecyclerView.HORIZONTAL
+    const val BOTH_AXIS = -1
+    const val NONE_AXIS = -2
 
-    internal val comparators = mapOf(
+    val comparators = mapOf(
         HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
         VERTICAL to Playback.VERTICAL_COMPARATOR,
         BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,
@@ -49,7 +51,7 @@ abstract class Host internal constructor(
     internal operator fun get(
       manager: Manager,
       root: View
-    ): Host {
+    ): Host<*> {
       return when (root) {
         is RecyclerView -> RecyclerViewHost(manager, root)
         is NestedScrollView -> NestedScrollViewHost(manager, root)
@@ -68,14 +70,17 @@ abstract class Host internal constructor(
 
   private val containers = mutableSetOf<Any>()
 
-  internal abstract fun accepts(container: ViewGroup): Boolean
+  abstract fun accepts(container: ViewGroup): Boolean
 
-  internal abstract fun allowToPlay(playback: Playback<*>): Boolean
+  abstract fun allowToPlay(playback: Playback<*>): Boolean
 
-  internal abstract fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>>
+  abstract fun selectToPlay(
+    candidates: Collection<Playback<*>>,
+    all: Collection<Playback<*>>
+  ): Collection<Playback<*>>
 
   @CallSuper
-  internal open fun registerContainer(container: ViewGroup) {
+  open fun addContainer(container: ViewGroup) {
     if (containers.add(container)) {
       if (ViewCompat.isAttachedToWindow(container)) {
         this.onViewAttachedToWindow(container)
@@ -85,7 +90,7 @@ abstract class Host internal constructor(
   }
 
   @CallSuper
-  internal open fun unregisterContainer(container: ViewGroup) {
+  open fun removeContainer(container: ViewGroup) {
     if (containers.remove(container)) {
       container.removeOnAttachStateChangeListener(this)
       container.removeOnLayoutChangeListener(this)
@@ -119,34 +124,81 @@ abstract class Host internal constructor(
   }
 
   @CallSuper
-  internal open fun onAdded() {
+  open fun onAdded() {
   }
 
   @CallSuper
-  internal open fun onRemoved() {
+  open fun onRemoved() {
+    mutableListOf(containers).onEach {
+      manager.onRemoveContainer(it)
+    }
+        .clear()
   }
 
+  // This operation should be considered heavy/expensive.
   protected fun selectByOrientation(
     candidates: Collection<Playback<*>>,
+    all: Collection<Playback<*>> = candidates,
     orientation: Int
   ): Collection<Playback<*>> {
     val comparator = comparators.getValue(orientation)
-    val sorted = candidates.sortedWith(comparator)
-    return listOfNotNull(sorted.firstOrNull())
+
+    val grouped = candidates.sortedWith(comparator)
+        .groupBy { it.config.controller != null }
+        .withDefault { emptyList() }
+
+    val manualCandidates by lazy(NONE) {
+      val manual = grouped.getValue(true)
+      val started =
+        if (manual.isNotEmpty()) {
+          manual.asSequence()
+              .firstOrNull { playback ->
+                val playable = manager.findPlayableForContainer(playback.container)
+                manager.master.playablesPendingStates
+                    .filter { it.key === playable?.tag }
+                    .isNotEmpty()
+              }
+        } else null
+      return@lazy listOfNotNull(started ?: manual.firstOrNull())
+    }
+
+    val automaticCandidates by lazy(NONE) {
+      listOfNotNull(grouped.getValue(false).firstOrNull())
+    }
+
+    val result = if (manualCandidates.isNotEmpty()) manualCandidates else automaticCandidates
+
+    result.forEach { it.distanceToPlay = 0 }
+    all.partition { it.isActive }
+        .also { (active, inactive) ->
+          inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
+          active.sortedWith(comparator)
+              .also {
+                val (start, end) =
+                  it.indexOf(result.firstOrNull()) to it.indexOf(result.lastOrNull())
+                if (start > 0) {
+                  for (i in 0 until start) it[i].distanceToPlay = start - i
+                }
+                if (end < it.size - 1) {
+                  for (i in end + 1 until it.size) it[i].distanceToPlay = i - end
+                }
+              }
+        }
+    return result
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
-    other as Host
+    other as Host<*>
     if (manager !== other.manager) return false
-    if (hostRoot !== other.hostRoot) return false
+    if (root !== other.root) return false
     return true
   }
 
   override fun hashCode(): Int {
     var result = manager.hashCode()
-    result = 31 * result + hostRoot.hashCode()
+    result = 31 * result + root.hashCode()
     return result
   }
 }

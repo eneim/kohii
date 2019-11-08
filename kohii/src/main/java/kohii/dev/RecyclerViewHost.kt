@@ -30,7 +30,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 class RecyclerViewHost(
   manager: Manager,
   root: RecyclerView
-) : BaseHost<RecyclerView>(manager, root) {
+) : Host<RecyclerView>(manager, root) {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {
@@ -91,7 +91,10 @@ class RecyclerViewHost(
     return root.findContainingViewHolder(container) != null && playback.token.shouldPlay()
   }
 
-  override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    return selectByOrientation(candidates, root.fetchOrientation())
+  override fun selectToPlay(
+    candidates: Collection<Playback<*>>,
+    all: Collection<Playback<*>>
+  ): Collection<Playback<*>> {
+    return selectByOrientation(candidates, all, orientation = root.fetchOrientation())
   }
 }

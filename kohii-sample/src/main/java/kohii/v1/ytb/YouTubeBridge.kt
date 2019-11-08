@@ -200,7 +200,7 @@ class YouTubeBridge(
 
   override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
-  override fun reset() {
+  override fun reset(resetPlayer: Boolean) {
     this.pause()
     _playbackState = Playable.STATE_IDLE
     _playbackInfo = PlaybackInfo()

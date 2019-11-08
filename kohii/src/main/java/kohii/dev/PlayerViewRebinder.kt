@@ -16,13 +16,11 @@
 
 package kohii.dev
 
-import kohii.dev.Playable.Config
-import kohii.media.Media
+import com.google.android.exoplayer2.ui.PlayerView
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 
-interface PlayableProvider<RENDERER : Any> {
-
-  fun providePlayable(
-    media: Media,
-    config: Config
-  ): Playable<RENDERER>
-}
+@Parcelize
+data class PlayerViewRebinder(
+  override val tag: @RawValue Any?
+) : Rebinder<PlayerView>(tag, PlayerView::class.java)

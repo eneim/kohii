@@ -23,7 +23,6 @@ import android.os.Bundle
 import android.view.View
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseActivity
-import kohii.v1.sample.ui.debug.DebugFragment
 import kohii.v1.sample.ui.main.MainFragment
 import kotlinx.android.synthetic.main.main_activity.toolbar
 
@@ -45,7 +44,7 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
       supportFragmentManager.beginTransaction()
           .replace(
               R.id.fragmentContainer,
-              DebugFragment.newInstance(), MainFragment::class.java.simpleName
+              MainFragment.newInstance(), MainFragment::class.java.simpleName
           )
           .commit()
     }

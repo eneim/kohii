@@ -17,21 +17,67 @@
 package kohii.dev
 
 import android.view.ViewGroup
+import androidx.annotation.RestrictTo
+import androidx.annotation.RestrictTo.Scope.LIBRARY
 import kohii.dev.Playable.Config
 import kohii.media.Media
 
 class Binder<RENDERER : Any>(
   private val master: Master,
   val media: Media,
-  private val playableProvider: PlayableProvider<RENDERER>
+  private val playableCreator: PlayableCreator<RENDERER>
 ) {
+
+  class Options {
+    var tag: Any? = null
+    var delay: Int = 0
+    var controller: Playback.Controller? = null
+    var callbacks: Array<Playback.Callback> = emptyArray()
+  }
+
+  @RestrictTo(LIBRARY)
+  val options = Options()
+
+  inline fun with(options: Options.() -> Unit): Binder<RENDERER> {
+    this.options.apply(options)
+    return this
+  }
 
   fun <CONTAINER : ViewGroup> bind(
     container: CONTAINER,
-    config: Config = Config(),
     callback: ((Playback<*>) -> Unit)? = null
-  ) {
-    val playable = playableProvider.providePlayable(media, config)
-    master.bind(playable, container, callback)
+  ): Rebinder<RENDERER>? {
+    val tag = options.tag ?: Master.NO_TAG
+    val playable = providePlayable(media, tag, Config(tag = options.tag))
+    master.bind(playable, container, options, callback)
+    return if (tag != Master.NO_TAG) playableCreator.createRebinder(tag) else null
+  }
+
+  private fun providePlayable(
+    media: Media,
+    tag: Any,
+    config: Config
+  ): Playable<RENDERER> {
+    var cache = master.playables.asSequence()
+        .filterNot { it.value == Master.NO_TAG } // only care about tagged Playables
+        .filter { it.value == tag }
+        .firstOrNull()
+        ?.key
+
+    if (cache != null) {
+      require(cache.media == media) // Playable of same tag must have the same Media data.
+      if (cache.config != config ||
+          !playableCreator.rendererType.isAssignableFrom(cache.rendererType)
+      ) {
+        // Scenario: client bind a Video of same tag/media but different Renderer type or Config.
+        cache.playback = null
+        master.tearDown(cache, true)
+        cache = null
+      }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    return cache as? Playable<RENDERER> ?: playableCreator.createPlayable(master, config, media)
+        .also { master.playables[it] = tag }
   }
 }

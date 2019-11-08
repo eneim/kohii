@@ -16,32 +16,99 @@
 
 package kohii.dev
 
+import android.app.ActivityManager
 import android.app.Application
+import android.content.ComponentCallbacks2
 import android.content.Context
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.view.View
 import android.view.ViewGroup
+import androidx.collection.ArrayMap
+import androidx.collection.ArraySet
 import androidx.core.app.ComponentActivity
 import androidx.core.net.toUri
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.ExoPlayer
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
 import kohii.v1.Kohii
+import kohii.v1.PendingState
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
-class Master(context: Context) : PlayableManager {
+class Master private constructor(context: Context) : PlayableManager, ComponentCallbacks2 {
+
+  enum class MemoryMode {
+    /**
+     * In AUTO mode, Kohii will judge the preferred memory situation using [preferredMemoryMode] method.
+     */
+    AUTO,
+
+    /**
+     * In LOW mode, Kohii will always release resource of unselected Playables/Playbacks
+     * (whose distance to selected ones are from 1).
+     */
+    LOW,
+
+    /**
+     * In NORMAL mode, Kohii will only reset the Playables/Playbacks whose distance to selected ones
+     * are 1 (so 'next to' selected ones). Others will be released.
+     */
+    NORMAL,
+
+    /**
+
+    ▒▒▒▒▒▒▒▒▄▄▄▄▄▄▄▄▒▒▒▒▒▒▒▒
+    ▒▒▒▒▒▄█▀▀░░░░░░▀▀█▄▒▒▒▒▒
+    ▒▒▒▄█▀▄██▄░░░░░░░░▀█▄▒▒▒
+    ▒▒█▀░▀░░▄▀░░░░▄▀▀▀▀░▀█▒▒
+    ▒█▀░░░░███░░░░▄█▄░░░░▀█▒
+    ▒█░░░░░░▀░░░░░▀█▀░░░░░█▒
+    ▒█░░░░░░░░░░░░░░░░░░░░█▒
+    ▒█░░██▄░░▀▀▀▀▄▄░░░░░░░█▒
+    ▒▀█░█░█░░░▄▄▄▄▄░░░░░░█▀▒
+    ▒▒▀█▀░▀▀▀▀░▄▄▄▀░░░░▄█▀▒▒
+    ▒▒▒█░░░░░░▀█░░░░░▄█▀▒▒▒▒
+    ▒▒▒█▄░░░░░▀█▄▄▄█▀▀▒▒▒▒▒▒
+    ▒▒▒▒▀▀▀▀▀▀▀▒▒▒▒▒▒▒▒▒▒▒▒▒
+
+    In GOOD_FOR_UX mode, the release behavior is the same with 'NORMAL' mode, but unselected Playables/Playbacks will not be reset.
+
+     */
+    GOOD_FOR_UX,
+
+    /**
+     * HIGH mode must be specified by client.
+     *
+     * In HIGH mode, any unselected Playables/Playbacks whose distance to selected ones is less
+     * than 8 will be reset. Others will be released. This mode is memory-intensive and can be
+     * used in many-videos-yet-low-memory-usage scenario like simple/short Videos.
+     */
+    HIGH,
+
+    /**
+     * "For the bravest only"
+     *
+     * INFINITE mode must be specified by client.
+     *
+     * In INFINITE mode, no unselected Playables/Playbacks will ever be released due to distance
+     * change (though Kohii will release the resource once they are inactive).
+     */
+    INFINITE
+  }
 
   companion object {
 
     private const val MSG_STARTUP = 100
+    private const val MSG_RELEASE_PLAYABLE = 101
 
     internal val NO_TAG = Any()
 
@@ -56,27 +123,60 @@ class Master(context: Context) : PlayableManager {
     operator fun get(fragment: Fragment) = get(fragment.requireContext())
   }
 
+  private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
+
+    override fun handleMessage(msg: Message) {
+      if (msg.what == MSG_STARTUP) {
+        master.checkPlayables()
+      } else if (msg.what == MSG_RELEASE_PLAYABLE) {
+        val playable = (msg.obj as Playable<*>)
+        playable.bridge.release()
+      }
+    }
+  }
+
   val app = context.applicationContext as Application
   val kohii = Kohii[app]
 
-  private val groups = mutableSetOf<Group>()
+  internal val groups = mutableSetOf<Group>()
+  internal val playables = mutableMapOf<Playable<*>, Any /* Playable tag */>()
+
+  // We want to keep the map of manual Playables even if the Activity is destroyed and recreated.
+  // TODO when to remove entries of this map?
+  internal val playablesStartedByClient by lazy(NONE) { ArraySet<Any /* Playable tag */>() }
+  // TODO when to remove entries of this map?
+  internal val playablesPendingStates by lazy(NONE) {
+    ArrayMap<Any /* Playable tag */, PendingState>()
+  }
+  // TODO design a dedicated mechanism for it, considering paging to save in-memory space.
+  // TODO when to remove entries of this map?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
-  internal val playables = mutableMapOf<Playable<*>, Any /* tag */>()
+
+  private val activityManager by lazy(NONE) {
+    app.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+  }
+
+  internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
+    if (actual !== MemoryMode.AUTO) return actual
+    val memoryInfo = ActivityManager.MemoryInfo()
+        .also {
+          activityManager.getMemoryInfo(it)
+        }
+    return if (memoryInfo.lowMemory) MemoryMode.LOW else MemoryMode.GOOD_FOR_UX
+  }
 
   private fun registerInternal(
     activity: ComponentActivity,
     host: Any,
     managerLifecycleOwner: LifecycleOwner,
-    vararg views: View
+    memoryMode: MemoryMode = MemoryMode.AUTO
   ): Manager {
     val group = groups.find { it.activity === activity } ?: Group(this, activity).also {
       activity.lifecycle.addObserver(it)
     }
 
     val manager = group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
-        ?: Manager(group, host, managerLifecycleOwner)
-
-    views.forEach { manager.registerHost(it) }
+        ?: Manager(this, group, host, managerLifecycleOwner, memoryMode)
 
     manager.lifecycleOwner.lifecycle.addObserver(manager)
     return manager
@@ -85,8 +185,11 @@ class Master(context: Context) : PlayableManager {
   internal fun <CONTAINER : ViewGroup, RENDERER : Any> bind(
     playable: Playable<RENDERER>,
     container: CONTAINER,
+    options: Binder.Options,
     callback: ((Playback<*>) -> Unit)? = null
   ) {
+    // TODO consider to temporarily set playable's Manager to Master
+    if (playable.manager == null) playable.manager = this
     // 1. Find the Manager for the container
     val weakCallback = WeakReference(callback)
     container.doOnAttach {
@@ -97,18 +200,22 @@ class Master(context: Context) : PlayableManager {
       requireNotNull(host) { "No Manager and Host available for $container" }
 
       val createNew by lazy(NONE) {
+        val config = Playback.Config(
+            delay = options.delay,
+            controller = options.controller,
+            callbacks = options.callbacks
+        )
         if (host.manager.group.hasRendererProviderForType(container.javaClass))
-          Playback(host.manager, host, container)
+          Playback(host.manager, host, config, container)
         else
-          LazyPlayback(host.manager, host, container)
+          LazyPlayback(host.manager, host, config, container)
       }
 
       val sameContainer = host.manager.playbacks[container]
-      val samePlayable = host.manager.playbacks.asSequence()
-          .firstOrNull { playable.playback === it.value }
-          ?.value
+      val samePlayable = host.manager.group.playbacks.asSequence()
+          .firstOrNull { playable.playback === it }
 
-      val nextPlayback =
+      val resolvedPlayback =
         if (sameContainer == null) { // Bind to new Container
           if (samePlayable == null) {
             // both sameContainer and samePlayable are null --> fresh binding
@@ -152,36 +259,26 @@ class Master(context: Context) : PlayableManager {
         }
 
       weakCallback.get()
-          ?.invoke(nextPlayback)
+          ?.invoke(resolvedPlayback)
     }
   }
 
-  private val defaultPlayableProvider by lazy(NONE) {
-    val playableCreator = object : PlayableCreator<PlayerView> {
-      override fun createPlayable(
-        master: Master,
-        config: Playable.Config,
-        media: Media
-      ): Playable<PlayerView> {
-        return Playable(
-            master,
-            media,
-            config,
-            PlayerView::class.java,
-            master.kohii.defaultBridgeProvider.provideBridge(master.kohii, media)
-        )
-      }
-    }
-    PlayerViewPlayableProvider(this, playableCreator)
-  }
+  private val engines = mutableMapOf<Class<*>, Engine<*>>()
 
-  internal fun tearDown(playable: Playable<*>) {
+  internal fun tearDown(
+    playable: Playable<*>,
+    clearState: Boolean
+  ) {
     check(playable.manager == null)
     check(playable.playback == null)
     playable.onPause()
     playable.onRelease()
     playables.remove(playable)
-    playbackInfoStore.remove(playable.tag)
+    if (clearState) {
+      playbackInfoStore.remove(playable.tag)
+      playablesStartedByClient.remove(playable.tag)
+      playablesPendingStates.remove(playable.tag)
+    }
   }
 
   internal fun trySavePlaybackInfo(playable: Playable<*>) {
@@ -191,10 +288,14 @@ class Master(context: Context) : PlayableManager {
     }
   }
 
+  // If this method is called, it must be before any call to playable.bridge.prepare(flag)
   internal fun tryRestorePlaybackInfo(playable: Playable<*>) {
     if (playable.tag === NO_TAG) return
     val cache = playbackInfoStore.remove(playable.tag)
-    if (cache != null) playable.playbackInfo = cache
+    // Only restoring playback state if there is cached state, and the player is not ready yet.
+    if (cache != null && playable.playerState <= Player.STATE_IDLE /* TODO change to internal const */) {
+      playable.playbackInfo = cache
+    }
   }
 
   private fun checkPlayables() {
@@ -202,7 +303,7 @@ class Master(context: Context) : PlayableManager {
         .keys.toMutableList()
         .onEach {
           it.manager = null
-          tearDown(it)
+          tearDown(it, true)
         }
         .clear()
   }
@@ -216,40 +317,128 @@ class Master(context: Context) : PlayableManager {
 
   internal fun onGroupDestroyed(group: Group) {
     groups.remove(group)
-    if (groups.isEmpty()) dispatcher.removeCallbacksAndMessages(null)
+    if (groups.isEmpty()) {
+      dispatcher.removeMessages(MSG_STARTUP)
+    }
   }
 
-  private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
-
-    override fun handleMessage(msg: Message) {
-      if (msg.what == MSG_STARTUP) {
-        master.checkPlayables()
-      }
+  // Called when Manager is added/removed to/from Group
+  @Suppress("UNUSED_PARAMETER")
+  internal fun onGroupUpdated(group: Group) {
+    // If no Manager is online, cleanup stuffs
+    if (groups.map { it.managers }.isEmpty() && playables.isEmpty() /* TODO double check this */) {
+      kohii.cleanUp()
     }
+  }
+
+  internal fun preparePlayable(
+    playable: Playable<*>,
+    loadSource: Boolean = false
+  ) {
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
+    playable.bridge.prepare(loadSource)
+  }
+
+  internal fun releasePlayable(playable: Playable<*>) {
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
+    dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
+        .sendToTarget()
   }
 
   // Public APIs
 
   fun register(
     fragment: Fragment,
-    vararg views: View
+    memoryMode: MemoryMode = MemoryMode.LOW
   ): Manager {
-    val (activity, managerLifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
-    return registerInternal(activity, fragment, managerLifecycleOwner, *views)
+    val (activity, lifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
+    return registerInternal(activity, fragment, lifecycleOwner, memoryMode = memoryMode)
   }
 
   fun register(
     activity: ComponentActivity,
-    vararg views: View
+    memoryMode: MemoryMode = MemoryMode.AUTO
   ): Manager {
-    return registerInternal(activity, activity, activity, *views)
+    return registerInternal(activity, activity, activity, memoryMode = memoryMode)
   }
 
+  @ExoPlayer
   fun setUp(media: Media): Binder<PlayerView> {
-    return Binder(this, media, defaultPlayableProvider)
+    @Suppress("UNCHECKED_CAST")
+    val engine: Engine<PlayerView> =
+      engines.getOrPut(PlayerView::class.java) { PlayerViewEngine(this) } as Engine<PlayerView>
+    return engine.setUp(media)
   }
 
+  @ExoPlayer
   fun setUp(uri: Uri) = setUp(MediaItem(uri))
 
+  @ExoPlayer
   fun setUp(url: String) = setUp(url.toUri())
+
+  @Suppress("MemberVisibilityCanBePrivate", "unused")
+  fun <RENDERER : Any> registerEngine(
+    key: Class<RENDERER>,
+    engine: Engine<RENDERER>
+  ) {
+    engines[key] = engine
+  }
+
+  @Suppress("unused")
+  fun <RENDERER : Any> unregisterEngine(engine: Engine<RENDERER>) {
+    engines.filter { it.value === engine }
+        .keys.forEach { engines.remove(it) }
+  }
+
+  // Must be a request to play from Client. This method will set necessary flags and refresh all.
+  fun play(playable: Playable<*>) {
+    val controller = playable.playback?.config?.controller
+    if (playable.tag !== NO_TAG && controller != null) {
+      requireNotNull(playable.playback).also {
+        if (it.token.shouldPrepare()) playable.onReady()
+        playablesPendingStates[playable.tag] = Kohii.PENDING_PLAY
+        if (!controller.kohiiCanPause()) playablesStartedByClient.add(playable.tag)
+        it.manager.refresh()
+      }
+    }
+  }
+
+  // Must be a request to pause from Client. This method will set necessary flags and refresh all.
+  fun pause(playable: Playable<*>) {
+    val controller = playable.playback?.config?.controller
+    if (playable.tag !== NO_TAG && controller != null) {
+      playablesPendingStates[playable.tag] = Kohii.PENDING_PAUSE
+      playablesStartedByClient.remove(playable.tag)
+      requireNotNull(playable.playback).manager.refresh()
+    }
+  }
+
+  fun stick(playback: Playback<*>) {
+
+  }
+
+  fun unstick(playback: Playback<*>) {
+
+  }
+
+  // Lock all resources.
+  fun lock() {
+  }
+
+  fun unlock() {
+  }
+
+  // ComponentCallbacks2
+
+  override fun onLowMemory() {
+    // Do nothing
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    // Do nothing
+  }
+
+  override fun onTrimMemory(level: Int) {
+    // TODO consider tight MemoryMode and reduce memory usage.
+  }
 }

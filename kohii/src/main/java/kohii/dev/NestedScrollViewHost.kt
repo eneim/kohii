@@ -24,7 +24,7 @@ import androidx.core.widget.NestedScrollView.OnScrollChangeListener
 class NestedScrollViewHost(
   manager: Manager,
   root: NestedScrollView
-) : BaseHost<NestedScrollView>(manager, root), OnScrollChangeListener {
+) : Host<NestedScrollView>(manager, root), OnScrollChangeListener {
 
   override fun onScrollChange(
     v: NestedScrollView?,
@@ -60,7 +60,10 @@ class NestedScrollViewHost(
     return playback.token.shouldPlay()
   }
 
-  override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    return selectByOrientation(candidates, VERTICAL)
+  override fun selectToPlay(
+    candidates: Collection<Playback<*>>,
+    all: Collection<Playback<*>>
+  ): Collection<Playback<*>> {
+    return selectByOrientation(candidates, all, orientation = VERTICAL)
   }
 }

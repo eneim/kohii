@@ -26,9 +26,10 @@ import androidx.fragment.app.commitNow
 
 class LazyPlayback<CONTAINER : ViewGroup>(
   manager: Manager,
-  host: Host,
+  host: Host<*>,
+  config: Config,
   container: CONTAINER
-) : Playback<CONTAINER>(manager, host, container) {
+) : Playback<CONTAINER>(manager, host, config, container) {
 
   override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?) {
     if (renderer is View) {

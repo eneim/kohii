@@ -24,35 +24,62 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.contains
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
+import kohii.dev.Host.Companion.BOTH_AXIS
+import kohii.dev.Host.Companion.HORIZONTAL
+import kohii.dev.Host.Companion.NONE_AXIS
+import kohii.dev.Host.Companion.VERTICAL
+import kohii.logInfo
+import kohii.logWarn
+import kohii.v1.ErrorListener
+import kohii.v1.PlaybackEventListener
+import kohii.v1.PlayerEventListener
+import java.util.ArrayDeque
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
+import kotlin.properties.Delegates
 
 open class Playback<CONTAINER : ViewGroup>(
   internal val manager: Manager,
-  internal val host: Host,
+  internal val host: Host<*>,
+  internal val config: Config = Config(),
   val container: CONTAINER
-) {
+) : PlayerEventListener, ErrorListener {
 
   companion object {
-    internal val CENTER_X: Comparator<Token> = Comparator { o1, o2 ->
-      compareValues(o1.containerRect.centerX(), o2.containerRect.centerX())
+    @Suppress("unused")
+    const val DELAY_INFINITE = -1L
+
+    internal val CENTER_X: Comparator<Token> by lazy(NONE) {
+      Comparator<Token> { o1, o2 ->
+        compareValues(o1.containerRect.centerX(), o2.containerRect.centerX())
+      }
     }
 
-    internal val CENTER_Y: Comparator<Token> = Comparator { o1, o2 ->
-      compareValues(o1.containerRect.centerY(), o2.containerRect.centerY())
+    internal val CENTER_Y: Comparator<Token> by lazy(NONE) {
+      Comparator<Token> { o1, o2 ->
+        compareValues(o1.containerRect.centerY(), o2.containerRect.centerY())
+      }
     }
 
-    internal val VERTICAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWith(o2, Host.VERTICAL)
+    internal val VERTICAL_COMPARATOR by lazy(NONE) {
+      Comparator<Playback<*>> { o1, o2 -> o1.compareWith(o2, VERTICAL) }
     }
 
-    internal val HORIZONTAL_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWith(o2, Host.HORIZONTAL)
+    internal val HORIZONTAL_COMPARATOR by lazy(NONE) {
+      Comparator<Playback<*>> { o1, o2 -> o1.compareWith(o2, HORIZONTAL) }
     }
 
-    internal val BOTH_AXIS_COMPARATOR = Comparator<Playback<*>> { o1, o2 ->
-      return@Comparator o1.compareWith(o2, Host.BOTH_AXIS)
+    internal val BOTH_AXIS_COMPARATOR by lazy(NONE) {
+      Comparator<Playback<*>> { o1, o2 -> o1.compareWith(o2, BOTH_AXIS) }
     }
+
+    private const val STATE_CREATED = -1
+    private const val STATE_REMOVED = 0
+    private const val STATE_ADDED = 1
+    private const val STATE_DETACHED = 2
+    private const val STATE_ATTACHED = 3
+    private const val STATE_INACTIVE = 4
+    private const val STATE_ACTIVE = 5
   }
 
   class Token(
@@ -70,24 +97,54 @@ open class Playback<CONTAINER : ViewGroup>(
     }
   }
 
-  internal val callbacks by lazy(NONE) { linkedSetOf<Callback>() }
+  data class Config(
+    val delay: Int = 0,
+    val controller: Controller? = null,
+    val callbacks: Array<Callback> = emptyArray()
+  ) {
+
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (javaClass != other?.javaClass) return false
+
+      other as Config
+
+      if (delay != other.delay) return false
+      if (controller != other.controller) return false
+      if (!callbacks.contentEquals(other.callbacks)) return false
+      return true
+    }
+
+    override fun hashCode(): Int {
+      var result = delay
+      result = 31 * result + (controller?.hashCode() ?: 0)
+      result = 31 * result + callbacks.contentHashCode()
+      return result
+    }
+  }
+
+  private val callbacks = ArrayDeque<Callback>()
+  private val listeners = linkedSetOf<PlaybackEventListener>()
 
   internal fun onAdded() {
+    playbackState = STATE_ADDED
     callbacks.forEach { it.onAdded(this) }
-    host.registerContainer(this.container)
+    host.addContainer(this.container)
   }
 
   internal fun onRemoved() {
-    host.unregisterContainer(this.container)
-    callbacks.forEach { it.onRemoved(this) }
+    playbackState = STATE_REMOVED
+    host.removeContainer(this.container)
+    callbacks.onEach { it.onRemoved(this) }
+        .clear()
   }
 
   internal fun onAttached() {
-    //
+    playbackState = STATE_ATTACHED
   }
 
   internal fun onDetached() {
-    //
+    playbackState = STATE_DETACHED
   }
 
   open fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?) {
@@ -103,14 +160,35 @@ open class Playback<CONTAINER : ViewGroup>(
   }
 
   internal fun onActive() {
+    playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
   }
 
   internal fun onInActive() {
+    playbackState = STATE_INACTIVE
     callbacks.forEach { it.onInActive(this) }
   }
 
+  private var playbackState: Int = STATE_CREATED
+
+  internal val isAttached: Boolean
+    get() = playbackState >= STATE_ATTACHED
+
+  internal val isActive: Boolean
+    get() = playbackState >= STATE_ACTIVE
+
   internal var lifecycleState: State = State.INITIALIZED
+
+  internal var onDistanceChangedListener: OnDistanceChangedListener? = null
+  // The smaller, the closer it is to be selected to Play.
+  // Consider to prepare the underline Playable for low enough distance, and release it otherwise.
+  // This value is updated by Manager. In active Playback always has Int.MAX_VALUE distance.
+  internal var distanceToPlay: Int by Delegates.observable(
+      Int.MAX_VALUE,
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        onDistanceChangedListener?.onDistanceChanged(from, to)
+      })
 
   internal val token: Token
     get() {
@@ -125,6 +203,9 @@ open class Playback<CONTAINER : ViewGroup>(
 
       val drawArea = with(Rect()) {
         container.getDrawingRect(this)
+        container.clipBounds?.let {
+          this.intersect(it)
+        }
         width() * height()
       }
 
@@ -147,10 +228,10 @@ open class Playback<CONTAINER : ViewGroup>(
     val compareHorizontally by lazy(NONE) { CENTER_X.compare(thisToken, thatToken) }
 
     var result = when (orientation) {
-      Host.VERTICAL -> compareVertically
-      Host.HORIZONTAL -> compareHorizontally
-      Host.BOTH_AXIS -> max(compareVertically, compareHorizontally)
-      Host.NONE_AXIS -> max(compareVertically, compareHorizontally)
+      VERTICAL -> compareVertically
+      HORIZONTAL -> compareHorizontally
+      BOTH_AXIS -> max(compareVertically, compareHorizontally)
+      NONE_AXIS -> max(compareVertically, compareHorizontally)
       else -> 0
     }
 
@@ -158,14 +239,73 @@ open class Playback<CONTAINER : ViewGroup>(
     return result
   }
 
+  // Public APIs
+
+  fun addCallback(callback: Callback) {
+    this.callbacks.push(callback)
+  }
+
+  fun removeCallback(callback: Callback?) {
+    this.callbacks.remove(callback)
+  }
+
+  // PlayerEventListener
+
+  override fun onPlayerStateChanged(
+    playWhenReady: Boolean,
+    playbackState: Int
+  ) {
+    super.onPlayerStateChanged(playWhenReady, playbackState)
+    "$this ${(this.onDistanceChangedListener as? Playable<*>)?.tag}: $playWhenReady -- $playbackState"
+        .logWarn("Kohii::Dev")
+    container.keepScreenOn = playWhenReady
+  }
+
+  override fun onPositionDiscontinuity(reason: Int) {
+    "$this discontinue $reason".logInfo("Kohii::Dev")
+  }
+
+  // ErrorListener
+
+  override fun onError(error: Exception) {
+    error.printStackTrace() // TODO
+  }
+
   interface Callback {
 
-    fun onActive(playback: Playback<*>)
+    fun onActive(playback: Playback<*>) {}
 
-    fun onInActive(playback: Playback<*>)
+    fun onInActive(playback: Playback<*>) {}
 
-    fun onAdded(playback: Playback<*>)
+    fun onAdded(playback: Playback<*>) {}
 
-    fun onRemoved(playback: Playback<*>)
+    fun onRemoved(playback: Playback<*>) {}
+  }
+
+  interface Controller {
+    // false = full manual.
+    // true = half manual.
+    // When true:
+    // - If user starts a Playback, it will not be paused until Playback is not visible enough
+    // (controlled by Playback.Config), or user starts other Playback (priority overridden).
+    // - If user pauses a Playback, it will not be played until user resumes it.
+    // - If user scrolls a Playback so that a it is not visible enough, system will pause the Playback.
+    // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously played by User,
+    // or pause it if it was paused by User before (= do nothing).
+    fun kohiiCanPause(): Boolean = true
+
+    // - Allow System to start a Playback.
+    // When true:
+    // - Kohii can start a Playback automatically. But once user pause it manually, Only user can resume it,
+    // Kohii should never start/resume the Playback.
+    fun kohiiCanStart(): Boolean = false
+  }
+
+  internal interface OnDistanceChangedListener {
+
+    fun onDistanceChanged(
+      from: Int,
+      to: Int
+    )
   }
 }

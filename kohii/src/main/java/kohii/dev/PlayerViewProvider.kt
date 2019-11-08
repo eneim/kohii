@@ -22,7 +22,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.R
 
-class PlayerViewProvider : RecyclerRendererProvider<PlayerView>() {
+class PlayerViewProvider : ViewRendererProvider<PlayerView>() {
 
   override fun getMediaType(media: Media): Int {
     return if (media.mediaDrm != null) R.layout.kohii_player_surface_view else R.layout.kohii_player_textureview

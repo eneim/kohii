@@ -19,11 +19,15 @@ package kohii.dev
 import kohii.dev.Playable.Config
 import kohii.media.Media
 
-interface PlayableCreator<RENDERER : Any> {
+abstract class PlayableCreator<RENDERER : Any>(
+  internal val rendererType: Class<RENDERER>
+) {
 
-  fun createPlayable(
+  abstract fun createPlayable(
     master: Master,
     config: Config = Config(),
     media: Media
   ): Playable<RENDERER>
+
+  abstract fun createRebinder(tag: Any): Rebinder<RENDERER>
 }

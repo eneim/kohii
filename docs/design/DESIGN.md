@@ -9,13 +9,23 @@
   - [x] Retain resource on configuration changes.
 
 - [ ] Manual control over Playbacks
-  - [ ] Allow client to have full control over Playbacks: client can start/pause any Playback without the control of system/Kohii.
-  - [ ] Allow client to have half-manual control over Playbacks: client can start/pause any Playback on demand, but Kohii can also start/pause the Playback regarding some conditions.
+  - [x] Allow client to have full control over Playbacks: client can start/pause any Playback without the control of system/Kohii.
+  - [x] Allow client to have half-manual control over Playbacks: client can start/pause any Playback on demand, but Kohii can also start/pause the Playback regarding some conditions.
+  - [ ] Global control: simple method to pause/resume everything. The resume behavior follow each Playback's config.
 
 - [ ] Background Playback support
   - [ ] Allow configuration to enable/disable background Playback. The config would allow to setup: flag to turn the feature on/off, necessary information for the foreground notification.
   - [ ] Allow the Playback to keep playing after closing the App.
   - [ ] Allow the Playback to keep playing when: the Playback is deselected from the Manager, but no newer Playback is selected.
+
+- [ ] ExoPlayer related implementations
+  - [x] First-class support for playback using ExoPlayer/PlayerView.
+  - [x] Cached playback using ExoPlayer cache mechanism.
+  - [ ] Offline/downloaded playback using ExoPlayer download mechanism.
+
+- [ ] Others
+  - [ ] Store PlaybackInfo to pages + DB to optimize/reduce in-memory cache.
+  - [ ] Flag/Callback to enable/disable automatic playback. Useful to trigger the feature on demand (eg: due to Network quality changes).
 
 ## Resource creation
 

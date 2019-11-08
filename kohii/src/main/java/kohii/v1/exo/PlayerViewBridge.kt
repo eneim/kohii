@@ -113,7 +113,6 @@ internal open class PlayerViewBridge(
   override var playerView: PlayerView? = null
     set(value) {
       if (field === value) return // same reference
-      "Player: $field --> $value".logWarn("Kohii::Dev")
       this.lastSeenTrackGroupArray = null
       this.inErrorState = false
       if (value == null) {
@@ -146,11 +145,12 @@ internal open class PlayerViewBridge(
     if (sourcePrepared) player?.playWhenReady = false
   }
 
-  override fun reset() {
-    _playbackInfo.reset()
+  override fun reset(resetPlayer: Boolean) {
+    if (resetPlayer) _playbackInfo = PlaybackInfo()
+    else updatePlaybackInfo()
     player?.also {
       it.setVolumeInfo(VolumeInfo(false, 1.0F))
-      it.stop(true)
+      it.stop(resetPlayer)
     }
     this.mediaSource = null // So it will be re-prepared later.
     this.sourcePrepared = false
@@ -160,7 +160,9 @@ internal open class PlayerViewBridge(
 
   override fun release() {
     this.removeEventListener(this)
-    this.playerView = null
+    // this.playerView = null // Bridge's owner must do this.
+    this.playerView?.player = null
+    _playbackInfo = PlaybackInfo()
     player?.also {
       if (listenerApplied) {
         it.removeEventListener(eventListeners)
@@ -225,9 +227,7 @@ internal open class PlayerViewBridge(
     playbackInfo: PlaybackInfo,
     volumeOnly: Boolean
   ) {
-    _playbackInfo.resumeWindow = playbackInfo.resumeWindow
-    _playbackInfo.resumePosition = playbackInfo.resumePosition
-    _playbackInfo.volumeInfo = playbackInfo.volumeInfo
+    _playbackInfo = playbackInfo
 
     player?.also {
       it.setVolumeInfo(_playbackInfo.volumeInfo)
@@ -250,15 +250,16 @@ internal open class PlayerViewBridge(
   private fun updatePlaybackInfo() {
     player?.also {
       if (it.playbackState == Player.STATE_IDLE) return
-      _playbackInfo.resumeWindow = it.currentWindowIndex
-      _playbackInfo.resumePosition =
-        if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET
-      _playbackInfo.volumeInfo = it.getVolumeInfo()
+      _playbackInfo = PlaybackInfo(
+          it.currentWindowIndex,
+          if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET,
+          it.getVolumeInfo()
+      )
     }
   }
 
   private fun ensurePlayerView() {
-    playerView?.also { if (it.player != this.player) it.player = this.player }
+    playerView?.also { if (it.player !== this.player) it.player = this.player }
   }
 
   private fun prepareMediaSource() {
@@ -290,7 +291,7 @@ internal open class PlayerViewBridge(
       player = playerProvider.acquirePlayer(this.media)
     }
 
-    player!!.also {
+    requireNotNull(player).also {
       if (!listenerApplied) {
         (player as? VolumeInfoController)?.addVolumeChangedListener(volumeListeners)
         it.addEventListener(eventListeners)

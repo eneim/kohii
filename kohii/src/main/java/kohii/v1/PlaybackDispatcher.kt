@@ -25,7 +25,7 @@ import android.os.Message
  * @since 2018/12/26
  *
  * Dispatch the play/pause action to [Playback].
- * As [Playback] supports deplayed start, this class correctly dispatch that start action at proper timing.
+ * As [Playback] supports delayed start, this class correctly dispatch that start action at proper timing.
  * It also synchronize the play/pause behavior with [Kohii]'s global states like manual playback.
  *
  */
@@ -34,8 +34,8 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
     private const val MSG_PLAY = 1234
   }
 
-  override fun handleMessage(msg: Message?): Boolean {
-    if (msg?.what == MSG_PLAY && msg.obj is Playback<*>) {
+  override fun handleMessage(msg: Message): Boolean {
+    if (msg.what == MSG_PLAY && msg.obj is Playback<*>) {
       (msg.obj as Playback<*>).playInternal()
     }
     return true
@@ -90,7 +90,7 @@ class PlaybackDispatcher(val kohii: Kohii) : Handler.Callback {
           justPause(playback) // User paused this playback before, so ensure that.
         return
       } else {
-        // No of User action history, let's determine next action by System
+        // No User action history, let's determine next action by System
         if (controller.kohiiCanStart()) {
           // Should start.
           kohii.manualPlayableRecord[playback.playable] = Kohii.PENDING_PLAY
