@@ -28,7 +28,6 @@ import kohii.core.Host.Companion.BOTH_AXIS
 import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
 import kohii.core.Host.Companion.VERTICAL
-import kohii.logInfo
 import kohii.logWarn
 import kohii.v1.ErrorListener
 import kohii.v1.PlaybackEventListener
@@ -198,13 +197,7 @@ open class Playback<CONTAINER : ViewGroup>(
   }
 
   // Will be updated everytime 'sessionFlag' changes
-  private var _token: Token by Delegates.observable(
-      initialValue = Token(-1F, Rect()),
-      onChange = { _, from, to ->
-        "${this.onDistanceChangedListener} rect: ${from.containerRect} --> ${to.containerRect}, root: ${host.rootRect}"
-            .logInfo("Kohii::Dev")
-      }
-  )
+  private var _token: Token = Token(-1F, Rect())
 
   internal val token: Token
     get() = _token
