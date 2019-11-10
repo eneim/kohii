@@ -84,7 +84,6 @@ class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
     master.register(this)
         .attach(scrollView, recyclerView)
 
-
     libIntro.text = getString(R.string.lib_intro).parseAsHtml()
 
     recyclerView.adapter = HorizontalItemsAdapter(master)

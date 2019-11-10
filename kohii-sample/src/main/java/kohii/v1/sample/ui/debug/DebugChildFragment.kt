@@ -80,7 +80,7 @@ internal class VideoViewHolder(
 
   internal var videoUrl: String? = null
   internal val videoTag: String?
-    get() = videoUrl?.let { "HOLDER::〜${adapterPosition}" }
+    get() = videoUrl?.let { "HOLDER::〜$adapterPosition" }
 
   internal val rebinder: Rebinder<PlayerView>?
     get() = videoTag?.let { PlayerViewRebinder(it) }

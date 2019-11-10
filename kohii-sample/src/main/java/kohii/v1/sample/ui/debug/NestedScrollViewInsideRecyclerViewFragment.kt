@@ -77,7 +77,7 @@ internal class NestedScrollViewHolder(
     super.onAttached()
     manager.attach(scrollView)
     manager.master.setUp(assetVideoUri)
-        .with { tag = "NESTED::NSV::${adapterPosition}" }
+        .with { tag = "NESTED::NSV::$adapterPosition" }
         .bind(playerView)
   }
 
@@ -101,7 +101,7 @@ internal class NestedVideoViewHolder(
     super.bind(item)
     container.setAspectRatio(16 / 9F)
     master.setUp(assetVideoUri)
-        .with { tag = "NESTED::VID::${adapterPosition}" }
+        .with { tag = "NESTED::VID::$adapterPosition" }
         .bind(playerView)
   }
 }
