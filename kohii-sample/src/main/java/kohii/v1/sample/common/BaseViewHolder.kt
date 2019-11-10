@@ -16,19 +16,25 @@
 
 package kohii.v1.sample.common
 
-import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.StringRes
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
-open class BaseViewHolder(
-  parent: ViewGroup,
-  layoutId: Int
-) : ViewHolder(LayoutInflater.from(parent.context).inflate(layoutId, parent, false)) {
+open class BaseViewHolder(itemView: View) : ViewHolder(itemView) {
+
+  constructor(
+    parent: ViewGroup,
+    layoutId: Int
+  ) : this(parent.inflateView(layoutId))
 
   fun getString(@StringRes res: Int): String = itemView.context.getString(res)
 
   open fun bind(item: Any?) {}
 
   open fun onRecycled(success: Boolean) {}
+
+  open fun onAttached() {}
+
+  open fun onDetached() {}
 }
