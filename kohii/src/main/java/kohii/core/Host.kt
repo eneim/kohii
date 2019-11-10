@@ -16,7 +16,6 @@
 
 package kohii.core
 
-import android.graphics.Point
 import android.graphics.Rect
 import android.os.Build
 import android.view.View
@@ -121,13 +120,8 @@ abstract class Host<V : View> constructor(
     }
   }
 
-  internal val rootRect = Rect()
-  internal val rootPoint = Point()
-
   @CallSuper
   open fun onAdded() {
-    root.display.getRectSize(rootRect)
-    root.display.getRealSize(rootPoint)
   }
 
   @CallSuper
