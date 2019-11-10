@@ -22,7 +22,7 @@ import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.RawValue
 
 abstract class Rebinder<RENDERER : Any>(
-  open val tag: @RawValue Any?,
+  open val tag: @RawValue Any,
   open val rendererType: Class<RENDERER>
 ) : Parcelable {
 
@@ -48,7 +48,7 @@ abstract class Rebinder<RENDERER : Any>(
         .firstOrNull()
         ?.key
     require(playable != null && this.rendererType.isAssignableFrom(playable.rendererType))
-    master.bind(playable, container, Binder.Options().also {
+    master.bind(playable, tag, container, Binder.Options().also {
       it.controller = options.controller
       it.callbacks = options.callbacks
     }, callback)

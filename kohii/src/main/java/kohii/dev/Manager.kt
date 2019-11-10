@@ -32,21 +32,67 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.dev.Master.MemoryMode
 import kohii.dev.Master.MemoryMode.LOW
-import kohii.partitionToArrayLists
+import kohii.partitionToMutableSets
+import kohii.v1.Prioritized
+import java.util.ArrayDeque
 import kotlin.properties.Delegates
 
 class Manager(
-  internal val master: Master,
+  val master: Master,
   internal val group: Group,
   internal val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
   internal val memoryMode: MemoryMode = LOW
-) : PlayableManager, LifecycleObserver {
+) : PlayableManager, LifecycleObserver, Comparable<Manager> {
 
-  private val hosts = linkedSetOf<Host<*>>()
+  companion object {
+    fun compareAndCheck(
+      left: Prioritized,
+      right: Prioritized
+    ): Int {
+      val ltr = left.compareTo(right)
+      val rtl = right.compareTo(left)
+      check(ltr + rtl == 0) {
+        "Sum of comparison result of 2 directions must be 0, get ${ltr + rtl}."
+      }
+
+      return ltr
+    }
+  }
+
+  // Use as both Queue and Stack.
+  // - When adding new Host, we add it to tail of the Queue.
+  // - When promoting a Host as sticky, we push it to head of the Queue.
+  // - When demoting a Host from sticky, we just poll the head.
+  private val hosts = ArrayDeque<Host<*>>(4 /* less than default minimum of ArrayDeque */)
+  // Up to one Host can be sticky at a time.
+  private var stickyHost by Delegates.observable<Host<*>?>(
+      initialValue = null,
+      onChange = { _, from, to ->
+        if (from === to) return@observable
+        // Move 'to' from hosts.
+        if (to != null /* set new sticky Host */) {
+          hosts.push(to) // Push it to head.
+        } else { // 'to' is null then 'from' must be nonnull. Consider to remove it from head.
+          if (hosts.peek() === from) hosts.pop()
+        }
+      }
+  )
+
+  internal var sticky: Boolean = false
 
   // All Playbacks, including attached/detached ones.
   internal val playbacks = mutableMapOf<Any /* container */, Playback<*>>()
+
+  override fun compareTo(other: Manager): Int {
+    return if (other.host !is Prioritized) {
+      if (this.host is Prioritized) 1 else 0
+    } else {
+      if (this.host is Prioritized) {
+        compareAndCheck(this.host, other.host)
+      } else -1
+    }
+  }
 
   @OnLifecycleEvent(ON_ANY)
   internal fun onAnyEvent(owner: LifecycleOwner) {
@@ -62,6 +108,10 @@ class Manager(
   internal fun onDestroy(owner: LifecycleOwner) {
     playbacks.values.toMutableList()
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
+        .clear()
+    stickyHost = null
+    hosts.toMutableList()
+        .onEach { detachHost(it.root) }
         .clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
@@ -123,8 +173,8 @@ class Manager(
     view.doOnAttach { v ->
       val host = Host[this@Manager, v]
       if (hosts.add(host)) host.onAdded()
+      v.doOnDetach { detachHost(it) } // In case the View is detached immediately ...
     }
-    view.doOnDetach { v -> detachHost(v) }
   }
 
   private fun detachHost(view: View) {
@@ -136,7 +186,7 @@ class Manager(
     group.onRefresh()
   }
 
-  private fun refreshPlaybackStates(): Pair<MutableCollection<Playback<*>> /* Active */, MutableCollection<Playback<*>> /* InActive */> {
+  private fun refreshPlaybackStates(): Pair<MutableSet<Playback<*>> /* Active */, MutableSet<Playback<*>> /* InActive */> {
     val toActive = playbacks.filterValues { !it.isActive && it.token.shouldPrepare() }
         .values
     val toInActive = playbacks.filterValues { it.isActive && !it.token.shouldPrepare() }
@@ -145,28 +195,27 @@ class Manager(
     toActive.forEach { onPlaybackActive(it) }
     toInActive.forEach { onPlaybackInActive(it) }
 
-    return playbacks.asSequence()
-        .filter { it.value.isAttached }
-        .partitionToArrayLists(
+    return playbacks.entries.filter { it.value.isAttached }
+        .partitionToMutableSets(
             predicate = { it.value.isActive },
             transform = { it.value }
         )
   }
 
-  internal fun splitPlaybacks(): Pair<Collection<Playback<*>> /* toPlay */, Collection<Playback<*>> /* toPause */> {
+  internal fun splitPlaybacks(): Pair<Set<Playback<*>> /* toPlay */, Set<Playback<*>> /* toPause */> {
     val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
     val toPlay = ArraySet<Playback<*>>()
 
-    val hostToPlaybacks = playbacks.values.groupBy { it.host }
+    val hostToPlaybacks = playbacks.values.groupBy { it.host } // -> Map<Host, List<Playback<*>>
     hosts.asSequence()
         .filter { !hostToPlaybacks[it].isNullOrEmpty() }
         .map {
           val all = hostToPlaybacks.getValue(it)
           val candidates = all.filter { playback -> it.allowToPlay(playback) }
-          Triple(it, candidates, all)
+          it to candidates
         }
-        .map { (host, candidates, all) ->
-          host.selectToPlay(candidates, all)
+        .map { (host, candidates) ->
+          host.selectToPlay(candidates)
         }
         .firstOrNull { it.isNotEmpty() }
         ?.also {
@@ -180,9 +229,7 @@ class Manager(
 
   internal fun addPlayback(playback: Playback<*>) {
     val prev = playbacks.put(playback.container, playback)
-    require(prev == null) {
-      "Kohii::Dev -- $prev, ${prev?.container}"
-    }
+    require(prev == null)
     playback.lifecycleState = lifecycleOwner.lifecycle.currentState
     playback.onAdded()
   }
@@ -269,5 +316,16 @@ class Manager(
   fun detach(vararg views: View): Manager {
     views.forEach { this.detachHost(it) }
     return this
+  }
+
+  internal fun stick(host: Host<*>) {
+    this.stickyHost = host
+  }
+
+  // Null host --> unstick all current sticky hosts
+  internal fun unstick(host: Host<*>?) {
+    if (host == null || this.stickyHost === host) {
+      this.stickyHost = null
+    }
   }
 }

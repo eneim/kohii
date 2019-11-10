@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +15,7 @@
   -->
 
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,32 +25,42 @@
       android:id="@+id/container"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:clipChildren="false"
       android:orientation="vertical"
       >
 
     <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/libIntro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:lineSpacingMultiplier="1.15"
-        android:maxLines="24"
-        android:text="@string/large_text"
+        android:layout_margin="8dp"
+        android:text="@string/lib_intro"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         />
 
-    <include
-        layout="@layout/holder_nested_recyclerview"
-        />
+    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+        android:id="@+id/recyclerViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="480dp"
+        android:background="#004d40"
+        app:resize_mode="fixed_width"
+        >
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/recyclerView"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_gravity="center"
+          android:orientation="vertical"
+          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+          />
+    </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
 
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:lineSpacingMultiplier="1.15"
         android:text="@string/large_text"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         />
-
   </androidx.appcompat.widget.LinearLayoutCompat>
+
 </androidx.core.widget.NestedScrollView>

@@ -16,6 +16,7 @@
 
 package kohii
 
+import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -27,6 +28,7 @@ import kohii.v1.BuildConfig
 import kohii.v1.PlayerEventListener
 import kohii.v1.Rebinder
 import kohii.v1.VolumeInfoController
+import kotlin.math.abs
 
 /**
  * @author eneim (2018/10/27).
@@ -117,12 +119,12 @@ fun findSuitableParent(
   return null
 }
 
-internal inline fun <T, R> Sequence<T>.partitionToArrayLists(
+internal inline fun <T, R> Iterable<T>.partitionToMutableSets(
   predicate: (T) -> Boolean,
   transform: (T) -> R
-): Pair<ArrayList<R>, ArrayList<R>> {
-  val first = ArrayList<R>()
-  val second = ArrayList<R>()
+): Pair<MutableSet<R>, MutableSet<R>> {
+  val first = mutableSetOf<R>()
+  val second = mutableSetOf<R>()
   for (element in this) {
     if (predicate(element)) {
       first.add(transform(element))
@@ -131,6 +133,14 @@ internal inline fun <T, R> Sequence<T>.partitionToArrayLists(
     }
   }
   return Pair(first, second)
+}
+
+internal infix fun Rect.distanceTo(target: Pair<Pair<Int, Int>, Pair<Int, Int>>): Int {
+  val (targetCenterX, targetHalfWidth) = target.first
+  val (targetCenterY, targetHalfHeight) = target.second
+  val distanceX = abs(this.centerX() - targetCenterX) / targetHalfWidth
+  val distanceY = abs(this.centerY() - targetCenterY) / targetHalfHeight
+  return distanceX + distanceY // no need to be the fancy Euclid sqrt distance.
 }
 
 // Because I want to compose the message first, then log it.

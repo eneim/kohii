@@ -33,7 +33,9 @@ import kotlin.LazyThreadSafetyMode.NONE
 @Suppress("unused")
 class DemoApp : Application() {
 
-  val assetVideoUri = "file:///android_asset/bbb_45s_hevc.mp4"
+  companion object {
+    const val assetVideoUri = "file:///android_asset/bbb_45s_hevc.mp4"
+  }
 
   val moshi: Moshi = Moshi.Builder()
       .add(KotlinJsonAdapterFactory())

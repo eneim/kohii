@@ -16,6 +16,7 @@
 
 package kohii.dev
 
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Message
 import android.view.ViewGroup
@@ -30,6 +31,11 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.distanceTo
+import kohii.partitionToMutableSets
+import kohii.v1.Prioritized
+import java.util.ArrayDeque
+import kotlin.properties.Delegates
 
 class Group(
   internal val master: Master,
@@ -39,6 +45,8 @@ class Group(
   companion object {
     const val DELAY = 2 * 1000L / 60 /* about 2 frames */
     const val MSG_REFRESH = 1
+
+    private val managerComparator = Comparator<Manager> { o1, o2 -> o2.compareTo(o1) }
   }
 
   override fun handleMessage(msg: Message): Boolean {
@@ -46,8 +54,25 @@ class Group(
     return true
   }
 
-  internal val managers = linkedSetOf<Manager>()
+  internal val managers = ArrayDeque<Manager>()
   internal val organizer = Organizer()
+
+  private var stickyManager by Delegates.observable<Manager?>(
+      initialValue = null,
+      onChange = { _, from, to ->
+        if (from === to) return@observable
+        if (to != null) { // a Manager is promoted
+          to.sticky = true
+          managers.push(to)
+        } else {
+          require(from != null && from.sticky)
+          if (managers.peek() === from) {
+            from.sticky = false
+            managers.pop()
+          }
+        }
+      }
+  )
 
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
@@ -136,34 +161,89 @@ class Group(
   }
 
   private fun refresh() {
-    val toPlay = linkedSetOf<Playback<*>>()
+    val playbacks = this.playbacks // save a cache to prevent re-mapping
+    playbacks.forEach { it.onRefresh() }
+
+    val toPlay = linkedSetOf<Playback<*>>() // Need the order.
     val toPause = ArraySet<Playback<*>>()
 
     managers.forEach {
-          val (canPlay, canPause) = it.splitPlaybacks()
-          toPlay.addAll(canPlay)
-          toPause.addAll(canPause)
-        }
+      val (canPlay, canPause) = it.splitPlaybacks()
+      toPlay.addAll(canPlay)
+      toPause.addAll(canPause)
+    }
 
     val oldSelection = organizer.selection
-    val newSelection = organizer.select(toPlay)
+    val newSelection = organizer.selectFinal(toPlay)
 
+    // biggest Rect cover all selected Playbacks
+    val cover = newSelection.fold(Rect()) { acc, playback ->
+      acc.union(playback.token.containerRect)
+      return@fold acc
+    }
+
+    // Update distanceToPlay
+    val target = (cover.centerX() to cover.width() / 2) to (cover.centerY() to cover.height() / 2)
+    if (target.first.second > 0 && target.second.second > 0) {
+      playbacks.partitionToMutableSets(predicate = { it.isActive }, transform = { it })
+          .also { (active, inactive) ->
+            inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
+            active.sortedBy { it.token.containerRect distanceTo target }
+                .forEachIndexed { index, playback -> playback.distanceToPlay = index }
+          }
+    }
+
+    val playables = master.playables.keys
     (toPause + toPlay + oldSelection - newSelection)
-        .mapNotNull { playback -> master.playables.keys.find { it.playback === playback } }
+        .mapNotNull { playback -> playables.find { it.playback === playback } }
         .forEach { dispatcher.pause(it) }
 
     newSelection
-        .mapNotNull { playback -> master.playables.keys.find { it.playback === playback } }
+        .mapNotNull { playback -> playables.find { it.playback === playback } }
         .forEach { dispatcher.play(it) }
   }
 
   internal fun onManagerDestroyed(manager: Manager) {
-    managers.remove(manager)
-    master.onGroupUpdated(this)
+    if (stickyManager === manager) stickyManager = null
+    if (managers.remove(manager)) master.onGroupUpdated(this)
   }
 
+  // This operation should:
+  // - Ensure the order of Manager by its Priority
+  // - Ensure stickyManager is in the head.
   internal fun onManagerCreated(manager: Manager) {
-    managers.add(manager)
-    master.onGroupUpdated(this)
+    val updated: Boolean
+    // 1. Pop out the sticky Manager if available.
+    val sticky = if (managers.peek()?.sticky == true) managers.pop() else null
+
+    // 2. Add the Manager to the queue using its Priority if available.
+    if (manager.host is Prioritized) {
+      if (!managers.contains(manager)) {
+        updated = managers.add(manager)
+        val temp = managers.sortedWith(managerComparator)
+        managers.clear()
+        managers.addAll(temp)
+      } else
+        updated = false
+    } else {
+      updated = managers.add(manager)
+    }
+
+    // 3. Push the sticky Manager back to head of the queue.
+    if (sticky != null) managers.push(sticky)
+
+    if (updated) master.onGroupUpdated(this)
+  }
+
+  // Expected result:
+  // - If 'manager' is not added to Group yet, through Exception.
+  // - The 'manager' should be on the head of the 'managers' queue after this operation, though the
+  // 'managers' queue should still be able to remember its original location for the unsticking.
+  internal fun stick(manager: Manager) {
+    stickyManager = manager
+  }
+
+  internal fun unstick(manager: Manager?) {
+    if (manager == null || stickyManager === manager) stickyManager = null
   }
 }

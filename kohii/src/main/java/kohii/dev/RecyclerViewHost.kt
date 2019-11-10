@@ -91,10 +91,7 @@ class RecyclerViewHost(
     return root.findContainingViewHolder(container) != null && playback.token.shouldPlay()
   }
 
-  override fun selectToPlay(
-    candidates: Collection<Playback<*>>,
-    all: Collection<Playback<*>>
-  ): Collection<Playback<*>> {
-    return selectByOrientation(candidates, all, orientation = root.fetchOrientation())
+  override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    return selectByOrientation(candidates, orientation = root.fetchOrientation())
   }
 }

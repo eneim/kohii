@@ -14,22 +14,11 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/content"
+<androidx.appcompat.widget.AppCompatTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/simpleTextView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-
-  <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/container"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:clipToPadding="false"
-      android:orientation="vertical"
-      android:padding="4dp"
-      app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-      app:spanCount="3"
-      />
-
-</FrameLayout>
+    android:layout_height="wrap_content"
+    android:lineSpacingMultiplier="1.15"
+    android:padding="8dp"
+    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+    />

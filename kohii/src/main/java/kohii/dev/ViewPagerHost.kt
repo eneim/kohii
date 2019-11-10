@@ -66,10 +66,7 @@ class ViewPagerHost(
     return playback.token.shouldPlay()
   }
 
-  override fun selectToPlay(
-    candidates: Collection<Playback<*>>,
-    all: Collection<Playback<*>>
-  ): Collection<Playback<*>> {
-    return selectByOrientation(candidates, all, orientation = HORIZONTAL)
+  override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+    return selectByOrientation(candidates, orientation = HORIZONTAL)
   }
 }

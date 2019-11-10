@@ -85,7 +85,7 @@ open class Playback<CONTAINER : ViewGroup>(
   class Token(
     @FloatRange(from = -1.0, to = 1.0)
     val areaOffset: Float, // -1 ~ < 0 : inactive or detached, 0 ~ 1: active
-    val containerRect: Rect
+    val containerRect: Rect // Relative Rect to its Host's root View.
   ) {
 
     fun shouldPrepare(): Boolean {
@@ -123,6 +123,32 @@ open class Playback<CONTAINER : ViewGroup>(
     }
   }
 
+  protected open fun updateToken(): Token {
+    val containerRect = Rect()
+    if (!lifecycleState.isAtLeast(STARTED)) return Token(-1F, containerRect)
+    if (!ViewCompat.isAttachedToWindow(container)) {
+      return Token(-1F, containerRect)
+    }
+
+    val visible = container.getGlobalVisibleRect(containerRect)
+    if (!visible) return Token(-1F, containerRect)
+
+    val drawArea = with(Rect()) {
+      container.getDrawingRect(this)
+      container.clipBounds?.let {
+        this.intersect(it)
+      }
+      width() * height()
+    }
+
+    val offset: Float =
+      if (drawArea > 0)
+        (containerRect.width() * containerRect.height()) / drawArea.toFloat()
+      else
+        0F
+    return Token(offset, containerRect)
+  }
+
   private val callbacks = ArrayDeque<Callback>()
   private val listeners = linkedSetOf<PlaybackEventListener>()
 
@@ -141,10 +167,12 @@ open class Playback<CONTAINER : ViewGroup>(
 
   internal fun onAttached() {
     playbackState = STATE_ATTACHED
+    callbacks.forEach { it.onAttached(this) }
   }
 
   internal fun onDetached() {
     playbackState = STATE_DETACHED
+    callbacks.forEach { it.onDetached(this) }
   }
 
   open fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?) {
@@ -169,6 +197,22 @@ open class Playback<CONTAINER : ViewGroup>(
     callbacks.forEach { it.onInActive(this) }
   }
 
+  // Will be updated everytime 'sessionFlag' changes
+  private var _token: Token by Delegates.observable(
+      initialValue = Token(-1F, Rect()),
+      onChange = { _, from, to ->
+        "${this.onDistanceChangedListener} rect: ${from.containerRect} --> ${to.containerRect}, root: ${host.rootRect}"
+            .logInfo("Kohii::Dev")
+      }
+  )
+
+  internal val token: Token
+    get() = _token
+
+  internal fun onRefresh() {
+    _token = updateToken()
+  }
+
   private var playbackState: Int = STATE_CREATED
 
   internal val isAttached: Boolean
@@ -187,35 +231,9 @@ open class Playback<CONTAINER : ViewGroup>(
       Int.MAX_VALUE,
       onChange = { _, from, to ->
         if (from == to) return@observable
+        "$this distance: $from --> $to".logWarn("Kohii::Dev")
         onDistanceChangedListener?.onDistanceChanged(from, to)
       })
-
-  internal val token: Token
-    get() {
-      val containerRect = Rect()
-      if (!lifecycleState.isAtLeast(STARTED)) return Token(-1F, containerRect)
-      if (!ViewCompat.isAttachedToWindow(container)) {
-        return Token(-1F, containerRect)
-      }
-
-      val visible = container.getGlobalVisibleRect(containerRect)
-      if (!visible) return Token(-1F, containerRect)
-
-      val drawArea = with(Rect()) {
-        container.getDrawingRect(this)
-        container.clipBounds?.let {
-          this.intersect(it)
-        }
-        width() * height()
-      }
-
-      val offset: Float =
-        if (drawArea > 0)
-          (containerRect.width() * containerRect.height()) / drawArea.toFloat()
-        else
-          0F
-      return Token(offset, containerRect)
-    }
 
   internal fun compareWith(
     other: Playback<*>,
@@ -255,14 +273,7 @@ open class Playback<CONTAINER : ViewGroup>(
     playWhenReady: Boolean,
     playbackState: Int
   ) {
-    super.onPlayerStateChanged(playWhenReady, playbackState)
-    "$this ${(this.onDistanceChangedListener as? Playable<*>)?.tag}: $playWhenReady -- $playbackState"
-        .logWarn("Kohii::Dev")
     container.keepScreenOn = playWhenReady
-  }
-
-  override fun onPositionDiscontinuity(reason: Int) {
-    "$this discontinue $reason".logInfo("Kohii::Dev")
   }
 
   // ErrorListener
@@ -280,6 +291,10 @@ open class Playback<CONTAINER : ViewGroup>(
     fun onAdded(playback: Playback<*>) {}
 
     fun onRemoved(playback: Playback<*>) {}
+
+    fun onAttached(playback: Playback<*>) {}
+
+    fun onDetached(playback: Playback<*>) {}
   }
 
   interface Controller {

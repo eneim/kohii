@@ -27,7 +27,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.VolumeInfo
-import kohii.partitionToArrayLists
+import kohii.partitionToMutableSets
 import kohii.v1.Playback.Config
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.LazyThreadSafetyMode.NONE
@@ -226,7 +226,7 @@ abstract class PlaybackManager(
     this.parent.onManagerRefresh()
   }
 
-  internal fun refreshPlaybackStates(): Pair<ArrayList<Playback<*>> /* active */, ArrayList<Playback<*>> /* inactive */> {
+  internal fun refreshPlaybackStates(): Pair<MutableSet<Playback<*>> /* active */, MutableSet<Playback<*>> /* inactive */> {
     // Confirm if any invisible view is visible again.
     // This is the case of NestedScrollView.
     val toActive = playbackStates.filterNot { it.value }
@@ -243,11 +243,10 @@ abstract class PlaybackManager(
     toActive.forEach { onActive(it) }
     toInActive.forEach { onInActive(it.key) }
 
-    return playbackStates.asSequence()
-        .partitionToArrayLists(
-            predicate = { it.value },
-            transform = { it.key }
-        )
+    return playbackStates.entries.partitionToMutableSets(
+        predicate = { it.value },
+        transform = { it.key }
+    )
   }
 
   // Return the Pair of Playbacks to play to Playbacks to pause.

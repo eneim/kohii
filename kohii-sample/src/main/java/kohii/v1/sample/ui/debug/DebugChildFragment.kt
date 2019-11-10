@@ -18,23 +18,26 @@ package kohii.v1.sample.ui.debug
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.text.parseAsHtml
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import androidx.recyclerview.selection.ItemKeyProvider
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StorageStrategy
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.NO_ID
 import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.dev.Master
@@ -42,15 +45,38 @@ import kohii.dev.Master.MemoryMode
 import kohii.dev.PlayerViewRebinder
 import kohii.dev.Rebinder
 import kohii.v1.sample.BuildConfig
+import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.common.inflateView
-import kohii.v1.sample.ui.manual.videoUrl
+import kohii.v1.sample.common.BaseViewHolder
 import kotlinx.android.synthetic.main.fragment_debug_child.container
 import kotlin.LazyThreadSafetyMode.NONE
 
-internal class ItemViewHolder(itemView: View) : ViewHolder(itemView) {
-  internal val contentView = itemView.findViewById(R.id.playerContainer) as ViewGroup
+internal class TextViewHolder(
+  parent: ViewGroup
+) : BaseViewHolder(parent, R.layout.widget_simple_textview) {
+
+  val textContent = itemView as TextView
+
+  init {
+    textContent.maxLines = 5
+  }
+
+  override fun bind(item: Any?) {
+    super.bind(item)
+    textContent.text = itemView.context.getString(R.string.lib_intro)
+        .parseAsHtml()
+  }
+}
+
+internal class VideoViewHolder(
+  parent: ViewGroup
+) : BaseViewHolder(parent, R.layout.holder_player_view) {
+  internal val container = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
+
+  init {
+    container.setAspectRatio(16 / 9F)
+  }
 
   internal var videoUrl: String? = null
   internal val videoTag: String?
@@ -70,7 +96,12 @@ internal class ItemsAdapter(
   private val master: Master,
   val shouldBindVideo: (Rebinder<*>?) -> Boolean,
   val onVideoClick: (Rebinder<*>) -> Unit
-) : Adapter<ItemViewHolder>() {
+) : Adapter<BaseViewHolder>() {
+
+  companion object {
+    private const val TYPE_VIDEO = 1
+    private const val TYPE_TEXT = 2
+  }
 
   init {
     setHasStableIds(true)
@@ -79,13 +110,13 @@ internal class ItemsAdapter(
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
-  ): ItemViewHolder {
-    val itemView = parent.inflateView(R.layout.holder_player_view)
-    val holder = ItemViewHolder(itemView)
-    holder.itemView.setOnClickListener {
-      holder.rebinder?.let(onVideoClick)
-    }
-    return holder
+  ): BaseViewHolder {
+    return if (viewType == TYPE_VIDEO)
+      VideoViewHolder(parent).also { holder ->
+        holder.itemView.setOnClickListener {
+          holder.rebinder?.let(onVideoClick)
+        }
+      } else TextViewHolder(parent)
   }
 
   override fun getItemCount(): Int {
@@ -96,25 +127,28 @@ internal class ItemsAdapter(
     return position.toLong()
   }
 
-  override fun onBindViewHolder(
-    holder: ItemViewHolder,
-    position: Int
-  ) {
-    if (holder.contentView is AspectRatioFrameLayout) {
-      holder.contentView.setAspectRatio(16 / 9F)
-    }
-
-    holder.videoUrl = videoUrl
-    if (shouldBindVideo(holder.rebinder)) {
-      master.setUp(videoUrl)
-          .with { tag = holder.videoTag }
-          .bind(holder.contentView)
-    }
+  override fun getItemViewType(position: Int): Int {
+    return if (position % 6 == 3) TYPE_VIDEO else TYPE_TEXT
   }
 
-  override fun onViewRecycled(holder: ItemViewHolder) {
-    super.onViewRecycled(holder)
-    holder.videoUrl = null
+  override fun onBindViewHolder(
+    holder: BaseViewHolder,
+    position: Int
+  ) {
+    if (holder is VideoViewHolder) {
+      holder.videoUrl = assetVideoUri
+      val videoTag = holder.videoTag
+      Log.d("Kohii::Dev", "$videoTag updated")
+      if (shouldBindVideo(holder.rebinder)) {
+        master.setUp(assetVideoUri)
+            .with { tag = videoTag }
+            .bind(holder.container)
+      }
+    } else holder.bind(position)
+  }
+
+  override fun onViewRecycled(holder: BaseViewHolder) {
+    if (holder is VideoViewHolder) holder.videoUrl = null
   }
 }
 
@@ -158,9 +192,16 @@ class DebugChildFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    master.register(this, MemoryMode.GOOD_FOR_UX)
+    master.register(this, MemoryMode.BALANCED)
         .attach(container)
 
+    val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+      override fun getSpanSize(position: Int): Int {
+        return if (position % 6 == 3) 2 else 1
+      }
+    }
+
+    (container.layoutManager as? GridLayoutManager)?.spanSizeLookup = spanSizeLookup
     container.adapter = adapter
 
     videoKeyProvider = VideoTagKeyProvider(container)
@@ -229,7 +270,7 @@ internal class VideoTagKeyProvider(
   }
 
   internal fun onAttached(view: View) {
-    val holder = recyclerView.findContainingViewHolder(view) as? ItemViewHolder ?: return
+    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder ?: return
     val id = holder.itemId
     if (id != NO_ID) {
       val position = holder.adapterPosition
@@ -242,7 +283,7 @@ internal class VideoTagKeyProvider(
   }
 
   internal fun onDetached(view: View) {
-    val holder = recyclerView.findContainingViewHolder(view) as? ItemViewHolder ?: return
+    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder ?: return
     val id = holder.itemId
     // only if id == NO_ID, we remove this View from cache.
     // when id != NO_ID, it means that this View is still bound to an Item.
@@ -260,7 +301,7 @@ internal class VideoTagKeyProvider(
 internal class VideoItemDetailsLookup(val recyclerView: RecyclerView) : ItemDetailsLookup<Rebinder<*>>() {
   override fun getItemDetails(event: MotionEvent): ItemDetails<Rebinder<*>>? {
     val view = recyclerView.findChildViewUnder(event.x, event.y) ?: return null
-    val holder = recyclerView.findContainingViewHolder(view) as? ItemViewHolder ?: return null
+    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder ?: return null
     return holder.itemDetails
   }
 }

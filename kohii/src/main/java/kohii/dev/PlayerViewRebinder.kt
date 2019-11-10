@@ -22,5 +22,5 @@ import kotlinx.android.parcel.RawValue
 
 @Parcelize
 data class PlayerViewRebinder(
-  override val tag: @RawValue Any?
+  override val tag: @RawValue Any
 ) : Rebinder<PlayerView>(tag, PlayerView::class.java)

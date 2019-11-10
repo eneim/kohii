@@ -78,7 +78,7 @@ internal class Organizer {
       }
   )
 
-  internal fun select(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+  internal fun selectFinal(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
     this.selection = listOfNotNull(candidates.firstOrNull())
     return this.selection
   }

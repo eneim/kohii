@@ -18,7 +18,7 @@ package kohii.dev
 
 import kohii.dev.Master.MemoryMode
 import kohii.dev.Master.MemoryMode.AUTO
-import kohii.dev.Master.MemoryMode.GOOD_FOR_UX
+import kohii.dev.Master.MemoryMode.BALANCED
 import kohii.dev.Master.MemoryMode.HIGH
 import kohii.dev.Master.MemoryMode.INFINITE
 import kohii.dev.Master.MemoryMode.LOW
@@ -161,7 +161,7 @@ open class Playable<RENDERER : Any>(
         when (memoryMode) {
           AUTO, LOW -> 1
           NORMAL -> 2
-          GOOD_FOR_UX -> 2 // Same as 'NORMAL', but will keep the 'relative' Playback alive.
+          BALANCED -> 2 // Same as 'NORMAL', but will keep the 'relative' Playback alive.
           HIGH -> 8
           INFINITE -> Int.MAX_VALUE - 1
         }
@@ -169,7 +169,7 @@ open class Playable<RENDERER : Any>(
         master.trySavePlaybackInfo(this)
         master.releasePlayable(this)
       } else {
-        if (memoryMode != GOOD_FOR_UX) {
+        if (memoryMode != BALANCED) {
           bridge.reset(false)
         }
       }

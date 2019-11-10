@@ -85,11 +85,13 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     rebinder.with { callbacks = arrayOf(this@SinglePlayerFragment) }
         .bind(master, playerView) {
           callback?.onShown(rebinder)
+          master.stick(it)
         }
   }
 
   override fun onInActive(playback: Playback<*>) {
     super.onInActive(playback)
+    master.unstick(playback)
     callback?.onDismiss(rebinder)
   }
 

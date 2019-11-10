@@ -49,7 +49,7 @@ class Binder<RENDERER : Any>(
   ): Rebinder<RENDERER>? {
     val tag = options.tag ?: Master.NO_TAG
     val playable = providePlayable(media, tag, Config(tag = options.tag))
-    master.bind(playable, container, options, callback)
+    master.bind(playable, tag, container, options, callback)
     return if (tag != Master.NO_TAG) playableCreator.createRebinder(tag) else null
   }
 
@@ -70,7 +70,7 @@ class Binder<RENDERER : Any>(
           !playableCreator.rendererType.isAssignableFrom(cache.rendererType)
       ) {
         // Scenario: client bind a Video of same tag/media but different Renderer type or Config.
-        cache.playback = null
+        cache.playback = null // will also set Manager to null
         master.tearDown(cache, true)
         cache = null
       }
@@ -78,6 +78,5 @@ class Binder<RENDERER : Any>(
 
     @Suppress("UNCHECKED_CAST")
     return cache as? Playable<RENDERER> ?: playableCreator.createPlayable(master, config, media)
-        .also { master.playables[it] = tag }
   }
 }

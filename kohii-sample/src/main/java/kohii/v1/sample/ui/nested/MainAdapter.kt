@@ -37,7 +37,7 @@ class MainAdapter(
 
   companion object {
     const val TYPE_NORMAL = R.layout.holder_nested_normal
-    const val TYPE_LIST = R.layout.holder_nested_recyclereview
+    const val TYPE_LIST = R.layout.holder_nested_recyclerview
     const val STATE_KEY = "nested:adapter:state"
   }
 

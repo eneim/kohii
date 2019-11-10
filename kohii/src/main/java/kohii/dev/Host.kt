@@ -16,6 +16,8 @@
 
 package kohii.dev
 
+import android.graphics.Point
+import android.graphics.Rect
 import android.os.Build
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
@@ -27,7 +29,6 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
-import kohii.logError
 import kotlin.LazyThreadSafetyMode.NONE
 
 abstract class Host<V : View> constructor(
@@ -74,10 +75,7 @@ abstract class Host<V : View> constructor(
 
   abstract fun allowToPlay(playback: Playback<*>): Boolean
 
-  abstract fun selectToPlay(
-    candidates: Collection<Playback<*>>,
-    all: Collection<Playback<*>>
-  ): Collection<Playback<*>>
+  abstract fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>>
 
   @CallSuper
   open fun addContainer(container: ViewGroup) {
@@ -123,8 +121,13 @@ abstract class Host<V : View> constructor(
     }
   }
 
+  internal val rootRect = Rect()
+  internal val rootPoint = Point()
+
   @CallSuper
   open fun onAdded() {
+    root.display.getRectSize(rootRect)
+    root.display.getRealSize(rootPoint)
   }
 
   @CallSuper
@@ -138,7 +141,6 @@ abstract class Host<V : View> constructor(
   // This operation should be considered heavy/expensive.
   protected fun selectByOrientation(
     candidates: Collection<Playback<*>>,
-    all: Collection<Playback<*>> = candidates,
     orientation: Int
   ): Collection<Playback<*>> {
     val comparator = comparators.getValue(orientation)
@@ -166,25 +168,7 @@ abstract class Host<V : View> constructor(
       listOfNotNull(grouped.getValue(false).firstOrNull())
     }
 
-    val result = if (manualCandidates.isNotEmpty()) manualCandidates else automaticCandidates
-
-    result.forEach { it.distanceToPlay = 0 }
-    all.partition { it.isActive }
-        .also { (active, inactive) ->
-          inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
-          active.sortedWith(comparator)
-              .also {
-                val (start, end) =
-                  it.indexOf(result.firstOrNull()) to it.indexOf(result.lastOrNull())
-                if (start > 0) {
-                  for (i in 0 until start) it[i].distanceToPlay = start - i
-                }
-                if (end < it.size - 1) {
-                  for (i in end + 1 until it.size) it[i].distanceToPlay = i - end
-                }
-              }
-        }
-    return result
+    return if (manualCandidates.isNotEmpty()) manualCandidates else automaticCandidates
   }
 
   override fun equals(other: Any?): Boolean {

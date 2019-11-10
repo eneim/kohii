@@ -36,12 +36,12 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
+import kohii.logWarn
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
 import kohii.v1.Kohii
 import kohii.v1.PendingState
-import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
 class Master private constructor(context: Context) : PlayableManager, ComponentCallbacks2 {
@@ -80,10 +80,10 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     ▒▒▒█▄░░░░░▀█▄▄▄█▀▀▒▒▒▒▒▒
     ▒▒▒▒▀▀▀▀▀▀▀▒▒▒▒▒▒▒▒▒▒▒▒▒
 
-    In GOOD_FOR_UX mode, the release behavior is the same with 'NORMAL' mode, but unselected Playables/Playbacks will not be reset.
+    In BALANCED mode, the release behavior is the same with 'NORMAL' mode, but unselected Playables/Playbacks will not be reset.
 
      */
-    GOOD_FOR_UX,
+    BALANCED,
 
     /**
      * HIGH mode must be specified by client.
@@ -162,7 +162,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         .also {
           activityManager.getMemoryInfo(it)
         }
-    return if (memoryInfo.lowMemory) MemoryMode.LOW else MemoryMode.GOOD_FOR_UX
+    return if (memoryInfo.lowMemory) MemoryMode.LOW else MemoryMode.BALANCED
   }
 
   private fun registerInternal(
@@ -182,95 +182,38 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     return manager
   }
 
+  private val engines = mutableMapOf<Class<*>, Engine<*>>()
+  private val bindRequests = mutableMapOf<ViewGroup /* Container */, BindRequest<*>>()
+
   internal fun <CONTAINER : ViewGroup, RENDERER : Any> bind(
     playable: Playable<RENDERER>,
+    tag: Any,
     container: CONTAINER,
     options: Binder.Options,
     callback: ((Playback<*>) -> Unit)? = null
   ) {
-    // TODO consider to temporarily set playable's Manager to Master
+    // Keep track of which Playable will be bound to which Container.
+    // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
+    // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
+    // but then another Playable is registered to the same Container, we need to kick the previous Playable.
+    bindRequests[container] = BindRequest(this, playable, callback)
     if (playable.manager == null) playable.manager = this
-    // 1. Find the Manager for the container
-    val weakCallback = WeakReference(callback)
-    container.doOnAttach {
-      val host = groups.asSequence()
-          .mapNotNull { it.findHostForContainer(container) }
-          .firstOrNull()
-
-      requireNotNull(host) { "No Manager and Host available for $container" }
-
-      val createNew by lazy(NONE) {
-        val config = Playback.Config(
-            delay = options.delay,
-            controller = options.controller,
-            callbacks = options.callbacks
-        )
-        if (host.manager.group.hasRendererProviderForType(container.javaClass))
-          Playback(host.manager, host, config, container)
-        else
-          LazyPlayback(host.manager, host, config, container)
-      }
-
-      val sameContainer = host.manager.playbacks[container]
-      val samePlayable = host.manager.group.playbacks.asSequence()
-          .firstOrNull { playable.playback === it }
-
-      val resolvedPlayback =
-        if (sameContainer == null) { // Bind to new Container
-          if (samePlayable == null) {
-            // both sameContainer and samePlayable are null --> fresh binding
-            playable.playback = createNew
-            host.manager.addPlayback(createNew)
-            createNew
-          } else {
-            // samePlayable is not null --> a bound Playable to be rebound to other/new Container
-            // Action: create new Playback for new Container, make the new binding and remove old binding of
-            // the 'samePlayable' Playback
-            playable.playback = createNew
-            samePlayable.manager.removePlayback(samePlayable)
-            host.manager.addPlayback(createNew)
-            createNew
-          }
-        } else {
-          if (samePlayable == null) {
-            // sameContainer is not null but samePlayable is null --> new Playable is bound to a bound Container
-            // Action: create new Playback for current Container, make the new binding and remove old binding of
-            // the 'sameContainer'
-            playable.playback = createNew
-            sameContainer.manager.removePlayback(sameContainer)
-            host.manager.addPlayback(createNew)
-            createNew
-          } else {
-            // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
-            if (sameContainer === samePlayable) {
-              // Nothing to do
-              samePlayable
-            } else {
-              // Scenario: rebind a bound Playable from one Container to other Container that is being bound.
-              // Action: remove both 'sameContainer' and 'samePlayable', create new one for the Container.
-              // to the Container
-              playable.playback = createNew
-              sameContainer.manager.removePlayback(sameContainer)
-              samePlayable.manager.removePlayback(samePlayable)
-              host.manager.addPlayback(createNew)
-              createNew
-            }
-          }
-        }
-
-      weakCallback.get()
-          ?.invoke(resolvedPlayback)
+    container.doOnAttach { view ->
+      bindRequests.remove(view)
+          ?.onBind(container, tag, options)
     }
   }
-
-  private val engines = mutableMapOf<Class<*>, Engine<*>>()
 
   internal fun tearDown(
     playable: Playable<*>,
     clearState: Boolean
   ) {
-    check(playable.manager == null)
-    check(playable.playback == null)
+    check(playable.manager == null) {
+      "Teardown $playable, found manager: ${playable.manager}"
+    }
+    check(playable.playback == null) {
+      "Teardown $playable, found playback: ${playable.playback}"
+    }
     playable.onPause()
     playable.onRelease()
     playables.remove(playable)
@@ -316,7 +259,14 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   internal fun onGroupDestroyed(group: Group) {
-    groups.remove(group)
+    if (groups.remove(group)) {
+      bindRequests.filter { it.key.context === group.activity }
+          .forEach {
+            it.value.playable.manager = null
+            tearDown(it.value.playable, true)
+            bindRequests.remove(it.key)
+          }
+    }
     if (groups.isEmpty()) {
       dispatcher.removeMessages(MSG_STARTUP)
     }
@@ -414,11 +364,15 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   fun stick(playback: Playback<*>) {
-
+    playback.manager.stick(playback.host)
+    playback.manager.group.stick(playback.manager)
+    playback.manager.refresh()
   }
 
   fun unstick(playback: Playback<*>) {
-
+    playback.manager.group.unstick(playback.manager)
+    playback.manager.unstick(playback.host)
+    playback.manager.refresh()
   }
 
   // Lock all resources.
@@ -440,5 +394,94 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   override fun onTrimMemory(level: Int) {
     // TODO consider tight MemoryMode and reduce memory usage.
+  }
+
+  internal fun <CONTAINER : ViewGroup, RENDERER : Any> onBind(
+    playable: Playable<RENDERER>,
+    tag: Any,
+    container: CONTAINER,
+    options: Binder.Options,
+    callback: ((Playback<*>) -> Unit)? = null
+  ) {
+    playables[playable] = tag
+    val host = groups.asSequence()
+        .mapNotNull { it.findHostForContainer(container) }
+        .firstOrNull()
+
+    requireNotNull(host) { "No Manager and Host available for $container" }
+
+    val createNew by lazy(NONE) {
+      val config = Playback.Config(
+          delay = options.delay,
+          controller = options.controller,
+          callbacks = options.callbacks
+      )
+      if (host.manager.group.hasRendererProviderForType(container.javaClass))
+        Playback(host.manager, host, config, container)
+      else
+        LazyPlayback(host.manager, host, config, container)
+    }
+
+    val sameContainer = host.manager.playbacks[container]
+    val samePlayable = host.manager.group.playbacks.firstOrNull { playable.playback === it }
+
+    val resolvedPlayback = if (sameContainer == null) { // Bind to new Container
+      if (samePlayable == null) {
+        // both sameContainer and samePlayable are null --> fresh binding
+        playable.playback = createNew
+        host.manager.addPlayback(createNew)
+        createNew
+      } else {
+        // samePlayable is not null --> a bound Playable to be rebound to other/new Container
+        // Action: create new Playback for new Container, make the new binding and remove old binding of
+        // the 'samePlayable' Playback
+        playable.playback = createNew
+        samePlayable.manager.removePlayback(samePlayable)
+        host.manager.addPlayback(createNew)
+        createNew
+      }
+    } else {
+      if (samePlayable == null) {
+        // sameContainer is not null but samePlayable is null --> new Playable is bound to a bound Container
+        // Action: create new Playback for current Container, make the new binding and remove old binding of
+        // the 'sameContainer'
+        playable.playback = createNew
+        sameContainer.manager.removePlayback(sameContainer)
+        host.manager.addPlayback(createNew)
+        createNew
+      } else {
+        // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
+        if (sameContainer === samePlayable) {
+          // Nothing to do
+          samePlayable
+        } else {
+          // Scenario: rebind a bound Playable from one Container to other Container that is being bound.
+          // Action: remove both 'sameContainer' and 'samePlayable', create new one for the Container.
+          // to the Container
+          playable.playback = createNew
+          sameContainer.manager.removePlayback(sameContainer)
+          samePlayable.manager.removePlayback(samePlayable)
+          host.manager.addPlayback(createNew)
+          createNew
+        }
+      }
+    }
+
+    callback?.invoke(resolvedPlayback)
+  }
+
+  internal class BindRequest<RENDERER : Any>(
+    val master: Master,
+    val playable: Playable<RENDERER>,
+    val callback: ((Playback<*>) -> Unit)?
+  ) {
+
+    internal fun onBind(
+      container: ViewGroup,
+      tag: Any,
+      options: Binder.Options
+    ) {
+      master.onBind(playable, tag, container, options, callback)
+    }
   }
 }
