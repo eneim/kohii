@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DiffUtil.Callback

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.view.View
 import android.view.ViewGroup
@@ -30,8 +30,8 @@ import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import kohii.dev.Master.MemoryMode
-import kohii.dev.Master.MemoryMode.LOW
+import kohii.core.Master.MemoryMode
+import kohii.core.Master.MemoryMode.LOW
 import kohii.partitionToMutableSets
 import kohii.v1.Prioritized
 import java.util.ArrayDeque

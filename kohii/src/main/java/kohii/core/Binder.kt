@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.view.ViewGroup
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY
-import kohii.dev.Playable.Config
+import kohii.core.Playable.Config
 import kohii.media.Media
 
 class Binder<RENDERER : Any>(

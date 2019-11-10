@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.graphics.Rect
 import android.os.Handler

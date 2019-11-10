@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
-import kohii.dev.Playback.Controller
+import kohii.core.Playback.Controller
 
 class DefaultController(
   private val manager: Manager,

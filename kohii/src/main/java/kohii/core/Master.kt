@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.app.ActivityManager
 import android.app.Application
@@ -36,7 +36,6 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
-import kohii.logWarn
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo

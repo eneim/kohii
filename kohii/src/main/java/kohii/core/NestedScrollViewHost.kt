@@ -14,38 +14,36 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver.OnScrollChangedListener
-import kotlin.LazyThreadSafetyMode.NONE
+import androidx.core.widget.NestedScrollView
+import androidx.core.widget.NestedScrollView.OnScrollChangeListener
 
-open class ViewGroupHost(
+class NestedScrollViewHost(
   manager: Manager,
-  root: ViewGroup
-) : Host<ViewGroup>(manager, root) {
+  root: NestedScrollView
+) : Host<NestedScrollView>(manager, root), OnScrollChangeListener {
 
-  private val globalScrollChangeListener by lazy(NONE) {
-    OnScrollChangedListener { manager.refresh() }
+  override fun onScrollChange(
+    v: NestedScrollView?,
+    scrollX: Int,
+    scrollY: Int,
+    oldScrollX: Int,
+    oldScrollY: Int
+  ) {
+    manager.refresh()
   }
 
   override fun onAdded() {
     super.onAdded()
-    onAddedInternal()
+    root.setOnScrollChangeListener(this)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    onRemovedInternal()
-  }
-
-  internal open fun onAddedInternal() {
-    root.viewTreeObserver.addOnScrollChangedListener(globalScrollChangeListener)
-  }
-
-  internal open fun onRemovedInternal() {
-    root.viewTreeObserver.removeOnScrollChangedListener(globalScrollChangeListener)
+    root.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
   override fun accepts(container: ViewGroup): Boolean {
@@ -63,6 +61,6 @@ open class ViewGroupHost(
   }
 
   override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    return selectByOrientation(candidates, orientation = NONE_AXIS)
+    return selectByOrientation(candidates, orientation = VERTICAL)
   }
 }

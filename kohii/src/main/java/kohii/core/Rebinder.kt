@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.os.Parcelable
 import android.view.ViewGroup

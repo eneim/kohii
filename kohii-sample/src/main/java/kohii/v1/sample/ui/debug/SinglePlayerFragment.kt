@@ -22,9 +22,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
-import kohii.dev.Master
-import kohii.dev.Playback
-import kohii.dev.PlayerViewRebinder
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.PlayerViewRebinder
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.holder_player_view.playerContainer

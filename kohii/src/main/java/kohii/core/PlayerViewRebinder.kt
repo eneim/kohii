@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.debug
+package kohii.core
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import kohii.core.PlayerViewRebinder
+import com.google.android.exoplayer2.ui.PlayerView
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 
-class VideosViewModel : ViewModel() {
-
-  val selectedRebinder = MutableLiveData<PlayerViewRebinder>(null)
-}
+@Parcelize
+data class PlayerViewRebinder(
+  override val tag: @RawValue Any
+) : Rebinder<PlayerView>(tag, PlayerView::class.java)

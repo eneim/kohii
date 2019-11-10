@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
 import kohii.media.Media
 
-interface RendererProvider<RENDERER : Any> {
+abstract class ViewRendererProvider<R : View>(
+  poolSize: Int = 2
+) : RecyclerRendererProvider<R>(poolSize) {
 
-  fun <CONTAINER : ViewGroup> acquireRenderer(
-    playback: Playback<CONTAINER>,
-    media: Media
-  ): RENDERER?
-
-  fun <CONTAINER : ViewGroup> releaseRenderer(
+  override fun <CONTAINER : ViewGroup> releaseRenderer(
     playback: Playback<CONTAINER>,
     media: Media,
-    renderer: RENDERER?
-  )
-
-  fun clear()
+    renderer: R?
+  ) {
+    if (renderer != null && renderer != playback.container) {
+      require(renderer.parent == null && !ViewCompat.isAttachedToWindow(renderer))
+    }
+    super.releaseRenderer(playback, media, renderer)
+  }
 }

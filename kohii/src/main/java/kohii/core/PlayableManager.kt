@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 interface PlayableManager

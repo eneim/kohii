@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
-import com.google.android.exoplayer2.ui.PlayerView
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.RawValue
+import android.view.ViewGroup
+import kohii.media.Media
 
-@Parcelize
-data class PlayerViewRebinder(
-  override val tag: @RawValue Any
-) : Rebinder<PlayerView>(tag, PlayerView::class.java)
+interface RendererProvider<RENDERER : Any> {
+
+  fun <CONTAINER : ViewGroup> acquireRenderer(
+    playback: Playback<CONTAINER>,
+    media: Media
+  ): RENDERER?
+
+  fun <CONTAINER : ViewGroup> releaseRenderer(
+    playback: Playback<CONTAINER>,
+    media: Media,
+    renderer: RENDERER?
+  )
+
+  fun clear()
+}

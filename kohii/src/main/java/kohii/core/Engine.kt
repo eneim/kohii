@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.app.Application
 import android.net.Uri
@@ -27,7 +27,7 @@ import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.ExoPlayer
-import kohii.dev.Playable.Config
+import kohii.core.Playable.Config
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.v1.BuildConfig

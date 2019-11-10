@@ -40,10 +40,10 @@ import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.dev.Master
-import kohii.dev.Master.MemoryMode
-import kohii.dev.PlayerViewRebinder
-import kohii.dev.Rebinder
+import kohii.core.Master
+import kohii.core.Master.MemoryMode
+import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R

@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
+import kohii.v1.R
 
-abstract class ViewRendererProvider<R : View>(
-  poolSize: Int = 2
-) : RecyclerRendererProvider<R>(poolSize) {
+class PlayerViewProvider : ViewRendererProvider<PlayerView>() {
 
-  override fun <CONTAINER : ViewGroup> releaseRenderer(
+  override fun getMediaType(media: Media): Int {
+    return if (media.mediaDrm != null) R.layout.kohii_player_surface_view else R.layout.kohii_player_textureview
+  }
+
+  override fun <CONTAINER : ViewGroup> createRenderer(
     playback: Playback<CONTAINER>,
-    media: Media,
-    renderer: R?
-  ) {
-    if (renderer != null && renderer != playback.container) {
-      require(renderer.parent == null && !ViewCompat.isAttachedToWindow(renderer))
-    }
-    super.releaseRenderer(playback, media, renderer)
+    mediaType: Int
+  ): PlayerView {
+    return if (playback.container.javaClass === PlayerView::class.java) playback.container as PlayerView
+    else LayoutInflater.from(playback.container.context)
+        .inflate(mediaType, playback.container, false) as PlayerView
   }
 }

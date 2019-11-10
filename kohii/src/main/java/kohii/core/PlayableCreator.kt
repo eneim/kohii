@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
-import kohii.dev.Playable.Config
+import kohii.core.Playable.Config
 import kohii.media.Media
 
 abstract class PlayableCreator<RENDERER : Any>(

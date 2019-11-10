@@ -24,7 +24,7 @@ import androidx.core.text.parseAsHtml
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.dev.Master
+import kohii.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.inflateView

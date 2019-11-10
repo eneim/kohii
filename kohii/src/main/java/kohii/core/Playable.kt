@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
-import kohii.dev.Master.MemoryMode
-import kohii.dev.Master.MemoryMode.AUTO
-import kohii.dev.Master.MemoryMode.BALANCED
-import kohii.dev.Master.MemoryMode.HIGH
-import kohii.dev.Master.MemoryMode.INFINITE
-import kohii.dev.Master.MemoryMode.LOW
-import kohii.dev.Master.MemoryMode.NORMAL
+import kohii.core.Master.MemoryMode
+import kohii.core.Master.MemoryMode.AUTO
+import kohii.core.Master.MemoryMode.BALANCED
+import kohii.core.Master.MemoryMode.HIGH
+import kohii.core.Master.MemoryMode.INFINITE
+import kohii.core.Master.MemoryMode.LOW
+import kohii.core.Master.MemoryMode.NORMAL
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.v1.Bridge

@@ -14,42 +14,43 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.viewpager.widget.ViewPager
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
+import androidx.viewpager2.widget.ViewPager2
+import java.lang.ref.WeakReference
+import kotlin.LazyThreadSafetyMode.NONE
 
-class ViewPagerHost(
+class ViewPager2Host(
   manager: Manager,
-  root: ViewPager
-) : Host<ViewPager>(manager, root), OnPageChangeListener {
+  root: ViewPager2
+) : Host<ViewPager2>(manager, root) {
+
+  private class SimplePageChangeCallback(manager: Manager) : ViewPager2.OnPageChangeCallback() {
+    val weakManager = WeakReference(manager)
+
+    override fun onPageScrollStateChanged(state: Int) {
+      weakManager.get()
+          ?.refresh()
+    }
+
+    override fun onPageSelected(position: Int) {
+      weakManager.get()
+          ?.refresh()
+    }
+  }
+
+  private val pageChangeCallback by lazy(NONE) { SimplePageChangeCallback(manager) }
 
   override fun onAdded() {
     super.onAdded()
-    root.addOnPageChangeListener(this)
+    root.registerOnPageChangeCallback(pageChangeCallback)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    root.removeOnPageChangeListener(this)
-  }
-
-  override fun onPageScrollStateChanged(state: Int) {
-    manager.refresh()
-  }
-
-  override fun onPageScrolled(
-    position: Int,
-    positionOffset: Float,
-    positionOffsetPixels: Int
-  ) {
-    // Do nothing
-  }
-
-  override fun onPageSelected(position: Int) {
-    manager.refresh()
+    root.unregisterOnPageChangeCallback(pageChangeCallback)
   }
 
   override fun accepts(container: ViewGroup): Boolean {
@@ -67,6 +68,6 @@ class ViewPagerHost(
   }
 
   override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
-    return selectByOrientation(candidates, orientation = HORIZONTAL)
+    return selectByOrientation(candidates, orientation = root.orientation)
   }
 }

@@ -29,9 +29,9 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.SimpleOnItemTouchListener
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.dev.Manager
-import kohii.dev.Master
-import kohii.dev.Master.MemoryMode
+import kohii.core.Manager
+import kohii.core.Master
+import kohii.core.Master.MemoryMode
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment

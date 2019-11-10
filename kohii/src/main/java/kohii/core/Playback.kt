@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.dev
+package kohii.core
 
 import android.graphics.Rect
 import android.view.View
@@ -24,10 +24,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.contains
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
-import kohii.dev.Host.Companion.BOTH_AXIS
-import kohii.dev.Host.Companion.HORIZONTAL
-import kohii.dev.Host.Companion.NONE_AXIS
-import kohii.dev.Host.Companion.VERTICAL
+import kohii.core.Host.Companion.BOTH_AXIS
+import kohii.core.Host.Companion.HORIZONTAL
+import kohii.core.Host.Companion.NONE_AXIS
+import kohii.core.Host.Companion.VERTICAL
 import kohii.logInfo
 import kohii.logWarn
 import kohii.v1.ErrorListener
