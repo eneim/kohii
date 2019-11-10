@@ -376,9 +376,11 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   // Lock all resources.
   fun lock() {
+    TODO()
   }
 
   fun unlock() {
+    TODO()
   }
 
   // ComponentCallbacks2
