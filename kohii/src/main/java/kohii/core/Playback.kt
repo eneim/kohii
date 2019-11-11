@@ -24,14 +24,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.contains
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
+import com.google.android.exoplayer2.ControlDispatcher
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Host.Companion.BOTH_AXIS
 import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
 import kohii.core.Host.Companion.VERTICAL
+import kohii.logError
 import kohii.logWarn
 import kohii.media.VolumeInfo
+import kohii.v1.BuildConfig
 import kohii.v1.ErrorListener
-import kohii.v1.PlaybackEventListener
 import kohii.v1.PlayerEventListener
 import java.util.ArrayDeque
 import kotlin.LazyThreadSafetyMode.NONE
@@ -99,6 +103,7 @@ open class Playback<CONTAINER : ViewGroup>(
 
   data class Config(
     val delay: Int = 0,
+    val repeatMode: Int = Player.REPEAT_MODE_OFF,
     val controller: Controller? = null,
     val callbacks: Array<Callback> = emptyArray()
   ) {
@@ -150,7 +155,7 @@ open class Playback<CONTAINER : ViewGroup>(
   }
 
   private val callbacks = ArrayDeque<Callback>()
-  private val listeners = linkedSetOf<PlaybackEventListener>()
+  private val listeners = ArrayDeque<PlaybackListener>()
 
   internal fun onAdded() {
     playbackState = STATE_ADDED
@@ -179,9 +184,19 @@ open class Playback<CONTAINER : ViewGroup>(
     if (renderer is View && renderer !== container) {
       container.addView(renderer)
     }
+
+    if (renderer is PlayerView && config.controller is ControlDispatcher) {
+      renderer.setControlDispatcher(config.controller)
+      renderer.useController = true
+    }
   }
 
   open fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?) {
+    if (renderer is PlayerView && config.controller is ControlDispatcher) {
+      renderer.setControlDispatcher(null)
+      renderer.useController = false
+    }
+
     if (renderer is View && container.contains(renderer)) {
       container.removeView(renderer)
     }
@@ -254,14 +269,23 @@ open class Playback<CONTAINER : ViewGroup>(
   // Public APIs
 
   val volumeInfo: VolumeInfo
-      get() = TODO()
+    get() = TODO()
 
   fun addCallback(callback: Callback) {
     this.callbacks.push(callback)
   }
 
   fun removeCallback(callback: Callback?) {
+    "Remove $callback, thread: ${Thread.currentThread().name}".logError("Kohii::Dev")
     this.callbacks.remove(callback)
+  }
+
+  fun addPlaybackListener(listener: PlaybackListener) {
+    this.listeners.add(listener)
+  }
+
+  fun removePlaybackListener(listener: PlaybackListener?) {
+    this.listeners.remove(listener)
   }
 
   // PlayerEventListener
@@ -271,12 +295,92 @@ open class Playback<CONTAINER : ViewGroup>(
     playbackState: Int
   ) {
     container.keepScreenOn = playWhenReady
+    when (playbackState) {
+      Player.STATE_IDLE -> {
+      }
+      Player.STATE_BUFFERING -> {
+        listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
+      }
+      Player.STATE_READY -> {
+        listeners.forEach {
+          if (playWhenReady) it.onPlay(this@Playback) else it.onPause(this@Playback)
+        }
+      }
+      Player.STATE_ENDED -> {
+        listeners.forEach { it.onEnd(this@Playback) }
+      }
+    }
+  }
+
+  override fun onVideoSizeChanged(
+    width: Int,
+    height: Int,
+    unappliedRotationDegrees: Int,
+    pixelWidthHeightRatio: Float
+  ) {
+    listeners.forEach {
+      it.onVideoSizeChanged(this, width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
+    }
+  }
+
+  override fun onRenderedFirstFrame() {
+    listeners.forEach { it.onFirstFrameRendered(this) }
   }
 
   // ErrorListener
 
   override fun onError(error: Exception) {
-    error.printStackTrace() // TODO
+    listeners.forEach { it.onError(this, error) }
+    if (BuildConfig.DEBUG) error.printStackTrace()
+  }
+
+  internal fun onPlay() {
+    listeners.forEach { it.beforePlay(this) }
+  }
+
+  internal fun onPause() {
+    listeners.forEach { it.afterPause(this) }
+  }
+
+  interface PlaybackListener {
+
+    /** Called when a Video is rendered on the Surface for the first time */
+    fun onFirstFrameRendered(playback: Playback<*>) {}
+
+    /**
+     * Called when buffering status of the playback is changed.
+     *
+     * @param playWhenReady true if the Video will start playing once buffered enough, false otherwise.
+     */
+    fun onBuffering(
+      playback: Playback<*>,
+      playWhenReady: Boolean
+    ) {
+    } // ExoPlayer state: 2
+
+    /** Called when the Video starts playing */
+    fun onPlay(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: true
+
+    /** Called when the Video is paused */
+    fun onPause(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: false
+
+    /** Called when the Video finishes its playback */
+    fun onEnd(playback: Playback<*>) {} // ExoPlayer state: 4
+
+    fun beforePlay(playback: Playback<*>) {}
+
+    fun afterPause(playback: Playback<*>) {}
+
+    fun onVideoSizeChanged(
+      playback: Playback<*>,
+      width: Int,
+      height: Int,
+      unAppliedRotationDegrees: Int,
+      pixelWidthHeightRatio: Float
+    ) {
+    }
+
+    fun onError(playback: Playback<*>, exception: Exception) {}
   }
 
   interface Callback {

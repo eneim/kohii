@@ -79,6 +79,11 @@ class Manager(
       }
   )
 
+  init {
+    group.onManagerCreated(this)
+    lifecycleOwner.lifecycle.addObserver(this)
+  }
+
   internal var sticky: Boolean = false
 
   internal val playbacks = mutableMapOf<Any /* container */, Playback<*>>()
@@ -100,7 +105,6 @@ class Manager(
 
   @OnLifecycleEvent(ON_CREATE)
   internal fun onCreate() {
-    group.onManagerCreated(this)
   }
 
   @OnLifecycleEvent(ON_DESTROY)

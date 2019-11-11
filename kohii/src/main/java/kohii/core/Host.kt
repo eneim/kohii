@@ -47,6 +47,7 @@ abstract class Host<V : View> constructor(
         NONE_AXIS to Playback.BOTH_AXIS_COMPARATOR
     )
 
+    @JvmStatic
     internal operator fun get(
       manager: Manager,
       root: View

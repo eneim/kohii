@@ -36,6 +36,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
+import kohii.core.Binder.Options
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
@@ -174,11 +175,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
       activity.lifecycle.addObserver(it)
     }
 
-    val manager = group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
+    return group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
         ?: Manager(this, group, host, managerLifecycleOwner, memoryMode)
-
-    manager.lifecycleOwner.lifecycle.addObserver(manager)
-    return manager
   }
 
   private val engines = mutableMapOf<Class<*>, Engine<*>>()
@@ -188,18 +186,18 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     playable: Playable<RENDERER>,
     tag: Any,
     container: CONTAINER,
-    options: Binder.Options,
+    options: Options,
     callback: ((Playback<*>) -> Unit)? = null
   ) {
     // Keep track of which Playable will be bound to which Container.
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
     // but then another Playable is registered to the same Container, we need to kick the previous Playable.
-    bindRequests[container] = BindRequest(this, playable, callback)
+    bindRequests[container] = BindRequest(this, playable, container, tag, options, callback)
     if (playable.manager == null) playable.manager = this
-    container.doOnAttach { view ->
-      bindRequests.remove(view)
-          ?.onBind(container, tag, options)
+    container.doOnAttach {
+      bindRequests.remove(it)
+          ?.onBind()
     }
   }
 
@@ -397,11 +395,11 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     // TODO consider tight MemoryMode and reduce memory usage.
   }
 
-  internal fun <CONTAINER : ViewGroup, RENDERER : Any> onBind(
+  private fun <CONTAINER : ViewGroup, RENDERER : Any> onBind(
     playable: Playable<RENDERER>,
     tag: Any,
     container: CONTAINER,
-    options: Binder.Options,
+    options: Options,
     callback: ((Playback<*>) -> Unit)? = null
   ) {
     playables[playable] = tag
@@ -414,6 +412,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     val createNew by lazy(NONE) {
       val config = Playback.Config(
           delay = options.delay,
+          repeatMode = options.repeatMode,
           controller = options.controller,
           callbacks = options.callbacks
       )
@@ -471,17 +470,16 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     callback?.invoke(resolvedPlayback)
   }
 
-  internal class BindRequest<RENDERER : Any>(
+  private class BindRequest<RENDERER : Any>(
     val master: Master,
     val playable: Playable<RENDERER>,
+    val container: ViewGroup,
+    val tag: Any,
+    val options: Options,
     val callback: ((Playback<*>) -> Unit)?
   ) {
 
-    internal fun onBind(
-      container: ViewGroup,
-      tag: Any,
-      options: Binder.Options
-    ) {
+    internal fun onBind() {
       master.onBind(playable, tag, container, options, callback)
     }
   }

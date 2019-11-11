@@ -19,6 +19,7 @@ package kohii.core
 import android.view.ViewGroup
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY
+import com.google.android.exoplayer2.Player
 import kohii.core.Playable.Config
 import kohii.media.Media
 
@@ -31,6 +32,7 @@ class Binder<RENDERER : Any>(
   class Options {
     var tag: Any? = null
     var delay: Int = 0
+    var repeatMode: Int = Player.REPEAT_MODE_OFF
     var controller: Playback.Controller? = null
     var callbacks: Array<Playback.Callback> = emptyArray()
   }

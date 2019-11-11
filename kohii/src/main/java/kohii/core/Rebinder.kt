@@ -18,6 +18,7 @@ package kohii.core
 
 import android.os.Parcelable
 import android.view.ViewGroup
+import com.google.android.exoplayer2.Player
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.RawValue
 
@@ -27,6 +28,7 @@ abstract class Rebinder<RENDERER : Any>(
 ) : Parcelable {
 
   class Options {
+    var repeatMode: Int = Player.REPEAT_MODE_OFF
     var controller: Playback.Controller? = null
     var callbacks: Array<Playback.Callback> = emptyArray()
   }
@@ -49,6 +51,7 @@ abstract class Rebinder<RENDERER : Any>(
         ?.key
     require(playable != null && this.rendererType.isAssignableFrom(playable.rendererType))
     master.bind(playable, tag, container, Binder.Options().also {
+      it.repeatMode = options.repeatMode
       it.controller = options.controller
       it.callbacks = options.callbacks
     }, callback)

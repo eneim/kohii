@@ -52,6 +52,7 @@ open class Playable<RENDERER : Any>(
   internal fun onPlay() {
     if (!playRequested) {
       playRequested = true
+      playback?.onPlay()
       bridge.play()
     }
   }
@@ -60,6 +61,7 @@ open class Playable<RENDERER : Any>(
     if (playRequested) {
       playRequested = false
       bridge.pause()
+      playback?.onPause()
     }
   }
 
@@ -139,6 +141,7 @@ open class Playable<RENDERER : Any>(
   }
 
   override fun onAdded(playback: Playback<*>) {
+    bridge.repeatMode = playback.config.repeatMode
   }
 
   override fun onRemoved(playback: Playback<*>) {

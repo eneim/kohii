@@ -23,8 +23,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
+import com.google.android.exoplayer2.ControlDispatcher
+import com.google.android.exoplayer2.ui.PlayerView
 
-class LazyPlayback<CONTAINER : ViewGroup>(
+internal class LazyPlayback<CONTAINER : ViewGroup>(
   manager: Manager,
   host: Host<*>,
   config: Config,
@@ -61,6 +63,11 @@ class LazyPlayback<CONTAINER : ViewGroup>(
         }
       }
     }
+
+    if (renderer is PlayerView && config.controller is ControlDispatcher) {
+      renderer.setControlDispatcher(config.controller)
+      renderer.useController = true
+    }
   }
 
   override fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?) {
@@ -77,6 +84,11 @@ class LazyPlayback<CONTAINER : ViewGroup>(
           else -> throw IllegalArgumentException("Need ${manager.host} to have FragmentManager")
         }
       fragmentManager.commitNow { remove(renderer) }
+    }
+
+    if (renderer is PlayerView && config.controller is ControlDispatcher) {
+      renderer.setControlDispatcher(null)
+      renderer.useController = false
     }
   }
 }
