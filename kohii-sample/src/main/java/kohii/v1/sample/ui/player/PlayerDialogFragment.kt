@@ -24,17 +24,15 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
-import kohii.v1.Playback
-import kohii.v1.Playback.Callback
-import kohii.v1.Rebinder
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
-class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
+class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
   companion object {
     private const val KEY_INIT_DATA = "kohii::player::init_data"
@@ -60,8 +58,10 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     fun onDialogInActive(rebinder: Rebinder<PlayerView>)
   }
 
-  var rebinder: Rebinder<PlayerView>? = null
-  var playback: Playback<*>? = null
+  private lateinit var kohii: Master
+  private lateinit var rebinder: Rebinder<PlayerView>
+
+  private var playback: Playback<*>? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog = super.onCreateDialog(savedInstanceState)
@@ -82,18 +82,24 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val initData = arguments?.getParcelable<InitData>(KEY_INIT_DATA)
-    (playerContainer as AspectRatioFrameLayout).setAspectRatio(initData!!.aspectRatio)
+    val initData = requireNotNull(requireArguments().getParcelable<InitData>(KEY_INIT_DATA))
+    playerContainer.setAspectRatio(initData.aspectRatio)
+
+    kohii = Master[this].also {
+      it.register(this)
+          .attach(playerContainer)
+    }
   }
 
   override fun onStart() {
     super.onStart()
-    val kohii = Kohii[this].also { it.register(this, playerContainer) }
-    this.rebinder = arguments?.getParcelable(KEY_REBINDER)
-    this.rebinder?.with { callback = this@PlayerDialogFragment }
-        ?.rebind(kohii, playerView) {
-          playback = it
-        }
+    val rebinder =
+      requireNotNull(requireArguments().getParcelable<Rebinder<PlayerView>>(KEY_REBINDER))
+    rebinder.with {
+      callbacks = arrayOf(this@PlayerDialogFragment)
+    }
+        .bind(kohii, playerView) { playback = it }
+    this.rebinder = rebinder
   }
 
   override fun onActive(playback: Playback<*>) {
@@ -102,8 +108,8 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Callback {
 
   // Would be called after onStop()
   override fun onInActive(playback: Playback<*>) {
-    this.rebinder?.also {
-      (parentFragment as? Callback)?.onDialogInActive(it)
+    playback.container.post {
+      (parentFragment as? Callback)?.onDialogInActive(rebinder)
     }
   }
 

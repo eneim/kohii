@@ -21,11 +21,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
-import kohii.v1.Rebinder
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.player.InitData
@@ -49,7 +49,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
-  private lateinit var kohii: Kohii
+  private lateinit var kohii: Master
   private var playback: Playback<*>? = null
 
   override fun onCreateView(
@@ -63,11 +63,14 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
-    kohii = Kohii[this].also { it.register(this, this.scrollView) }
+    kohii = Master[this]
+    kohii.register(this)
+        .attach(scrollView)
+
     val rebinder = kohii.setUp(videoUrl)
         .with {
           tag = videoTag
-          repeatMode = Playable.REPEAT_MODE_ONE
+          repeatMode = Player.REPEAT_MODE_ONE
         }
         .bind(playerView) { playback = it }
 
@@ -90,7 +93,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   }
 
   override fun onDialogInActive(rebinder: Rebinder<PlayerView>) {
-    rebinder.rebind(kohii, playerView) {
+    rebinder.bind(kohii, playerView) {
       playback = it
     }
   }
