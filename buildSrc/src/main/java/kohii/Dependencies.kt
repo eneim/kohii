@@ -219,6 +219,13 @@ object Libs {
     val compiler = "com.github.bumptech.glide:compiler:$version"
   }
 
+  object Coil {
+    private const val version = "0.8.0"
+    val coilBase = "io.coil-kt:coil:$version"
+    val coilSvg = "io.coil-kt:coil-svg:$version"
+    val coilGif = "io.coil-kt:coil-gif:$version"
+  }
+
   object Other {
     val androidSvg = "com.caverock:androidsvg-aar:1.4"
     val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"

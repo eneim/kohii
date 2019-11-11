@@ -5,27 +5,66 @@
   - [x] Automatically update the playbacks in RecyclerView, NestedScrollView or general ViewGroup.
   - [x] Automatically update the playbacks in ViewPager, ViewPager2.
 
+- [ ] Callbacks
+  - [x] Callbacks for **Kohii** components status.
+  - [ ] Callbacks for playback status.
+  - [ ] (Nice to have) *Opinionated callbacks* that tell client when it *should show/hide thumbnail*.
+
 - [x] Handle configuration change
-  - [x] Retain resource on configuration changes.
+  - [x] Retain playback on configuration changes.
 
 - [ ] Manual control over Playbacks
   - [x] Allow client to have full control over Playbacks: client can start/pause any Playback without the control of system/Kohii.
   - [x] Allow client to have half-manual control over Playbacks: client can start/pause any Playback on demand, but Kohii can also start/pause the Playback regarding some conditions.
   - [ ] Global control: simple method to pause/resume everything. The resume behavior follow each Playback's config.
 
-- [ ] Background Playback support
-  - [ ] Allow configuration to enable/disable background Playback. The config would allow to setup: flag to turn the feature on/off, necessary information for the foreground notification.
-  - [ ] Allow the Playback to keep playing after closing the App.
-  - [ ] Allow the Playback to keep playing when: the Playback is deselected from the Manager, but no newer Playback is selected.
+- [ ] Volume control
+  - [ ] Sophisticated Volume control at many levels: Kohii scope (global), Manager scope, Host scope, Playback scope.
 
 - [ ] ExoPlayer related implementations
   - [x] First-class support for playback using ExoPlayer/PlayerView.
   - [x] Cached playback using ExoPlayer cache mechanism.
   - [ ] Offline/downloaded playback using ExoPlayer download mechanism.
 
+- [ ] Extensible architecture
+  - [x] Base abstraction.
+  - [x] Default implementation for ExoPlayer.
+  - [x] (Nice to have) Experiment implementation for YouTube Videos using YouTube Player API.
+  - [x] (Nice to have) Experiment implementation for YouTube Videos using OSS playback library.
+  - [ ] (Nice to have) Experiment implementation for AndroidX Media 2.
+  - [ ] (Nice to have) Experiment implementation for Platform MediaPlayer/VideoView.
+
 - [ ] Others
-  - [ ] Store PlaybackInfo to pages + DB to optimize/reduce in-memory cache.
   - [ ] Flag/Callback to enable/disable automatic playback. Useful to trigger the feature on demand (eg: due to Network quality changes).
+  - [x] ``MemoryMode`` setting, allows client to control how Videos will be kept when it is not playing. For example in HIGH MemoryMode, many Videos can keep resource at the same time, so the playback will be really smooth, but in LOW MemoryMode, any paused Video will be released to save resource.
+  - [ ] Ads support with Mopub, IMA.
+
+- [ ] Demos
+  - [x] Basic RecyclerView sample, no nesting.
+  - [x] Basic NestedScrollView sample, no nesting.
+  - [x] RecyclerView with NestedScrollView nested in a ViewHolder.
+  - [ ] RecyclerView with RecyclerView nested in a ViewHolder.
+  - [x] NestedScrollView with a RecyclerView nested inside.
+  - [x] RecyclerView with user interaction (eg: Click).
+  - [x] NestedScrollView with user interaction (eg: Click).
+  - [x] ViewPager where pages are PlayerViews or FrameLayouts.
+  - [ ] ViewPager where pages are RecyclerViews with Videos.
+  - [x] ViewPager where pages are Fragments contain PlayerViews or FrameLayout.
+  - [ ] ViewPager where pages are Fragments contain RecyclerView with Videos.
+  - [x] ViewPager2 where pages are PlayerViews or FrameLayouts.
+  - [ ] ViewPager2 where pages are RecyclerViews with Videos.
+  - [x] ViewPager2 where pages are Fragments contain PlayerViews or FrameLayout.
+  - [ ] ViewPager2 where pages are Fragments contain RecyclerView with Videos.
+  - [ ] Multiple Fragments where each contains RecyclerView with Videos.
+  - [x] Sample to mimic Facebook.
+  
+- [ ] Background Playback support
+  - [ ] Allow configuration to enable/disable background Playback. The config would allow to setup: flag to turn the feature on/off, necessary information for the foreground notification (eg Bitmap for the Notification large image).
+  - [ ] Allow the Playback to keep playing after closing the App on-demand.
+  - [ ] Allow the Playback to keep playing when: the Playback is deselected from the Manager, but no newer Playback is selected.
+
+- [ ] Others
+  - [ ] Store PlaybackInfo to pages + local DB to optimize/reduce in-memory cache.
 
 ## Resource creation
 
