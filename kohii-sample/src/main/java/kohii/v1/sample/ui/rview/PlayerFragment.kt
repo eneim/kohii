@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.player
+package kohii.v1.sample.ui.rview
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -25,12 +25,13 @@ import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.safeCast
-import kohii.v1.Kohii
+import kohii.core.Master
+import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.v1.Prioritized
-import kohii.v1.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.ui.player.InitData
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
@@ -53,7 +54,8 @@ open class PlayerFragment : BaseFragment(), Prioritized {
         it.putParcelable(KEY_REBINDER, rebinder)
         it.putParcelable(KEY_INIT_DATA, initData)
       }
-      return PlayerFragment().also { it.arguments = bundle }
+      return PlayerFragment()
+          .also { it.arguments = bundle }
     }
   }
 
@@ -78,16 +80,23 @@ open class PlayerFragment : BaseFragment(), Prioritized {
     }
     prepareSharedElementTransition()
 
-    val initData = arguments?.getParcelable<InitData>(KEY_INIT_DATA)!!
-    val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
-    transView = container
-    ViewCompat.setTransitionName(transView!!, initData.tag)
+    val (initData, rebinder) = requireArguments().let {
+      requireNotNull(it.getParcelable<InitData>(KEY_INIT_DATA)) to
+          requireNotNull(it.getParcelable<PlayerViewRebinder>(KEY_REBINDER))
+    }
 
+    val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
     container.setAspectRatio(initData.aspectRatio)
-    val kohii = Kohii[this].also { it.register(this, playerContainer) }
-    val rebinder =
-      (requireArguments().getParcelable(KEY_REBINDER) as Rebinder<*>?).safeCast<PlayerView>()
-    rebinder?.rebind(kohii, playerView) {
+
+    ViewCompat.setTransitionName(container, initData.tag)
+    transView = container
+
+    val kohii = Master[this].also {
+      it.register(this)
+          .attach(playerContainer)
+    }
+
+    rebinder.bind(kohii, playerView) {
       startPostponedEnterTransition()
     }
   }
