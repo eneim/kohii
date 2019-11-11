@@ -31,7 +31,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.v1.Kohii
+import kohii.core.Master
 import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.PlayerInfoHolder
 import kohii.v1.sample.R
@@ -90,7 +90,10 @@ class RecyclerViewFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also { it.register(this, recyclerView) }
+    val kohii = Master[this].also {
+      it.register(this)
+          .attach(recyclerView)
+    }
 
     val data = ArrayList(items).apply { this.addAll(items) } // To double the list.
     val container = (view.findViewById(R.id.recyclerView) as RecyclerView).also {

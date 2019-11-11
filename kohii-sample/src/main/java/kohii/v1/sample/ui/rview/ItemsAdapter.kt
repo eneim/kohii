@@ -23,8 +23,8 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
-import kohii.v1.Rebinder
+import kohii.core.Master
+import kohii.core.Rebinder
 import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.InitData
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author eneim (2018/07/06).
  */
 class ItemsAdapter(
-  private val kohii: Kohii,
+  private val kohii: Master,
   private val fragment: RecyclerViewFragment,
   private val items: List<Item>,
   private val dp2Px: (Int) -> Int
@@ -115,7 +115,7 @@ class ItemsAdapter(
       // Exclude the clicked card from the exit transition (e.g. the card will disappear immediately
       // instead of fading out with the rest to prevent an overlapping animation of fade and move).
       (fragment.exitTransition as TransitionSet).excludeTarget(itemView, true)
-      fragment.fragmentManager!!.beginTransaction()
+      fragment.parentFragmentManager.beginTransaction()
           .setReorderingAllowed(true) // Optimize for shared element transition
           .addSharedElement(transView, transName)
           .replace(

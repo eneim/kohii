@@ -20,12 +20,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
-import kohii.v1.Rebinder
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.ui.player.InitData
 import kohii.v1.sample.ui.rview.data.Item
@@ -36,7 +36,7 @@ import kohii.v1.sample.ui.rview.data.Item
 class VideoViewHolder(
   inflater: LayoutInflater,
   parent: ViewGroup,
-  private val kohii: Kohii,
+  private val kohii: Master,
   private val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
     View.OnClickListener, Playback.Callback {
@@ -50,7 +50,7 @@ class VideoViewHolder(
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
   var rebinder: Rebinder<PlayerView>? = null
-  var playback: Playback<PlayerView>? = null
+  var playback: Playback<*>? = null
   var payload: InitData? = null
 
   override fun bind(item: Item?) {
@@ -61,9 +61,9 @@ class VideoViewHolder(
       rebinder = kohii.setUp(item.content)
           .with {
             tag = itemTag
-            preLoad = true
-            repeatMode = Playable.REPEAT_MODE_ONE
-            callback = this@VideoViewHolder
+            preload = true
+            repeatMode = Player.REPEAT_MODE_ONE
+            callbacks = arrayOf(this@VideoViewHolder)
           }
           .bind(playerView) {
             playback = it
