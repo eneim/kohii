@@ -125,7 +125,7 @@ open class Playable<RENDERER : Any>(
   override fun onActive(playback: Playback<*>) {
     require(playback === this.playback)
     master.tryRestorePlaybackInfo(this)
-    master.preparePlayable(this, false)
+    master.preparePlayable(this, playback.config.preload)
     val renderer = (manager as? Manager)?.acquireRenderer(playback, this)
     bridge.playerView = renderer
   }
@@ -157,7 +157,7 @@ open class Playable<RENDERER : Any>(
   ) {
     if (to == 0) {
       master.tryRestorePlaybackInfo(this)
-      master.preparePlayable(this, false)
+      master.preparePlayable(this, playback?.config?.preload ?: false)
     } else {
       val memoryMode = master.preferredMemoryMode(this.memoryMode)
       val distanceToRelease =

@@ -412,6 +412,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     val createNew by lazy(NONE) {
       val config = Playback.Config(
           delay = options.delay,
+          preload = options.preload,
           repeatMode = options.repeatMode,
           controller = options.controller,
           callbacks = options.callbacks

@@ -28,6 +28,7 @@ abstract class Rebinder<RENDERER : Any>(
 ) : Parcelable {
 
   class Options {
+    var preload: Boolean = false
     var repeatMode: Int = Player.REPEAT_MODE_OFF
     var controller: Playback.Controller? = null
     var callbacks: Array<Playback.Callback> = emptyArray()
@@ -51,6 +52,7 @@ abstract class Rebinder<RENDERER : Any>(
         ?.key
     require(playable != null && this.rendererType.isAssignableFrom(playable.rendererType))
     master.bind(playable, tag, container, Binder.Options().also {
+      it.preload = options.preload
       it.repeatMode = options.repeatMode
       it.controller = options.controller
       it.callbacks = options.callbacks

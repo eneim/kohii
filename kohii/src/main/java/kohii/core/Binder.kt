@@ -32,6 +32,7 @@ class Binder<RENDERER : Any>(
   class Options {
     var tag: Any? = null
     var delay: Int = 0
+    var preload: Boolean = false
     var repeatMode: Int = Player.REPEAT_MODE_OFF
     var controller: Playback.Controller? = null
     var callbacks: Array<Playback.Callback> = emptyArray()

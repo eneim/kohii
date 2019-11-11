@@ -103,6 +103,7 @@ open class Playback<CONTAINER : ViewGroup>(
 
   data class Config(
     val delay: Int = 0,
+    val preload: Boolean = false,
     val repeatMode: Int = Player.REPEAT_MODE_OFF,
     val controller: Controller? = null,
     val callbacks: Array<Callback> = emptyArray()
