@@ -29,7 +29,6 @@ import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.player.InitData
-import kohii.v1.sample.ui.player.PlayerDialogFragment
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView

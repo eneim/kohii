@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.player
+package kohii.v1.sample.ui.sview
 
 import android.app.Dialog
 import android.os.Bundle
@@ -29,6 +29,7 @@ import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Rebinder
 import kohii.v1.sample.R
+import kohii.v1.sample.ui.player.InitData
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
@@ -46,7 +47,8 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
         it.putParcelable(KEY_REBINDER, rebinder)
         it.putParcelable(KEY_INIT_DATA, initData)
       }
-      return PlayerDialogFragment().also { it.arguments = bundle }
+      return PlayerDialogFragment()
+          .also { it.arguments = bundle }
     }
   }
 
