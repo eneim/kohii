@@ -136,7 +136,7 @@ abstract class BaseTargetHost<V : Any>(
     val manualCandidates by lazy(NONE) {
       val sorted = grouped.getValue(true)
           .sortedWith(comparator)
-      val manuallyStarted = sorted.firstOrNull { playback ->
+      val manuallyStarted = sorted.find { playback ->
         manager.kohii.manualPlayableRecord[playback.playable] == Kohii.PENDING_PLAY
       }
       return@lazy listOfNotNull(manuallyStarted ?: sorted.firstOrNull())

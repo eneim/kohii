@@ -29,6 +29,7 @@ import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
 import kohii.core.Host.Companion.VERTICAL
 import kohii.logWarn
+import kohii.media.VolumeInfo
 import kohii.v1.ErrorListener
 import kohii.v1.PlaybackEventListener
 import kohii.v1.PlayerEventListener
@@ -251,6 +252,9 @@ open class Playback<CONTAINER : ViewGroup>(
   }
 
   // Public APIs
+
+  val volumeInfo: VolumeInfo
+      get() = TODO()
 
   fun addCallback(callback: Callback) {
     this.callbacks.push(callback)

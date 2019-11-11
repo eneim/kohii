@@ -263,7 +263,7 @@ abstract class PlaybackManager(
         .map {
           if (it.lock) emptyList() else it.select(mapHostToCandidates.getValue(it))
         }
-        .firstOrNull { it.isNotEmpty() }
+        .find { it.isNotEmpty() }
         ?.also {
           toPlay.addAll(it)
           activePlaybacks.removeAll(it)
@@ -491,16 +491,16 @@ abstract class PlaybackManager(
 
   @Suppress("UNCHECKED_CAST")
   internal fun <RENDERER : Any> findPlaybackForPlayable(playable: Playable<RENDERER>): Playback<RENDERER>? =
-    this.mapContainerToPlayback.values.firstOrNull {
+    this.mapContainerToPlayback.values.find {
       it.playable === playable // this will also guaranty the type check.
     } as? Playback<RENDERER>?
 
   @Suppress("UNCHECKED_CAST")
   internal fun <RENDERER : Any> findPlaybackForRenderer(renderer: RENDERER): Playback<RENDERER>? =
-    this.mapContainerToPlayback.values.firstOrNull { it.renderer === renderer } as? Playback<RENDERER>
+    this.mapContainerToPlayback.values.find { it.renderer === renderer } as? Playback<RENDERER>
 
   internal fun findHostForContainer(container: Any) =
-    targetHosts.firstOrNull { it.accepts(container) }
+    targetHosts.find { it.accepts(container) }
 
   internal fun isActive(playback: Playback<*>): Boolean {
     return playbackStates[playback] == true
@@ -547,7 +547,7 @@ abstract class PlaybackManager(
         val targetHost = when (receiver) {
           is TargetHost -> receiver
           is Playback<*> -> receiver.targetHost
-          else -> targetHosts.firstOrNull { it.host === receiver }
+          else -> targetHosts.find { it.host === receiver }
         }
         targetHost?.also {
           it.volumeInfo.setTo(volumeInfo) // all newly bound Playback will have this VolumeInfo

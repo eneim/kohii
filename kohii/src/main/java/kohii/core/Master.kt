@@ -424,7 +424,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     }
 
     val sameContainer = host.manager.playbacks[container]
-    val samePlayable = host.manager.group.playbacks.firstOrNull { playable.playback === it }
+    val samePlayable = host.manager.group.playbacks.find { playable.playback === it }
 
     val resolvedPlayback = if (sameContainer == null) { // Bind to new Container
       if (samePlayable == null) {

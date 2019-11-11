@@ -246,7 +246,7 @@ abstract class Playback<RENDERER : Any> internal constructor(
   // of RV, we 'temporarily' ask any RV to accept it. When it is updated, we find the correct one.
   // This operation should not happen always, ideally up to 1 time.
   internal fun doubleCheckHost() {
-    val properHost = manager.targetHosts.firstOrNull { it.accepts(this.container) }
+    val properHost = manager.targetHosts.find { it.accepts(this.container) }
     if (properHost != null && this.targetHost !== properHost) {
       this.targetHost.detachContainer(this.container)
       this.targetHost = properHost

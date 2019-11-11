@@ -147,7 +147,7 @@ abstract class Host<V : View> constructor(
       val started =
         if (manual.isNotEmpty()) {
           manual.asSequence()
-              .firstOrNull { playback ->
+              .find { playback ->
                 val playable = manager.findPlayableForContainer(playback.container)
                 manager.master.playablesPendingStates
                     .filter { it.key === playable?.tag }

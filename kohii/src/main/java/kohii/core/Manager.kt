@@ -46,7 +46,7 @@ class Manager(
 ) : PlayableManager, LifecycleObserver, Comparable<Manager> {
 
   companion object {
-    fun compareAndCheck(
+    internal fun compareAndCheck(
       left: Prioritized,
       right: Prioritized
     ): Int {
@@ -81,7 +81,6 @@ class Manager(
 
   internal var sticky: Boolean = false
 
-  // All Playbacks, including attached/detached ones.
   internal val playbacks = mutableMapOf<Any /* container */, Playback<*>>()
 
   override fun compareTo(other: Manager): Int {
@@ -109,7 +108,7 @@ class Manager(
     playbacks.values.toMutableList()
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
-    stickyHost = null
+    stickyHost = null // will pop current sticky Host from the Stack
     hosts.toMutableList()
         .onEach { detachHost(it.root) }
         .clear()
@@ -131,12 +130,12 @@ class Manager(
 
   internal fun findPlayableForContainer(container: ViewGroup): Playable<*>? {
     val playback = playbacks[container]
-    return master.playables.keys.firstOrNull { it.playback === playback }
+    return master.playables.keys.find { it.playback === playback }
   }
 
   internal fun findHostForContainer(container: ViewGroup): Host<*>? {
     require(ViewCompat.isAttachedToWindow(container))
-    return hosts.firstOrNull { it.accepts(container) }
+    return hosts.find { it.accepts(container) }
   }
 
   internal fun onContainerAttachedToWindow(container: Any?) {
@@ -149,10 +148,10 @@ class Manager(
   }
 
   internal fun onContainerDetachedFromWindow(container: Any?) {
-    // A detached Container can be re-attached (in case of RecyclerView)
+    // A detached Container can be re-attached later (in case of RecyclerView)
     val playback = playbacks[container]
     if (playback != null) {
-      if (playback.isAttached) { // Attached
+      if (playback.isAttached) {
         if (playback.isActive) onPlaybackInActive(playback)
         onPlaybackDetached(playback)
       }
@@ -162,9 +161,7 @@ class Manager(
 
   internal fun onContainerLayoutChanged(container: Any?) {
     val playback = playbacks[container]
-    if (playback != null && playback.host.allowToPlay(playback)) {
-      refresh()
-    }
+    if (playback != null) refresh()
   }
 
   private fun attachHost(view: View) {
@@ -217,7 +214,7 @@ class Manager(
         .map { (host, candidates) ->
           host.selectToPlay(candidates)
         }
-        .firstOrNull { it.isNotEmpty() }
+        .find { it.isNotEmpty() }
         ?.also {
           toPlay.addAll(it)
           activePlaybacks.removeAll(it)

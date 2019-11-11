@@ -391,7 +391,7 @@ class Kohii(context: Context) : PlayableManager {
           is Playback<*> -> this.pause(receiver.targetHost, Scope.HOST)
           else -> {
             val host = this.managers.values.asSequence()
-                .map { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
+                .map { it.targetHosts.find { targetHost -> targetHost.host === receiver } }
                 .filterNotNull()
                 .firstOrNull()
 
@@ -443,7 +443,7 @@ class Kohii(context: Context) : PlayableManager {
           else -> {
             // Find the TargetHost whose host is this receiver
             val host = this.managers.values.asSequence()
-                .map { it.targetHosts.firstOrNull { targetHost -> targetHost.host === receiver } }
+                .map { it.targetHosts.find { targetHost -> targetHost.host === receiver } }
                 .filterNotNull()
                 .firstOrNull()
 
