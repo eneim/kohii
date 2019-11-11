@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.player
+package kohii.v1.sample.ui.motion
 
 import android.content.Context
 import android.content.Intent
@@ -22,10 +22,8 @@ import android.graphics.Point
 import android.os.Bundle
 import android.os.Parcelable
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.safeCast
-import kohii.v1.Kohii
-import kohii.v1.Rebinder
+import kohii.core.Master
+import kohii.core.PlayerViewRebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
 import kotlinx.android.parcel.Parcelize
@@ -44,7 +42,7 @@ class PlayerActivity : BaseActivity() {
     fun createIntent(
       context: Context,
       initData: InitData,
-      rebinder: Rebinder<PlayerView>
+      rebinder: PlayerViewRebinder
     ): Intent {
       val extras = Bundle().also {
         it.putParcelable(EXTRA_INIT_DATA, initData)
@@ -61,8 +59,8 @@ class PlayerActivity : BaseActivity() {
     setContentView(R.layout.activity_player)
 
     val extras = intent?.extras
-    val initData = extras?.getParcelable(EXTRA_INIT_DATA) as InitData?
-    val rebinder = (extras?.getParcelable(EXTRA_REBINDER) as Rebinder<*>?).safeCast<PlayerView>()
+    val initData = extras?.getParcelable<InitData>(EXTRA_INIT_DATA)
+    val rebinder = extras?.getParcelable<PlayerViewRebinder>(EXTRA_REBINDER)
 
     if (rebinder != null && initData != null) {
       val displaySize = Point().apply {
@@ -75,9 +73,10 @@ class PlayerActivity : BaseActivity() {
         playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       }
 
-      val kohii = Kohii[this]
-      kohii.register(this, playerContainer)
-      rebinder.rebind(kohii, this.playerView)
+      val kohii = Master[this]
+      kohii.register(this)
+          .attach(playerContainer)
+      rebinder.bind(kohii, this.playerView)
     } else finish()
   }
 }

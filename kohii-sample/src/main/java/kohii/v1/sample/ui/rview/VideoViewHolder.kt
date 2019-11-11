@@ -27,7 +27,7 @@ import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Rebinder
 import kohii.v1.sample.R
-import kohii.v1.sample.ui.player.InitData
+import kohii.v1.sample.ui.motion.InitData
 import kohii.v1.sample.ui.rview.data.Item
 
 /**
