@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.google.android.exoplayer2.Player
+import com.google.android.material.snackbar.Snackbar
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Playback.PlaybackListener
@@ -89,6 +90,18 @@ class ExoVideosAdapter(
               holder.aspectRatio = width / height.toFloat()
               holder.playerContainer.setAspectRatio(holder.aspectRatio)
               it.removePlaybackListener(this)
+            }
+
+            override fun onError(
+              playback: Playback<*>,
+              exception: Exception
+            ) {
+              Snackbar.make(
+                  playback.container,
+                  exception.localizedMessage ?: "Error",
+                  Snackbar.LENGTH_LONG
+              )
+                  .show()
             }
           })
         }
