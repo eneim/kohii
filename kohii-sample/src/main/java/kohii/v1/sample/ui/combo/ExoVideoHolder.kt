@@ -16,18 +16,23 @@
 
 package kohii.v1.sample.ui.combo
 
-import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Rebinder
+import kohii.core.Rebinder
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseViewHolder
 
-class VideoViewHolder(itemView: View) : ViewHolder(itemView) {
+class ExoVideoHolder(
+  parent: ViewGroup
+) : BaseViewHolder(parent, R.layout.holder_player_container) {
 
-  internal val playerContainer = itemView.findViewById<AspectRatioFrameLayout>(R.id.playerContainer)
-  internal val videoTitle = itemView.findViewById<TextView>(R.id.videoTitle)
+  internal val playerContainer =
+    itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
+  internal val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
+  internal val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
 
   init {
     playerContainer.setAspectRatio(2.0F)

@@ -17,35 +17,29 @@
 package kohii.v1.sample.ui.combo
 
 import android.net.Uri
-import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.Player
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.Playback.PlaybackListener
 import kohii.media.MediaItem
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.PlayerEventListener
-import kohii.v1.ViewTarget
-import kohii.v1.sample.R
 import kohii.v1.sample.data.DrmItem
 import kohii.v1.sample.data.Item
 
-class VideoItemsAdapter(
-  val kohii: Kohii,
+class ExoVideosAdapter(
+  val kohii: Master,
   private val items: List<Item>,
-  private val onClick: ((VideoViewHolder, Int) -> Unit)? = null,
-  private val onLoad: ((VideoViewHolder, Int) -> Unit)? = null
-) : Adapter<VideoViewHolder>() {
+  private val onClick: ((ExoVideoHolder, Int) -> Unit)? = null,
+  private val onLoad: ((ExoVideoHolder, Int) -> Unit)? = null
+) : Adapter<ExoVideoHolder>() {
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
-  ): VideoViewHolder {
-    val view = LayoutInflater.from(parent.context)
-        .inflate(R.layout.holder_player_container, parent, false)
-    val holder = VideoViewHolder(view)
+  ): ExoVideoHolder {
+    val holder = ExoVideoHolder(parent)
     holder.playerContainer.setOnClickListener {
       if (holder.adapterPosition >= 0) {
         onClick?.invoke(holder, holder.adapterPosition)
@@ -57,49 +51,44 @@ class VideoItemsAdapter(
   override fun getItemCount() = Int.MAX_VALUE
 
   override fun onBindViewHolder(
-    holder: VideoViewHolder,
+    holder: ExoVideoHolder,
     position: Int
   ) {
     val item = items[position % items.size]
+    holder.videoTitle.text = item.name
+
     val drmItem = item.drmScheme?.let { DrmItem(item) }
     val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
     val itemTag = "${javaClass.canonicalName}::${item.uri}::${holder.adapterPosition}"
 
-    holder.videoTitle.text = item.name
-
-    // Create a container that contains a thumbnail.
-    val target = object : ViewTarget<ViewGroup, PlayerView>(holder.playerContainer) {
-      override fun attachRenderer(renderer: PlayerView) {
-        container.findViewById<ImageView>(R.id.thumbnail)
-            .isVisible = false
-        super.attachRenderer(renderer)
-      }
-
-      override fun detachRenderer(renderer: PlayerView): Boolean {
-        container.findViewById<ImageView>(R.id.thumbnail)
-            .isVisible = true
-        return super.detachRenderer(renderer)
-      }
-    }
-
     holder.rebinder = kohii.setUp(mediaItem)
         .with {
           tag = itemTag
-          preLoad = false
-          repeatMode = Playable.REPEAT_MODE_ONE
+          // preLoad = false
+          repeatMode = Player.REPEAT_MODE_ONE
         }
-        .bind(target) {
+        .bind(holder.playerContainer) {
           onLoad?.invoke(holder, position)
-          it.addPlayerEventListener(object : PlayerEventListener {
+          it.addPlaybackListener(object : PlaybackListener {
+
+            override fun beforePlay(playback: Playback<*>) {
+              holder.thumbnail.isVisible = false
+            }
+
+            override fun afterPause(playback: Playback<*>) {
+              holder.thumbnail.isVisible = true
+            }
+
             override fun onVideoSizeChanged(
+              playback: Playback<*>,
               width: Int,
               height: Int,
-              unappliedRotationDegrees: Int,
+              unAppliedRotationDegrees: Int,
               pixelWidthHeightRatio: Float
             ) {
               holder.aspectRatio = width / height.toFloat()
               holder.playerContainer.setAspectRatio(holder.aspectRatio)
-              it.removePlayerEventListener(this)
+              it.removePlaybackListener(this)
             }
           })
         }

@@ -22,37 +22,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnNextLayout
 import androidx.fragment.app.commit
-import com.google.android.exoplayer2.ui.PlayerView
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.v1.DefaultRendererPool
-import kohii.v1.Kohii
+import kohii.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.common.PlayerViewCreator
 import kohii.v1.sample.common.getApp
-import kohii.v1.sample.data.Item
 import kohii.v1.sample.ui.player.InitData
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
-import okio.buffer
-import okio.source
 
-class ComboFragment : BaseFragment() {
+/**
+ * Sample that uses Videos from ExoPlayer videos.
+ * Clicking to an item will open fullscreen landscape Player.
+ */
+class ExoPlayerVideosFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = ComboFragment()
-  }
-
-  private val videos: List<Item> by lazy {
-    val asset = getApp().assets
-    val type = Types.newParameterizedType(List::class.java, Item::class.java)
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-    val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
-    adapter.fromJson(asset.open("medias.json").source().buffer()) ?: emptyList()
+    fun newInstance() = ExoPlayerVideosFragment()
   }
 
   override fun onCreateView(
@@ -71,23 +55,21 @@ class ComboFragment : BaseFragment() {
     postponeEnterTransition()
     recyclerView.doOnNextLayout { startPostponedEnterTransition() }
 
-    val kohii = Kohii[this]
-    // Setup Kohii and do stuff
-    val pool = DefaultRendererPool(kohii, creator = PlayerViewCreator.instance)
-    kohii.register(this, recyclerView)
-        .registerRendererPool(PlayerView::class.java, pool)
+    val kohii = Master[this]
+    kohii.register(this)
+        .attach(recyclerView)
 
-    recyclerView.adapter = VideoItemsAdapter(kohii, videos,
+    recyclerView.adapter = ExoVideosAdapter(kohii, getApp().exoItems,
         onClick = { holder, _ ->
           holder.rebinder?.let {
-            val player = OrientedFullscreenFragment.newInstance(
+            val player = LandscapeFullscreenFragment.newInstance(
                 it,
-                InitData(it.tag, holder.aspectRatio)
+                InitData(it.tag.toString(), holder.aspectRatio)
             )
 
             parentFragmentManager.commit {
               setReorderingAllowed(true) // required for Activity-like lifecycle changing.
-              replace(R.id.fragmentContainer, player, it.tag)
+              replace(R.id.fragmentContainer, player, it.tag.toString())
               addToBackStack(null)
             }
           }

@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.ui.combo
 
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -24,10 +25,10 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.forceCast
-import kohii.v1.Kohii
-import kohii.v1.Rebinder
-import kohii.v1.exo.DefaultControlDispatcher
+import kohii.core.DefaultController
+import kohii.core.Master
+import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.player.InitData
@@ -35,7 +36,7 @@ import kotlinx.android.synthetic.main.fragment_player_horizontal.playerContainer
 import kotlinx.android.synthetic.main.fragment_player_horizontal.playerView
 import java.util.concurrent.atomic.AtomicInteger
 
-class OrientedFullscreenFragment : BaseFragment() {
+class LandscapeFullscreenFragment : BaseFragment() {
 
   companion object {
     private const val KEY_INIT_DATA = "kohii:fragment:player:init_data"
@@ -44,36 +45,45 @@ class OrientedFullscreenFragment : BaseFragment() {
     fun newInstance(
       rebinder: Rebinder<PlayerView>,
       initData: InitData
-    ): OrientedFullscreenFragment {
+    ): LandscapeFullscreenFragment {
       val bundle = Bundle().also {
         it.putParcelable(KEY_REBINDER, rebinder)
-        it.putParcelable(
-            KEY_INIT_DATA, initData
-        )
+        it.putParcelable(KEY_INIT_DATA, initData)
       }
-      return OrientedFullscreenFragment()
-          .also { it.arguments = bundle }
+      return LandscapeFullscreenFragment().also { it.arguments = bundle }
     }
   }
 
   private val activityOrientation = AtomicInteger(Int.MIN_VALUE)
   private val displayRotation = AtomicInteger(0)
   private val systemUiOption by lazy {
-    AtomicInteger(
-        requireActivity().window.decorView.systemUiVisibility
-    )
+    AtomicInteger(requireActivity().window.decorView.systemUiVisibility)
+  }
+
+  private var callback: Callback? = null
+
+  override fun onAttach(context: Context) {
+    super.onAttach(context)
+    callback = activity as? Callback
+  }
+
+  override fun onDetach() {
+    super.onDetach()
+    callback = null
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     // Orientation change will cause this fragment to be recreated, we don't want that to happen.
     retainInstance = true
-    (requireActivity() as AppCompatActivity).also {
+    // Save current Activity info
+    requireActivity().also {
       activityOrientation.set(it.requestedOrientation)
       val decorView = it.window.decorView
       systemUiOption.set(decorView.systemUiVisibility)
       displayRotation.set(it.windowManager.defaultDisplay.rotation)
 
+      // Request Landscape
       it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
   }
@@ -91,22 +101,26 @@ class OrientedFullscreenFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val initData = arguments?.getParcelable<InitData>(KEY_INIT_DATA)!!
     val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
+
+    val (initData, rebinder) = requireArguments().let {
+      requireNotNull(it.getParcelable<InitData>(KEY_INIT_DATA)) to
+          requireNotNull(it.getParcelable<PlayerViewRebinder>(KEY_REBINDER))
+    }
+
     container.setAspectRatio(initData.aspectRatio)
 
-    val kohii = Kohii[this]
-    val manager = kohii.register(this, playerContainer)
-    val rebinder =
-      (requireArguments().getParcelable<Rebinder<*>>(KEY_REBINDER)).forceCast<PlayerView>()
-
-    rebinder.with { controller = DefaultControlDispatcher(manager, playerView) }
-        .rebind(kohii, playerView)
+    val kohii = Master[this]
+    val manager = kohii.register(this)
+        .attach(playerContainer)
+    rebinder.with { controller = DefaultController(manager, playerView) }
+        .bind(kohii, playerView)
 
     (requireActivity() as AppCompatActivity).also {
       if (it.windowManager.defaultDisplay.rotation % 2 == 1) {
         // apply new UI config
-        it.supportActionBar?.hide()
+        // it.supportActionBar?.hide()
+        callback?.hideToolbar()
         val currentOptions = it.window.decorView.systemUiVisibility
         it.window.decorView.systemUiVisibility = (
             currentOptions
@@ -120,7 +134,8 @@ class OrientedFullscreenFragment : BaseFragment() {
                 or View.SYSTEM_UI_FLAG_FULLSCREEN
             )
       } else {
-        it.supportActionBar?.show()
+        // it.supportActionBar?.show()
+        callback?.showToolbar()
         it.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
       }
     }
@@ -135,8 +150,16 @@ class OrientedFullscreenFragment : BaseFragment() {
       it.requestedOrientation = activityOrientation.get()
       val decorView = it.window.decorView
       decorView.systemUiVisibility = systemUiOption.get()
-      it.supportActionBar?.show()
+      // it.supportActionBar?.show()
+      callback?.showToolbar()
     }
     super.onDestroy()
+  }
+
+  interface Callback {
+
+    fun hideToolbar()
+
+    fun showToolbar()
   }
 }
