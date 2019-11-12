@@ -16,6 +16,9 @@
 
 package kohii
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Rect
 import android.util.Log
 import android.view.View
@@ -141,6 +144,11 @@ internal infix fun Rect.distanceTo(target: Pair<Pair<Int, Int>, Pair<Int, Int>>)
   val distanceX = abs(this.centerX() - targetCenterX) / targetHalfWidth
   val distanceY = abs(this.centerY() - targetCenterY) / targetHalfHeight
   return distanceX + distanceY // no need to be the fancy Euclid sqrt distance.
+}
+
+// Learn from Glide: com/bumptech/glide/manager/RequestManagerRetriever.java#L304
+fun Context.findActivity(): Activity? {
+  return if (this is Activity) this else if (this is ContextWrapper) baseContext.findActivity() else null
 }
 
 // Because I want to compose the message first, then log it.

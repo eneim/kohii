@@ -88,6 +88,10 @@ class Manager(
 
   internal val playbacks = mutableMapOf<Any /* container */, Playback<*>>()
 
+  override fun toString(): String {
+    return "${super.toString()}, ctx: ${group.activity}"
+  }
+
   override fun compareTo(other: Manager): Int {
     return if (other.host !is Prioritized) {
       if (this.host is Prioritized) 1 else 0

@@ -122,6 +122,7 @@ abstract class Host<V : View> constructor(
 
   @CallSuper
   open fun onAdded() {
+    // TODO setup support for CoordinatorLayout
   }
 
   @CallSuper

@@ -50,7 +50,9 @@ abstract class Rebinder<RENDERER : Any>(
         .filter { it.value == tag }
         .firstOrNull()
         ?.key
-    require(playable != null && this.rendererType.isAssignableFrom(playable.rendererType))
+    require(playable != null && this.rendererType.isAssignableFrom(playable.rendererType)) {
+      "Failed requirement: $playable, FOUND: ${playable?.rendererType}, EXPECTED: $rendererType"
+    }
     master.bind(playable, tag, container, Binder.Options().also {
       it.preload = options.preload
       it.repeatMode = options.repeatMode

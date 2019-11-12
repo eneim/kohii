@@ -31,7 +31,6 @@ import kohii.core.Host.Companion.BOTH_AXIS
 import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
 import kohii.core.Host.Companion.VERTICAL
-import kohii.logError
 import kohii.logWarn
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig
@@ -277,7 +276,6 @@ open class Playback<CONTAINER : ViewGroup>(
   }
 
   fun removeCallback(callback: Callback?) {
-    "Remove $callback, thread: ${Thread.currentThread().name}".logError("Kohii::Dev")
     this.callbacks.remove(callback)
   }
 
@@ -381,7 +379,11 @@ open class Playback<CONTAINER : ViewGroup>(
     ) {
     }
 
-    fun onError(playback: Playback<*>, exception: Exception) {}
+    fun onError(
+      playback: Playback<*>,
+      exception: Exception
+    ) {
+    }
   }
 
   interface Callback {

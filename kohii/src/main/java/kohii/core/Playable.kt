@@ -149,6 +149,10 @@ open class Playable<RENDERER : Any>(
     this.playback = null // Will also clear current Manager if need.
   }
 
+  override fun toString(): String {
+    return "${super.toString()}::$tag"
+  }
+
   // Playback.OnDistanceChangedListener
 
   override fun onDistanceChanged(

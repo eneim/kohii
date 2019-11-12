@@ -17,8 +17,10 @@
 package kohii.core
 
 import android.app.ActivityManager
+import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.Application
 import android.content.ComponentCallbacks2
+import android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
 import android.content.Context
 import android.content.res.Configuration
 import android.net.Uri
@@ -37,12 +39,16 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
 import kohii.core.Binder.Options
+import kohii.findActivity
+import kohii.logDebug
+import kohii.logWarn
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
 import kohii.v1.Kohii
 import kohii.v1.PendingState
 import kotlin.LazyThreadSafetyMode.NONE
+import kotlin.properties.Delegates
 
 class Master private constructor(context: Context) : PlayableManager, ComponentCallbacks2 {
 
@@ -81,7 +87,6 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     ▒▒▒▒▀▀▀▀▀▀▀▒▒▒▒▒▒▒▒▒▒▒▒▒
 
     In BALANCED mode, the release behavior is the same with 'NORMAL' mode, but unselected Playables/Playbacks will not be reset.
-
      */
     BALANCED,
 
@@ -107,8 +112,10 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   companion object {
 
-    private const val MSG_STARTUP = 100
-    private const val MSG_RELEASE_PLAYABLE = 101
+    private const val MSG_CLEANUP = 1
+    private const val MSG_BIND_PLAYABLE = 2
+    private const val MSG_RELEASE_PLAYABLE = 3
+    private const val MSG_DESTROY_PLAYABLE = 4
 
     internal val NO_TAG = Any()
 
@@ -125,12 +132,36 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
 
+    override fun sendMessageAtTime(
+      msg: Message,
+      uptimeMillis: Long
+    ): Boolean {
+      "Send msg: ${msg.what}, ${msg.obj}".logDebug("Kohii::Bug")
+      return super.sendMessageAtTime(msg, uptimeMillis)
+    }
+
     override fun handleMessage(msg: Message) {
-      if (msg.what == MSG_STARTUP) {
-        master.checkPlayables()
-      } else if (msg.what == MSG_RELEASE_PLAYABLE) {
-        val playable = (msg.obj as Playable<*>)
-        playable.bridge.release()
+      "Handle msg: ${msg.what}, ${msg.obj}".logWarn("Kohii::Bug")
+      when {
+        msg.what == MSG_CLEANUP -> {
+          master.cleanupPendingPlayables()
+        }
+        msg.what == MSG_BIND_PLAYABLE -> {
+          val container = msg.obj as ViewGroup
+          container.doOnAttach {
+            master.requests.remove(it)
+                ?.onBind()
+          }
+        }
+        msg.what == MSG_RELEASE_PLAYABLE -> {
+          val playable = (msg.obj as Playable<*>)
+          playable.bridge.release()
+        }
+        msg.what == MSG_DESTROY_PLAYABLE -> {
+          val playable = msg.obj as Playable<*>
+          val clearState = msg.arg1 == 0
+          master.onTearDown(playable, clearState)
+        }
       }
     }
   }
@@ -152,17 +183,19 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   // TODO when to remove entries of this map?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
 
-  private val activityManager by lazy(NONE) {
-    app.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-  }
+  private var trimMemoryLevel: Int by Delegates.observable(
+      initialValue = RunningAppProcessInfo().let {
+        ActivityManager.getMyMemoryState(it)
+        it.lastTrimLevel
+      },
+      onChange = { _, _, _ ->
+        // TODO consider to force groups to trim memory usage if need.
+      }
+  )
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
     if (actual !== MemoryMode.AUTO) return actual
-    val memoryInfo = ActivityManager.MemoryInfo()
-        .also {
-          activityManager.getMemoryInfo(it)
-        }
-    return if (memoryInfo.lowMemory) MemoryMode.LOW else MemoryMode.BALANCED
+    return if (trimMemoryLevel >= TRIM_MEMORY_RUNNING_CRITICAL) MemoryMode.LOW else MemoryMode.BALANCED
   }
 
   private fun registerInternal(
@@ -180,8 +213,13 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   private val engines = mutableMapOf<Class<*>, Engine<*>>()
-  private val bindRequests = mutableMapOf<ViewGroup /* Container */, BindRequest<*>>()
+  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest<*>>()
 
+  /**
+   * @param container container is the [ViewGroup] that holds the Video. It should be an empty
+   * ViewGroup, or a PlayerView itself. Note that View can be created from [android.app.Service] so
+   * its Context is no need to be an [android.app.Activity]
+   */
   internal fun <CONTAINER : ViewGroup, RENDERER : Any> bind(
     playable: Playable<RENDERER>,
     tag: Any,
@@ -189,19 +227,35 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     options: Options,
     callback: ((Playback<*>) -> Unit)? = null
   ) {
+    // Remove any queued bind requests for the same container.
+    dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
+    // Remove any queued release for the same Playable, as we are binding it now.
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
+    dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     // Keep track of which Playable will be bound to which Container.
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
     // but then another Playable is registered to the same Container, we need to kick the previous Playable.
-    bindRequests[container] = BindRequest(this, playable, container, tag, options, callback)
+    requests[container] = BindRequest(this, playable, container, tag, options, callback)
     if (playable.manager == null) playable.manager = this
-    container.doOnAttach {
-      bindRequests.remove(it)
-          ?.onBind()
-    }
+    dispatcher.obtainMessage(MSG_BIND_PLAYABLE, container)
+        .sendToTarget()
+    // container.doOnAttach {
+    //   requests.remove(it)
+    //       ?.onBind()
+    // }
   }
 
   internal fun tearDown(
+    playable: Playable<*>,
+    clearState: Boolean
+  ) {
+    dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+    dispatcher.obtainMessage(MSG_DESTROY_PLAYABLE, clearState.compareTo(true), -1, playable)
+        .sendToTarget()
+  }
+
+  internal fun onTearDown(
     playable: Playable<*>,
     clearState: Boolean
   ) {
@@ -238,10 +292,13 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     }
   }
 
-  private fun checkPlayables() {
+  internal fun cleanupPendingPlayables() {
     playables.filter { it.key.manager === this }
         .keys.toMutableList()
         .onEach {
+          require(it.playback == null) {
+            "$it has manager: ${this@Master} but found Playback: ${it.playback}"
+          }
           it.manager = null
           tearDown(it, true)
         }
@@ -252,20 +309,20 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   internal fun onGroupCreated(group: Group) {
     groups.add(group)
-    dispatcher.sendEmptyMessage(MSG_STARTUP)
+    dispatcher.sendEmptyMessage(MSG_CLEANUP)
   }
 
   internal fun onGroupDestroyed(group: Group) {
     if (groups.remove(group)) {
-      bindRequests.filter { it.key.context === group.activity }
+      requests.filter { it.key.context.findActivity() === group.activity }
           .forEach {
-            it.value.playable.manager = null
-            tearDown(it.value.playable, true)
-            bindRequests.remove(it.key)
+            dispatcher.removeMessages(MSG_BIND_PLAYABLE, it.key)
+            it.value.playable.playback = null
+            requests.remove(it.key)
           }
     }
     if (groups.isEmpty()) {
-      dispatcher.removeMessages(MSG_STARTUP)
+      dispatcher.removeMessages(MSG_CLEANUP)
     }
   }
 
@@ -392,16 +449,19 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   override fun onTrimMemory(level: Int) {
-    // TODO consider tight MemoryMode and reduce memory usage.
+    trimMemoryLevel = level
   }
 
-  private fun <CONTAINER : ViewGroup, RENDERER : Any> onBind(
+  internal fun <CONTAINER : ViewGroup, RENDERER : Any> onBind(
     playable: Playable<RENDERER>,
     tag: Any,
     container: CONTAINER,
     options: Options,
     callback: ((Playback<*>) -> Unit)? = null
   ) {
+    // Cancel any pending release/destroy request. This Playable deserves to live a bit longer.
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
+    dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     playables[playable] = tag
     val host = groups.asSequence()
         .mapNotNull { it.findHostForContainer(container) }
@@ -471,7 +531,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     callback?.invoke(resolvedPlayback)
   }
 
-  private class BindRequest<RENDERER : Any>(
+  internal class BindRequest<RENDERER : Any>(
     val master: Master,
     val playable: Playable<RENDERER>,
     val container: ViewGroup,
