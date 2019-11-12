@@ -31,7 +31,7 @@ import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.ui.player.InitData
+import kohii.v1.sample.common.InitData
 import kotlinx.android.synthetic.main.fragment_player_horizontal.playerContainer
 import kotlinx.android.synthetic.main.fragment_player_horizontal.playerView
 import java.util.concurrent.atomic.AtomicInteger
