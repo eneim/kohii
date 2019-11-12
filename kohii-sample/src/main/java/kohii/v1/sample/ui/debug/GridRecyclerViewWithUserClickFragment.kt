@@ -29,16 +29,17 @@ import kohii.v1.sample.common.BaseFragment
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
-@Suppress("unused")
-class DebugFragment : BaseFragment(), DebugChildFragment.Callback, SinglePlayerFragment.Callback {
+class GridRecyclerViewWithUserClickFragment : BaseFragment(),
+    GridContentFragment.Callback,
+    SinglePlayerFragment.Callback {
 
   companion object {
-    fun newInstance() = DebugFragment()
+    fun newInstance() = GridRecyclerViewWithUserClickFragment()
   }
 
   private val viewModel: VideosViewModel by viewModels()
   private val videoFragment by lazy(NONE) {
-    childFragmentManager.findFragmentById(R.id.mainPanel) as DebugChildFragment
+    childFragmentManager.findFragmentById(R.id.mainPanel) as GridContentFragment
   }
   private var selected: PlayerViewRebinder? by Delegates.observable<PlayerViewRebinder?>(
       null,
@@ -73,7 +74,7 @@ class DebugFragment : BaseFragment(), DebugChildFragment.Callback, SinglePlayerF
     }
   }
 
-  // DebugChildFragment.Callback
+  // GridContentFragment.Callback
 
   override fun onSelected(rebinder: Rebinder<*>) {
     if (rebinder is PlayerViewRebinder) viewModel.selectedRebinder.value = rebinder

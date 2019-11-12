@@ -152,7 +152,7 @@ internal class ItemsAdapter(
   }
 }
 
-class DebugChildFragment : BaseFragment() {
+class GridContentFragment : BaseFragment() {
 
   private var callback: Callback? = null
 

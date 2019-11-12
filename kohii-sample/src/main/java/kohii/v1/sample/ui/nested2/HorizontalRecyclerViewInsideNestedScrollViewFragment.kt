@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.debug
+package kohii.v1.sample.ui.nested2
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -22,46 +22,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.text.parseAsHtml
 import androidx.recyclerview.widget.PagerSnapHelper
-import androidx.recyclerview.widget.RecyclerView.Adapter
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.common.inflateView
-import kohii.v1.sample.ui.manual.videoUrl
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_horizontal.libIntro
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_horizontal.recyclerView
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_horizontal.scrollView
-
-internal class HorizontalItemViewHolder(itemView: View) : ViewHolder(itemView) {
-
-  internal val container = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
-}
-
-internal class HorizontalItemsAdapter(private val master: Master) : Adapter<HorizontalItemViewHolder>() {
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int
-  ): HorizontalItemViewHolder {
-    val itemView = parent.inflateView(R.layout.holder_player_view)
-    return HorizontalItemViewHolder(itemView)
-  }
-
-  override fun getItemCount(): Int {
-    return Int.MAX_VALUE
-  }
-
-  override fun onBindViewHolder(
-    holder: HorizontalItemViewHolder,
-    position: Int
-  ) {
-    holder.container.setAspectRatio(16 / 9F)
-    master.setUp(videoUrl)
-        .with { tag = "NESTED::RV::HOZ::${holder.adapterPosition}" }
-        .bind(holder.container)
-  }
-}
 
 class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
 
