@@ -27,6 +27,7 @@ import kohii.core.Master
 import kohii.core.PlayerViewRebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.InitData
 import kohii.v1.sample.databinding.FragmentMotionBinding
 import kotlinx.android.synthetic.main.fragment_motion.scrollView
 

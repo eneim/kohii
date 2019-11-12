@@ -16,21 +16,20 @@
 
 package kohii.v1.sample.ui.mix
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.Kohii
+import kohii.core.Master
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseViewHolder
+import kohii.v1.sample.data.Item
 
 /**
  * @author eneim (2018/07/06).
  */
 class ItemsAdapter(
   private val items: List<Item>,
-  private val kohii: Kohii
+  private val kohii: Master
 ) : Adapter<BaseViewHolder>() {
-
-  private var inflater: LayoutInflater? = null
 
   init {
     setHasStableIds(true)
@@ -40,12 +39,8 @@ class ItemsAdapter(
     parent: ViewGroup,
     viewType: Int
   ): BaseViewHolder {
-    if (inflater == null || inflater!!.context != parent.context) {
-      inflater = LayoutInflater.from(parent.context)
-    }
-
     return when (viewType) {
-      R.layout.holder_mix_view -> VideoViewHolder(inflater!!, parent, kohii)
+      R.layout.holder_mix_view -> VideoViewHolder(parent, kohii)
       else -> throw RuntimeException("Unknown type: $viewType")
     }
   }

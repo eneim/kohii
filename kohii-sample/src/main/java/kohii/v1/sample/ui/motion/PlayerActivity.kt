@@ -20,13 +20,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
-import android.os.Parcelable
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.core.Master
 import kohii.core.PlayerViewRebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
-import kotlinx.android.parcel.Parcelize
+import kohii.v1.sample.common.InitData
 import kotlinx.android.synthetic.main.activity_player.playerContainer
 import kotlinx.android.synthetic.main.activity_player.playerView
 
@@ -80,9 +79,3 @@ class PlayerActivity : BaseActivity() {
     } else finish()
   }
 }
-
-@Parcelize
-data class InitData(
-  val tag: String,
-  val aspectRatio: Float
-) : Parcelable
