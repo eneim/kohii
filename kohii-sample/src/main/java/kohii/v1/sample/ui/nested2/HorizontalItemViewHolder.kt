@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.mix
+package kohii.v1.sample.ui.nested2
 
-import android.view.LayoutInflater
-import android.view.ViewGroup
+import android.view.View
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import kohii.v1.sample.R.id
 
-/**
- * @author eneim (2018/07/06).
- */
-abstract class BaseViewHolder(
-  val inflater: LayoutInflater,
-  layoutRes: Int,
-  val parent: ViewGroup
-) : ViewHolder(inflater.inflate(layoutRes, parent, false)) {
+internal class HorizontalItemViewHolder(itemView: View) : ViewHolder(itemView) {
 
-  abstract fun bind(item: Item?)
-
-  open fun onRecycled(success: Boolean) {}
-
-  override fun toString(): String {
-    return "${javaClass.simpleName} -- $adapterPosition"
-  }
+  internal val container = itemView.findViewById(
+      id.playerContainer
+  ) as AspectRatioFrameLayout
 }
