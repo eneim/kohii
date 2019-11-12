@@ -29,7 +29,7 @@ import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Rebinder
 import kohii.v1.sample.R
-import kohii.v1.sample.ui.motion.InitData
+import kohii.v1.sample.common.InitData
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_player.playerView
 
@@ -110,9 +110,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
   // Would be called after onStop()
   override fun onInActive(playback: Playback<*>) {
-    playback.container.post {
-      (parentFragment as? Callback)?.onDialogInActive(rebinder)
-    }
+    (parentFragment as? Callback)?.onDialogInActive(rebinder)
   }
 
   override fun onDestroyView() {
