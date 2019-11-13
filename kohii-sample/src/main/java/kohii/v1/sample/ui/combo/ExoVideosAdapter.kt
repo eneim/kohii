@@ -18,13 +18,11 @@ package kohii.v1.sample.ui.combo
 
 import android.net.Uri
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.google.android.exoplayer2.Player
-import com.google.android.material.snackbar.Snackbar
 import kohii.core.Master
 import kohii.core.Playback
-import kohii.core.Playback.PlaybackListener
+import kohii.core.Playback.Callback
 import kohii.media.MediaItem
 import kohii.v1.sample.data.DrmItem
 import kohii.v1.sample.data.Item
@@ -41,7 +39,7 @@ class ExoVideosAdapter(
     viewType: Int
   ): ExoVideoHolder {
     val holder = ExoVideoHolder(parent)
-    holder.playerContainer.setOnClickListener {
+    holder.container.setOnClickListener {
       if (holder.adapterPosition >= 0) {
         onClick?.invoke(holder, holder.adapterPosition)
       }
@@ -67,43 +65,15 @@ class ExoVideosAdapter(
           tag = itemTag
           // preLoad = false
           repeatMode = Player.REPEAT_MODE_ONE
+          callbacks += object : Callback {
+            override fun onRemoved(playback: Playback) {
+              playback.removePlaybackListener(holder)
+            }
+          }
         }
-        .bind(holder.playerContainer) {
+        .bind(holder.container) {
           onLoad?.invoke(holder, position)
-          it.addPlaybackListener(object : PlaybackListener {
-
-            override fun beforePlay(playback: Playback<*>) {
-              holder.thumbnail.isVisible = false
-            }
-
-            override fun afterPause(playback: Playback<*>) {
-              holder.thumbnail.isVisible = true
-            }
-
-            override fun onVideoSizeChanged(
-              playback: Playback<*>,
-              width: Int,
-              height: Int,
-              unAppliedRotationDegrees: Int,
-              pixelWidthHeightRatio: Float
-            ) {
-              holder.aspectRatio = width / height.toFloat()
-              holder.playerContainer.setAspectRatio(holder.aspectRatio)
-              it.removePlaybackListener(this)
-            }
-
-            override fun onError(
-              playback: Playback<*>,
-              exception: Exception
-            ) {
-              Snackbar.make(
-                  playback.container,
-                  exception.localizedMessage ?: "Error",
-                  Snackbar.LENGTH_LONG
-              )
-                  .show()
-            }
-          })
+          it.addPlaybackListener(holder)
         }
   }
 }

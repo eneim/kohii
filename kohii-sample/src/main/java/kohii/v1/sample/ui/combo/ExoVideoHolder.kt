@@ -17,27 +17,62 @@
 package kohii.v1.sample.ui.combo
 
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.material.snackbar.Snackbar
+import kohii.core.Playback
 import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 
 class ExoVideoHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_player_container) {
+) : BaseViewHolder(parent, R.layout.holder_player_container), Playback.PlaybackListener {
 
-  internal val playerContainer =
-    itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
+  internal val container = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   internal val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
-  internal val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
+  private val thumbnail = itemView.findViewById(R.id.thumbnail) as AppCompatImageView
 
   init {
-    playerContainer.setAspectRatio(2.0F)
+    container.setAspectRatio(2.0F)
   }
 
   var rebinder: Rebinder<PlayerView>? = null
   var aspectRatio: Float = 1F
+
+  // Playback.PlaybackListener
+
+  override fun beforePlay(playback: Playback) {
+    thumbnail.isVisible = false
+  }
+
+  override fun afterPause(playback: Playback) {
+    thumbnail.isVisible = true
+  }
+
+  override fun onVideoSizeChanged(
+    playback: Playback,
+    width: Int,
+    height: Int,
+    unAppliedRotationDegrees: Int,
+    pixelWidthHeightRatio: Float
+  ) {
+    aspectRatio = width / height.toFloat()
+    container.setAspectRatio(aspectRatio)
+  }
+
+  override fun onError(
+    playback: Playback,
+    exception: Exception
+  ) {
+    Snackbar.make(
+        playback.container,
+        exception.localizedMessage ?: "Unknown Error",
+        Snackbar.LENGTH_LONG
+    )
+        .show()
+  }
 }
