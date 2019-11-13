@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package kohii.v1.yta
+package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.media.Media
-import kohii.v1.BasePlayable
-import kohii.v1.Bridge
-import kohii.v1.Kohii
-import kohii.v1.Playable.Config
-import kohii.v1.PlaybackCreator
+import kohii.core.Engine
+import kohii.core.Master
 
-class YouTubePlayable(
-  kohii: Kohii,
-  media: Media,
-  config: Config,
-  bridge: Bridge<YouTubePlayerView>,
-  playbackCreator: PlaybackCreator<YouTubePlayerView>
-) : BasePlayable<YouTubePlayerView>(kohii, media, config, bridge, playbackCreator)
+class YouTubeAEngine(master: Master) : Engine<YouTubePlayerView>(master, NewYtPlayableCreator())

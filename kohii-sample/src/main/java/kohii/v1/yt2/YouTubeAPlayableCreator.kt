@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.yta
+package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.core.Master
