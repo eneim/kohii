@@ -99,6 +99,7 @@ abstract class Playback(
   }
 
   data class Config(
+    val tag: Any = Master.NO_TAG,
     val delay: Int = 0,
     val threshold: Float = 0.65F,
     val preload: Boolean = false,
@@ -273,6 +274,8 @@ abstract class Playback(
   }
 
   // Public APIs
+
+  val tag = config.tag
 
   val volumeInfo: VolumeInfo
     get() = TODO()

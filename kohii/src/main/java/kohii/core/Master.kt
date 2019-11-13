@@ -41,8 +41,6 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
 import kohii.core.Binder.Options
 import kohii.findActivity
-import kohii.logDebug
-import kohii.logWarn
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
@@ -133,16 +131,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
 
-    override fun sendMessageAtTime(
-      msg: Message,
-      uptimeMillis: Long
-    ): Boolean {
-      "Send msg: ${msg.what}, ${msg.obj}".logDebug("Kohii::Bug")
-      return super.sendMessageAtTime(msg, uptimeMillis)
-    }
-
     override fun handleMessage(msg: Message) {
-      "Handle msg: ${msg.what}, ${msg.obj}".logWarn("Kohii::Bug")
       when {
         msg.what == MSG_CLEANUP -> {
           master.cleanupPendingPlayables()
@@ -468,6 +457,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
     val createNew by lazy(NONE) {
       val config = Playback.Config(
+          tag = options.tag ?: NO_TAG,
           delay = options.delay,
           threshold = options.threshold,
           preload = options.preload,

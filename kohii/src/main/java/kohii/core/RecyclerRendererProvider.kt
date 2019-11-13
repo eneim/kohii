@@ -23,9 +23,10 @@ import kohii.media.Media
 import kohii.onEachAcquired
 import kohii.v1.BuildConfig
 
-abstract class RecyclerRendererProvider<RENDERER : Any>(
-  private val poolSize: Int = 2
-) : RendererProvider<RENDERER> {
+abstract class RecyclerRendererProvider<RENDERER : Any>(private val poolSize: Int) :
+    RendererProvider<RENDERER> {
+
+  constructor() : this(2)
 
   companion object {
     private fun poolKey(

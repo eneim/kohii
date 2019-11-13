@@ -23,13 +23,21 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
+import kohii.Experiment
 
+@Experiment
 internal class DynamicFragmentRendererPlayback(
   manager: Manager,
   host: Host<*>,
   config: Config,
   container: ViewGroup
 ) : Playback(manager, host, config, container) {
+
+  init {
+    require(tag != Master.NO_TAG) {
+      "Using Fragment as Renderer requires a unique tag when setting up the Playable."
+    }
+  }
 
   private val fragmentManager: FragmentManager =
     when {
@@ -54,7 +62,9 @@ internal class DynamicFragmentRendererPlayback(
     require(container.id != View.NO_ID)
     val existing = fragmentManager.findFragmentById(container.id)
     if (existing !== renderer) {
-      fragmentManager.commitNow(allowStateLoss = true) { replace(container.id, renderer) }
+      fragmentManager.commitNow(allowStateLoss = true) {
+        replace(container.id, renderer, tag.toString())
+      }
     } else {
       val view = renderer.view
       if (view != null && !container.contains(view)) {
@@ -70,7 +80,11 @@ internal class DynamicFragmentRendererPlayback(
     if (renderer == null) return false
     require(renderer is Fragment)
     require(container.id != View.NO_ID)
-    fragmentManager.commitNow(allowStateLoss = true) { remove(renderer) }
+    if (renderer.tag == tag.toString()) {
+      fragmentManager.commitNow(allowStateLoss = true) {
+        remove(renderer)
+      }
+    }
     return true
   }
 }

@@ -20,9 +20,10 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import kohii.media.Media
 
-abstract class ViewRendererProvider<RENDERER : View>(
-  poolSize: Int = 2
-) : RecyclerRendererProvider<RENDERER>(poolSize) {
+abstract class ViewRendererProvider<RENDERER : View>(poolSize: Int) :
+    RecyclerRendererProvider<RENDERER>(poolSize) {
+
+  constructor() : this(2)
 
   override fun releaseRenderer(
     playback: Playback,
