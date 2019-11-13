@@ -89,7 +89,7 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
         }
   }
 
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback) {
     super.onInActive(playback)
     master.unstick(playback)
     callback?.onDismiss(rebinder)
