@@ -37,7 +37,7 @@
         android:theme="@style/AppTheme.Light"
         android:uiOptions="splitActionBarWhenNarrow" />
     <activity
-        android:name=".ui.player.PlayerActivity"
+        android:name=".ui.motion.PlayerActivity"
         android:theme="@style/AppTheme.Dark" />
     <activity
         android:name=".YouTubeActivity"
