@@ -50,7 +50,7 @@ class VideoViewHolder(
   val transView = playerView.findViewById(R.id.exo_content_frame) as View
 
   var rebinder: Rebinder<PlayerView>? = null
-  var playback: Playback<*>? = null
+  var playback: Playback? = null
   var payload: InitData? = null
 
   override fun bind(item: Item?) {

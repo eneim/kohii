@@ -53,6 +53,10 @@ class ExoVideoHolder(
     thumbnail.isVisible = true
   }
 
+  override fun onEnd(playback: Playback) {
+    thumbnail.isVisible = true
+  }
+
   override fun onVideoSizeChanged(
     playback: Playback,
     width: Int,
