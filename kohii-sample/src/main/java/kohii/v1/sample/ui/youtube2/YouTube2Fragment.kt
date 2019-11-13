@@ -30,7 +30,7 @@ import kohii.core.Playback
 import kohii.core.RecyclerRendererProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.yta.YouTubeAEngine
+import kohii.v1.yt2.YouTube2Engine
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class YouTube2Fragment : BaseFragment() {
@@ -82,7 +82,7 @@ class YouTube2Fragment : BaseFragment() {
           }
         })
 
-    val engine = YouTubeAEngine(kohii)
+    val engine = YouTube2Engine(kohii)
     val adapter = YouTubeItemsAdapter(engine, childFragmentManager)
     recyclerView.adapter = adapter
 

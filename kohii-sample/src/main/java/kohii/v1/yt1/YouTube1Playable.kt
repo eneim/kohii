@@ -14,10 +14,24 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt2
+package kohii.v1.yt1
 
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Engine
 import kohii.core.Master
+import kohii.core.Playable
+import kohii.media.Media
+import kohii.v1.Bridge
 
-class YouTubeAEngine(master: Master) : Engine<YouTubePlayerView>(master, NewYtPlayableCreator())
+class YouTube1Playable(
+  master: Master,
+  media: Media,
+  config: Config,
+  bridge: Bridge<YouTubePlayerFragment>
+) : Playable<YouTubePlayerFragment>(
+    master, media, config, YouTubePlayerFragment::class.java, bridge
+) {
+
+  override fun onConfigChange(): Boolean {
+    super.onPause()
+    return false
+  }
+}

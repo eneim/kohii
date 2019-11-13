@@ -32,8 +32,8 @@ import java.util.concurrent.Executors
 class YouTubeViewModel(application: Application) : AndroidViewModel(application) {
 
   companion object {
-    // Android & Play at Google I/O 2019
-    const val YOUTUBE_PLAYLIST_ID = "PLWz5rJ2EKKc9FfSQIRXEWyWpHD6TtwxMM"
+    // Android Summit 2019
+    const val YOUTUBE_PLAYLIST_ID = "PLWz5rJ2EKKc_xXXubDti2eRnIKU0p7wHd"
     const val YOUTUBE_PLAYLIST_MAX_RESULTS = 20L
   }
 

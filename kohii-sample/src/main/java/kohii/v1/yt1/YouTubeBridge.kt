@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.ytb
+package kohii.v1.yt1
 
 import android.os.DeadObjectException
 import android.util.Log
@@ -43,8 +43,7 @@ class YouTubeBridge(
   private val media: Media
 ) : BaseBridge<YouTubePlayerFragment>(),
     PlaybackEventListener,
-    PlayerStateChangeListener,
-    LifecycleObserver {
+    PlayerStateChangeListener, LifecycleObserver {
 
   private val initializedListener = object : OnInitializedListener {
     override fun onInitializationSuccess(
@@ -52,7 +51,7 @@ class YouTubeBridge(
       player: YouTubePlayer?,
       restored: Boolean
     ) {
-      updatePlayer(player)
+      this@YouTubeBridge.player = player
       // Start playback
       if (_playWhenReady && allowedToPlay()) {
         if (restored) player?.play()
@@ -69,53 +68,37 @@ class YouTubeBridge(
     }
   }
 
-  var player: YouTubePlayer? = null
+  internal var player: YouTubePlayer? by Delegates.observable<YouTubePlayer?>(
+      initialValue = null,
+      onChange = { _, from, to ->
+        if (from === to) return@observable
+        from?.performRelease()
+        if (to != null) {
+          to.setPlayerStateChangeListener(this)
+          to.setPlaybackEventListener(this)
+          to.setManageAudioFocus(true)
+          to.setPlayerStyle(MINIMAL)
+          to.setShowFullscreenButton(false)
+        }
+      }
+  )
 
-  private var _playbackState by Delegates.observable(Playable.STATE_IDLE,
-      onChange = { _, _, newVal ->
-        Log.i("Kohii::YTT", "state change: $newVal")
+  private var _playbackState by Delegates.observable(
+      initialValue = Playable.STATE_IDLE,
+      onChange = { _, oldVal, newVal ->
+        if (oldVal == newVal) return@observable
+        Log.i("Kohii::YT1", "state change: $newVal")
+        // this.eventListeners.onPlayerStateChanged(this._playWhenReady, newVal)
       })
 
   private var _playWhenReady: Boolean = false
   private var _loadedVideoId: String? = null
 
-  private fun updatePlayer(youTubePlayer: YouTubePlayer?) {
-    if (this.player === youTubePlayer) return
-    this.player?.also {
-      try {
-        releasePlayer()
-        Log.d("Kohii::YT", "updatePlayer($youTubePlayer) done")
-      } catch (error: Exception) {
-        Log.w("Kohii::YT", "updatePlayer($youTubePlayer) throws error: $error")
-      }
-    }
-    this.player = youTubePlayer?.also {
-      it.setPlayerStateChangeListener(this)
-      it.setPlaybackEventListener(this)
-      it.setManageAudioFocus(true)
-      it.setPlayerStyle(MINIMAL)
-      it.setShowFullscreenButton(false)
-    }
-  }
-
-  internal fun updatePlaybackInfo() {
+  private fun updatePlaybackInfo() {
     player?.let {
       if (_playbackState != Playable.STATE_IDLE) {
         _playbackInfo = _playbackInfo.copy(resumePosition = it.currentTimeMillis.toLong())
       }
-    }
-  }
-
-  private fun releasePlayer() {
-    Log.d("Kohii::YTT", "release $player")
-    this.player?.let {
-      it.setPlayerStateChangeListener(null)
-      it.setPlaybackEventListener(null)
-      it.setPlaylistEventListener(null)
-      it.setOnFullscreenListener(null)
-      it.setManageAudioFocus(false)
-      it.setShowFullscreenButton(false)
-      it.release()
     }
   }
 
@@ -124,16 +107,16 @@ class YouTubeBridge(
   }
 
   // Update this value will trigger player to seek.
-  private var _playbackInfo: PlaybackInfo by Delegates.observable(PlaybackInfo(),
+  private var _playbackInfo: PlaybackInfo by Delegates.observable(
+      initialValue = PlaybackInfo(),
       onChange = { _, oldVal, newVal ->
-        Log.i("Kohii::YTT", "info changed: $newVal")
         val newPos = newVal.resumePosition.toInt()
         val posChanged = newVal.resumePosition != oldVal.resumePosition
         if (posChanged) {
           try {
             player?.seekToMillis(newPos)
           } catch (error: Exception) {
-            Log.w("Kohii::YT", "seekToMs($newPos) throws error: $error")
+            error.printStackTrace()
           }
         }
       })
@@ -158,25 +141,18 @@ class YouTubeBridge(
       field?.also {
         if (it.view != null) it.viewLifecycleOwner.lifecycle.removeObserver(this)
       }
-      if (value == null) {
-        updatePlayer(null)
-      }
+      if (value == null) player = null
+      @Suppress("IfThenToSafeAccess")
+      if (value != null) value.viewLifecycleOwner.lifecycle.addObserver(this)
       field = value
-      field?.also {
-        it.viewLifecycleOwner.lifecycle.addObserver(this)
-      }
     }
 
   override fun play() {
-    Log.d("Kohii::YT", "play: ${this.playerView}")
     if (!this.isPlaying() || _loadedVideoId != media.uri.toString()) {
       this._playWhenReady = true
       this.playerView?.let {
         if (it.view != null) {
-          @Suppress("CAST_NEVER_SUCCEEDS")
           this.player?.play() ?: it.initialize(initializedListener)
-        } else {
-          Log.e("Kohii::YT", "player invisible: ${this.playerView}")
         }
       }
     }
@@ -190,7 +166,6 @@ class YouTubeBridge(
     } catch (er: DeadObjectException) {
       er.printStackTrace()
     }
-    releasePlayer()
     player = null
   }
 
@@ -208,7 +183,6 @@ class YouTubeBridge(
 
   override fun release() {
     this.reset()
-    releasePlayer()
     player = null
   }
 
@@ -238,23 +212,23 @@ class YouTubeBridge(
   }
 
   override fun onBuffering(isBuffering: Boolean) {
+    Log.i("Kohii::YT1", "Event: onBuffering $isBuffering")
     _playbackState = if (isBuffering) Playable.STATE_BUFFERING else _playbackState
-    // this.eventListeners.onPlayerStateChanged(this._playWhenReady, this._playbackState)
   }
 
   override fun onPlaying() {
+    Log.i("Kohii::YT1", "Event: onPlaying")
     _playbackState = Playable.STATE_READY
-    // this.eventListeners.onPlayerStateChanged(this._playWhenReady, this._playbackState)
-  }
-
-  override fun onStopped() {
-    _playbackState = Playable.STATE_END
-    // this.eventListeners.onPlayerStateChanged(this._playWhenReady, this._playbackState)
   }
 
   override fun onPaused() {
+    Log.i("Kohii::YT1", "Event: onPaused")
     _playbackState = Playable.STATE_READY
-    // this.eventListeners.onPlayerStateChanged(this._playWhenReady, this._playbackState)
+  }
+
+  override fun onStopped() {
+    Log.i("Kohii::YT1", "Event: onStopped")
+    _playbackState = Playable.STATE_END
   }
 
   // [END] PlaybackEventListener
@@ -262,26 +236,31 @@ class YouTubeBridge(
   // [BEGIN] PlayerStateChangeListener
 
   override fun onAdStarted() {
+    Log.d("Kohii::YT1", "State: onAdStarted")
   }
 
   override fun onLoading() {
+    Log.d("Kohii::YT1", "State: onLoading")
   }
 
   override fun onVideoStarted() {
+    Log.d("Kohii::YT1", "State: onVideoStarted")
     this.eventListeners.onRenderedFirstFrame()
   }
 
   override fun onLoaded(videoId: String?) {
+    Log.d("Kohii::YT1", "State: onLoaded $videoId")
     _loadedVideoId = videoId
   }
 
   override fun onVideoEnded() {
+    Log.d("Kohii::YT1", "State: onVideoEnded")
     _playbackState = Playable.STATE_END
-    // this.eventListeners.onPlayerStateChanged(this._playWhenReady, this._playbackState)
   }
 
   override fun onError(reason: ErrorReason?) {
-    val error = RuntimeException(reason?.name ?: "Unknown")
+    Log.w("Kohii::YT1", "State: onError $reason")
+    val error = RuntimeException(reason?.name ?: "Unknown error.")
     this.errorListeners.onError(error)
   }
 
@@ -290,13 +269,27 @@ class YouTubeBridge(
   // [BEGIN] LifecycleObserver
 
   @OnLifecycleEvent(ON_PAUSE)
-  fun onOwnerPause() {
+  internal fun onOwnerPause() {
     updatePlaybackInfo()
   }
 
   @OnLifecycleEvent(ON_DESTROY)
-  fun onOwnerDestroy(owner: LifecycleOwner) {
-    releasePlayer()
+  internal fun onOwnerDestroy(owner: LifecycleOwner) {
+    player?.performRelease()
     owner.lifecycle.removeObserver(this)
+  }
+}
+
+internal fun YouTubePlayer.performRelease() {
+  try {
+    setPlayerStateChangeListener(null)
+    setPlaybackEventListener(null)
+    setPlaylistEventListener(null)
+    setOnFullscreenListener(null)
+    setManageAudioFocus(false)
+    setShowFullscreenButton(false)
+    release()
+  } catch (error: Exception) {
+    error.printStackTrace()
   }
 }

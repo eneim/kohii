@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.ytb
+package kohii.v1.yt1
 
 import android.graphics.Point
 import android.graphics.Rect
@@ -32,7 +32,7 @@ import kohii.v1.sample.common.getApp
 class YouTubePlayerFragment : BaseFragment() {
 
   companion object {
-    const val STATE_KEY = "kohii.v1.ytb.YouTubePlayerFragment.KEY_PLAYER_VIEW_STATE"
+    const val STATE_KEY = "kohii.v1.yt1.YouTubePlayerFragment.KEY_PLAYER_VIEW_STATE"
 
     fun newInstance() = YouTubePlayerFragment()
 

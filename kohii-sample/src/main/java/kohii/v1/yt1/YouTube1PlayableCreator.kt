@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt2
+package kohii.v1.yt1
 
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.core.Master
 import kohii.core.Playable
 import kohii.core.Playable.Config
@@ -27,21 +26,23 @@ import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 
 @Parcelize
-class YouTubeARebinder(
+class YouTube1Rebinder(
   override val tag: @RawValue Any
-) : Rebinder<YouTubePlayerView>(tag, YouTubePlayerView::class.java)
+) : Rebinder<YouTubePlayerFragment>(tag, YouTubePlayerFragment::class.java)
 
-class NewYtPlayableCreator : PlayableCreator<YouTubePlayerView>(YouTubePlayerView::class.java) {
+class YouTube1PlayableCreator : PlayableCreator<YouTubePlayerFragment>(
+    YouTubePlayerFragment::class.java
+) {
 
   override fun createPlayable(
     master: Master,
     config: Config,
     media: Media
-  ): Playable<YouTubePlayerView> {
-    return YouTubeAPlayable(master, media, config, YouTubeBridge(media))
+  ): Playable<YouTubePlayerFragment> {
+    return YouTube1Playable(master, media, config, YouTubeBridge(media))
   }
 
-  override fun createRebinder(tag: Any): Rebinder<YouTubePlayerView> {
-    return YouTubeARebinder(tag)
+  override fun createRebinder(tag: Any): Rebinder<YouTubePlayerFragment> {
+    return YouTube1Rebinder(tag)
   }
 }

@@ -22,7 +22,7 @@ import kohii.core.Playable
 import kohii.media.Media
 import kohii.v1.Bridge
 
-class YouTubeAPlayable(
+class YouTube2Playable(
   master: Master,
   media: Media,
   config: Config,

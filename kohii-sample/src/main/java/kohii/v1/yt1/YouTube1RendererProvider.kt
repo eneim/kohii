@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt2
+package kohii.v1.yt1
 
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.media.Media
-import kohii.v1.BasePlayable
-import kohii.v1.Bridge
-import kohii.v1.Kohii
-import kohii.v1.Playable.Config
-import kohii.v1.PlaybackCreator
+import kohii.core.Playback
+import kohii.core.RecyclerRendererProvider
 
-class YouTubePlayable(
-  kohii: Kohii,
-  media: Media,
-  config: Config,
-  bridge: Bridge<YouTubePlayerView>,
-  playbackCreator: PlaybackCreator<YouTubePlayerView>
-) : BasePlayable<YouTubePlayerView>(kohii, media, config, bridge, playbackCreator)
+internal class YouTube1RendererProvider : RecyclerRendererProvider<YouTubePlayerFragment>() {
+
+  override fun createRenderer(
+    playback: Playback,
+    mediaType: Int
+  ): YouTubePlayerFragment {
+    return YouTubePlayerFragment.newInstance()
+  }
+}
