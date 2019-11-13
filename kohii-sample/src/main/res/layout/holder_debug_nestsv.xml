@@ -16,6 +16,7 @@
 
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -33,6 +34,7 @@
       android:text="This is a NestedScrollView"
       android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle"
       android:textColor="#FFFF00"
+      tools:ignore="HardcodedText"
       />
 
   <com.google.android.exoplayer2.ui.AspectRatioFrameLayout

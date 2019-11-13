@@ -16,6 +16,7 @@
 
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -38,21 +39,62 @@
         />
 
     <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+        android:id="@+id/dummyPlayer1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="240dp"
+        app:resize_mode="fixed_width"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/small_text"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/recyclerViewContainer"
         android:layout_width="match_parent"
-        android:layout_height="480dp"
+        android:layout_height="wrap_content"
         android:background="#004d40"
-        app:resize_mode="fixed_width"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
         >
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:id="@+id/recyclerViewTitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="16dp"
+          android:text="Below is a RecyclerView"
+          android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle"
+          android:textColor="#FFFF00"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          tools:ignore="HardcodedText"
+          />
+
       <androidx.recyclerview.widget.RecyclerView
           android:id="@+id/recyclerView"
           android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:layout_gravity="center"
+          android:layout_height="0dp"
           android:orientation="vertical"
-          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+          app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+          app:layout_constraintDimensionRatio="1:1"
+          app:layout_constraintTop_toBottomOf="@id/recyclerViewTitle"
+          app:spanCount="1"
           />
-    </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+        android:id="@+id/dummyPlayer2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="240dp"
+        app:resize_mode="fixed_width"
+        />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"

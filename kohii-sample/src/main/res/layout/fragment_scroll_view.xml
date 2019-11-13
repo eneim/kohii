@@ -17,7 +17,7 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@id/scrollView"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -31,7 +31,7 @@
       >
 
     <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-        android:id="@id/playerContainer"
+        android:id="@+id/playerContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
@@ -39,7 +39,7 @@
         app:resize_mode="fixed_width"
         >
       <com.google.android.exoplayer2.ui.PlayerView
-          android:id="@id/playerView"
+          android:id="@+id/playerView"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:minHeight="171.4dp"
@@ -52,7 +52,7 @@
     </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
 
     <TextView
-        android:id="@id/textContent"
+        android:id="@+id/textContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"

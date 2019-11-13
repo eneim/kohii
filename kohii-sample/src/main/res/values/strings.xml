@@ -19,6 +19,12 @@
 
   <item name="motion_view_tag" format="integer" type="id" />
 
+  <string name="small_text">
+    "All material objects, regardless of size, have a resting elevation, or default elevation "
+    "that does not change. If an object changes elevation, it should return to its resting "
+    "elevation as soon as possible."
+  </string>
+
   <string name="large_text">
     "A material metaphor is the unifying theory of a rationalized space and a system of motion."
     "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
