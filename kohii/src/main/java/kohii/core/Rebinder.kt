@@ -55,6 +55,7 @@ abstract class Rebinder<RENDERER : Any>(
       "Failed requirement: $playable, FOUND: ${playable?.rendererType}, EXPECTED: $rendererType"
     }
     master.bind(playable, tag, container, Binder.Options().also {
+      it.tag = tag
       it.threshold = options.threshold
       it.preload = options.preload
       it.repeatMode = options.repeatMode
