@@ -21,28 +21,23 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
 import com.google.api.services.youtube.model.Video
-import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
+import kohii.core.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.svg.GlideApp
 
-@Suppress("MemberVisibilityCanBePrivate")
 class YouTubeViewHolder(
   parent: ViewGroup,
-  layoutId: Int,
-  val fragmentManager: FragmentManager
-) : BaseViewHolder(parent, layoutId),
-    PlaybackEventListener {
+  layoutId: Int
+) : BaseViewHolder(parent, layoutId), Playback.PlaybackListener {
 
   val container = itemView.findViewById(R.id.container) as FrameLayout
   val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
 
-  var playback: Playback<*>? = null
+  var playback: Playback? = null
 
   override fun bind(item: Any?) {
     super.bind(item)
@@ -61,15 +56,15 @@ class YouTubeViewHolder(
     }
   }
 
-  override fun onEnd(playback: Playback<*>) {
+  override fun onEnd(playback: Playback) {
     thumbnail.isVisible = true
   }
 
-  override fun beforePlay(playback: Playback<*>) {
+  override fun beforePlay(playback: Playback) {
     thumbnail.isVisible = false
   }
 
-  override fun afterPause(playback: Playback<*>) {
+  override fun afterPause(playback: Playback) {
     thumbnail.isVisible = true
   }
 

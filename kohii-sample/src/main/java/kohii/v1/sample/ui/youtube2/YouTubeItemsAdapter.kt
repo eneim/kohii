@@ -22,14 +22,13 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.v1.PlayableCreator
-import kohii.v1.ViewTarget
+import kohii.core.Engine
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
 
 class YouTubeItemsAdapter(
-  private val creator: PlayableCreator<YouTubePlayerView>,
+  private val engine: Engine<YouTubePlayerView>,
   private val fragmentManager: FragmentManager
 ) : PagedListAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
   override fun areItemsTheSame(
@@ -84,7 +83,7 @@ class YouTubeItemsAdapter(
     viewType: Int
   ): BaseViewHolder {
     return when (viewType) {
-      R.layout.holder_youtube_container -> YouTubeViewHolder(parent, viewType, fragmentManager)
+      R.layout.holder_youtube_container -> YouTubeViewHolder(parent, viewType)
       R.layout.holder_loading -> BaseViewHolder(parent, viewType)
       else -> throw IllegalArgumentException("unknown view type $viewType")
     }
@@ -98,13 +97,13 @@ class YouTubeItemsAdapter(
       val item = getItem(position)
       holder.bind(item)
       val videoId = item?.id ?: "EOjq4OIWKqM"
-      creator.setUp(videoId)
+      engine.setUp(videoId)
           .with {
             tag = videoId
             threshold = 0.99F
           }
-          .bind(ViewTarget(holder.container)) {
-            it.addPlaybackEventListener(holder)
+          .bind(holder.container) {
+            it.addPlaybackListener(holder)
             holder.playback = it
           }
     }

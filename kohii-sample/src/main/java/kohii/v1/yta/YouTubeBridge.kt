@@ -40,7 +40,23 @@ class YouTubeBridge(
   private val media: Media
 ) : BaseBridge<YouTubePlayerView>() {
 
-  private var player: YouTubePlayer? = null
+  private var player: YouTubePlayer? by Delegates.observable<YouTubePlayer?>(
+      initialValue = null,
+      onChange = { _, from, to ->
+        if (from === to) return@observable
+        updatePlaybackInfo()
+        tracker.videoId = null
+        tracker.state = UNKNOWN
+        if (from != null) {
+          from.removeListener(tracker)
+          from.removeListener(playerListener)
+        }
+        if (to != null) {
+          to.addListener(tracker)
+          to.addListener(playerListener)
+        }
+      }
+  )
 
   fun mapState(original: PlayerState): Int {
     return when (original) {
@@ -82,9 +98,7 @@ class YouTubeBridge(
   override var playerView: YouTubePlayerView? = null
     set(value) {
       if (field === value) return
-      if (value == null) {
-        updatePlayer(null)
-      }
+      if (value == null) player = null
       field = value
     }
 
@@ -141,34 +155,20 @@ class YouTubeBridge(
 
   private val startCallback = object : YouTubePlayerCallback {
     override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
-      updatePlayer(youTubePlayer)
+      player = youTubePlayer
       youTubePlayer.loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toFloat())
-    }
-  }
-
-  private fun updatePlayer(youTubePlayer: YouTubePlayer?) {
-    if (this.player === youTubePlayer) return
-    updatePlaybackInfo()
-    tracker.videoId = null
-    tracker.state = UNKNOWN
-    this.player?.also {
-      it.removeListener(tracker)
-      it.removeListener(playerListener)
-    }
-    this.player = youTubePlayer?.also {
-      it.addListener(tracker)
-      it.addListener(playerListener)
     }
   }
 
   override fun play() {
     if (tracker.state !== PLAYING || tracker.videoId != media.uri.toString()) {
       val player = this.player
+      val playerView = requireNotNull(playerView)
       if (tracker.videoId == media.uri.toString() && player != null) {
         player.play()
       } else {
         player?.loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toFloat())
-            ?: playerView?.getYouTubePlayerWhenReady(startCallback)
+            ?: playerView.getYouTubePlayerWhenReady(startCallback)
       }
     }
   }
@@ -189,8 +189,6 @@ class YouTubeBridge(
       it.removeListener(tracker)
       it.removeListener(playerListener)
     }
-    player = null
-    playerView = null
   }
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
@@ -198,7 +196,7 @@ class YouTubeBridge(
   }
 
   // Same as YouTubePlayerTracker, but fields are editable
-  class PlayerTracker : AbstractYouTubePlayerListener() {
+  internal class PlayerTracker : AbstractYouTubePlayerListener() {
     /**
      * @return the player state. A value from [PlayerConstants.PlayerState]
      */
