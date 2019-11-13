@@ -16,21 +16,22 @@
 
 package kohii.core
 
-import android.view.ViewGroup
 import kohii.media.Media
 
 interface RendererProvider<RENDERER : Any> {
 
-  fun <CONTAINER : ViewGroup> acquireRenderer(
-    playback: Playback<CONTAINER>,
-    media: Media
-  ): RENDERER?
+  fun acquireRenderer(
+    playback: Playback,
+    media: Media,
+    rendererType: Class<RENDERER>
+  ): RENDERER? = null
 
-  fun <CONTAINER : ViewGroup> releaseRenderer(
-    playback: Playback<CONTAINER>,
+  fun releaseRenderer(
+    playback: Playback,
     media: Media,
     renderer: RENDERER?
-  )
+  ) {
+  }
 
-  fun clear()
+  fun clear() {}
 }

@@ -86,12 +86,12 @@ class RecyclerViewHost(
     return RecycleViewUtils.checkParams(root, params)
   }
 
-  override fun allowToPlay(playback: Playback<*>): Boolean {
+  override fun allowToPlay(playback: Playback): Boolean {
     val container = playback.container
     return root.findContainingViewHolder(container) != null && playback.token.shouldPlay()
   }
 
-  override fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+  override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {
     return selectByOrientation(candidates, orientation = root.fetchOrientation())
   }
 }

@@ -17,23 +17,21 @@
 package kohii.core
 
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.media.Media
 import kohii.v1.R
 
-class PlayerViewProvider : ViewRendererProvider<PlayerView>() {
+internal class PlayerViewProvider : ViewRendererProvider<PlayerView>() {
 
   override fun getMediaType(media: Media): Int {
     return if (media.mediaDrm != null) R.layout.kohii_player_surface_view else R.layout.kohii_player_textureview
   }
 
-  override fun <CONTAINER : ViewGroup> createRenderer(
-    playback: Playback<CONTAINER>,
+  override fun createRenderer(
+    playback: Playback,
     mediaType: Int
   ): PlayerView {
-    return if (playback.container.javaClass === PlayerView::class.java) playback.container as PlayerView
-    else LayoutInflater.from(playback.container.context)
+    return LayoutInflater.from(playback.container.context)
         .inflate(mediaType, playback.container, false) as PlayerView
   }
 }

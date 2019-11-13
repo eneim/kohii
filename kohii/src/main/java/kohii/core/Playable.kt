@@ -34,7 +34,7 @@ open class Playable<RENDERER : Any>(
   val config: Config,
   internal val rendererType: Class<RENDERER>,
   internal val bridge: Bridge<RENDERER>
-) : Playback.Callback, Playback.OnDistanceChangedListener {
+) : Playback.Callback, Playback.OnDistanceChangedListener, Playback.RendererSetter {
 
   data class Config(
     val tag: Any? = null
@@ -49,20 +49,26 @@ open class Playable<RENDERER : Any>(
     bridge.ensurePreparation()
   }
 
-  internal fun onPlay() {
+  protected open val supportConfigChange = true
+
+  protected open fun onConfigChange(): Boolean {
+    return true
+  }
+
+  open fun onPlay() {
+    playback?.onPlay()
     if (!playRequested) {
       playRequested = true
-      playback?.onPlay()
       bridge.play()
     }
   }
 
-  internal fun onPause() {
+  open fun onPause() {
     if (playRequested) {
       playRequested = false
       bridge.pause()
-      playback?.onPause()
     }
+    playback?.onPause()
   }
 
   open fun onRelease() {
@@ -82,7 +88,7 @@ open class Playable<RENDERER : Any>(
   )
 
   @Suppress("IfThenToElvis")
-  internal var playback: Playback<*>? by Delegates.observable<Playback<*>?>(null,
+  internal var playback: Playback? by Delegates.observable<Playback?>(null,
       onChange = { _, from, to ->
         if (from === to) return@observable
         from?.let {
@@ -90,6 +96,7 @@ open class Playable<RENDERER : Any>(
           bridge.removeEventListener(it)
           it.removeCallback(this)
           if (it.onDistanceChangedListener === this) it.onDistanceChangedListener = null
+          if (it.rendererSetter === this) it.rendererSetter = null
         }
 
         this.manager =
@@ -98,7 +105,7 @@ open class Playable<RENDERER : Any>(
           } else {
             val configChange =
               if (from != null) from.manager.group.activity.isChangingConfigurations else false
-            if (configChange) master else null
+            if (configChange && onConfigChange()) master else null
           }
 
         to?.let {
@@ -106,6 +113,7 @@ open class Playable<RENDERER : Any>(
           it.config.callbacks.forEach { cb -> it.addCallback(cb) }
           bridge.addEventListener(it)
           bridge.addErrorListener(it)
+          it.rendererSetter = this
           it.onDistanceChangedListener = this
         }
       }
@@ -122,31 +130,42 @@ open class Playable<RENDERER : Any>(
 
   // Playback.Callback
 
-  override fun onActive(playback: Playback<*>) {
+  override fun onActive(playback: Playback) {
     require(playback === this.playback)
     master.tryRestorePlaybackInfo(this)
     master.preparePlayable(this, playback.config.preload)
-    val renderer = (manager as? Manager)?.acquireRenderer(playback, this)
-    bridge.playerView = renderer
   }
 
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback) {
     require(playback === this.playback)
-    (manager as? Manager)?.releaseRenderer(playback, this)
-    bridge.playerView = null
-    if (!playback.manager.group.activity.isChangingConfigurations) {
+    val configChange = playback.manager.group.activity.isChangingConfigurations
+    if (!configChange || !onConfigChange()) {
       master.trySavePlaybackInfo(this)
       master.releasePlayable(this)
     }
   }
 
-  override fun onAdded(playback: Playback<*>) {
+  override fun onAdded(playback: Playback) {
     bridge.repeatMode = playback.config.repeatMode
   }
 
-  override fun onRemoved(playback: Playback<*>) {
+  override fun onRemoved(playback: Playback) {
     require(playback === this.playback)
-    this.playback = null // Will also clear current Manager if need.
+    this.playback = null // Will also clear current Manager.
+  }
+
+  override fun shouldRequestRenderer(playback: Playback) {
+    require(playback == this.playback)
+    if (bridge.playerView == null) {
+      val renderer = playback.manager.requestRenderer(playback, this)
+      bridge.playerView = renderer
+    }
+  }
+
+  override fun shouldReleaseRenderer(playback: Playback) {
+    require(this.playback == null || this.playback == playback)
+    if (bridge.playerView != null) playback.manager.releaseRenderer(playback, this)
+    bridge.playerView = null
   }
 
   override fun toString(): String {

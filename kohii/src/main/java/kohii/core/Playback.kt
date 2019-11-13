@@ -17,16 +17,13 @@
 package kohii.core
 
 import android.graphics.Rect
-import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.CallSuper
 import androidx.annotation.FloatRange
 import androidx.core.view.ViewCompat
-import androidx.core.view.contains
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
-import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Host.Companion.BOTH_AXIS
 import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
@@ -41,12 +38,12 @@ import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
 import kotlin.properties.Delegates
 
-open class Playback<CONTAINER : ViewGroup>(
+abstract class Playback(
   internal val manager: Manager,
   internal val host: Host<*>,
   internal val config: Config = Config(),
-  val container: CONTAINER
-) : PlayerEventListener, ErrorListener {
+  val container: ViewGroup
+) : PlayerEventListener, ErrorListener, Switch.Callback {
 
   companion object {
     @Suppress("unused")
@@ -65,15 +62,15 @@ open class Playback<CONTAINER : ViewGroup>(
     }
 
     internal val VERTICAL_COMPARATOR by lazy(NONE) {
-      Comparator<Playback<*>> { o1, o2 -> o1.compareWith(o2, VERTICAL) }
+      Comparator<Playback> { o1, o2 -> o1.compareWith(o2, VERTICAL) }
     }
 
     internal val HORIZONTAL_COMPARATOR by lazy(NONE) {
-      Comparator<Playback<*>> { o1, o2 -> o1.compareWith(o2, HORIZONTAL) }
+      Comparator<Playback> { o1, o2 -> o1.compareWith(o2, HORIZONTAL) }
     }
 
     internal val BOTH_AXIS_COMPARATOR by lazy(NONE) {
-      Comparator<Playback<*>> { o1, o2 -> o1.compareWith(o2, BOTH_AXIS) }
+      Comparator<Playback> { o1, o2 -> o1.compareWith(o2, BOTH_AXIS) }
     }
 
     private const val STATE_CREATED = -1
@@ -86,6 +83,7 @@ open class Playback<CONTAINER : ViewGroup>(
   }
 
   class Token(
+    private val threshold: Float = 0.65F,
     @FloatRange(from = -1.0, to = 1.0)
     val areaOffset: Float, // -1 ~ < 0 : inactive or detached, 0 ~ 1: active
     val containerRect: Rect // Relative Rect to its Host's root View.
@@ -96,12 +94,13 @@ open class Playback<CONTAINER : ViewGroup>(
     }
 
     fun shouldPlay(): Boolean {
-      return areaOffset >= 0.65
+      return areaOffset >= threshold
     }
   }
 
   data class Config(
     val delay: Int = 0,
+    val threshold: Float = 0.65F,
     val preload: Boolean = false,
     val repeatMode: Int = Player.REPEAT_MODE_OFF,
     val controller: Controller? = null,
@@ -130,13 +129,13 @@ open class Playback<CONTAINER : ViewGroup>(
 
   protected open fun updateToken(): Token {
     val containerRect = Rect()
-    if (!lifecycleState.isAtLeast(STARTED)) return Token(-1F, containerRect)
+    if (!lifecycleState.isAtLeast(STARTED)) return Token(config.threshold, -1F, containerRect)
     if (!ViewCompat.isAttachedToWindow(container)) {
-      return Token(-1F, containerRect)
+      return Token(config.threshold, -1F, containerRect)
     }
 
     val visible = container.getGlobalVisibleRect(containerRect)
-    if (!visible) return Token(-1F, containerRect)
+    if (!visible) return Token(config.threshold, -1F, containerRect)
 
     val drawArea = with(Rect()) {
       container.getDrawingRect(this)
@@ -151,7 +150,7 @@ open class Playback<CONTAINER : ViewGroup>(
         (containerRect.width() * containerRect.height()) / drawArea.toFloat()
       else
         0F
-    return Token(offset, containerRect)
+    return Token(config.threshold, offset, containerRect)
   }
 
   private val callbacks = ArrayDeque<Callback>()
@@ -165,6 +164,7 @@ open class Playback<CONTAINER : ViewGroup>(
 
   internal fun onRemoved() {
     playbackState = STATE_REMOVED
+    rendererSetter?.shouldReleaseRenderer(this)
     host.removeContainer(this.container)
     callbacks.onEach { it.onRemoved(this) }
         .clear()
@@ -180,40 +180,34 @@ open class Playback<CONTAINER : ViewGroup>(
     callbacks.forEach { it.onDetached(this) }
   }
 
-  open fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?) {
-    if (renderer is View && renderer !== container) {
-      container.addView(renderer)
-    }
+  abstract fun <RENDERER : Any> attachRenderer(renderer: RENDERER?)
 
-    if (renderer is PlayerView && config.controller is ControlDispatcher) {
-      renderer.setControlDispatcher(config.controller)
-      renderer.useController = true
-    }
-  }
+  abstract fun <RENDERER : Any> detachRenderer(renderer: RENDERER?): Boolean
 
-  open fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?) {
-    if (renderer is PlayerView && config.controller is ControlDispatcher) {
-      renderer.setControlDispatcher(null)
-      renderer.useController = false
-    }
-
-    if (renderer is View && container.contains(renderer)) {
-      container.removeView(renderer)
-    }
-  }
-
-  internal fun onActive() {
+  @CallSuper
+  internal open fun onActive() {
     playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
   }
 
-  internal fun onInActive() {
+  @CallSuper
+  internal open fun onInActive() {
     playbackState = STATE_INACTIVE
     callbacks.forEach { it.onInActive(this) }
   }
 
+  @CallSuper
+  internal open fun onPlay() {
+    listeners.forEach { it.beforePlay(this) }
+  }
+
+  @CallSuper
+  internal open fun onPause() {
+    listeners.forEach { it.afterPause(this) }
+  }
+
   // Will be updated everytime 'sessionFlag' changes
-  private var _token: Token = Token(-1F, Rect())
+  private var _token: Token = Token(config.threshold, -1F, Rect())
 
   internal val token: Token
     get() = _token
@@ -244,8 +238,10 @@ open class Playback<CONTAINER : ViewGroup>(
         onDistanceChangedListener?.onDistanceChanged(from, to)
       })
 
+  internal var rendererSetter: RendererSetter? = null
+
   internal fun compareWith(
-    other: Playback<*>,
+    other: Playback,
     orientation: Int
   ): Int {
     val thisToken = this.token
@@ -264,6 +260,16 @@ open class Playback<CONTAINER : ViewGroup>(
 
     if (result == 0) result = compareValues(thisToken.areaOffset, thatToken.areaOffset)
     return result
+  }
+
+  override fun onSwitch(
+    switch: Switch,
+    from: Boolean,
+    to: Boolean
+  ) {
+    TODO(
+        "onSwitch not implemented"
+    ) // To change body of created functions use File | Settings | File Templates.
   }
 
   // Public APIs
@@ -333,18 +339,10 @@ open class Playback<CONTAINER : ViewGroup>(
     if (BuildConfig.DEBUG) error.printStackTrace()
   }
 
-  internal fun onPlay() {
-    listeners.forEach { it.beforePlay(this) }
-  }
-
-  internal fun onPause() {
-    listeners.forEach { it.afterPause(this) }
-  }
-
   interface PlaybackListener {
 
     /** Called when a Video is rendered on the Surface for the first time */
-    fun onFirstFrameRendered(playback: Playback<*>) {}
+    fun onFirstFrameRendered(playback: Playback) {}
 
     /**
      * Called when buffering status of the playback is changed.
@@ -352,26 +350,26 @@ open class Playback<CONTAINER : ViewGroup>(
      * @param playWhenReady true if the Video will start playing once buffered enough, false otherwise.
      */
     fun onBuffering(
-      playback: Playback<*>,
+      playback: Playback,
       playWhenReady: Boolean
     ) {
     } // ExoPlayer state: 2
 
     /** Called when the Video starts playing */
-    fun onPlay(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: true
+    fun onPlay(playback: Playback) {} // ExoPlayer state: 3, play flag: true
 
     /** Called when the Video is paused */
-    fun onPause(playback: Playback<*>) {} // ExoPlayer state: 3, play flag: false
+    fun onPause(playback: Playback) {} // ExoPlayer state: 3, play flag: false
 
     /** Called when the Video finishes its playback */
-    fun onEnd(playback: Playback<*>) {} // ExoPlayer state: 4
+    fun onEnd(playback: Playback) {} // ExoPlayer state: 4
 
-    fun beforePlay(playback: Playback<*>) {}
+    fun beforePlay(playback: Playback) {}
 
-    fun afterPause(playback: Playback<*>) {}
+    fun afterPause(playback: Playback) {}
 
     fun onVideoSizeChanged(
-      playback: Playback<*>,
+      playback: Playback,
       width: Int,
       height: Int,
       unAppliedRotationDegrees: Int,
@@ -380,7 +378,7 @@ open class Playback<CONTAINER : ViewGroup>(
     }
 
     fun onError(
-      playback: Playback<*>,
+      playback: Playback,
       exception: Exception
     ) {
     }
@@ -388,17 +386,17 @@ open class Playback<CONTAINER : ViewGroup>(
 
   interface Callback {
 
-    fun onActive(playback: Playback<*>) {}
+    fun onActive(playback: Playback) {}
 
-    fun onInActive(playback: Playback<*>) {}
+    fun onInActive(playback: Playback) {}
 
-    fun onAdded(playback: Playback<*>) {}
+    fun onAdded(playback: Playback) {}
 
-    fun onRemoved(playback: Playback<*>) {}
+    fun onRemoved(playback: Playback) {}
 
-    fun onAttached(playback: Playback<*>) {}
+    fun onAttached(playback: Playback) {}
 
-    fun onDetached(playback: Playback<*>) {}
+    fun onDetached(playback: Playback) {}
   }
 
   interface Controller {
@@ -426,5 +424,12 @@ open class Playback<CONTAINER : ViewGroup>(
       from: Int,
       to: Int
     )
+  }
+
+  internal interface RendererSetter {
+
+    fun shouldRequestRenderer(playback: Playback)
+
+    fun shouldReleaseRenderer(playback: Playback)
   }
 }

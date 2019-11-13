@@ -72,9 +72,9 @@ abstract class Host<V : View> constructor(
 
   abstract fun accepts(container: ViewGroup): Boolean
 
-  abstract fun allowToPlay(playback: Playback<*>): Boolean
+  abstract fun allowToPlay(playback: Playback): Boolean
 
-  abstract fun selectToPlay(candidates: Collection<Playback<*>>): Collection<Playback<*>>
+  abstract fun selectToPlay(candidates: Collection<Playback>): Collection<Playback>
 
   @CallSuper
   open fun addContainer(container: ViewGroup) {
@@ -135,9 +135,9 @@ abstract class Host<V : View> constructor(
 
   // This operation should be considered heavy/expensive.
   protected fun selectByOrientation(
-    candidates: Collection<Playback<*>>,
+    candidates: Collection<Playback>,
     orientation: Int
-  ): Collection<Playback<*>> {
+  ): Collection<Playback> {
     val comparator = comparators.getValue(orientation)
 
     val grouped = candidates.sortedWith(comparator)

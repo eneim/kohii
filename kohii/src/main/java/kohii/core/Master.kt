@@ -27,6 +27,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
@@ -220,12 +221,12 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
    * ViewGroup, or a PlayerView itself. Note that View can be created from [android.app.Service] so
    * its Context is no need to be an [android.app.Activity]
    */
-  internal fun <CONTAINER : ViewGroup, RENDERER : Any> bind(
+  internal fun <RENDERER : Any> bind(
     playable: Playable<RENDERER>,
     tag: Any,
-    container: CONTAINER,
+    container: ViewGroup,
     options: Options,
-    callback: ((Playback<*>) -> Unit)? = null
+    callback: ((Playback) -> Unit)? = null
   ) {
     // Remove any queued bind requests for the same container.
     dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
@@ -240,10 +241,6 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     if (playable.manager == null) playable.manager = this
     dispatcher.obtainMessage(MSG_BIND_PLAYABLE, container)
         .sendToTarget()
-    // container.doOnAttach {
-    //   requests.remove(it)
-    //       ?.onBind()
-    // }
   }
 
   internal fun tearDown(
@@ -417,13 +414,13 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     }
   }
 
-  fun stick(playback: Playback<*>) {
+  fun stick(playback: Playback) {
     playback.manager.stick(playback.host)
     playback.manager.group.stick(playback.manager)
     playback.manager.refresh()
   }
 
-  fun unstick(playback: Playback<*>) {
+  fun unstick(playback: Playback) {
     playback.manager.group.unstick(playback.manager)
     playback.manager.unstick(playback.host)
     playback.manager.refresh()
@@ -452,12 +449,12 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     trimMemoryLevel = level
   }
 
-  internal fun <CONTAINER : ViewGroup, RENDERER : Any> onBind(
+  internal fun <RENDERER : Any> onBind(
     playable: Playable<RENDERER>,
     tag: Any,
-    container: CONTAINER,
+    container: ViewGroup,
     options: Options,
-    callback: ((Playback<*>) -> Unit)? = null
+    callback: ((Playback) -> Unit)? = null
   ) {
     // Cancel any pending release/destroy request. This Playable deserves to live a bit longer.
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
@@ -472,15 +469,28 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     val createNew by lazy(NONE) {
       val config = Playback.Config(
           delay = options.delay,
+          threshold = options.threshold,
           preload = options.preload,
           repeatMode = options.repeatMode,
           controller = options.controller,
           callbacks = options.callbacks
       )
-      if (host.manager.group.hasRendererProviderForType(container.javaClass))
-        Playback(host.manager, host, config, container)
-      else
-        LazyPlayback(host.manager, host, config, container)
+
+      when {
+        // Scenario: Playable accepts renderer of type PlayerView, and the container is an instance of a subclass of PlayerView.
+        playable.rendererType.isAssignableFrom(container::class.java) -> {
+          StaticViewRendererPlayback(host.manager, host, config, container)
+        }
+        View::class.java.isAssignableFrom(playable.rendererType) -> {
+          DynamicViewRendererPlayback(host.manager, host, config, container)
+        }
+        Fragment::class.java.isAssignableFrom(playable.rendererType) -> {
+          DynamicFragmentRendererPlayback(host.manager, host, config, container)
+        }
+        else -> {
+          throw IllegalArgumentException("Unsupported Renderer type: ${playable.rendererType}")
+        }
+      }
     }
 
     val sameContainer = host.manager.playbacks[container]
@@ -537,7 +547,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     val container: ViewGroup,
     val tag: Any,
     val options: Options,
-    val callback: ((Playback<*>) -> Unit)?
+    val callback: ((Playback) -> Unit)?
   ) {
 
     internal fun onBind() {

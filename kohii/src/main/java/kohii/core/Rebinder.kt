@@ -28,6 +28,7 @@ abstract class Rebinder<RENDERER : Any>(
 ) : Parcelable {
 
   class Options {
+    var threshold: Float = 0.65F
     var preload: Boolean = false
     var repeatMode: Int = Player.REPEAT_MODE_OFF
     var controller: Playback.Controller? = null
@@ -41,10 +42,10 @@ abstract class Rebinder<RENDERER : Any>(
     return this
   }
 
-  fun <CONTAINER : ViewGroup> bind(
+  fun bind(
     master: Master,
-    container: CONTAINER,
-    callback: ((Playback<*>) -> Unit)? = null
+    container: ViewGroup,
+    callback: ((Playback) -> Unit)? = null
   ) {
     val playable = master.playables.asSequence()
         .filter { it.value == tag }
@@ -54,6 +55,7 @@ abstract class Rebinder<RENDERER : Any>(
       "Failed requirement: $playable, FOUND: ${playable?.rendererType}, EXPECTED: $rendererType"
     }
     master.bind(playable, tag, container, Binder.Options().also {
+      it.threshold = options.threshold
       it.preload = options.preload
       it.repeatMode = options.repeatMode
       it.controller = options.controller

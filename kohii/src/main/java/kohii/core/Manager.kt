@@ -86,7 +86,7 @@ class Manager(
 
   internal var sticky: Boolean = false
 
-  internal val playbacks = mutableMapOf<Any /* container */, Playback<*>>()
+  internal val playbacks = mutableMapOf<Any /* container */, Playback>()
 
   override fun toString(): String {
     return "${super.toString()}, ctx: ${group.activity}"
@@ -191,7 +191,7 @@ class Manager(
     group.onRefresh()
   }
 
-  private fun refreshPlaybackStates(): Pair<MutableSet<Playback<*>> /* Active */, MutableSet<Playback<*>> /* InActive */> {
+  private fun refreshPlaybackStates(): Pair<MutableSet<Playback> /* Active */, MutableSet<Playback> /* InActive */> {
     val toActive = playbacks.filterValues { !it.isActive && it.token.shouldPrepare() }
         .values
     val toInActive = playbacks.filterValues { it.isActive && !it.token.shouldPrepare() }
@@ -207,11 +207,11 @@ class Manager(
         )
   }
 
-  internal fun splitPlaybacks(): Pair<Set<Playback<*>> /* toPlay */, Set<Playback<*>> /* toPause */> {
+  internal fun splitPlaybacks(): Pair<Set<Playback> /* toPlay */, Set<Playback> /* toPause */> {
     val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
-    val toPlay = ArraySet<Playback<*>>()
+    val toPlay = ArraySet<Playback>()
 
-    val hostToPlaybacks = playbacks.values.groupBy { it.host } // -> Map<Host, List<Playback<*>>
+    val hostToPlaybacks = playbacks.values.groupBy { it.host } // -> Map<Host, List<Playback>
     hosts.asSequence()
         .filter { !hostToPlaybacks[it].isNullOrEmpty() }
         .map {
@@ -232,14 +232,14 @@ class Manager(
     return toPlay to activePlaybacks
   }
 
-  internal fun addPlayback(playback: Playback<*>) {
+  internal fun addPlayback(playback: Playback) {
     val prev = playbacks.put(playback.container, playback)
     require(prev == null)
     playback.lifecycleState = lifecycleOwner.lifecycle.currentState
     playback.onAdded()
   }
 
-  internal fun removePlayback(playback: Playback<*>) {
+  internal fun removePlayback(playback: Playback) {
     if (playback.isAttached) {
       if (playback.isActive) onPlaybackInActive(playback)
       onPlaybackDetached(playback)
@@ -251,40 +251,40 @@ class Manager(
     playbacks[container]?.let { removePlayback(it) }
   }
 
-  private fun onPlaybackAttached(playback: Playback<*>) {
+  private fun onPlaybackAttached(playback: Playback) {
     playback.onAttached()
   }
 
-  private fun onPlaybackDetached(playback: Playback<*>) {
+  private fun onPlaybackDetached(playback: Playback) {
     playback.onDetached()
   }
 
-  private fun onPlaybackActive(playback: Playback<*>) {
+  private fun onPlaybackActive(playback: Playback) {
     playback.onActive()
   }
 
-  private fun onPlaybackInActive(playback: Playback<*>) {
+  private fun onPlaybackInActive(playback: Playback) {
     playback.onInActive()
   }
 
-  internal fun <RENDERER : Any> acquireRenderer(
-    playback: Playback<*>,
+  internal fun <RENDERER : Any> requestRenderer(
+    playback: Playback,
     playable: Playable<RENDERER>
   ): RENDERER? {
     val renderer = group.findRendererProvider(playable)
-        .acquireRenderer(playback, playable.media)
-    playback.onAttachRenderer(renderer)
+        .acquireRenderer(playback, playable.media, playable.rendererType)
+    playback.attachRenderer(renderer)
     return renderer
   }
 
   internal fun <RENDERER : Any> releaseRenderer(
-    playback: Playback<*>,
+    playback: Playback,
     playable: Playable<RENDERER>
   ) {
     val renderer = playable.bridge.playerView
-    playback.onDetachRenderer(renderer)
-    group.findRendererProvider(playable)
-        .releaseRenderer(playback, playable.media, playable.bridge.playerView)
+    if (playback.detachRenderer(renderer))
+      group.findRendererProvider(playable)
+          .releaseRenderer(playback, playable.media, playable.bridge.playerView)
   }
 
   // Public APIs

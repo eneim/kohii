@@ -23,7 +23,7 @@ import kotlin.properties.Delegates
 
 internal class Organizer {
 
-  internal var selection: List<Playback<*>> by Delegates.observable(
+  internal var selection: List<Playback> by Delegates.observable(
       initialValue = emptyList(),
       onChange = { _, prev, next ->
         DiffUtil.calculateDiff(object : Callback() {
@@ -78,19 +78,19 @@ internal class Organizer {
       }
   )
 
-  internal fun selectFinal(candidates: Collection<Playback<*>>): Collection<Playback<*>> {
+  internal fun selectFinal(candidates: Collection<Playback>): Collection<Playback> {
     this.selection = listOfNotNull(candidates.firstOrNull())
     return this.selection
   }
 
-  internal fun deselect(vararg playbacks: Playback<*>): Boolean {
+  internal fun deselect(vararg playbacks: Playback): Boolean {
     val temp = ArrayList(this.selection)
     val updated = temp.removeAll(playbacks)
     this.selection = temp
     return updated
   }
 
-  internal fun deselect(playbacks: Collection<Playback<*>>): Boolean {
+  internal fun deselect(playbacks: Collection<Playback>): Boolean {
     return this.deselect(*playbacks.toTypedArray())
   }
 }

@@ -16,94 +16,28 @@
 
 package kohii.core
 
-import android.app.Application
 import android.net.Uri
 import androidx.core.net.toUri
-import com.google.android.exoplayer2.database.ExoDatabaseProvider
-import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
-import com.google.android.exoplayer2.upstream.cache.Cache
-import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
-import com.google.android.exoplayer2.upstream.cache.SimpleCache
-import kohii.ExoPlayer
-import kohii.core.Playable.Config
 import kohii.media.Media
 import kohii.media.MediaItem
-import kohii.v1.BuildConfig
-import kohii.v1.Kohii
-import kohii.v1.exo.DefaultBandwidthMeterFactory
-import kohii.v1.exo.DefaultDrmSessionManagerProvider
-import kohii.v1.exo.DefaultExoPlayerProvider
-import kohii.v1.exo.DefaultMediaSourceFactoryProvider
-import kohii.v1.exo.PlayerViewBridgeProvider
-import java.io.File
-import kotlin.LazyThreadSafetyMode.NONE
 
+// TODO may need RendererProvider<RENDERER> in Engine instance? Problem: we want to keep Engine
+//  instance at global/Application scope. Since Renderer must live in Activity scope, keeping a
+//  RendererProvider in Engine may cause a memory leak if not well designed.
+
+// TODO support manual Playback creation in Engine instance.
+// TODO need to support sub-type of a Renderer type. Eg: PlayerView and classes that extend it.
 abstract class Engine<RENDERER : Any>(
   val master: Master,
-  private val playableCreator: PlayableCreator<RENDERER>
+  internal val playableCreator: PlayableCreator<RENDERER>
 ) {
 
-  open fun setUp(media: Media): Binder<RENDERER> = Binder(master, media, playableCreator)
+  // TODO implement the method below.
+  // abstract fun <T> supportRendererType(type: Class<T>): Boolean
+
+  open fun setUp(media: Media): Binder<RENDERER> = Binder(this, media)
 
   open fun setUp(uri: Uri) = setUp(MediaItem(uri))
 
   open fun setUp(url: String) = setUp(url.toUri())
 }
-
-internal class PlayerViewPlayableCreator(
-  val app: Application
-) : PlayableCreator<PlayerView>(PlayerView::class.java) {
-
-  companion object {
-    private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
-    private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
-  }
-
-  @ExoPlayer
-  internal val defaultBridgeProvider by lazy(NONE) {
-    val userAgent = Kohii.getUserAgent(this.app, BuildConfig.LIB_NAME)
-    val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
-
-    // ExoPlayerProvider
-    val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this.app, httpDataSource)
-    val playerProvider = DefaultExoPlayerProvider(
-        this.app,
-        DefaultBandwidthMeterFactory(),
-        drmSessionManagerProvider
-    )
-
-    // MediaSourceFactoryProvider
-    val fileDir = this.app.getExternalFilesDir(null) ?: this.app.filesDir
-    val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
-    val mediaCache: Cache = SimpleCache(
-        contentDir, LeastRecentlyUsedCacheEvictor(CACHE_SIZE), ExoDatabaseProvider(this.app)
-    )
-    val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
-    val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
-    PlayerViewBridgeProvider(playerProvider, mediaSourceFactoryProvider)
-  }
-
-  override fun createPlayable(
-    master: Master,
-    config: Config,
-    media: Media
-  ): Playable<PlayerView> {
-    return Playable(
-        master,
-        media,
-        config,
-        PlayerView::class.java,
-        defaultBridgeProvider.provideBridge(master.kohii, media)
-    )
-  }
-
-  override fun createRebinder(tag: Any): Rebinder<PlayerView> {
-    return PlayerViewRebinder(tag)
-  }
-}
-
-internal class PlayerViewEngine(
-  master: Master
-) : Engine<PlayerView>(master, PlayerViewPlayableCreator(master.app))

@@ -17,20 +17,19 @@
 package kohii.core
 
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import kohii.media.Media
 
-abstract class ViewRendererProvider<R : View>(
+abstract class ViewRendererProvider<RENDERER : View>(
   poolSize: Int = 2
-) : RecyclerRendererProvider<R>(poolSize) {
+) : RecyclerRendererProvider<RENDERER>(poolSize) {
 
-  override fun <CONTAINER : ViewGroup> releaseRenderer(
-    playback: Playback<CONTAINER>,
+  override fun releaseRenderer(
+    playback: Playback,
     media: Media,
-    renderer: R?
+    renderer: RENDERER?
   ) {
-    if (renderer != null && renderer != playback.container) {
+    if (renderer != null && renderer !== playback.container) {
       require(renderer.parent == null && !ViewCompat.isAttachedToWindow(renderer))
     }
     super.releaseRenderer(playback, media, renderer)

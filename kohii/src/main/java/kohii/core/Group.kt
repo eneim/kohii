@@ -91,22 +91,18 @@ class Group(
     return activity.hashCode()
   }
 
-  internal val playbacks: Collection<Playback<*>>
+  internal val playbacks: Collection<Playback>
     get() = managers.flatMap { it.playbacks.values }
 
   @OnLifecycleEvent(ON_CREATE)
   internal fun onCreate() {
     master.onGroupCreated(this)
-    this.registerRendererProvider(PlayerView::class.java, defaultRendererProvider)
   }
 
   @OnLifecycleEvent(ON_DESTROY)
   internal fun onDestroy(owner: LifecycleOwner) {
     handler.removeCallbacksAndMessages(null)
-    rendererProviders.onEach { it.value.clear() }
-        .clear()
     owner.lifecycle.removeObserver(this)
-    this.unregisterRendererProvider(defaultRendererProvider)
     master.onGroupDestroyed(this)
   }
 
@@ -129,6 +125,10 @@ class Group(
 
   internal fun <RENDERER : Any> findRendererProvider(playable: Playable<RENDERER>): RendererProvider<RENDERER> {
     val cache = rendererProviders[playable.rendererType]
+        ?: rendererProviders.asSequence().firstOrNull {
+          // If there is a RendererProvider of subclass, we can use it.
+          playable.rendererType.isAssignableFrom(it.key)
+        }?.value
     @Suppress("UNCHECKED_CAST")
     return requireNotNull(cache) as RendererProvider<RENDERER>
   }
@@ -151,10 +151,6 @@ class Group(
         }
   }
 
-  internal fun hasRendererProviderForType(type: Class<*>): Boolean {
-    return rendererProviders.containsKey(type)
-  }
-
   internal fun onRefresh() {
     handler.removeMessages(MSG_REFRESH)
     handler.sendEmptyMessageDelayed(MSG_REFRESH, DELAY)
@@ -164,8 +160,8 @@ class Group(
     val playbacks = this.playbacks // save a cache to prevent re-mapping
     playbacks.forEach { it.onRefresh() }
 
-    val toPlay = linkedSetOf<Playback<*>>() // Need the order.
-    val toPause = ArraySet<Playback<*>>()
+    val toPlay = linkedSetOf<Playback>() // Need the order.
+    val toPause = ArraySet<Playback>()
 
     managers.forEach {
       val (canPlay, canPause) = it.splitPlaybacks()
@@ -206,12 +202,21 @@ class Group(
   internal fun onManagerDestroyed(manager: Manager) {
     if (stickyManager === manager) stickyManager = null
     if (managers.remove(manager)) master.onGroupUpdated(this)
+    if (managers.size == 0) {
+      this.unregisterRendererProvider(defaultRendererProvider)
+      rendererProviders.onEach { it.value.clear() }
+          .clear()
+    }
   }
 
   // This operation should:
   // - Ensure the order of Manager by its Priority
   // - Ensure stickyManager is in the head.
   internal fun onManagerCreated(manager: Manager) {
+    if (managers.size == 0) {
+      this.registerRendererProvider(PlayerView::class.java, defaultRendererProvider)
+    }
+
     val updated: Boolean
     // 1. Pop out the sticky Manager if available.
     val sticky = if (managers.peek()?.sticky == true) managers.pop() else null

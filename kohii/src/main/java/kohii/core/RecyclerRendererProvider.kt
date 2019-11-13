@@ -16,7 +16,7 @@
 
 package kohii.core
 
-import android.view.ViewGroup
+import androidx.annotation.CallSuper
 import androidx.collection.ArrayMap
 import androidx.core.util.Pools.SimplePool
 import kohii.media.Media
@@ -40,15 +40,22 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(
 
   open fun getMediaType(media: Media): Int = 0
 
-  abstract fun <CONTAINER : ViewGroup> createRenderer(
-    playback: Playback<CONTAINER>,
+  // Must always create new Renderer.
+  abstract fun createRenderer(
+    playback: Playback,
     mediaType: Int
   ): RENDERER
 
-  override fun <CONTAINER : ViewGroup> acquireRenderer(
-    playback: Playback<CONTAINER>,
-    media: Media
+  @CallSuper
+  override fun acquireRenderer(
+    playback: Playback,
+    media: Media,
+    rendererType: Class<RENDERER>
   ): RENDERER {
+    // The Container is also a Renderer, we return it right away.
+    @Suppress("UNCHECKED_CAST")
+    if (rendererType.isAssignableFrom(playback.container.javaClass))
+      return playback.container as RENDERER
     val containerType = getContainerType(playback.container)
     val mediaType = getMediaType(media)
     val poolKey = poolKey(containerType, mediaType)
@@ -56,8 +63,9 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(
     return pool?.acquire() ?: createRenderer(playback, mediaType)
   }
 
-  override fun <CONTAINER : ViewGroup> releaseRenderer(
-    playback: Playback<CONTAINER>,
+  @CallSuper
+  override fun releaseRenderer(
+    playback: Playback,
     media: Media,
     renderer: RENDERER?
   ) {
@@ -69,7 +77,10 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(
     pool.release(renderer)
   }
 
+  @CallSuper
   override fun clear() {
-    keyToPool.forEach { it.value.onEachAcquired { } }
+    keyToPool.forEach { it.value.onEachAcquired { renderer -> onClear(renderer) } }
   }
+
+  protected open fun onClear(renderer: RENDERER) {}
 }
