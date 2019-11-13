@@ -49,23 +49,28 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
   private lateinit var kohii: Master
-  private var playback: Playback<*>? = null
+  private var playback: Playback? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    val viewRes = R.layout.fragment_scroll_view
-    return inflater.inflate(viewRes, container, false)
+    return inflater.inflate(R.layout.fragment_scroll_view, container, false)
+  }
+
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    kohii = Master[this]
+    kohii.register(this)
+        .attach(scrollView)
   }
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
-    kohii = Master[this]
-    kohii.register(this)
-        .attach(scrollView)
-
     val rebinder = kohii.setUp(videoUrl)
         .with {
           tag = videoTag

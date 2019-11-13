@@ -63,7 +63,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
   private lateinit var kohii: Master
   private lateinit var rebinder: Rebinder<PlayerView>
 
-  private var playback: Playback<*>? = null
+  private var playback: Playback? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog = super.onCreateDialog(savedInstanceState)
@@ -104,12 +104,12 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     this.rebinder = rebinder
   }
 
-  override fun onActive(playback: Playback<*>) {
+  override fun onActive(playback: Playback) {
     (parentFragment as? Callback)?.onDialogActive()
   }
 
   // Would be called after onStop()
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback) {
     (parentFragment as? Callback)?.onDialogInActive(rebinder)
   }
 
