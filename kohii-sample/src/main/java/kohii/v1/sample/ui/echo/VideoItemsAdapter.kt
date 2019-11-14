@@ -18,8 +18,8 @@ package kohii.v1.sample.ui.echo
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
+import kohii.core.Master
 import kohii.media.VolumeInfo
-import kohii.v1.Kohii
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Video
 
@@ -35,8 +35,9 @@ interface VolumeStore {
 
 class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val kohii: Kohii,
-  private val volumeStore: VolumeStore
+  private val kohii: Master,
+  private val volumeStore: VolumeStore,
+  internal val volumeInfoUpdater: (VideoItemHolder) -> VolumeInfo?
 ) : Adapter<BaseViewHolder>() {
 
   override fun onCreateViewHolder(
@@ -46,12 +47,8 @@ class VideoItemsAdapter(
     val holder = VideoItemHolder(parent, kohii)
 
     holder.volumeButton.setOnClickListener {
-      holder.playback?.let { pk ->
-        val currentVolume = pk.volumeInfo
-        val volumeInfo = VolumeInfo(!currentVolume.mute, currentVolume.volume)
-        volumeStore.set(holder.adapterPosition, volumeInfo)
-        notifyItemChanged(holder.adapterPosition, volumeInfo)
-      }
+      val updated = volumeInfoUpdater(holder)
+      if (updated != null) notifyItemChanged(holder.adapterPosition, updated)
     }
 
     return holder
@@ -78,13 +75,10 @@ class VideoItemsAdapter(
     payloads: MutableList<Any>
   ) {
     val payload = payloads.firstOrNull()
-    if (payload !is VolumeInfo) {
-      super.onBindViewHolder(holder, position, payloads)
-      return
-    }
-
-    if (holder is VideoItemHolder) {
+    if (payload is VolumeInfo && holder is VideoItemHolder) {
       holder.applyVolumeInfo(payload)
+    } else {
+      super.onBindViewHolder(holder, position, payloads)
     }
   }
 

@@ -28,7 +28,8 @@ import kohii.core.Host.Companion.BOTH_AXIS
 import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
 import kohii.core.Host.Companion.VERTICAL
-import kohii.logWarn
+import kohii.logDebug
+import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig
 import kohii.v1.ErrorListener
@@ -227,7 +228,7 @@ abstract class Playback(
 
   internal var lifecycleState: State = State.INITIALIZED
 
-  internal var onDistanceChangedListener: OnDistanceChangedListener? = null
+  internal var distanceListener: DistanceListener? = null
   // The smaller, the closer it is to be selected to Play.
   // Consider to prepare the underline Playable for low enough distance, and release it otherwise.
   // This value is updated by Group. In active Playback always has Int.MAX_VALUE distance.
@@ -235,9 +236,21 @@ abstract class Playback(
       Int.MAX_VALUE,
       onChange = { _, from, to ->
         if (from == to) return@observable
-        "$this distance: $from --> $to".logWarn("Kohii::Dev")
-        onDistanceChangedListener?.onDistanceChanged(this, from, to)
+        "$this distance: $from --> $to".logDebug("Kohii::Dev")
+        distanceListener?.onDistanceChanged(this, from, to)
       })
+
+  internal var volumeInfoListener: VolumeInfoListener? = null
+  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+      initialValue = VolumeInfo(),
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        "$this volume: $from --> $to".logDebug("Kohii::Dev")
+        volumeInfoListener?.onVolumeInfoChange(this, from, to)
+      }
+  )
+
+  internal var playbackInfoListener: PlaybackInfoListener? = null
 
   internal var rendererHolder: RendererHolder? = null
 
@@ -278,7 +291,10 @@ abstract class Playback(
   val tag = config.tag
 
   val volumeInfo: VolumeInfo
-    get() = TODO()
+    get() = volumeInfoUpdater
+
+  val playbackInfo: PlaybackInfo
+    get() = playbackInfoListener?.playbackInfo ?: PlaybackInfo()
 
   fun addCallback(callback: Callback) {
     this.callbacks.push(callback)
@@ -421,13 +437,29 @@ abstract class Playback(
     fun kohiiCanStart(): Boolean = false
   }
 
-  internal interface OnDistanceChangedListener {
+  // Below interfaces are to communicate with Playable.
+
+  internal interface DistanceListener {
 
     fun onDistanceChanged(
       playback: Playback,
       from: Int,
       to: Int
     )
+  }
+
+  internal interface VolumeInfoListener {
+
+    fun onVolumeInfoChange(
+      playback: Playback,
+      from: VolumeInfo,
+      to: VolumeInfo
+    )
+  }
+
+  internal interface PlaybackInfoListener {
+
+    var playbackInfo: PlaybackInfo
   }
 
   internal interface RendererHolder {

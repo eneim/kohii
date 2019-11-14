@@ -32,6 +32,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.distanceTo
+import kohii.media.VolumeInfo
 import kohii.partitionToMutableSets
 import kohii.v1.Prioritized
 import java.util.ArrayDeque
@@ -71,6 +72,15 @@ class Group(
             managers.pop()
           }
         }
+      }
+  )
+
+  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+      initialValue = VolumeInfo(),
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        // Update VolumeInfo of all Hosts. This operation will then callback to this #applyVolumeInfo
+        managers.forEach { it.volumeInfoUpdater = to }
       }
   )
 

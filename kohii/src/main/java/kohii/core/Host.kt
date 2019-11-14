@@ -27,7 +27,9 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import kohii.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
+import kotlin.properties.Delegates
 
 abstract class Host constructor(
   val manager: Manager,
@@ -134,6 +136,14 @@ abstract class Host constructor(
         .clear()
   }
 
+  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+      initialValue = VolumeInfo(),
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        manager.updateHostVolumeInfo(this, to)
+      }
+  )
+
   // This operation should be considered heavy/expensive.
   protected fun selectByOrientation(
     candidates: Collection<Playback>,
@@ -172,9 +182,12 @@ abstract class Host constructor(
     return true
   }
 
+  private val lazyHashCode by lazy(NONE) {
+    val result = manager.hashCode()
+    31 * result + root.hashCode()
+  }
+
   override fun hashCode(): Int {
-    var result = manager.hashCode()
-    result = 31 * result + root.hashCode()
-    return result
+    return lazyHashCode
   }
 }

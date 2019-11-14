@@ -44,8 +44,10 @@ import kohii.findActivity
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
+import kohii.media.VolumeInfo
 import kohii.v1.Kohii
 import kohii.v1.PendingState
+import kohii.v1.Scope
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
@@ -414,6 +416,20 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     playback.manager.group.unstick(playback.manager)
     playback.manager.unstick(playback.host)
     playback.manager.refresh()
+  }
+
+  fun applyVolumeInfo(
+    volumeInfo: VolumeInfo,
+    target: Any,
+    scope: Scope
+  ) {
+    when (target) {
+      is Playback -> target.manager.applyVolumeInfo(volumeInfo, target, scope)
+      is Host -> target.manager.applyVolumeInfo(volumeInfo, target, scope)
+      is Manager -> target.applyVolumeInfo(volumeInfo, target, scope)
+      is Group -> target.managers.forEach { it.applyVolumeInfo(volumeInfo, it, scope) }
+      else -> throw IllegalArgumentException("Unknown target for VolumeInfo: $target")
+    }
   }
 
   // Lock all resources.

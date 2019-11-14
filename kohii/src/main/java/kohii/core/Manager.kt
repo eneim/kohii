@@ -32,8 +32,15 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.core.Master.MemoryMode
 import kohii.core.Master.MemoryMode.LOW
+import kohii.media.VolumeInfo
 import kohii.partitionToMutableSets
 import kohii.v1.Prioritized
+import kohii.v1.Scope
+import kohii.v1.Scope.ACTIVITY
+import kohii.v1.Scope.GLOBAL
+import kohii.v1.Scope.HOST
+import kohii.v1.Scope.MANAGER
+import kohii.v1.Scope.PLAYBACK
 import java.util.ArrayDeque
 import kotlin.properties.Delegates
 
@@ -84,9 +91,18 @@ class Manager(
     lifecycleOwner.lifecycle.addObserver(this)
   }
 
+  internal val playbacks = mutableMapOf<Any /* container */, Playback>()
+
   internal var sticky: Boolean = false
 
-  internal val playbacks = mutableMapOf<Any /* container */, Playback>()
+  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+      initialValue = VolumeInfo(),
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        // Update VolumeInfo of all Hosts. This operation will then callback to this #applyVolumeInfo
+        hosts.forEach { it.volumeInfoUpdater = to }
+      }
+  )
 
   override fun toString(): String {
     return "${super.toString()}, ctx: ${group.activity}"
@@ -331,6 +347,42 @@ class Manager(
   internal fun unstick(host: Host?) {
     if (host == null || this.stickyHost === host) {
       this.stickyHost = null
+    }
+  }
+
+  internal fun updateHostVolumeInfo(
+    host: Host,
+    volumeInfo: VolumeInfo
+  ) {
+    playbacks.forEach { if (it.value.host === host) it.value.volumeInfoUpdater = volumeInfo }
+  }
+
+  internal fun applyVolumeInfo(
+    volumeInfo: VolumeInfo,
+    target: Any,
+    scope: Scope
+  ) {
+    when (scope) {
+      PLAYBACK -> {
+        require(target is Playback)
+        target.volumeInfoUpdater = volumeInfo
+      }
+      HOST -> {
+        when (target) {
+          is Host -> target.volumeInfoUpdater = volumeInfo
+          is Playback -> target.host.volumeInfoUpdater = volumeInfo
+          else -> requireNotNull(hosts.find { it.root === target }).volumeInfoUpdater = volumeInfo
+        }
+      }
+      MANAGER -> {
+        this.volumeInfoUpdater = volumeInfo
+      }
+      ACTIVITY /* Group scope */ -> {
+        this.group.volumeInfoUpdater = volumeInfo
+      }
+      GLOBAL -> {
+        this.master.groups.forEach { it.volumeInfoUpdater = volumeInfo }
+      }
     }
   }
 }

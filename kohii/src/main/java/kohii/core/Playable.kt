@@ -26,6 +26,7 @@ import kohii.core.Master.MemoryMode.LOW
 import kohii.core.Master.MemoryMode.NORMAL
 import kohii.media.Media
 import kohii.media.PlaybackInfo
+import kohii.media.VolumeInfo
 import kohii.v1.Bridge
 import kotlin.properties.Delegates
 
@@ -35,7 +36,10 @@ open class Playable<RENDERER : Any>(
   val config: Config,
   internal val rendererType: Class<RENDERER>,
   internal val bridge: Bridge<RENDERER>
-) : Playback.Callback, Playback.OnDistanceChangedListener, Playback.RendererHolder {
+) : Playback.Callback,
+    Playback.RendererHolder,
+    Playback.DistanceListener,
+    Playback.VolumeInfoListener, Playback.PlaybackInfoListener {
 
   data class Config(
     val tag: Any = NO_TAG
@@ -96,8 +100,10 @@ open class Playable<RENDERER : Any>(
           bridge.removeErrorListener(it)
           bridge.removeEventListener(it)
           it.removeCallback(this)
-          if (it.onDistanceChangedListener === this) it.onDistanceChangedListener = null
+          if (it.distanceListener === this) it.distanceListener = null
           if (it.rendererHolder === this) it.rendererHolder = null
+          if (it.volumeInfoListener === this) it.volumeInfoListener = null
+          if (it.playbackInfoListener === this) it.playbackInfoListener = null
         }
 
         this.manager =
@@ -115,16 +121,12 @@ open class Playable<RENDERER : Any>(
           bridge.addEventListener(it)
           bridge.addErrorListener(it)
           it.rendererHolder = this
-          it.onDistanceChangedListener = this
+          it.distanceListener = this
+          it.volumeInfoListener = this
+          it.playbackInfoListener = this
         }
       }
   )
-
-  internal var playbackInfo: PlaybackInfo
-    get() = bridge.playbackInfo
-    set(value) {
-      bridge.playbackInfo = value
-    }
 
   internal val playerState: Int
     get() = bridge.playbackState
@@ -173,7 +175,7 @@ open class Playable<RENDERER : Any>(
     return "${super.toString()}::$tag"
   }
 
-  // Playback.OnDistanceChangedListener
+  // Playback.DistanceListener
 
   override fun onDistanceChanged(
     playback: Playback,
@@ -203,4 +205,22 @@ open class Playable<RENDERER : Any>(
       }
     }
   }
+
+  // Playback.VolumeInfoListener
+
+  override fun onVolumeInfoChange(
+    playback: Playback,
+    from: VolumeInfo,
+    to: VolumeInfo
+  ) {
+    bridge.setVolumeInfo(to)
+  }
+
+  // Playback.PlaybackInfoListener
+
+  override var playbackInfo: PlaybackInfo
+    get() = bridge.playbackInfo
+    set(value) {
+      bridge.playbackInfo = value
+    }
 }

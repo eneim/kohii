@@ -21,14 +21,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.button.MaterialButton
+import kohii.core.Master
+import kohii.core.Playback
 import kohii.media.VolumeInfo
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
 import kohii.v1.Scope
-import kohii.v1.ViewTarget
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Video
@@ -46,7 +43,7 @@ data class VideoItem(
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoItemHolder(
   parent: ViewGroup,
-  private val kohii: Kohii
+  private val kohii: Master
 ) : BaseViewHolder(parent, R.layout.holder_video_text_overlay) {
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
@@ -59,6 +56,8 @@ class VideoItemHolder(
   init {
     volumeButton.isVisible = true
   }
+
+  internal var playback: Playback? = null
 
   private var rawData: Video? by Delegates.observable<Video?>(null,
       onChange = { _, _, newVal ->
@@ -87,10 +86,10 @@ class VideoItemHolder(
 
           kohii.setUp(newVal.file)
               .with {
-                tag = tagKey
-                repeatMode = Playable.REPEAT_MODE_ONE
+                tag = requireNotNull(tagKey)
+                // repeatMode = Playable.REPEAT_MODE_ONE
               }
-              .bind(ViewTarget(playerContainer)) { playback ->
+              .bind(playerContainer) { playback ->
                 this@VideoItemHolder.playback = playback
               }
         } else {
@@ -102,17 +101,15 @@ class VideoItemHolder(
     get() = this.videoItem?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
 
   private var volumeInfo by Delegates.observable<VolumeInfo?>(null,
-      onChange = { _, oldVal, newVal ->
-        if (newVal == oldVal) return@observable
-        if (newVal != null) {
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        if (to != null) {
           playback?.let {
-            kohii.applyVolumeInfo(newVal, it, Scope.PLAYBACK)
+            kohii.applyVolumeInfo(to, it, Scope.PLAYBACK)
           }
-          volumeButton.text = "Mute: ${newVal.mute}"
+          volumeButton.text = "Mute: ${to.mute}"
         }
       })
-
-  internal var playback: Playback<PlayerView>? = null
 
   internal fun applyVideoData(video: Video?) {
     this.rawData = video
