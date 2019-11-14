@@ -181,11 +181,16 @@ class Group(
     // Update distanceToPlay
     val target = (cover.centerX() to cover.width() / 2) to (cover.centerY() to cover.height() / 2)
     if (target.first.second > 0 && target.second.second > 0) {
-      playbacks.partitionToMutableSets(predicate = { it.isActive }, transform = { it })
+      newSelection.forEach { it.distanceToPlay = 0 }
+      (playbacks - newSelection) // TODO better way that doesn't require allocating new collection?
+          .partitionToMutableSets(
+              predicate = { it.isActive },
+              transform = { it }
+          )
           .also { (active, inactive) ->
-            inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
             active.sortedBy { it.token.containerRect distanceTo target }
                 .forEachIndexed { index, playback -> playback.distanceToPlay = index }
+            inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
           }
     }
 

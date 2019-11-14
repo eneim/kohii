@@ -230,7 +230,7 @@ abstract class Playback(
   internal var onDistanceChangedListener: OnDistanceChangedListener? = null
   // The smaller, the closer it is to be selected to Play.
   // Consider to prepare the underline Playable for low enough distance, and release it otherwise.
-  // This value is updated by Manager. In active Playback always has Int.MAX_VALUE distance.
+  // This value is updated by Group. In active Playback always has Int.MAX_VALUE distance.
   internal var distanceToPlay: Int by Delegates.observable(
       Int.MAX_VALUE,
       onChange = { _, from, to ->

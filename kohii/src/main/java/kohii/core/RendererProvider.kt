@@ -16,16 +16,21 @@
 
 package kohii.core
 
+import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.Media
 
-interface RendererProvider<RENDERER : Any> {
+interface RendererProvider<RENDERER : Any> : LifecycleObserver {
 
+  @JvmDefault
   fun acquireRenderer(
     playback: Playback,
     media: Media,
     rendererType: Class<RENDERER>
   ): RENDERER? = null
 
+  @JvmDefault
   fun releaseRenderer(
     playback: Playback,
     media: Media,
@@ -33,5 +38,12 @@ interface RendererProvider<RENDERER : Any> {
   ) {
   }
 
-  fun clear() {}
+  @JvmDefault
+  fun clear() {
+  }
+
+  @OnLifecycleEvent(ON_DESTROY)
+  fun onDestroy() {
+    this.clear()
+  }
 }

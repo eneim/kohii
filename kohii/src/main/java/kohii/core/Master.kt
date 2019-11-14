@@ -178,8 +178,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         ActivityManager.getMyMemoryState(it)
         it.lastTrimLevel
       },
-      onChange = { _, _, _ ->
-        // TODO consider to force groups to trim memory usage if need.
+      onChange = { _, from, to ->
+        if (from != to) groups.forEach { it.onRefresh() }
       }
   )
 
@@ -219,8 +219,9 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   ) {
     // Remove any queued bind requests for the same container.
     dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
-    // Remove any queued release for the same Playable, as we are binding it now.
+    // Remove any queued releasing for the same Playable, as we are binding it now.
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
+    // Remove any queued destruction for the same Playable, as we are binding it now.
     dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     // Keep track of which Playable will be bound to which Container.
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
@@ -457,7 +458,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
     val createNew by lazy(NONE) {
       val config = Playback.Config(
-          tag = options.tag ?: NO_TAG,
+          tag = options.tag,
           delay = options.delay,
           threshold = options.threshold,
           preload = options.preload,
@@ -484,9 +485,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     }
 
     val sameContainer = host.manager.playbacks[container]
-    val samePlayable = /* host.manager.group.playbacks.find { playable.playback === it } */
-      groups.flatMap { it.playbacks }
-          .find { playable.playback === it }
+    val samePlayable = playable.playback
 
     val resolvedPlayback = //
       if (sameContainer == null) { // Bind to new Container
