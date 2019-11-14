@@ -20,7 +20,7 @@ package kohii.v1
 @Suppress("unused")
 enum class Scope(val priority: Int) {
   GLOBAL(1),
-  ACTIVITY(2),
+  GROUP(2),
   MANAGER(3),
   HOST(4),
   PLAYBACK(5)

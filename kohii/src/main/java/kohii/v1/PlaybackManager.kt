@@ -564,7 +564,7 @@ abstract class PlaybackManager(
           playback.volumeInfo = volumeInfo
         }
       }
-      scope === Scope.ACTIVITY -> {
+      scope === Scope.GROUP -> {
         this.parent.volumeInfo.setTo(volumeInfo)
         this.parent.managers()
             .forEach { it.applyVolumeInfo(volumeInfo, it, Scope.MANAGER) }

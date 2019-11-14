@@ -363,16 +363,16 @@ class Kohii(context: Context) : PlayableManager {
       scope === Scope.GLOBAL ->
         // receiver is ignored.
         this.groups.forEach {
-          this.pause(it.value, Scope.ACTIVITY)
+          this.pause(it.value, Scope.GROUP)
         }
-      scope === Scope.ACTIVITY ->
+      scope === Scope.GROUP ->
         when (receiver) {
           is PlaybackManagerGroup -> {
             receiver.lock.set(true)
             receiver.managers()
                 .forEach { this.pause(it, Scope.MANAGER) }
           }
-          is PlaybackManager -> this.pause(receiver.parent, Scope.ACTIVITY)
+          is PlaybackManager -> this.pause(receiver.parent, Scope.GROUP)
           else -> throw IllegalArgumentException(
               "Receiver for scope $scope must be a PlaybackManager or a PlaybackManagerGroup"
           )
@@ -414,16 +414,16 @@ class Kohii(context: Context) : PlayableManager {
     when {
       scope === Scope.GLOBAL ->
         this.groups.forEach {
-          this.resume(it.value, Scope.ACTIVITY)
+          this.resume(it.value, Scope.GROUP)
         }
-      scope === Scope.ACTIVITY ->
+      scope === Scope.GROUP ->
         when (receiver) {
           is PlaybackManagerGroup -> {
             receiver.lock.set(false)
             receiver.managers()
                 .forEach { this.resume(it, Scope.MANAGER) }
           }
-          is PlaybackManager -> this.resume(receiver.parent, Scope.ACTIVITY)
+          is PlaybackManager -> this.resume(receiver.parent, Scope.GROUP)
           else -> throw IllegalArgumentException(
               "Receiver for scope $scope must be a PlaybackManager or a PlaybackManagerGroup"
           )
