@@ -141,7 +141,7 @@ internal class ItemsAdapter(
       Log.d("Kohii::Dev", "$videoTag updated")
       if (shouldBindVideo(holder.rebinder)) {
         master.setUp(assetVideoUri)
-            .with { tag = videoTag }
+            .with { tag = requireNotNull(videoTag) }
             .bind(holder.container)
       }
     } else holder.bind(position)

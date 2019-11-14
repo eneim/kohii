@@ -63,7 +63,7 @@ internal class ItemsAdapter(
       holder.videoUrl = DemoApp.assetVideoUri
       val videoTag = holder.videoTag
       master.setUp(DemoApp.assetVideoUri)
-          .with { tag = videoTag }
+          .with { tag = requireNotNull(videoTag) }
           .bind(holder.container)
     } else holder.bind(position)
   }

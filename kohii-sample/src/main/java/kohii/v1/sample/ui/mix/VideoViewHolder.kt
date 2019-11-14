@@ -66,7 +66,7 @@ class VideoViewHolder(
 
       kohii.setUp(mediaItem)
           .with {
-            tag = itemTag
+            tag = requireNotNull(itemTag)
             preload = false
             repeatMode = Player.REPEAT_MODE_ONE
           }
