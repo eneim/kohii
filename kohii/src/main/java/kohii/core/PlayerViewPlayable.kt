@@ -28,8 +28,8 @@ internal class PlayerViewPlayable(
   bridge: Bridge<PlayerView>
 ) : Playable<PlayerView>(master, media, config, PlayerView::class.java, bridge) {
 
-  override fun shouldRequestRenderer(playback: Playback) {
-    super.shouldRequestRenderer(playback)
+  override fun considerRequestRenderer(playback: Playback) {
+    super.considerRequestRenderer(playback)
     val renderer = bridge.playerView
     if (renderer != null && playback.config.controller is ControlDispatcher) {
       renderer.setControlDispatcher(playback.config.controller)
@@ -37,12 +37,13 @@ internal class PlayerViewPlayable(
     }
   }
 
-  override fun shouldReleaseRenderer(playback: Playback) {
+  override fun considerReleaseRenderer(playback: Playback) {
     val renderer = bridge.playerView
     if (renderer is PlayerView && playback.config.controller is ControlDispatcher) {
       renderer.setControlDispatcher(null)
       renderer.useController = false
     }
-    super.shouldReleaseRenderer(playback)
+    super.considerReleaseRenderer(playback)
   }
+
 }

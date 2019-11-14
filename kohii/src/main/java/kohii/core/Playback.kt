@@ -166,7 +166,6 @@ abstract class Playback(
 
   internal fun onRemoved() {
     playbackState = STATE_REMOVED
-    rendererHolder?.shouldReleaseRenderer(this)
     host.removeContainer(this.container)
     callbacks.onEach { it.onRemoved(this) }
         .clear()
@@ -182,9 +181,22 @@ abstract class Playback(
     callbacks.forEach { it.onDetached(this) }
   }
 
-  abstract fun <RENDERER : Any> attachRenderer(renderer: RENDERER?)
+  internal fun attachRenderer(renderer: Any?): Boolean {
+    return onAttachRenderer(renderer)
+  }
 
-  abstract fun <RENDERER : Any> detachRenderer(renderer: RENDERER?): Boolean
+  internal fun detachRenderer(renderer: Any?): Boolean {
+    return onDetachRenderer(renderer)
+  }
+
+  // Return **true** to indicate that the Renderer is safely attached and
+  // can be used by the Playable.
+  abstract fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean
+
+  // Return **true** to indicate that the Renderer is safely detached and
+  // Playable should not use it any further. RendererProvider will then release the Renderer with
+  // proper mechanism (eg: put it back to Pool for reuse).
+  abstract fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean
 
   @CallSuper
   internal open fun onActive() {
@@ -195,6 +207,7 @@ abstract class Playback(
   @CallSuper
   internal open fun onInActive() {
     playbackState = STATE_INACTIVE
+    rendererHolderListener?.considerReleaseRenderer(this)
     callbacks.forEach { it.onInActive(this) }
   }
 
@@ -242,8 +255,9 @@ abstract class Playback(
 
   internal var volumeInfoListener: VolumeInfoListener? = null
   internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
-      initialValue = VolumeInfo(),
+      initialValue = host.volumeInfo,
       onChange = { _, from, to ->
+        "${this.volumeInfoListener} volume: $from --> $to".logDebug("Kohii::Vol")
         if (from == to) return@observable
         "$this volume: $from --> $to".logDebug("Kohii::Dev")
         volumeInfoListener?.onVolumeInfoChange(this, from, to)
@@ -251,8 +265,7 @@ abstract class Playback(
   )
 
   internal var playbackInfoListener: PlaybackInfoListener? = null
-
-  internal var rendererHolder: RendererHolder? = null
+  internal var rendererHolderListener: RendererHolderListener? = null
 
   internal fun compareWith(
     other: Playback,
@@ -462,10 +475,30 @@ abstract class Playback(
     var playbackInfo: PlaybackInfo
   }
 
-  internal interface RendererHolder {
+  /**
+   * Once the Playback finds it is good time for the Listener to request/release the Renderer, it
+   * will trigger these calls to send that signal. The 'good time' can varies due to the actual
+   * use case. In Kohii, there are 2 following cases:
+   * - The Playback's Container is also the renderer. In this case, the Container/Renderer will
+   * always be there. We suggest that the Listener should request for the Renderer as soon as
+   * possible, and release it as late as possible. The proper place to do that are when the
+   * Playback becomes active (onActive()) and inactive (onInActive()).
+   *
+   * @see [StaticViewRendererPlayback]
+   *
+   * - The Playback's Container is not the Renderer. In this case, the Renderer is expected
+   * to be created on demand and release as early as possible, so that Kohii can reuse it for
+   * other Playback as soon as possible. We suggest that the Listener should request for
+   * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
+   * just right after the Playback pauses (onPause()).
+   *
+   * @see [DynamicViewRendererPlayback]
+   * @see [DynamicFragmentRendererPlayback]
+   */
+  internal interface RendererHolderListener {
 
-    fun shouldRequestRenderer(playback: Playback)
+    fun considerRequestRenderer(playback: Playback)
 
-    fun shouldReleaseRenderer(playback: Playback)
+    fun considerReleaseRenderer(playback: Playback)
   }
 }

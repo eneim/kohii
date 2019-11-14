@@ -30,8 +30,5 @@ class YouTube1Playable(
     master, media, config, YouTubePlayerFragment::class.java, bridge
 ) {
 
-  override fun onConfigChange(): Boolean {
-    super.onPause()
-    return false
-  }
+  override fun onConfigChange() = false
 }

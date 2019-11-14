@@ -514,8 +514,9 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
           // samePlayable is not null --> a bound Playable to be rebound to other/new Container
           // Action: create new Playback for new Container, make the new binding and remove old binding of
           // the 'samePlayable' Playback
-          playable.playback = createNew
           samePlayable.manager.removePlayback(samePlayable)
+          dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+          playable.playback = createNew
           host.manager.addPlayback(createNew)
           createNew
         }
@@ -524,8 +525,9 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
           // sameContainer is not null but samePlayable is null --> new Playable is bound to a bound Container
           // Action: create new Playback for current Container, make the new binding and remove old binding of
           // the 'sameContainer'
-          playable.playback = createNew
           sameContainer.manager.removePlayback(sameContainer)
+          dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+          playable.playback = createNew
           host.manager.addPlayback(createNew)
           createNew
         } else {
@@ -537,9 +539,10 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
             // Scenario: rebind a bound Playable from one Container to other Container that is being bound.
             // Action: remove both 'sameContainer' and 'samePlayable', create new one for the Container.
             // to the Container
-            playable.playback = createNew
             sameContainer.manager.removePlayback(sameContainer)
             samePlayable.manager.removePlayback(samePlayable)
+            dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+            playable.playback = createNew
             host.manager.addPlayback(createNew)
             createNew
           }

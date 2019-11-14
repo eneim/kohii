@@ -29,8 +29,5 @@ class YouTube2Playable(
   bridge: Bridge<YouTubePlayerView>
 ) : Playable<YouTubePlayerView>(master, media, config, YouTubePlayerView::class.java, bridge) {
 
-  override fun onConfigChange(): Boolean {
-    super.onPause()
-    return false
-  }
+  override fun onConfigChange() = false
 }

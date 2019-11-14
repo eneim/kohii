@@ -36,8 +36,8 @@ import kohii.media.VolumeInfo
 import kohii.partitionToMutableSets
 import kohii.v1.Prioritized
 import kohii.v1.Scope
-import kohii.v1.Scope.ACTIVITY
 import kohii.v1.Scope.GLOBAL
+import kohii.v1.Scope.GROUP
 import kohii.v1.Scope.HOST
 import kohii.v1.Scope.MANAGER
 import kohii.v1.Scope.PLAYBACK
@@ -86,11 +86,6 @@ class Manager(
       }
   )
 
-  init {
-    group.onManagerCreated(this)
-    lifecycleOwner.lifecycle.addObserver(this)
-  }
-
   internal val playbacks = mutableMapOf<Any /* container */, Playback>()
 
   internal var sticky: Boolean = false
@@ -104,8 +99,13 @@ class Manager(
       }
   )
 
-  override fun toString(): String {
-    return "${super.toString()}, ctx: ${group.activity}"
+  internal val volumeInfo: VolumeInfo
+    get() = volumeInfoUpdater
+
+  init {
+    volumeInfoUpdater = group.volumeInfo
+    group.onManagerCreated(this)
+    lifecycleOwner.lifecycle.addObserver(this)
   }
 
   override fun compareTo(other: Manager): Int {
@@ -147,8 +147,7 @@ class Manager(
 
   @OnLifecycleEvent(ON_STOP)
   internal fun onStop() {
-    playbacks.filterValues { it.isActive }
-        .forEach { onPlaybackInActive(it.value) }
+    playbacks.forEach { if (it.value.isActive) onPlaybackInActive(it.value) }
     refresh()
   }
 
@@ -199,8 +198,11 @@ class Manager(
   }
 
   private fun detachHost(view: View) {
-    hosts.filter { it.root === view }
-        .forEach { if (hosts.remove(it)) it.onRemoved() }
+    hosts.forEach {
+      if (it.root === view && hosts.remove(it)) {
+        it.onRemoved()
+      }
+    }
   }
 
   internal fun refresh() {
@@ -289,8 +291,7 @@ class Manager(
   ): RENDERER? {
     val renderer = group.findRendererProvider(playable)
         .acquireRenderer(playback, playable.media, playable.rendererType)
-    playback.attachRenderer(renderer)
-    return renderer
+    return if (playback.attachRenderer(renderer)) renderer else null
   }
 
   internal fun <RENDERER : Any> releaseRenderer(
@@ -298,9 +299,10 @@ class Manager(
     playable: Playable<RENDERER>
   ) {
     val renderer = playable.bridge.playerView
-    if (playback.detachRenderer(renderer))
+    if (playback.detachRenderer(renderer)) {
       group.findRendererProvider(playable)
           .releaseRenderer(playback, playable.media, playable.bridge.playerView)
+    }
   }
 
   // Public APIs
@@ -364,20 +366,21 @@ class Manager(
   ) {
     when (scope) {
       PLAYBACK -> {
-        require(target is Playback)
+        require(target is Playback) { "Expected Playback, found ${target.javaClass.canonicalName}" }
         target.volumeInfoUpdater = volumeInfo
       }
       HOST -> {
         when (target) {
           is Host -> target.volumeInfoUpdater = volumeInfo
           is Playback -> target.host.volumeInfoUpdater = volumeInfo
+          // If neither Playback nor Host, must be the root View of the Host.
           else -> requireNotNull(hosts.find { it.root === target }).volumeInfoUpdater = volumeInfo
         }
       }
       MANAGER -> {
         this.volumeInfoUpdater = volumeInfo
       }
-      ACTIVITY /* Group scope */ -> {
+      GROUP -> {
         this.group.volumeInfoUpdater = volumeInfo
       }
       GLOBAL -> {

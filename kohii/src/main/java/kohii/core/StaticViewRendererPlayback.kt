@@ -30,20 +30,21 @@ internal class StaticViewRendererPlayback(
 
   override fun onActive() {
     super.onActive()
-    rendererHolder?.shouldRequestRenderer(this)
+    rendererHolderListener?.considerRequestRenderer(this)
   }
 
   override fun onInActive() {
     super.onInActive()
-    rendererHolder?.shouldReleaseRenderer(this)
+    rendererHolderListener?.considerReleaseRenderer(this)
   }
 
-  override fun <RENDERER : Any> attachRenderer(renderer: RENDERER?) {
-    require(renderer == null || renderer == container)
+  override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean {
+    require(renderer == null || renderer === container)
+    return true // true because we can always use this renderer.
   }
 
-  override fun <RENDERER : Any> detachRenderer(renderer: RENDERER?): Boolean {
-    require(renderer == null || renderer == container)
-    return false
+  override fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean {
+    require(renderer == null || renderer === container)
+    return false // false because we just never detach this renderer.
   }
 }

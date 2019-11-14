@@ -58,7 +58,7 @@ class EchoFragment : BaseFragment() {
     val adapter = VideoItemsAdapter(getApp().videos, kohii, viewModel) {
       val playback = it.playback
       return@VideoItemsAdapter if (playback != null) {
-        val currentVolumeInfo = playback.volumeInfo
+        val currentVolumeInfo = viewModel.get(it.adapterPosition)
         val nextVolumeInfo = VolumeInfo(!currentVolumeInfo.mute, currentVolumeInfo.volume)
         viewModel.set(it.adapterPosition, nextVolumeInfo)
         nextVolumeInfo

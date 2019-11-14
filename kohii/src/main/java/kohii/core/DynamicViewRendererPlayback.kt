@@ -31,18 +31,18 @@ internal class DynamicViewRendererPlayback(
 
   override fun onPlay() {
     super.onPlay()
-    rendererHolder?.shouldRequestRenderer(this)
+    rendererHolderListener?.considerRequestRenderer(this)
   }
 
   override fun onPause() {
     super.onPause()
-    rendererHolder?.shouldReleaseRenderer(this)
+    rendererHolderListener?.considerReleaseRenderer(this)
   }
 
-  override fun <RENDERER : Any> attachRenderer(renderer: RENDERER?) {
-    if (renderer == null) return
+  override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean {
+    if (renderer == null) return false
     require(renderer is View && renderer !== container)
-    if (container.contains(renderer)) return
+    if (container.contains(renderer)) return false
 
     val parent = renderer.parent
     if (parent is ViewGroup && parent !== container) {
@@ -51,9 +51,10 @@ internal class DynamicViewRendererPlayback(
 
     container.removeAllViews()
     container.addView(renderer)
+    return true
   }
 
-  override fun <RENDERER : Any> detachRenderer(renderer: RENDERER?): Boolean {
+  override fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean {
     if (renderer == null) return false
     require(renderer is View && renderer !== container)
     if (!container.contains(renderer)) return false

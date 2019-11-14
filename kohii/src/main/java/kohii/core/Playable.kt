@@ -16,6 +16,7 @@
 
 package kohii.core
 
+import androidx.annotation.CallSuper
 import kohii.core.Master.Companion.NO_TAG
 import kohii.core.Master.MemoryMode
 import kohii.core.Master.MemoryMode.AUTO
@@ -30,16 +31,17 @@ import kohii.media.VolumeInfo
 import kohii.v1.Bridge
 import kotlin.properties.Delegates
 
-open class Playable<RENDERER : Any>(
+abstract class Playable<RENDERER : Any>(
   val master: Master,
   val media: Media,
   val config: Config,
   internal val rendererType: Class<RENDERER>,
   internal val bridge: Bridge<RENDERER>
 ) : Playback.Callback,
-    Playback.RendererHolder,
+    Playback.RendererHolderListener,
     Playback.DistanceListener,
-    Playback.VolumeInfoListener, Playback.PlaybackInfoListener {
+    Playback.VolumeInfoListener,
+    Playback.PlaybackInfoListener {
 
   data class Config(
     val tag: Any = NO_TAG
@@ -54,8 +56,11 @@ open class Playable<RENDERER : Any>(
     bridge.ensurePreparation()
   }
 
-  protected open val supportConfigChange = true
-
+  /**
+   * Return **true** to indicate that this Playable would survive configuration changes and no
+   * playback reloading would be required. In special cases like YouTube playback, it is recommended
+   * to return **false** so Kohii will handle the resource recycling correctly.
+   */
   protected open fun onConfigChange(): Boolean {
     return true
   }
@@ -96,14 +101,14 @@ open class Playable<RENDERER : Any>(
   internal var playback: Playback? by Delegates.observable<Playback?>(null,
       onChange = { _, from, to ->
         if (from === to) return@observable
-        from?.let {
-          bridge.removeErrorListener(it)
-          bridge.removeEventListener(it)
-          it.removeCallback(this)
-          if (it.distanceListener === this) it.distanceListener = null
-          if (it.rendererHolder === this) it.rendererHolder = null
-          if (it.volumeInfoListener === this) it.volumeInfoListener = null
-          if (it.playbackInfoListener === this) it.playbackInfoListener = null
+        if (from != null) {
+          bridge.removeErrorListener(from)
+          bridge.removeEventListener(from)
+          from.removeCallback(this)
+          if (from.playbackInfoListener === this) from.playbackInfoListener = null
+          if (from.volumeInfoListener === this) from.volumeInfoListener = null
+          if (from.rendererHolderListener === this) from.rendererHolderListener = null
+          if (from.distanceListener === this) from.distanceListener = null
         }
 
         this.manager =
@@ -115,15 +120,15 @@ open class Playable<RENDERER : Any>(
             if (configChange && onConfigChange()) master else null
           }
 
-        to?.let {
-          it.addCallback(this)
-          it.config.callbacks.forEach { cb -> it.addCallback(cb) }
-          bridge.addEventListener(it)
-          bridge.addErrorListener(it)
-          it.rendererHolder = this
-          it.distanceListener = this
-          it.volumeInfoListener = this
-          it.playbackInfoListener = this
+        if (to != null) {
+          to.addCallback(this)
+          to.config.callbacks.forEach { cb -> to.addCallback(cb) }
+          bridge.addEventListener(to)
+          bridge.addErrorListener(to)
+          to.distanceListener = this
+          to.rendererHolderListener = this
+          to.volumeInfoListener = this
+          to.playbackInfoListener = this
         }
       }
   )
@@ -142,8 +147,9 @@ open class Playable<RENDERER : Any>(
   override fun onInActive(playback: Playback) {
     require(playback === this.playback)
     val configChange = playback.manager.group.activity.isChangingConfigurations
-    if (!configChange || !onConfigChange()) {
+    if (!configChange) {
       master.trySavePlaybackInfo(this)
+      if (!onConfigChange()) onPause()
       master.releasePlayable(this)
     }
   }
@@ -157,22 +163,22 @@ open class Playable<RENDERER : Any>(
     this.playback = null // Will also clear current Manager.
   }
 
-  override fun shouldRequestRenderer(playback: Playback) {
-    require(playback == this.playback)
-    if (bridge.playerView == null) {
+  @CallSuper
+  override fun considerRequestRenderer(playback: Playback) {
+    require(playback === this.playback)
+    if (manager !== playback.manager || bridge.playerView == null) { // Only request for Renderer if we do not have one.
       val renderer = playback.manager.requestRenderer(playback, this)
       bridge.playerView = renderer
     }
   }
 
-  override fun shouldReleaseRenderer(playback: Playback) {
-    require(this.playback == null || this.playback == playback)
-    if (bridge.playerView != null) playback.manager.releaseRenderer(playback, this)
-    bridge.playerView = null
-  }
-
-  override fun toString(): String {
-    return "${super.toString()}::$tag"
+  @CallSuper
+  override fun considerReleaseRenderer(playback: Playback) {
+    require(this.playback == null || this.playback === playback)
+    if (bridge.playerView != null) { // Only release the Renderer if we do have one to release.
+      bridge.playerView = null
+      playback.manager.releaseRenderer(playback, this)
+    }
   }
 
   // Playback.DistanceListener
@@ -223,4 +229,5 @@ open class Playable<RENDERER : Any>(
     set(value) {
       bridge.playbackInfo = value
     }
+
 }

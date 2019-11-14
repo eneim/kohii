@@ -40,6 +40,10 @@ class VideoItemsAdapter(
   internal val volumeInfoUpdater: (VideoItemHolder) -> VolumeInfo?
 ) : Adapter<BaseViewHolder>() {
 
+  companion object {
+    internal val PAYLOAD_VOLUME = Any()
+  }
+
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
@@ -48,7 +52,7 @@ class VideoItemsAdapter(
 
     holder.volumeButton.setOnClickListener {
       val updated = volumeInfoUpdater(holder)
-      if (updated != null) notifyItemChanged(holder.adapterPosition, updated)
+      if (updated != null) notifyItemChanged(holder.adapterPosition, PAYLOAD_VOLUME)
     }
 
     return holder
@@ -74,9 +78,9 @@ class VideoItemsAdapter(
     position: Int,
     payloads: MutableList<Any>
   ) {
-    val payload = payloads.firstOrNull()
-    if (payload is VolumeInfo && holder is VideoItemHolder) {
-      holder.applyVolumeInfo(payload)
+    val payload = payloads.find { it === PAYLOAD_VOLUME }
+    if (payload != null && holder is VideoItemHolder) {
+      holder.applyVolumeInfo(volumeStore.get(position))
     } else {
       super.onBindViewHolder(holder, position, payloads)
     }

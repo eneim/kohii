@@ -48,16 +48,16 @@ internal class DynamicFragmentRendererPlayback(
 
   override fun onPlay() {
     super.onPlay()
-    rendererHolder?.shouldRequestRenderer(this)
+    rendererHolderListener?.considerRequestRenderer(this)
   }
 
   override fun onPause() {
     super.onPause()
-    rendererHolder?.shouldReleaseRenderer(this)
+    rendererHolderListener?.considerReleaseRenderer(this)
   }
 
-  override fun <RENDERER : Any> attachRenderer(renderer: RENDERER?) {
-    if (renderer == null) return
+  override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean {
+    if (renderer == null) return false
     require(renderer is Fragment)
     require(container.id != View.NO_ID)
     val existing = fragmentManager.findFragmentById(container.id)
@@ -74,9 +74,10 @@ internal class DynamicFragmentRendererPlayback(
         container.addView(view)
       }
     }
+    return true
   }
 
-  override fun <RENDERER : Any> detachRenderer(renderer: RENDERER?): Boolean {
+  override fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean {
     if (renderer == null) return false
     require(renderer is Fragment)
     require(container.id != View.NO_ID)

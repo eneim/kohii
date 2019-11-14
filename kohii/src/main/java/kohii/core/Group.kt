@@ -84,6 +84,9 @@ class Group(
       }
   )
 
+  internal val volumeInfo: VolumeInfo
+    get() = volumeInfoUpdater
+
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
   private val rendererProviders = mutableMapOf<Class<*>, RendererProvider<*>>()

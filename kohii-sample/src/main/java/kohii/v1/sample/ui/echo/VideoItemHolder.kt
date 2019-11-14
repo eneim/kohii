@@ -44,12 +44,12 @@ data class VideoItem(
 class VideoItemHolder(
   parent: ViewGroup,
   private val kohii: Master
-) : BaseViewHolder(parent, R.layout.holder_video_text_overlay) {
+) : BaseViewHolder(parent, R.layout.holder_video_text_overlay), Playback.PlaybackListener {
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
-  // val playerViewContainer = itemView.findViewById(R.id.playerViewContainer) as ViewGroup
+  val playerViewContainer = itemView.findViewById(R.id.playerViewContainer) as ViewGroup
   val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
   val volumeButton = itemView.findViewById(R.id.volumeButton) as MaterialButton
 
@@ -87,10 +87,16 @@ class VideoItemHolder(
           kohii.setUp(newVal.file)
               .with {
                 tag = requireNotNull(tagKey)
-                // repeatMode = Playable.REPEAT_MODE_ONE
+                callbacks += object : Playback.Callback {
+                  override fun onRemoved(playback: Playback) {
+                    playback.removePlaybackListener(this@VideoItemHolder)
+                  }
+                }
               }
-              .bind(playerContainer) { playback ->
+              .bind(playerViewContainer) { playback ->
                 this@VideoItemHolder.playback = playback
+                volumeInfo?.let { kohii.applyVolumeInfo(it, playback, Scope.PLAYBACK) }
+                playback.addPlaybackListener(this)
               }
         } else {
           this.playback = null
@@ -101,8 +107,7 @@ class VideoItemHolder(
     get() = this.videoItem?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
 
   private var volumeInfo by Delegates.observable<VolumeInfo?>(null,
-      onChange = { _, from, to ->
-        if (from == to) return@observable
+      onChange = { _, _, to ->
         if (to != null) {
           playback?.let {
             kohii.applyVolumeInfo(to, it, Scope.PLAYBACK)
@@ -116,11 +121,23 @@ class VideoItemHolder(
   }
 
   internal fun applyVolumeInfo(volumeInfo: VolumeInfo) {
-    if (this.volumeInfo != volumeInfo) this.volumeInfo = volumeInfo
+    this.volumeInfo = volumeInfo
   }
 
   override fun onRecycled(success: Boolean) {
     this.rawData = null
     this.volumeInfo = null
+  }
+
+  override fun beforePlay(playback: Playback) {
+    videoImage.isVisible = false
+  }
+
+  override fun afterPause(playback: Playback) {
+    videoImage.isVisible = true
+  }
+
+  override fun onEnd(playback: Playback) {
+    videoImage.isVisible = true
   }
 }
