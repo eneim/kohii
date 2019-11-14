@@ -20,7 +20,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import kohii.core.Master
 import kohii.core.Playable
 import kohii.core.Playable.Config
-import kohii.core.PlayableCreator
+import kohii.core.Creator
 import kohii.core.Rebinder
 import kohii.media.Media
 import kotlinx.android.parcel.Parcelize
@@ -31,7 +31,7 @@ class YouTubeARebinder(
   override val tag: @RawValue Any
 ) : Rebinder<YouTubePlayerView>(tag, YouTubePlayerView::class.java)
 
-class NewYtPlayableCreator : PlayableCreator<YouTubePlayerView>(YouTubePlayerView::class.java) {
+class NewYtPlayableCreator : Creator<YouTubePlayerView>(YouTubePlayerView::class.java) {
 
   override fun createPlayable(
     master: Master,
