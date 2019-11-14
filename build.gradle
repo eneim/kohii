@@ -63,6 +63,7 @@ allprojects {
     task.kotlinOptions {
       freeCompilerArgs += [
           '-XXLanguage:+InlineClasses',
+          '-Xjvm-default=enable'
       ]
     }
   }
