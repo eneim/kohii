@@ -132,22 +132,22 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
 
     override fun handleMessage(msg: Message) {
-      when {
-        msg.what == MSG_CLEANUP -> {
+      when (msg.what) {
+        MSG_CLEANUP -> {
           master.cleanupPendingPlayables()
         }
-        msg.what == MSG_BIND_PLAYABLE -> {
+        MSG_BIND_PLAYABLE -> {
           val container = msg.obj as ViewGroup
           container.doOnAttach {
             master.requests.remove(it)
                 ?.onBind()
           }
         }
-        msg.what == MSG_RELEASE_PLAYABLE -> {
+        MSG_RELEASE_PLAYABLE -> {
           val playable = (msg.obj as Playable<*>)
           playable.bridge.release()
         }
-        msg.what == MSG_DESTROY_PLAYABLE -> {
+        MSG_DESTROY_PLAYABLE -> {
           val playable = msg.obj as Playable<*>
           val clearState = msg.arg1 == 0
           master.onTearDown(playable, clearState)
@@ -484,49 +484,52 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     }
 
     val sameContainer = host.manager.playbacks[container]
-    val samePlayable = host.manager.group.playbacks.find { playable.playback === it }
+    val samePlayable = /* host.manager.group.playbacks.find { playable.playback === it } */
+      groups.flatMap { it.playbacks }
+          .find { playable.playback === it }
 
-    val resolvedPlayback = if (sameContainer == null) { // Bind to new Container
-      if (samePlayable == null) {
-        // both sameContainer and samePlayable are null --> fresh binding
-        playable.playback = createNew
-        host.manager.addPlayback(createNew)
-        createNew
-      } else {
-        // samePlayable is not null --> a bound Playable to be rebound to other/new Container
-        // Action: create new Playback for new Container, make the new binding and remove old binding of
-        // the 'samePlayable' Playback
-        playable.playback = createNew
-        samePlayable.manager.removePlayback(samePlayable)
-        host.manager.addPlayback(createNew)
-        createNew
-      }
-    } else {
-      if (samePlayable == null) {
-        // sameContainer is not null but samePlayable is null --> new Playable is bound to a bound Container
-        // Action: create new Playback for current Container, make the new binding and remove old binding of
-        // the 'sameContainer'
-        playable.playback = createNew
-        sameContainer.manager.removePlayback(sameContainer)
-        host.manager.addPlayback(createNew)
-        createNew
-      } else {
-        // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
-        if (sameContainer === samePlayable) {
-          // Nothing to do
-          samePlayable
-        } else {
-          // Scenario: rebind a bound Playable from one Container to other Container that is being bound.
-          // Action: remove both 'sameContainer' and 'samePlayable', create new one for the Container.
-          // to the Container
+    val resolvedPlayback = //
+      if (sameContainer == null) { // Bind to new Container
+        if (samePlayable == null) {
+          // both sameContainer and samePlayable are null --> fresh binding
           playable.playback = createNew
-          sameContainer.manager.removePlayback(sameContainer)
+          host.manager.addPlayback(createNew)
+          createNew
+        } else {
+          // samePlayable is not null --> a bound Playable to be rebound to other/new Container
+          // Action: create new Playback for new Container, make the new binding and remove old binding of
+          // the 'samePlayable' Playback
+          playable.playback = createNew
           samePlayable.manager.removePlayback(samePlayable)
           host.manager.addPlayback(createNew)
           createNew
         }
+      } else {
+        if (samePlayable == null) {
+          // sameContainer is not null but samePlayable is null --> new Playable is bound to a bound Container
+          // Action: create new Playback for current Container, make the new binding and remove old binding of
+          // the 'sameContainer'
+          playable.playback = createNew
+          sameContainer.manager.removePlayback(sameContainer)
+          host.manager.addPlayback(createNew)
+          createNew
+        } else {
+          // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
+          if (sameContainer === samePlayable) {
+            // Nothing to do
+            samePlayable
+          } else {
+            // Scenario: rebind a bound Playable from one Container to other Container that is being bound.
+            // Action: remove both 'sameContainer' and 'samePlayable', create new one for the Container.
+            // to the Container
+            playable.playback = createNew
+            sameContainer.manager.removePlayback(sameContainer)
+            samePlayable.manager.removePlayback(samePlayable)
+            host.manager.addPlayback(createNew)
+            createNew
+          }
+        }
       }
-    }
 
     callback?.invoke(resolvedPlayback)
   }

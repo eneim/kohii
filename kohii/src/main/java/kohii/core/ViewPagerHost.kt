@@ -23,8 +23,8 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 
 class ViewPagerHost(
   manager: Manager,
-  root: ViewPager
-) : Host<ViewPager>(manager, root), OnPageChangeListener {
+  override val root: ViewPager
+) : Host(manager, root), OnPageChangeListener {
 
   override fun onAdded() {
     super.onAdded()

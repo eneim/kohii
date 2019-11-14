@@ -23,8 +23,8 @@ import androidx.core.widget.NestedScrollView.OnScrollChangeListener
 
 class NestedScrollViewHost(
   manager: Manager,
-  root: NestedScrollView
-) : Host<NestedScrollView>(manager, root), OnScrollChangeListener {
+  override val root: NestedScrollView
+) : Host(manager, root), OnScrollChangeListener {
 
   override fun onScrollChange(
     v: NestedScrollView?,

@@ -29,8 +29,8 @@ import kotlin.LazyThreadSafetyMode.NONE
 
 class RecyclerViewHost(
   manager: Manager,
-  root: RecyclerView
-) : Host<RecyclerView>(manager, root) {
+  override val root: RecyclerView
+) : Host(manager, root) {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {

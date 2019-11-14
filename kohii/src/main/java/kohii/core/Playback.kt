@@ -40,7 +40,7 @@ import kotlin.properties.Delegates
 
 abstract class Playback(
   internal val manager: Manager,
-  internal val host: Host<*>,
+  internal val host: Host,
   internal val config: Config = Config(),
   val container: ViewGroup
 ) : PlayerEventListener, ErrorListener, Switch.Callback {
@@ -165,7 +165,7 @@ abstract class Playback(
 
   internal fun onRemoved() {
     playbackState = STATE_REMOVED
-    rendererSetter?.shouldReleaseRenderer(this)
+    rendererHolder?.shouldReleaseRenderer(this)
     host.removeContainer(this.container)
     callbacks.onEach { it.onRemoved(this) }
         .clear()
@@ -236,10 +236,10 @@ abstract class Playback(
       onChange = { _, from, to ->
         if (from == to) return@observable
         "$this distance: $from --> $to".logWarn("Kohii::Dev")
-        onDistanceChangedListener?.onDistanceChanged(from, to)
+        onDistanceChangedListener?.onDistanceChanged(this, from, to)
       })
 
-  internal var rendererSetter: RendererSetter? = null
+  internal var rendererHolder: RendererHolder? = null
 
   internal fun compareWith(
     other: Playback,
@@ -424,12 +424,13 @@ abstract class Playback(
   internal interface OnDistanceChangedListener {
 
     fun onDistanceChanged(
+      playback: Playback,
       from: Int,
       to: Int
     )
   }
 
-  internal interface RendererSetter {
+  internal interface RendererHolder {
 
     fun shouldRequestRenderer(playback: Playback)
 

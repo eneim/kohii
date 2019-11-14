@@ -39,7 +39,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 
 internal class PlayerViewPlayableCreator(
   val app: Application
-) : PlayableCreator<PlayerView>(PlayerView::class.java) {
+) : Creator<PlayerView>(PlayerView::class.java) {
 
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"

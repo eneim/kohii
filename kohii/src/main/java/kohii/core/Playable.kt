@@ -16,6 +16,7 @@
 
 package kohii.core
 
+import kohii.core.Master.Companion.NO_TAG
 import kohii.core.Master.MemoryMode
 import kohii.core.Master.MemoryMode.AUTO
 import kohii.core.Master.MemoryMode.BALANCED
@@ -34,15 +35,15 @@ open class Playable<RENDERER : Any>(
   val config: Config,
   internal val rendererType: Class<RENDERER>,
   internal val bridge: Bridge<RENDERER>
-) : Playback.Callback, Playback.OnDistanceChangedListener, Playback.RendererSetter {
+) : Playback.Callback, Playback.OnDistanceChangedListener, Playback.RendererHolder {
 
   data class Config(
-    val tag: Any? = null
+    val tag: Any = NO_TAG
   )
 
   private var playRequested: Boolean = false
 
-  val tag: Any = config.tag ?: Master.NO_TAG
+  val tag: Any = config.tag
 
   // Ensure the preparation for the playback
   internal fun onReady() {
@@ -96,7 +97,7 @@ open class Playable<RENDERER : Any>(
           bridge.removeEventListener(it)
           it.removeCallback(this)
           if (it.onDistanceChangedListener === this) it.onDistanceChangedListener = null
-          if (it.rendererSetter === this) it.rendererSetter = null
+          if (it.rendererHolder === this) it.rendererHolder = null
         }
 
         this.manager =
@@ -113,7 +114,7 @@ open class Playable<RENDERER : Any>(
           it.config.callbacks.forEach { cb -> it.addCallback(cb) }
           bridge.addEventListener(it)
           bridge.addErrorListener(it)
-          it.rendererSetter = this
+          it.rendererHolder = this
           it.onDistanceChangedListener = this
         }
       }
@@ -175,12 +176,13 @@ open class Playable<RENDERER : Any>(
   // Playback.OnDistanceChangedListener
 
   override fun onDistanceChanged(
+    playback: Playback,
     from: Int,
     to: Int
   ) {
     if (to == 0) {
       master.tryRestorePlaybackInfo(this)
-      master.preparePlayable(this, playback?.config?.preload ?: false)
+      master.preparePlayable(this, playback.config.preload)
     } else {
       val memoryMode = master.preferredMemoryMode(this.memoryMode)
       val distanceToRelease =

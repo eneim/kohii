@@ -28,7 +28,7 @@ import kohii.Experiment
 @Experiment
 internal class DynamicFragmentRendererPlayback(
   manager: Manager,
-  host: Host<*>,
+  host: Host,
   config: Config,
   container: ViewGroup
 ) : Playback(manager, host, config, container) {
@@ -48,12 +48,12 @@ internal class DynamicFragmentRendererPlayback(
 
   override fun onPlay() {
     super.onPlay()
-    rendererSetter?.shouldRequestRenderer(this)
+    rendererHolder?.shouldRequestRenderer(this)
   }
 
   override fun onPause() {
     super.onPause()
-    rendererSetter?.shouldReleaseRenderer(this)
+    rendererHolder?.shouldReleaseRenderer(this)
   }
 
   override fun <RENDERER : Any> attachRenderer(renderer: RENDERER?) {

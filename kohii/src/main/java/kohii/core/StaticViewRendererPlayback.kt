@@ -23,19 +23,19 @@ import android.view.ViewGroup
 // release the Renderer as soon as it is inactive.
 internal class StaticViewRendererPlayback(
   manager: Manager,
-  host: Host<*>,
+  host: Host,
   config: Config,
   container: ViewGroup
 ) : Playback(manager, host, config, container) {
 
   override fun onActive() {
     super.onActive()
-    rendererSetter?.shouldRequestRenderer(this)
+    rendererHolder?.shouldRequestRenderer(this)
   }
 
   override fun onInActive() {
     super.onInActive()
-    rendererSetter?.shouldReleaseRenderer(this)
+    rendererHolder?.shouldReleaseRenderer(this)
   }
 
   override fun <RENDERER : Any> attachRenderer(renderer: RENDERER?) {

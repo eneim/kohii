@@ -64,9 +64,9 @@ class Manager(
   // - When adding new Host, we add it to tail of the Queue.
   // - When promoting a Host as sticky, we push it to head of the Queue.
   // - When demoting a Host from sticky, we just poll the head.
-  private val hosts = ArrayDeque<Host<*>>(4 /* less than default minimum of ArrayDeque */)
+  private val hosts = ArrayDeque<Host>(4 /* less than default minimum of ArrayDeque */)
   // Up to one Host can be sticky at a time.
-  private var stickyHost by Delegates.observable<Host<*>?>(
+  private var stickyHost by Delegates.observable<Host?>(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
@@ -141,7 +141,7 @@ class Manager(
     return master.playables.keys.find { it.playback === playback }
   }
 
-  internal fun findHostForContainer(container: ViewGroup): Host<*>? {
+  internal fun findHostForContainer(container: ViewGroup): Host? {
     require(ViewCompat.isAttachedToWindow(container))
     return hosts.find { it.accepts(container) }
   }
@@ -307,7 +307,7 @@ class Manager(
     return this
   }
 
-  fun attach(vararg hosts: Host<*>): Manager {
+  fun attach(vararg hosts: Host): Manager {
     hosts.forEach { host ->
       require(host.manager === this)
       val existing = this.hosts.find { it.root === host.root }
@@ -323,12 +323,12 @@ class Manager(
     return this
   }
 
-  internal fun stick(host: Host<*>) {
+  internal fun stick(host: Host) {
     this.stickyHost = host
   }
 
   // Null host --> unstick all current sticky hosts
-  internal fun unstick(host: Host<*>?) {
+  internal fun unstick(host: Host?) {
     if (host == null || this.stickyHost === host) {
       this.stickyHost = null
     }

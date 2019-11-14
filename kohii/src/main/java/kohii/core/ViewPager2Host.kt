@@ -24,8 +24,8 @@ import kotlin.LazyThreadSafetyMode.NONE
 
 class ViewPager2Host(
   manager: Manager,
-  root: ViewPager2
-) : Host<ViewPager2>(manager, root) {
+  override val root: ViewPager2
+) : Host(manager, root) {
 
   private class SimplePageChangeCallback(manager: Manager) : ViewPager2.OnPageChangeCallback() {
     val weakManager = WeakReference(manager)

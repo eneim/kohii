@@ -24,19 +24,19 @@ import androidx.core.view.contains
 // on-demand, right before the playback should start.
 internal class DynamicViewRendererPlayback(
   manager: Manager,
-  host: Host<*>,
+  host: Host,
   config: Config,
   container: ViewGroup
 ) : Playback(manager, host, config, container) {
 
   override fun onPlay() {
     super.onPlay()
-    rendererSetter?.shouldRequestRenderer(this)
+    rendererHolder?.shouldRequestRenderer(this)
   }
 
   override fun onPause() {
     super.onPause()
-    rendererSetter?.shouldReleaseRenderer(this)
+    rendererHolder?.shouldReleaseRenderer(this)
   }
 
   override fun <RENDERER : Any> attachRenderer(renderer: RENDERER?) {

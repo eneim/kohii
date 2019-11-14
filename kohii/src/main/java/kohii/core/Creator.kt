@@ -19,7 +19,7 @@ package kohii.core
 import kohii.core.Playable.Config
 import kohii.media.Media
 
-abstract class PlayableCreator<RENDERER : Any>(
+abstract class Creator<RENDERER : Any>(
   internal val rendererType: Class<RENDERER>
 ) {
 

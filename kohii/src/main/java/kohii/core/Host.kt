@@ -29,9 +29,9 @@ import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import kotlin.LazyThreadSafetyMode.NONE
 
-abstract class Host<V : View> constructor(
+abstract class Host constructor(
   val manager: Manager,
-  val root: V
+  open val root: View
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
   companion object {
@@ -51,7 +51,7 @@ abstract class Host<V : View> constructor(
     internal operator fun get(
       manager: Manager,
       root: View
-    ): Host<*> {
+    ): Host {
       return when (root) {
         is RecyclerView -> RecyclerViewHost(manager, root)
         is NestedScrollView -> NestedScrollViewHost(manager, root)
@@ -104,6 +104,7 @@ abstract class Host<V : View> constructor(
     manager.onContainerAttachedToWindow(v)
   }
 
+  @CallSuper
   override fun onLayoutChange(
     v: View?,
     left: Int,
@@ -144,19 +145,15 @@ abstract class Host<V : View> constructor(
         .groupBy { it.config.controller != null }
         .withDefault { emptyList() }
 
-    val manualCandidates by lazy(NONE) {
-      val manual = grouped.getValue(true)
-      val started =
-        if (manual.isNotEmpty()) {
-          manual.asSequence()
-              .find { playback ->
-                val playable = manager.findPlayableForContainer(playback.container)
-                manager.master.playablesPendingStates
-                    .filter { it.key === playable?.tag }
-                    .isNotEmpty()
-              }
-        } else null
-      return@lazy listOfNotNull(started ?: manual.firstOrNull())
+    val manualCandidates = with(grouped.getValue(true)) {
+      val started = this@with.asSequence()
+          .find { playback ->
+            val playable = manager.findPlayableForContainer(playback.container)
+            manager.master.playablesPendingStates
+                .filter { it.key === playable?.tag /* ref */ }
+                .isNotEmpty()
+          }
+      return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 
     val automaticCandidates by lazy(NONE) {
@@ -169,7 +166,7 @@ abstract class Host<V : View> constructor(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
-    other as Host<*>
+    other as Host
     if (manager !== other.manager) return false
     if (root !== other.root) return false
     return true

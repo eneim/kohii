@@ -29,7 +29,7 @@ import kohii.media.MediaItem
 // TODO need to support sub-type of a Renderer type. Eg: PlayerView and classes that extend it.
 abstract class Engine<RENDERER : Any>(
   val master: Master,
-  internal val playableCreator: PlayableCreator<RENDERER>
+  internal val creator: Creator<RENDERER>
 ) {
 
   // TODO implement the method below.

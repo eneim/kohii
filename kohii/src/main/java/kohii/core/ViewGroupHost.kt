@@ -23,8 +23,8 @@ import kotlin.LazyThreadSafetyMode.NONE
 
 open class ViewGroupHost(
   manager: Manager,
-  root: ViewGroup
-) : Host<ViewGroup>(manager, root) {
+  override val root: ViewGroup
+) : Host(manager, root) {
 
   private val globalScrollChangeListener by lazy(NONE) {
     OnScrollChangedListener { manager.refresh() }

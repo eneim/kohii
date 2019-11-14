@@ -20,6 +20,7 @@ import android.view.ViewGroup
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY
 import com.google.android.exoplayer2.Player
+import kohii.core.Master.Companion.NO_TAG
 import kohii.core.Playable.Config
 import kohii.media.Media
 
@@ -29,7 +30,7 @@ class Binder<RENDERER : Any>(
 ) {
 
   class Options {
-    var tag: Any? = null
+    var tag: Any = NO_TAG
     var threshold: Float = 0.65F
     var delay: Int = 0
     var preload: Boolean = false
@@ -50,10 +51,10 @@ class Binder<RENDERER : Any>(
     container: ViewGroup,
     callback: ((Playback) -> Unit)? = null
   ): Rebinder<RENDERER>? {
-    val tag = options.tag ?: Master.NO_TAG
-    val playable = providePlayable(media, tag, Config(tag = options.tag))
+    val tag = options.tag
+    val playable = providePlayable(media, tag, Config(tag = tag))
     engine.master.bind(playable, tag, container, options, callback)
-    return if (tag != Master.NO_TAG) engine.playableCreator.createRebinder(tag) else null
+    return if (tag != NO_TAG) engine.creator.createRebinder(tag) else null
   }
 
   private fun providePlayable(
@@ -62,15 +63,15 @@ class Binder<RENDERER : Any>(
     config: Config
   ): Playable<RENDERER> {
     var cache = engine.master.playables.asSequence()
-        .filterNot { it.value == Master.NO_TAG } // only care about tagged Playables
-        .filter { it.value == tag }
+        .filterNot { it.value == NO_TAG } // only care about tagged Playables
+        .filter { it.value == tag /* equals */ }
         .firstOrNull()
         ?.key
 
     if (cache != null) {
       require(cache.media == media) // Playable of same tag must have the same Media data.
       if (cache.config != config ||
-          !engine.playableCreator.rendererType.isAssignableFrom(cache.rendererType)
+          !engine.creator.rendererType.isAssignableFrom(cache.rendererType)
       ) {
         // Scenario: client bind a Video of same tag/media but different Renderer type or Config.
         cache.playback = null // will also set Manager to null
@@ -80,7 +81,7 @@ class Binder<RENDERER : Any>(
     }
 
     @Suppress("UNCHECKED_CAST")
-    return cache as? Playable<RENDERER> ?: engine.playableCreator.createPlayable(
+    return cache as? Playable<RENDERER> ?: engine.creator.createPlayable(
         engine.master, config, media
     )
   }

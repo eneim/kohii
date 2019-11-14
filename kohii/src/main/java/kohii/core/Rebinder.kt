@@ -48,7 +48,7 @@ abstract class Rebinder<RENDERER : Any>(
     callback: ((Playback) -> Unit)? = null
   ) {
     val playable = master.playables.asSequence()
-        .filter { it.value == tag }
+        .filter { it.value == tag /* equals */ }
         .firstOrNull()
         ?.key
     require(playable != null && this.rendererType.isAssignableFrom(playable.rendererType)) {

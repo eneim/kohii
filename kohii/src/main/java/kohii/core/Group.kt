@@ -116,7 +116,7 @@ class Group(
     dispatcher.onStop()
   }
 
-  internal fun findHostForContainer(container: ViewGroup): Host<*>? {
+  internal fun findHostForContainer(container: ViewGroup): Host? {
     require(ViewCompat.isAttachedToWindow(container))
     return managers.asSequence()
         .mapNotNull { it.findHostForContainer(container) }
