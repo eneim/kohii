@@ -16,7 +16,6 @@
 
 package kohii.v1.yt2
 
-import android.util.Log
 import com.google.android.exoplayer2.PlaybackParameters
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError
@@ -109,7 +108,6 @@ class YouTubeBridge(
       return _playbackInfo
     }
     set(value) {
-      Log.w("kohii.v1.log", "${this.media}, playbackInfo: $value")
       _playbackInfo = value
       player?.seekTo(value.resumePosition.toFloat())
     }
