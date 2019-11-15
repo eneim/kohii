@@ -41,6 +41,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
 import kohii.core.Binder.Options
 import kohii.findActivity
+import kohii.logInfo
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
@@ -51,6 +52,7 @@ import kohii.v1.Scope
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
+// TODO how to know if a Playable is being rebound from a config change?
 class Master private constructor(context: Context) : PlayableManager, ComponentCallbacks2 {
 
   enum class MemoryMode {
@@ -173,6 +175,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
   // TODO design a dedicated mechanism for it, considering paging to save in-memory space.
   // TODO when to remove entries of this map?
+  // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
 
   private var trimMemoryLevel: Int by Delegates.observable(
@@ -230,7 +233,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
     // but then another Playable is registered to the same Container, we need to kick the previous Playable.
     requests[container] = BindRequest(this, playable, container, tag, options, callback)
-    if (playable.manager == null) playable.manager = this
+    // if (playable.manager == null) playable.manager = this
     dispatcher.obtainMessage(MSG_BIND_PLAYABLE, container)
         .sendToTarget()
   }
@@ -267,7 +270,9 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   internal fun trySavePlaybackInfo(playable: Playable<*>) {
     if (playable.tag === NO_TAG) return
     if (!playbackInfoStore.containsKey(playable.tag)) {
-      playbackInfoStore[playable.tag] = playable.playbackInfo
+      val info = playable.playbackInfo
+      "Master#trySavePlaybackInfo $info, $playable".logInfo()
+      playbackInfoStore[playable.tag] = info
     }
   }
 
@@ -277,6 +282,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     val cache = playbackInfoStore.remove(playable.tag)
     // Only restoring playback state if there is cached state, and the player is not ready yet.
     if (cache != null && playable.playerState <= Player.STATE_IDLE /* TODO change to internal const */) {
+      "Master#tryRestorePlaybackInfo $cache, $playable".logInfo()
       playable.playbackInfo = cache
     }
   }
@@ -286,7 +292,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         .keys.toMutableList()
         .onEach {
           require(it.playback == null) {
-            "$it has manager: ${this@Master} but found Playback: ${it.playback}"
+            "$it has manager: $this but found Playback: ${it.playback}"
           }
           it.manager = null
           tearDown(it, true)

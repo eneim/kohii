@@ -25,6 +25,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import kohii.Experiment
 
+// TODO when using with YouTube Player SDK, we want to use its restoring mechanism (init with restore flag).
+//  In that case, we may need to skip the detaching of Fragment.
 @Experiment
 internal class DynamicFragmentRendererPlayback(
   manager: Manager,
@@ -40,9 +42,9 @@ internal class DynamicFragmentRendererPlayback(
   }
 
   private val fragmentManager: FragmentManager =
-    when {
-      manager.host is Fragment -> manager.host.childFragmentManager
-      manager.host is FragmentActivity -> manager.host.supportFragmentManager
+    when (manager.host) {
+      is Fragment -> manager.host.childFragmentManager
+      is FragmentActivity -> manager.host.supportFragmentManager
       else -> throw IllegalArgumentException("Need ${manager.host} to have a FragmentManager")
     }
 

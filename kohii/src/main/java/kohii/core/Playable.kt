@@ -25,6 +25,8 @@ import kohii.core.Master.MemoryMode.HIGH
 import kohii.core.Master.MemoryMode.INFINITE
 import kohii.core.Master.MemoryMode.LOW
 import kohii.core.Master.MemoryMode.NORMAL
+import kohii.logInfo
+import kohii.logWarn
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
@@ -41,7 +43,8 @@ abstract class Playable<RENDERER : Any>(
     Playback.RendererHolderListener,
     Playback.DistanceListener,
     Playback.VolumeInfoListener,
-    Playback.PlaybackInfoListener {
+    Playback.PlaybackInfoListener,
+    Playback.Unbinder {
 
   data class Config(
     val tag: Any = NO_TAG
@@ -51,8 +54,13 @@ abstract class Playable<RENDERER : Any>(
 
   val tag: Any = config.tag
 
+  override fun toString(): String {
+    return "${super.toString()}, [$tag]"
+  }
+
   // Ensure the preparation for the playback
   internal fun onReady() {
+    "Playable#onReady $this".logInfo()
     bridge.ensurePreparation()
   }
 
@@ -62,10 +70,12 @@ abstract class Playable<RENDERER : Any>(
    * to return **false** so Kohii will handle the resource recycling correctly.
    */
   protected open fun onConfigChange(): Boolean {
+    "Playable#onConfigChange $this".logInfo()
     return true
   }
 
   open fun onPlay() {
+    "Playable#onPlay $this".logWarn()
     playback?.onPlay()
     if (!playRequested) {
       playRequested = true
@@ -74,6 +84,7 @@ abstract class Playable<RENDERER : Any>(
   }
 
   open fun onPause() {
+    "Playable#onPause $this".logWarn()
     if (playRequested) {
       playRequested = false
       bridge.pause()
@@ -82,6 +93,7 @@ abstract class Playable<RENDERER : Any>(
   }
 
   open fun onRelease() {
+    "Playable#onRelease $this".logInfo()
     master.trySavePlaybackInfo(this)
     master.releasePlayable(this)
   }
@@ -93,7 +105,13 @@ abstract class Playable<RENDERER : Any>(
       null,
       onChange = { _, from, to ->
         if (from === to) return@observable
-        if (to == null) master.tearDown(this, false)
+        "Playable#manager $from --> $to, $this".logInfo()
+        if (to == null) {
+          master.trySavePlaybackInfo(this)
+          master.tearDown(this, false)
+        } else if (from === null) {
+          master.tryRestorePlaybackInfo(this)
+        }
       }
   )
 
@@ -101,10 +119,12 @@ abstract class Playable<RENDERER : Any>(
   internal var playback: Playback? by Delegates.observable<Playback?>(null,
       onChange = { _, from, to ->
         if (from === to) return@observable
+        "Playable#playback $from --> $to, $this".logInfo()
         if (from != null) {
           bridge.removeErrorListener(from)
           bridge.removeEventListener(from)
           from.removeCallback(this)
+          if (from.unbinder === this) from.unbinder = null
           if (from.playbackInfoListener === this) from.playbackInfoListener = null
           if (from.volumeInfoListener === this) from.volumeInfoListener = null
           if (from.rendererHolderListener === this) from.rendererHolderListener = null
@@ -116,8 +136,20 @@ abstract class Playable<RENDERER : Any>(
             to.manager
           } else {
             val configChange =
-              if (from != null) from.manager.group.activity.isChangingConfigurations else false
-            if (configChange && onConfigChange()) master else null
+              if (from != null) {
+                from.manager.group.activity.isChangingConfigurations
+              } else {
+                false
+              }
+
+            if (!configChange) null
+            else if (!onConfigChange()) {
+              // on config change, if the Playable doesn't support, we need to pause the Video.
+              onPause() // TODO check why it doesn't work for YouTube demo.
+              null
+            } else {
+              master // to prevent the Playable from being destroyed when Manager is null.
+            }
           }
 
         if (to != null) {
@@ -129,6 +161,7 @@ abstract class Playable<RENDERER : Any>(
           to.rendererHolderListener = this
           to.volumeInfoListener = this
           to.playbackInfoListener = this
+          to.unbinder = this
         }
       }
   )
@@ -139,32 +172,37 @@ abstract class Playable<RENDERER : Any>(
   // Playback.Callback
 
   override fun onActive(playback: Playback) {
+    "Playable#onActive $playback, $this".logInfo()
     require(playback === this.playback)
     master.tryRestorePlaybackInfo(this)
     master.preparePlayable(this, playback.config.preload)
   }
 
   override fun onInActive(playback: Playback) {
+    "Playable#onInActive $playback, $this".logInfo()
     require(playback === this.playback)
     val configChange = playback.manager.group.activity.isChangingConfigurations
     if (!configChange) {
       master.trySavePlaybackInfo(this)
-      if (!onConfigChange()) onPause()
       master.releasePlayable(this)
     }
   }
 
   override fun onAdded(playback: Playback) {
+    "Playable#onAdded $playback, $this".logInfo()
     bridge.repeatMode = playback.config.repeatMode
+    bridge.setVolumeInfo(playback.volumeInfo)
   }
 
   override fun onRemoved(playback: Playback) {
+    "Playable#onRemoved $playback, $this".logInfo()
     require(playback === this.playback)
     this.playback = null // Will also clear current Manager.
   }
 
   @CallSuper
   override fun considerRequestRenderer(playback: Playback) {
+    "Playable#considerRequestRenderer $playback, $this".logInfo()
     require(playback === this.playback)
     if (manager !== playback.manager || bridge.playerView == null) { // Only request for Renderer if we do not have one.
       val renderer = playback.manager.requestRenderer(playback, this)
@@ -174,6 +212,7 @@ abstract class Playable<RENDERER : Any>(
 
   @CallSuper
   override fun considerReleaseRenderer(playback: Playback) {
+    "Playable#considerReleaseRenderer $playback, $this".logInfo()
     require(this.playback == null || this.playback === playback)
     if (bridge.playerView != null) { // Only release the Renderer if we do have one to release.
       bridge.playerView = null
@@ -188,6 +227,7 @@ abstract class Playable<RENDERER : Any>(
     from: Int,
     to: Int
   ) {
+    "Playable#onDistanceChanged $playback, $from --> $to, $this".logInfo()
     if (to == 0) {
       master.tryRestorePlaybackInfo(this)
       master.preparePlayable(this, playback.config.preload)
@@ -219,6 +259,7 @@ abstract class Playable<RENDERER : Any>(
     from: VolumeInfo,
     to: VolumeInfo
   ) {
+    "Playable#onVolumeInfoChange $playback, $from --> $to, $this".logInfo()
     bridge.setVolumeInfo(to)
   }
 
@@ -227,7 +268,16 @@ abstract class Playable<RENDERER : Any>(
   override var playbackInfo: PlaybackInfo
     get() = bridge.playbackInfo
     set(value) {
+      "Playable#playbackInfo setter $value, $this".logInfo()
       bridge.playbackInfo = value
     }
 
+  // Playback.Unbindable
+
+  override fun onUnbind(playback: Playback) {
+    "Playable#onUnbind $playback, $this".logInfo()
+    if (this.playback === playback) {
+      playback.manager.removePlayback(playback)
+    }
+  }
 }

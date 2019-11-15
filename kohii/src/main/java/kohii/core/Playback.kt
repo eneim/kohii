@@ -129,7 +129,12 @@ abstract class Playback(
     }
   }
 
+  override fun toString(): String {
+    return "${super.toString()}, [$rendererHolderListener], [${token.areaOffset}, ${token.containerRect}]"
+  }
+
   protected open fun updateToken(): Token {
+    "Playback#updateToken $this".logDebug()
     val containerRect = Rect()
     if (!lifecycleState.isAtLeast(STARTED)) return Token(config.threshold, -1F, containerRect)
     if (!ViewCompat.isAttachedToWindow(container)) {
@@ -158,37 +163,6 @@ abstract class Playback(
   private val callbacks = ArrayDeque<Callback>()
   private val listeners = ArrayDeque<PlaybackListener>()
 
-  internal fun onAdded() {
-    playbackState = STATE_ADDED
-    callbacks.forEach { it.onAdded(this) }
-    host.addContainer(this.container)
-  }
-
-  internal fun onRemoved() {
-    playbackState = STATE_REMOVED
-    host.removeContainer(this.container)
-    callbacks.onEach { it.onRemoved(this) }
-        .clear()
-  }
-
-  internal fun onAttached() {
-    playbackState = STATE_ATTACHED
-    callbacks.forEach { it.onAttached(this) }
-  }
-
-  internal fun onDetached() {
-    playbackState = STATE_DETACHED
-    callbacks.forEach { it.onDetached(this) }
-  }
-
-  internal fun attachRenderer(renderer: Any?): Boolean {
-    return onAttachRenderer(renderer)
-  }
-
-  internal fun detachRenderer(renderer: Any?): Boolean {
-    return onDetachRenderer(renderer)
-  }
-
   // Return **true** to indicate that the Renderer is safely attached and
   // can be used by the Playable.
   abstract fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean
@@ -198,14 +172,54 @@ abstract class Playback(
   // proper mechanism (eg: put it back to Pool for reuse).
   abstract fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean
 
+  internal fun onAdded() {
+    "Playback#onAdded $this".logDebug()
+    playbackState = STATE_ADDED
+    callbacks.forEach { it.onAdded(this) }
+    host.addContainer(this.container)
+  }
+
+  internal fun onRemoved() {
+    "Playback#onRemoved $this".logDebug()
+    playbackState = STATE_REMOVED
+    host.removeContainer(this.container)
+    callbacks.onEach { it.onRemoved(this) }
+        .clear()
+  }
+
+  internal fun onAttached() {
+    "Playback#onAttached $this".logDebug()
+    playbackState = STATE_ATTACHED
+    callbacks.forEach { it.onAttached(this) }
+  }
+
+  internal fun onDetached() {
+    "Playback#onDetached $this".logDebug()
+    playbackState = STATE_DETACHED
+    callbacks.forEach { it.onDetached(this) }
+  }
+
+  internal fun attachRenderer(renderer: Any?): Boolean {
+    "Playback#attachRenderer $renderer $this".logDebug()
+    return onAttachRenderer(renderer)
+  }
+
+  internal fun detachRenderer(renderer: Any?): Boolean {
+    "Playback#detachRenderer $renderer $this".logDebug()
+    // TODO 'renderer' seems to be always null...
+    return onDetachRenderer(renderer)
+  }
+
   @CallSuper
   internal open fun onActive() {
+    "Playback#onActive $this".logDebug()
     playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
   }
 
   @CallSuper
   internal open fun onInActive() {
+    "Playback#onInActive $this".logDebug()
     playbackState = STATE_INACTIVE
     rendererHolderListener?.considerReleaseRenderer(this)
     callbacks.forEach { it.onInActive(this) }
@@ -213,11 +227,13 @@ abstract class Playback(
 
   @CallSuper
   internal open fun onPlay() {
+    "Playback#onPlay $this".logDebug()
     listeners.forEach { it.beforePlay(this) }
   }
 
   @CallSuper
   internal open fun onPause() {
+    "Playback#onPause $this".logDebug()
     listeners.forEach { it.afterPause(this) }
   }
 
@@ -228,6 +244,7 @@ abstract class Playback(
     get() = _token
 
   internal fun onRefresh() {
+    "Playback#onRefresh $this".logDebug()
     _token = updateToken()
   }
 
@@ -249,7 +266,7 @@ abstract class Playback(
       Int.MAX_VALUE,
       onChange = { _, from, to ->
         if (from == to) return@observable
-        "$this distance: $from --> $to".logDebug("Kohii::Dev")
+        "Playback#distanceToPlay $from --> $to, $this".logDebug()
         distanceListener?.onDistanceChanged(this, from, to)
       })
 
@@ -257,20 +274,25 @@ abstract class Playback(
   internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
       initialValue = host.volumeInfo,
       onChange = { _, from, to ->
-        "${this.volumeInfoListener} volume: $from --> $to".logDebug("Kohii::Vol")
         if (from == to) return@observable
-        "$this volume: $from --> $to".logDebug("Kohii::Dev")
+        "Playback#volumeInfo $from --> $to, $this".logDebug()
         volumeInfoListener?.onVolumeInfoChange(this, from, to)
       }
   )
 
+  init {
+    volumeInfoUpdater = host.volumeInfo
+  }
+
   internal var playbackInfoListener: PlaybackInfoListener? = null
   internal var rendererHolderListener: RendererHolderListener? = null
+  internal var unbinder: Unbinder? = null
 
   internal fun compareWith(
     other: Playback,
     orientation: Int
   ): Int {
+    "Playback#compareWith $this $other, $this".logDebug()
     val thisToken = this.token
     val thatToken = other.token
 
@@ -294,6 +316,7 @@ abstract class Playback(
     from: Boolean,
     to: Boolean
   ) {
+    "Playback#onSwitch $switch $from --> $to, $this".logDebug()
     TODO(
         "onSwitch not implemented"
     ) // To change body of created functions use File | Settings | File Templates.
@@ -310,19 +333,28 @@ abstract class Playback(
     get() = playbackInfoListener?.playbackInfo ?: PlaybackInfo()
 
   fun addCallback(callback: Callback) {
+    "Playback#addCallback $callback, $this".logDebug()
     this.callbacks.push(callback)
   }
 
   fun removeCallback(callback: Callback?) {
+    "Playback#removeCallback $callback, $this".logDebug()
     this.callbacks.remove(callback)
   }
 
   fun addPlaybackListener(listener: PlaybackListener) {
+    "Playback#addPlaybackListener $listener, $this".logDebug()
     this.listeners.add(listener)
   }
 
   fun removePlaybackListener(listener: PlaybackListener?) {
+    "Playback#removePlaybackListener $listener, $this".logDebug()
     this.listeners.remove(listener)
+  }
+
+  fun unbind() {
+    "Playback#unbind, $this".logDebug()
+    unbinder?.onUnbind(this) ?: manager.removePlayback(this)
   }
 
   // PlayerEventListener
@@ -331,6 +363,7 @@ abstract class Playback(
     playWhenReady: Boolean,
     playbackState: Int
   ) {
+    "Playback#onPlayerStateChanged $playWhenReady - $playbackState, $this".logDebug()
     container.keepScreenOn = playWhenReady
     when (playbackState) {
       Player.STATE_IDLE -> {
@@ -355,18 +388,21 @@ abstract class Playback(
     unappliedRotationDegrees: Int,
     pixelWidthHeightRatio: Float
   ) {
+    "Playback#onVideoSizeChanged $width × $height, $this".logDebug()
     listeners.forEach {
       it.onVideoSizeChanged(this, width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
     }
   }
 
   override fun onRenderedFirstFrame() {
+    "Playback#onRenderedFirstFrame, $this".logDebug()
     listeners.forEach { it.onFirstFrameRendered(this) }
   }
 
   // ErrorListener
 
   override fun onError(error: Exception) {
+    "Playback#onError $error, $this".logDebug()
     listeners.forEach { it.onError(this, error) }
     if (BuildConfig.DEBUG) error.printStackTrace()
   }
@@ -500,5 +536,10 @@ abstract class Playback(
     fun considerRequestRenderer(playback: Playback)
 
     fun considerReleaseRenderer(playback: Playback)
+  }
+
+  internal interface Unbinder {
+
+    fun onUnbind(playback: Playback)
   }
 }

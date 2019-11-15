@@ -125,7 +125,7 @@ abstract class Host constructor(
 
   @CallSuper
   open fun onAdded() {
-    this.volumeInfoUpdater = manager.volumeInfo
+    // this.volumeInfoUpdater = manager.volumeInfo
     // TODO setup support for CoordinatorLayout
   }
 
@@ -147,6 +147,10 @@ abstract class Host constructor(
 
   internal val volumeInfo: VolumeInfo
     get() = volumeInfoUpdater
+
+  init {
+    volumeInfoUpdater = manager.volumeInfo
+  }
 
   // This operation should be considered heavy/expensive.
   protected fun selectByOrientation(

@@ -19,18 +19,20 @@ package kohii.v1.sample.ui.overlay
 import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.Kohii
-import kohii.v1.Rebinder
+import com.google.android.exoplayer2.Player
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.PlayerViewRebinder
 import kohii.v1.sample.data.Video
+import kohii.v1.sample.svg.GlideApp
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val kohii: Kohii
+  private val kohii: Master,
+  val shouldBindVideo: (PlayerViewRebinder?) -> Boolean,
+  val onVideoClick: (Int, PlayerViewRebinder) -> Unit
 ) : Adapter<BaseViewHolder>(), BaseViewHolder.OnClickListener {
-
-  var selectionTracker: SelectionTracker<Rebinder<*>>? = null
 
   init {
     setHasStableIds(true)
@@ -43,10 +45,7 @@ internal class VideoItemsAdapter(
     itemId: Long,
     payload: Any?
   ) {
-    (payload as Rebinder<*>).also {
-      if (selectionTracker?.isSelected(it) == true) return
-      selectionTracker?.select(it)
-    }
+    onVideoClick(adapterPos, payload as PlayerViewRebinder)
   }
 
   override fun onCreateViewHolder(
@@ -56,8 +55,6 @@ internal class VideoItemsAdapter(
     return VideoItemHolder(
         from(parent.context),
         parent,
-        this,
-        kohii,
         this
     )
   }
@@ -74,7 +71,34 @@ internal class VideoItemsAdapter(
     holder: BaseViewHolder,
     position: Int
   ) {
-    holder.bind(videos[position % videos.size])
+    val item = videos[position % videos.size]
+    if (holder is VideoItemHolder) {
+      holder.videoData = item
+      holder.videoTitle.text = item.title
+      holder.videoInfo.text = item.description
+
+      GlideApp.with(holder.itemView)
+          .load(requireNotNull(holder.videoImage))
+          .into(holder.thumbnail)
+
+      if (shouldBindVideo(holder.rebinder)) {
+        kohii.setUp(requireNotNull(holder.videoFile))
+            .with {
+              tag = requireNotNull(holder.videoTag)
+              repeatMode = Player.REPEAT_MODE_ONE
+              callbacks = arrayOf(
+                  holder,
+                  object : Playback.Callback {
+                    override fun onRemoved(playback: Playback) {
+                      playback.removePlaybackListener(holder)
+                    }
+                  })
+            }
+            .bind(holder.playerViewContainer) {
+              it.addPlaybackListener(holder)
+            }
+      }
+    }
   }
 
   override fun onViewAttachedToWindow(holder: BaseViewHolder) {

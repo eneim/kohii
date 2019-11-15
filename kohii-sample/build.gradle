@@ -159,7 +159,7 @@ dependencies {
   implementation Libs.Google.firebaseAnalytics
   implementation Libs.Other.youtubePlayer
 
-  debugImplementation Libs.Square.leakCanary
+  // debugImplementation Libs.Square.leakCanary
 
   testImplementation Libs.Common.junit
   androidTestImplementation Libs.AndroidX.Test.core

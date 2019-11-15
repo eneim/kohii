@@ -190,10 +190,12 @@ class Manager(
   private fun attachHost(view: View) {
     val existing = hosts.find { it.root === view }
     require(existing == null) { "This host ${existing?.root} is attached already." }
-    view.doOnAttach { v ->
-      val host = Host[this@Manager, v]
-      if (hosts.add(host)) host.onAdded()
-      v.doOnDetach { detachHost(it) } // In case the View is detached immediately ...
+    val host = Host[this@Manager, view]
+    if (hosts.add(host)) {
+      view.doOnAttach { v ->
+        host.onAdded()
+        v.doOnDetach { detachHost(it) } // In case the View is detached immediately ...
+      }
     }
   }
 
@@ -258,11 +260,14 @@ class Manager(
   }
 
   internal fun removePlayback(playback: Playback) {
-    if (playback.isAttached) {
-      if (playback.isActive) onPlaybackInActive(playback)
-      onPlaybackDetached(playback)
+    if (playbacks.remove(playback.container) === playback) {
+      if (playback.isAttached) {
+        if (playback.isActive) onPlaybackInActive(playback)
+        onPlaybackDetached(playback)
+      }
+      playback.onRemoved()
+      refresh()
     }
-    if (playbacks.remove(playback.container) === playback) playback.onRemoved()
   }
 
   internal fun onRemoveContainer(container: Any) {
@@ -359,7 +364,7 @@ class Manager(
     playbacks.forEach { if (it.value.host === host) it.value.volumeInfoUpdater = volumeInfo }
   }
 
-  internal fun applyVolumeInfo(
+  fun applyVolumeInfo(
     volumeInfo: VolumeInfo,
     target: Any,
     scope: Scope
@@ -374,7 +379,12 @@ class Manager(
           is Host -> target.volumeInfoUpdater = volumeInfo
           is Playback -> target.host.volumeInfoUpdater = volumeInfo
           // If neither Playback nor Host, must be the root View of the Host.
-          else -> requireNotNull(hosts.find { it.root === target }).volumeInfoUpdater = volumeInfo
+          else -> {
+            requireNotNull(hosts.find { it.root === target }) {
+              "$target is not a root of any Host."
+            }
+                .volumeInfoUpdater = volumeInfo
+          }
         }
       }
       MANAGER -> {

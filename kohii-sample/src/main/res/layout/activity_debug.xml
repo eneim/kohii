@@ -16,7 +16,7 @@
 
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fragmentContainer"
-    android:name="kohii.v1.sample.ui.youtube1.YouTube1Fragment"
+    android:name="kohii.v1.sample.ui.overlay.OverlayViewFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     />

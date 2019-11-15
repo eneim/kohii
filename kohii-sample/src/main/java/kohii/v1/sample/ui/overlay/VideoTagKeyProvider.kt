@@ -23,15 +23,15 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.NO_ID
 import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
-import kohii.v1.Rebinder
+import kohii.core.PlayerViewRebinder
 import java.util.HashMap
 
 // This KeyProvider allow a detached View still in key/position map.
 class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
-    ItemKeyProvider<Rebinder<*>>(SCOPE_CACHED) {
+    ItemKeyProvider<PlayerViewRebinder>(SCOPE_CACHED) {
 
-  private val positionToKey = SparseArray<Rebinder<*>>()
-  private val keyToPosition = HashMap<Rebinder<*>, Int>()
+  private val positionToKey = SparseArray<PlayerViewRebinder>()
+  private val keyToPosition = HashMap<PlayerViewRebinder, Int>()
 
   init {
     recyclerView.addOnChildAttachStateChangeListener(
@@ -79,11 +79,11 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
     }
   }
 
-  override fun getKey(position: Int): Rebinder<*>? {
+  override fun getKey(position: Int): PlayerViewRebinder? {
     return positionToKey.get(position, null)
   }
 
-  override fun getPosition(key: Rebinder<*>): Int {
+  override fun getPosition(key: PlayerViewRebinder): Int {
     return keyToPosition[key] ?: NO_POSITION
   }
 }

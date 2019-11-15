@@ -18,10 +18,13 @@ package kohii.v1.sample.ui.overlay
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kohii.core.PlayerViewRebinder
 import kohii.media.VolumeInfo
 
-class VolumeViewModel : ViewModel() {
+class OverlayViewModel : ViewModel() {
 
   val recyclerViewVolume = MutableLiveData(VolumeInfo(true, 1F))
   val overlayVolume = MutableLiveData(VolumeInfo(false, 1F))
+
+  val selectedRebinder = MutableLiveData<Pair<Int, PlayerViewRebinder?>>(-1 to null)
 }
