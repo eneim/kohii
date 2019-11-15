@@ -16,6 +16,7 @@
 
 package kohii.v1.yt2
 
+import android.util.Log
 import com.google.android.exoplayer2.PlaybackParameters
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError
@@ -44,7 +45,7 @@ class YouTubeBridge(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
-        updatePlaybackInfo()
+        updatePlaybackInfo(from)
         tracker.videoId = null
         tracker.state = UNKNOWN
         if (from != null) {
@@ -74,7 +75,7 @@ class YouTubeBridge(
       youTubePlayer: YouTubePlayer,
       state: PlayerState
     ) {
-      eventListeners.onPlayerStateChanged(state == PLAYING, mapState(state))
+      eventListeners.onPlayerStateChanged(state === PLAYING, mapState(state))
     }
 
     override fun onError(
@@ -104,16 +105,17 @@ class YouTubeBridge(
 
   override var playbackInfo: PlaybackInfo
     get() {
-      updatePlaybackInfo()
+      updatePlaybackInfo(player)
       return _playbackInfo
     }
     set(value) {
+      Log.w("kohii.v1.log", "${this.media}, playbackInfo: $value")
       _playbackInfo = value
       player?.seekTo(value.resumePosition.toFloat())
     }
 
-  private fun updatePlaybackInfo() {
-    player?.also {
+  private fun updatePlaybackInfo(player: YouTubePlayer?) {
+    if (player != null) {
       _playbackInfo = PlaybackInfo(0, tracker.currentSecond.toLong(), _playbackInfo.volumeInfo)
     }
   }
@@ -169,7 +171,7 @@ class YouTubeBridge(
   }
 
   override fun pause() {
-    updatePlaybackInfo()
+    updatePlaybackInfo(player)
     player?.pause()
   }
 
@@ -179,7 +181,7 @@ class YouTubeBridge(
   }
 
   override fun release() {
-    updatePlaybackInfo()
+    updatePlaybackInfo(player)
     player?.also {
       it.removeListener(tracker)
       it.removeListener(playerListener)
