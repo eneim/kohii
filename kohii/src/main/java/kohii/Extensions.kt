@@ -152,25 +152,25 @@ fun Context.findActivity(): Activity? {
 }
 
 // Because I want to compose the message first, then log it.
-internal fun String.logDebug(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logDebug(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.d(tag, this)
   }
 }
 
-internal fun String.logInfo(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logInfo(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.i(tag, this)
   }
 }
 
-internal fun String.logWarn(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logWarn(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.w(tag, this)
   }
 }
 
-internal fun String.logError(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logError(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.e(tag, this)
   }

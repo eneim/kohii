@@ -27,7 +27,7 @@ interface Bridge<RENDERER : Any> {
   val playbackState: Int
 
   //  set/get
-  var playerView: RENDERER?
+  var playerView: RENDERER? // TODO rename to 'renderer'
 
   // set/get
   var playbackInfo: PlaybackInfo
