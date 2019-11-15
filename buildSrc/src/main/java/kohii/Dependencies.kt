@@ -48,7 +48,7 @@ object Libs {
 
   object Common {
     const val androidGradlePlugin = "com.android.tools.build:gradle:3.5.2"
-    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.8.6"
+    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:8.2.0"
 
     val junit = "junit:junit:4.12"
@@ -58,7 +58,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.3.50"
+    private const val version = "1.3.60"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"

@@ -87,11 +87,11 @@ class YouTubeBridge(
 
   private var _playbackInfo: PlaybackInfo by Delegates.observable(
       PlaybackInfo(0, 0, VolumeInfo()),
-      onChange = { _, oldVal, newVal ->
+      onChange = { _, _, _ ->
         // Note: we ignore volume setting here.
-        if (newVal.resumePosition != oldVal.resumePosition) {
-          player?.seekTo(newVal.resumePosition.toFloat())
-        }
+        // if (newVal.resumePosition != oldVal.resumePosition) {
+        //   player?.seekTo(newVal.resumePosition.toFloat())
+        // }
       }
   )
 
@@ -109,18 +109,13 @@ class YouTubeBridge(
     }
     set(value) {
       _playbackInfo = value
+      player?.seekTo(value.resumePosition.toFloat())
     }
 
   private fun updatePlaybackInfo() {
     player?.also {
-      if (tracker.state === UNKNOWN) return
-      _playbackInfo.resumeWindow = 0
-      _playbackInfo.resumePosition = tracker.currentSecond.toLong()
+      _playbackInfo = PlaybackInfo(0, tracker.currentSecond.toLong(), _playbackInfo.volumeInfo)
     }
-  }
-
-  private fun resetPlaybackInfo() {
-    _playbackInfo = PlaybackInfo()
   }
 
   override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
@@ -179,7 +174,7 @@ class YouTubeBridge(
   }
 
   override fun reset(resetPlayer: Boolean) {
-    resetPlaybackInfo()
+    _playbackInfo = PlaybackInfo()
     player?.pause()
   }
 
