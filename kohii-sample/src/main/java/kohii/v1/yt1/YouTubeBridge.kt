@@ -56,8 +56,7 @@ class YouTubeBridge(
       if (_playWhenReady && allowedToPlay()) {
         if (restored) {
           player?.play()
-        }
-        else {
+        } else {
           player?.loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toInt())
         }
       }
@@ -112,9 +111,9 @@ class YouTubeBridge(
   private var _playbackInfo: PlaybackInfo by Delegates.observable(
       initialValue = PlaybackInfo(),
       onChange = { _, oldVal, newVal ->
-        val newPos = newVal.resumePosition.toInt()
         val posChanged = newVal.resumePosition != oldVal.resumePosition
         if (posChanged) {
+          val newPos = newVal.resumePosition.toInt()
           try {
             player?.seekToMillis(newPos)
           } catch (error: Exception) {
@@ -143,9 +142,11 @@ class YouTubeBridge(
       field?.also {
         if (it.view != null) it.viewLifecycleOwner.lifecycle.removeObserver(this)
       }
-      if (value == null) player = null
-      @Suppress("IfThenToSafeAccess")
-      if (value != null) value.viewLifecycleOwner.lifecycle.addObserver(this)
+      if (value == null) {
+        updatePlaybackInfo()
+        player = null
+      }
+      value?.viewLifecycleOwner?.lifecycle?.addObserver(this)
       field = value
     }
 
