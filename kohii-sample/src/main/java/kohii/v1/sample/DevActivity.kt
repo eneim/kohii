@@ -18,11 +18,19 @@ package kohii.v1.sample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import kohii.v1.sample.common.BackPressConsumer
 
 class DevActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_debug)
+  }
+
+  override fun onBackPressed() {
+    val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+    if (currentFragment !is BackPressConsumer || !currentFragment.consumeBackPress()) {
+      super.onBackPressed()
+    }
   }
 }
