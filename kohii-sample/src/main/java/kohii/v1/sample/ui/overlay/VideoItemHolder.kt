@@ -77,38 +77,6 @@ internal class VideoItemHolder(
   internal val rebinder: PlayerViewRebinder?
     get() = this.videoTag?.let { PlayerViewRebinder(it) }
 
-  /* override fun bind(item: Any?) {
-    (item as? Video)?.also {
-      videoTitle.text = it.title
-      videoInfo.text = it.description
-      this.videoSources = it.playlist.first()
-          .also { pl ->
-            GlideApp.with(itemView)
-                .load(pl.image)
-                .into(thumbnail)
-          }
-          .sources.first()
-
-      val binder = kohii.setUp(videoSources!!.file)
-          .with {
-            tag = requireNotNull(videoTag)
-            // repeatMode = Playable.REPEAT_MODE_ONE
-            callbacks = arrayOf(this@VideoItemHolder)
-          }
-
-      this.binder = binder
-
-      if (host.selectionTracker?.isSelected(rebinder) == true) {
-        this.playback = null
-      } else {
-        binder.bind(playerViewContainer) { pk ->
-          // pk.addPlaybackEventListener(this@VideoItemHolder)
-          this@VideoItemHolder.playback = pk
-        }
-      }
-    }
-  } */
-
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
     this.videoData = null
