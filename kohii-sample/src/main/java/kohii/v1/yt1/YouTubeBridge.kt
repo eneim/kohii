@@ -54,7 +54,9 @@ class YouTubeBridge(
       this@YouTubeBridge.player = player
       // Start playback
       if (_playWhenReady && allowedToPlay()) {
-        if (restored) player?.play()
+        if (restored) {
+          player?.play()
+        }
         else {
           player?.loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toInt())
         }

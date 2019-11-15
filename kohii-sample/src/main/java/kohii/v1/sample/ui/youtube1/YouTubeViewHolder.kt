@@ -34,7 +34,7 @@ class YouTubeViewHolder(
 ) : BaseViewHolder(parent, R.layout.holder_youtube_container), Playback.PlaybackListener {
 
   val content = itemView as ConstraintLayout
-  val fragmentPlace: ViewGroup = itemView.findViewById(R.id.fragmentContainer)
+  val fragmentPlace: ViewGroup = itemView.findViewById(R.id.fragment)
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
 
