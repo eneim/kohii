@@ -16,9 +16,6 @@
 
 package kohii.core
 
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.DiffUtil.Callback
-import androidx.recyclerview.widget.ListUpdateCallback
 import kotlin.properties.Delegates
 
 internal class Organizer {

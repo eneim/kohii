@@ -45,5 +45,4 @@ internal class PlayerViewPlayable(
     }
     super.considerReleaseRenderer(playback)
   }
-
 }
