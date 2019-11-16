@@ -63,34 +63,34 @@ open class ViewPlayback<V : View, RENDERER : Any>(
   private val debugListener: PlaybackEventListener by lazy {
     object : PlaybackEventListener {
       override fun onFirstFrameRendered(playback: Playback<*>) {
-        Log.d(TAG, "first frame: ${this@ViewPlayback}")
+        Log.d(TAG, "first frame: $this")
       }
 
       override fun onBuffering(
         playback: Playback<*>,
         playWhenReady: Boolean
       ) {
-        Log.d(TAG, "buffering: ${this@ViewPlayback}")
+        Log.d(TAG, "buffering: $this")
       }
 
       override fun beforePlay(playback: Playback<*>) {
-        Log.w(TAG, "beforePlay: ${this@ViewPlayback}")
+        Log.w(TAG, "beforePlay: $this")
       }
 
       override fun onPlay(playback: Playback<*>) {
-        Log.d(TAG, "playing: ${this@ViewPlayback}")
+        Log.d(TAG, "playing: $this")
       }
 
       override fun onPause(playback: Playback<*>) {
-        Log.w(TAG, "paused: ${this@ViewPlayback}")
+        Log.w(TAG, "paused: $this")
       }
 
       override fun afterPause(playback: Playback<*>) {
-        Log.w(TAG, "afterPause: ${this@ViewPlayback}")
+        Log.w(TAG, "afterPause: $this")
       }
 
       override fun onEnd(playback: Playback<*>) {
-        Log.d(TAG, "ended: ${this@ViewPlayback}")
+        Log.d(TAG, "ended: $this")
       }
     }
   }

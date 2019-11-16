@@ -30,12 +30,12 @@ internal class StaticViewRendererPlayback(
 
   override fun onActive() {
     super.onActive()
-    rendererHolderListener?.considerRequestRenderer(this)
+    playable?.considerRequestRenderer(this)
   }
 
   override fun onInActive() {
     super.onInActive()
-    rendererHolderListener?.considerReleaseRenderer(this)
+    playable?.considerReleaseRenderer(this)
   }
 
   override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean {

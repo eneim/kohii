@@ -23,84 +23,54 @@ import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Binder
-import kohii.v1.Binder.Params
-import kohii.v1.HeadlessPlaybackParams
-import kohii.v1.Kohii
-import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
-import kohii.v1.PlaybackManager
-import kohii.v1.Rebinder
+import kohii.core.Binder.Options
+import kohii.core.Manager
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.PlayerViewRebinder
+import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
-import kotlin.LazyThreadSafetyMode.NONE
 
+@Suppress("MemberVisibilityCanBePrivate")
 internal class VideoViewHolder(
   parent: ViewGroup,
-  val kohii: Kohii,
-  val manager: PlaybackManager,
-  val shouldBind: (Rebinder<*>?) -> Boolean
-) : FbookItemHolder(parent), PlaybackEventListener {
+  val kohii: Master,
+  val manager: Manager,
+  val shouldBind: (PlayerViewRebinder?) -> Boolean
+) : FbookItemHolder(parent),
+    Playback.PlaybackListener,
+    Playback.Callback {
 
   init {
     videoContainer.isVisible = true
   }
 
-  internal val playerView = itemView.findViewById(R.id.playerView) as PlayerView
+  internal val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
   internal val volume = itemView.findViewById(R.id.volumeSwitch) as ImageButton
-  private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
-  private val playAgain = itemView.findViewById(R.id.playerAgain) as Button
+  internal val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
+  internal val playAgain = itemView.findViewById(R.id.playerAgain) as Button
+
+  internal var playback: Playback? = null
 
   private var video: Video? = null
   private var videoImage: String? = null
   private var videoSources: Sources? = null
 
   private val videoTag: String?
-    get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
+    get() = this.videoSources?.let { "FB::${it.file}::$adapterPosition" }
 
-  private val params: Params.() -> Unit
+  private val params: Options.() -> Unit
     get() = {
-      tag = videoTag
-      cover = Glide.with(itemView.context.applicationContext)
-          .asBitmap()
-          .load(videoImage ?: R.drawable.ic_kohii)
-          .submit()
-      headlessPlaybackParams = HeadlessPlaybackParams(
-          enabled = true, // TODO dynamic condition, eg: network.
-          mediaTitle = video?.title ?: "Unknown",
-          mediaText = video?.description ?: "Unknown"
-      )
+      tag = requireNotNull(videoTag)
+      callbacks = arrayOf(this@VideoViewHolder)
     }
-
-  private var binder: Binder<PlayerView>? = null
-  private var playback: Playback<*>? = null
-
-  @Suppress("RemoveExplicitTypeArguments")
-  private val onBound: (Playback<*>) -> Unit by lazy<(Playback<*>) -> Unit>(NONE) {
-    { playback ->
-      playback.addPlaybackEventListener(this@VideoViewHolder)
-      volume.isSelected = !playback.volumeInfo.mute
-      this@VideoViewHolder.playback = playback
-    }
-  }
 
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
   // be useful in some verifications.
-  internal val rebinder: Rebinder<PlayerView>?
-    get() = this.videoTag?.let { Rebinder(it, PlayerView::class.java) }
-
-  override fun setupOnClick(onClick: OnClick) {
-    super.setupOnClick(onClick)
-    volume.setOnClickListener { onClick.onClick(it, this) }
-    playAgain.setOnClickListener {
-      if (!playAgain.isVisible) return@setOnClickListener
-      // Once completed, a Playback needs to be reset to starting position.
-      playback?.rewind()
-      binder?.bind(playerView, onBound)
-    }
-  }
+  internal val rebinder: PlayerViewRebinder?
+    get() = this.videoTag?.let { PlayerViewRebinder(it) }
 
   override fun bind(item: Any?) {
     super.bind(item)
@@ -115,54 +85,43 @@ internal class VideoViewHolder(
           }
           .sources.first()
 
-      binder = kohii.setUp(videoSources!!.file)
-          .with(params)
-      /*
-      We suppose to do this here, but for a specific scenario of this demo, we need to
-      do it when the VideoHolder is attached via adapter#onViewAttachedToWindow.
-      */
-      // dispatchBindVideo()
+      if (shouldBind(this.rebinder)) {
+        kohii.setUp(assetVideoUri)
+            .with(params)
+            .bind(playerView) { pk ->
+              volume.isSelected = !pk.volumeInfo.mute
+              pk.addPlaybackListener(this@VideoViewHolder)
+              playAgain.isVisible = pk.playerState == Player.STATE_ENDED
+              playback = pk
+            }
+      }
     }
   }
 
-  override fun beforePlay(playback: Playback<*>) {
-    thumbnail.isVisible = false
-    playAgain.isVisible = false
+  override fun beforePlay(playback: Playback) {
+    if (playback.playerState != Player.STATE_ENDED) {
+      thumbnail.isVisible = false
+      playAgain.isVisible = false
+    }
   }
 
-  override fun afterPause(playback: Playback<*>) {
+  override fun afterPause(playback: Playback) {
     thumbnail.isVisible = true
   }
 
-  override fun onEnd(playback: Playback<*>) {
-    playback.removePlaybackEventListener(this@VideoViewHolder)
+  override fun onEnd(playback: Playback) {
     thumbnail.isVisible = true
     playAgain.isVisible = true
   }
 
-  // Called by FbookFragment to immediately reclaim the Rebinder, prevent the Playback to be removed.
-  internal fun reclaimRebinder(rebinder: Rebinder<*>) {
-    if (shouldBind(rebinder)) {
-      binder?.bind(playerView, onBound)
-    }
-  }
-
-  internal fun dispatchBindVideo() {
-    if (shouldBind(this.rebinder)) {
-      // bind the Video to PlayerView
-      binder?.bind(playerView, onBound)
-    }
-
-    playAgain.isVisible = playback?.playbackState == Player.STATE_ENDED
+  override fun onRemoved(playback: Playback) {
+    playback.removePlaybackListener(this)
   }
 
   override fun onRecycled(success: Boolean) {
-    super.onRecycled(success)
     video = null
     videoSources = null
     videoImage = null
-    playback?.removePlaybackEventListener(this@VideoViewHolder)
     playback = null
-    binder = null
   }
 }

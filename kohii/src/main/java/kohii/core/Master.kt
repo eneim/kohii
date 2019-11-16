@@ -344,6 +344,11 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         .sendToTarget()
   }
 
+  private fun requestDefaultEngine(): Engine<PlayerView> {
+    @Suppress("UNCHECKED_CAST")
+    return engines.getOrPut(PlayerView::class.java) { PlayerViewEngine(this) } as Engine<PlayerView>
+  }
+
   // Public APIs
 
   fun register(
@@ -363,10 +368,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   @ExoPlayer
   fun setUp(media: Media): Binder<PlayerView> {
-    @Suppress("UNCHECKED_CAST")
-    val engine: Engine<PlayerView> =
-      engines.getOrPut(PlayerView::class.java) { PlayerViewEngine(this) } as Engine<PlayerView>
-    return engine.setUp(media)
+    return requestDefaultEngine().setUp(media)
   }
 
   @ExoPlayer
@@ -374,6 +376,11 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   @ExoPlayer
   fun setUp(url: String) = setUp(url.toUri())
+
+  @ExoPlayer
+  fun fetchRebinder(tag: Any?): Rebinder<PlayerView>? {
+    return if (tag == null) null else requestDefaultEngine().creator.createRebinder(tag)
+  }
 
   @Suppress("MemberVisibilityCanBePrivate", "unused")
   fun <RENDERER : Any> registerEngine(

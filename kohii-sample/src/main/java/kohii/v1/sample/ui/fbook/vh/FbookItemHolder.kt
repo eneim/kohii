@@ -36,6 +36,4 @@ internal abstract class FbookItemHolder(
   val textContainer = itemView.findViewById(R.id.textContainer) as ViewGroup
   val photoContainer = itemView.findViewById(R.id.photoContainer) as ViewGroup
   val videoContainer = itemView.findViewById(R.id.videoContainer) as ViewGroup
-
-  internal open fun setupOnClick(onClick: OnClick) {}
 }

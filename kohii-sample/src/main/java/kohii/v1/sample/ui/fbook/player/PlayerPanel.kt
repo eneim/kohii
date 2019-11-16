@@ -17,8 +17,8 @@
 package kohii.v1.sample.ui.fbook.player
 
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Playback
-import kohii.v1.Rebinder
+import kohii.core.Playback
+import kohii.core.Rebinder
 
 interface PlayerPanel {
 
@@ -28,13 +28,13 @@ interface PlayerPanel {
 
     fun onPlayerActive(
       player: PlayerPanel,
-      playback: Playback<*>
+      playback: Playback
     ) {
     }
 
     fun onPlayerInActive(
       player: PlayerPanel,
-      playback: Playback<*>
+      playback: Playback
     ) {
     }
 

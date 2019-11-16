@@ -50,12 +50,12 @@ internal class DynamicFragmentRendererPlayback(
 
   override fun onPlay() {
     super.onPlay()
-    rendererHolderListener?.considerRequestRenderer(this)
+    playable?.considerRequestRenderer(this)
   }
 
   override fun onPause() {
     super.onPause()
-    rendererHolderListener?.considerReleaseRenderer(this)
+    playable?.considerReleaseRenderer(this)
   }
 
   override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean {

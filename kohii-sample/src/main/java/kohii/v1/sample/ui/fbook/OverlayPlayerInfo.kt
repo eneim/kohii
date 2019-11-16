@@ -16,15 +16,14 @@
 
 package kohii.v1.sample.ui.fbook
 
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Rebinder
+import kohii.core.PlayerViewRebinder
 
 data class OverlayPlayerInfo(
   val mode: Int = -1,
-  val rebinder: Rebinder<PlayerView>
+  val rebinder: PlayerViewRebinder
 ) {
   companion object {
-    const val MODE_DIALOG = 1
+    const val MODE_FULLSCREEN = 1
     const val MODE_FLOAT = 2
   }
 }

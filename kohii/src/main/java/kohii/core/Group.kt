@@ -31,6 +31,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.core.Manager.OnSelectionListener
 import kohii.distanceTo
 import kohii.media.VolumeInfo
 import kohii.partitionToMutableSets
@@ -127,6 +128,7 @@ class Group(
   @OnLifecycleEvent(ON_STOP)
   internal fun onStop() {
     dispatcher.onStop()
+    handler.removeMessages(MSG_REFRESH)
   }
 
   internal fun findHostForContainer(container: ViewGroup): Host? {
@@ -215,6 +217,13 @@ class Group(
     newSelection
         .mapNotNull { playback -> playables.find { it.playback === playback } }
         .forEach { dispatcher.play(it) }
+
+    val grouped = newSelection.groupBy { it.manager }
+    this.managers.asSequence()
+        .filter { it.host is OnSelectionListener }
+        .forEach {
+          (it.host as OnSelectionListener).onSelection(grouped.getOrElse(it) { emptyList() })
+        }
   }
 
   internal fun onManagerDestroyed(manager: Manager) {

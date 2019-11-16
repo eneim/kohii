@@ -398,4 +398,10 @@ class Manager(
       }
     }
   }
+
+  interface OnSelectionListener {
+
+    // Called when some Playbacks under this Manager are selected.
+    fun onSelection(selection: Collection<Playback>)
+  }
 }

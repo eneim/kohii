@@ -16,7 +16,6 @@
 
 package kohii.core
 
-import androidx.annotation.CallSuper
 import kohii.core.Master.Companion.NO_TAG
 import kohii.core.Master.MemoryMode
 import kohii.core.Master.MemoryMode.AUTO
@@ -39,12 +38,7 @@ abstract class Playable<RENDERER : Any>(
   val config: Config,
   internal val rendererType: Class<RENDERER>,
   internal val bridge: Bridge<RENDERER>
-) : Playback.Callback,
-    Playback.RendererHolderListener,
-    Playback.DistanceListener,
-    Playback.VolumeInfoListener,
-    Playback.PlaybackInfoListener,
-    Playback.Unbinder {
+) : Playback.Callback {
 
   data class Config(
     val tag: Any = NO_TAG
@@ -62,6 +56,10 @@ abstract class Playable<RENDERER : Any>(
   internal fun onReady() {
     "Playable#onReady $this".logInfo()
     bridge.ensurePreparation()
+  }
+
+  internal fun onReset() {
+    bridge.reset(true)
   }
 
   /**
@@ -124,11 +122,7 @@ abstract class Playable<RENDERER : Any>(
           bridge.removeErrorListener(from)
           bridge.removeEventListener(from)
           from.removeCallback(this)
-          if (from.unbinder === this) from.unbinder = null
-          if (from.playbackInfoListener === this) from.playbackInfoListener = null
-          if (from.volumeInfoListener === this) from.volumeInfoListener = null
-          if (from.rendererHolderListener === this) from.rendererHolderListener = null
-          if (from.distanceListener === this) from.distanceListener = null
+          if (from.playable === this) from.playable = null
         }
 
         this.manager =
@@ -157,11 +151,7 @@ abstract class Playable<RENDERER : Any>(
           to.config.callbacks.forEach { cb -> to.addCallback(cb) }
           bridge.addEventListener(to)
           bridge.addErrorListener(to)
-          to.distanceListener = this
-          to.rendererHolderListener = this
-          to.volumeInfoListener = this
-          to.playbackInfoListener = this
-          to.unbinder = this
+          to.playable = this
         }
       }
   )
@@ -200,29 +190,89 @@ abstract class Playable<RENDERER : Any>(
     this.playback = null // Will also clear current Manager.
   }
 
-  @CallSuper
-  override fun considerRequestRenderer(playback: Playback) {
+  /**
+   * Once the Playback finds it is good time for the Listener to request/release the Renderer, it
+   * will trigger these calls to send that signal. The 'good time' can varies due to the actual
+   * use case. In Kohii, there are 2 following cases:
+   * - The Playback's Container is also the renderer. In this case, the Container/Renderer will
+   * always be there. We suggest that the Listener should request for the Renderer as soon as
+   * possible, and release it as late as possible. The proper place to do that are when the
+   * Playback becomes active (onActive()) and inactive (onInActive()).
+   *
+   * @see [StaticViewRendererPlayback]
+   *
+   * - The Playback's Container is not the Renderer. In this case, the Renderer is expected
+   * to be created on demand and release as early as possible, so that Kohii can reuse it for
+   * other Playback as soon as possible. We suggest that the Listener should request for
+   * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
+   * just right after the Playback pauses (onPause()).
+   *
+   * Flow:  If Bridge<RENDERER> needs a renderer
+   *          ⬇
+   *        Playable#considerRequestRenderer(playback)
+   *          ⬇
+   *        Manager#requestRenderer(playback, playable)
+   *          ⬇
+   *        Playback#attachRenderer(renderer)
+   *          ⬇
+   *        Playback#onAttachRenderer(renderer)
+   *          ⬇
+   *        If valid renderer returns, do the update for Bridge<RENDERER>
+   *
+   * @see [DynamicViewRendererPlayback]
+   * @see [DynamicFragmentRendererPlayback]
+   */
+  open fun considerRequestRenderer(playback: Playback) {
     "Playable#considerRequestRenderer $playback, $this".logInfo()
     require(playback === this.playback)
-    if (manager !== playback.manager || bridge.playerView == null) { // Only request for Renderer if we do not have one.
+    if (bridge.playerView == null || manager !== playback.manager) { // Only request for Renderer if we do not have one.
       val renderer = playback.manager.requestRenderer(playback, this)
       bridge.playerView = renderer
     }
   }
 
-  @CallSuper
-  override fun considerReleaseRenderer(playback: Playback) {
+  /**
+   * Once the Playback finds it is good time for the Listener to request/release the Renderer, it
+   * will trigger these calls to send that signal. The 'good time' can varies due to the actual
+   * use case. In Kohii, there are 2 following cases:
+   * - The Playback's Container is also the renderer. In this case, the Container/Renderer will
+   * always be there. We suggest that the Listener should request for the Renderer as soon as
+   * possible, and release it as late as possible. The proper place to do that are when the
+   * Playback becomes active (onActive()) and inactive (onInActive()).
+   *
+   * @see [StaticViewRendererPlayback]
+   *
+   * - The Playback's Container is not the Renderer. In this case, the Renderer is expected
+   * to be created on demand and release as early as possible, so that Kohii can reuse it for
+   * other Playback as soon as possible. We suggest that the Listener should request for
+   * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
+   * just right after the Playback pauses (onPause()).
+   *
+   * Flow:  If Bridge<RENDERER> has a renderer to release
+   *          ⬇
+   *        Update the renderer in Bridge<RENDERER>
+   *          ⬇
+   *        Manager#releaseRenderer(playback, playable)
+   *          ⬇
+   *        Playback#detachRenderer(renderer)
+   *          ⬇
+   *        Playback#onDetachRenderer(renderer)
+   *          ⬇
+   *        If the renderer is managed by pool, it will now be released back to the pool for reuse.
+   *
+   * @see [DynamicViewRendererPlayback]
+   * @see [DynamicFragmentRendererPlayback]
+   */
+  open fun considerReleaseRenderer(playback: Playback) {
     "Playable#considerReleaseRenderer $playback, $this".logInfo()
     require(this.playback == null || this.playback === playback)
     if (bridge.playerView != null) { // Only release the Renderer if we do have one to release.
-      bridge.playerView = null
       playback.manager.releaseRenderer(playback, this)
+      bridge.playerView = null
     }
   }
 
-  // Playback.DistanceListener
-
-  override fun onDistanceChanged(
+  internal fun onDistanceChanged(
     playback: Playback,
     from: Int,
     to: Int
@@ -252,9 +302,7 @@ abstract class Playable<RENDERER : Any>(
     }
   }
 
-  // Playback.VolumeInfoListener
-
-  override fun onVolumeInfoChange(
+  internal fun onVolumeInfoChange(
     playback: Playback,
     from: VolumeInfo,
     to: VolumeInfo
@@ -263,18 +311,14 @@ abstract class Playable<RENDERER : Any>(
     bridge.setVolumeInfo(to)
   }
 
-  // Playback.PlaybackInfoListener
-
-  override var playbackInfo: PlaybackInfo
+  internal var playbackInfo: PlaybackInfo
     get() = bridge.playbackInfo
     set(value) {
       "Playable#playbackInfo setter $value, $this".logInfo()
       bridge.playbackInfo = value
     }
 
-  // Playback.Unbindable
-
-  override fun onUnbind(playback: Playback) {
+  internal fun onUnbind(playback: Playback) {
     "Playable#onUnbind $playback, $this".logInfo()
     if (this.playback === playback) {
       playback.manager.removePlayback(playback)

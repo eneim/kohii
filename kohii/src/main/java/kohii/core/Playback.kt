@@ -130,7 +130,7 @@ abstract class Playback(
   }
 
   override fun toString(): String {
-    return "${super.toString()}, [$rendererHolderListener], [${token.areaOffset}, ${token.containerRect}]"
+    return "${super.toString()}, [$playable], [${token.areaOffset}, ${token.containerRect}]"
   }
 
   protected open fun updateToken(): Token {
@@ -206,7 +206,6 @@ abstract class Playback(
 
   internal fun detachRenderer(renderer: Any?): Boolean {
     "Playback#detachRenderer $renderer $this".logDebug()
-    // TODO 'renderer' seems to be always null...
     return onDetachRenderer(renderer)
   }
 
@@ -221,23 +220,25 @@ abstract class Playback(
   internal open fun onInActive() {
     "Playback#onInActive $this".logDebug()
     playbackState = STATE_INACTIVE
-    rendererHolderListener?.considerReleaseRenderer(this)
+    playable?.considerReleaseRenderer(this)
     callbacks.forEach { it.onInActive(this) }
   }
 
   @CallSuper
   internal open fun onPlay() {
     "Playback#onPlay $this".logDebug()
+    container.keepScreenOn = true
     listeners.forEach { it.beforePlay(this) }
   }
 
   @CallSuper
   internal open fun onPause() {
+    container.keepScreenOn = false
     "Playback#onPause $this".logDebug()
     listeners.forEach { it.afterPause(this) }
   }
 
-  // Will be updated everytime 'sessionFlag' changes
+  // Will be updated everytime 'onRefresh' is called.
   private var _token: Token = Token(config.threshold, -1F, Rect())
 
   internal val token: Token
@@ -258,7 +259,6 @@ abstract class Playback(
 
   internal var lifecycleState: State = State.INITIALIZED
 
-  internal var distanceListener: DistanceListener? = null
   // The smaller, the closer it is to be selected to Play.
   // Consider to prepare the underline Playable for low enough distance, and release it otherwise.
   // This value is updated by Group. In active Playback always has Int.MAX_VALUE distance.
@@ -267,16 +267,15 @@ abstract class Playback(
       onChange = { _, from, to ->
         if (from == to) return@observable
         "Playback#distanceToPlay $from --> $to, $this".logDebug()
-        distanceListener?.onDistanceChanged(this, from, to)
+        playable?.onDistanceChanged(this, from, to)
       })
 
-  internal var volumeInfoListener: VolumeInfoListener? = null
   internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
       initialValue = host.volumeInfo,
       onChange = { _, from, to ->
         if (from == to) return@observable
         "Playback#volumeInfo $from --> $to, $this".logDebug()
-        volumeInfoListener?.onVolumeInfoChange(this, from, to)
+        playable?.onVolumeInfoChange(this, from, to)
       }
   )
 
@@ -284,9 +283,7 @@ abstract class Playback(
     volumeInfoUpdater = host.volumeInfo
   }
 
-  internal var playbackInfoListener: PlaybackInfoListener? = null
-  internal var rendererHolderListener: RendererHolderListener? = null
-  internal var unbinder: Unbinder? = null
+  internal var playable: Playable<*>? = null
 
   internal fun compareWith(
     other: Playback,
@@ -326,11 +323,14 @@ abstract class Playback(
 
   val tag = config.tag
 
+  val playerState: Int
+    get() = playable?.playerState ?: Player.STATE_IDLE
+
   val volumeInfo: VolumeInfo
     get() = volumeInfoUpdater
 
   val playbackInfo: PlaybackInfo
-    get() = playbackInfoListener?.playbackInfo ?: PlaybackInfo()
+    get() = playable?.playbackInfo ?: PlaybackInfo()
 
   fun addCallback(callback: Callback) {
     "Playback#addCallback $callback, $this".logDebug()
@@ -354,7 +354,14 @@ abstract class Playback(
 
   fun unbind() {
     "Playback#unbind, $this".logDebug()
-    unbinder?.onUnbind(this) ?: manager.removePlayback(this)
+    container.post {
+      playable?.onUnbind(this) ?: manager.removePlayback(this)
+    }
+  }
+
+  fun rewind(alsoRefresh: Boolean = true) {
+    playable?.onReset()
+    if (alsoRefresh) manager.refresh()
   }
 
   // PlayerEventListener
@@ -364,7 +371,6 @@ abstract class Playback(
     playbackState: Int
   ) {
     "Playback#onPlayerStateChanged $playWhenReady - $playbackState, $this".logDebug()
-    container.keepScreenOn = playWhenReady
     when (playbackState) {
       Player.STATE_IDLE -> {
       }
@@ -484,62 +490,5 @@ abstract class Playback(
     // - Kohii can start a Playback automatically. But once user pause it manually, Only user can resume it,
     // Kohii should never start/resume the Playback.
     fun kohiiCanStart(): Boolean = false
-  }
-
-  // Below interfaces are to communicate with Playable.
-
-  internal interface DistanceListener {
-
-    fun onDistanceChanged(
-      playback: Playback,
-      from: Int,
-      to: Int
-    )
-  }
-
-  internal interface VolumeInfoListener {
-
-    fun onVolumeInfoChange(
-      playback: Playback,
-      from: VolumeInfo,
-      to: VolumeInfo
-    )
-  }
-
-  internal interface PlaybackInfoListener {
-
-    var playbackInfo: PlaybackInfo
-  }
-
-  /**
-   * Once the Playback finds it is good time for the Listener to request/release the Renderer, it
-   * will trigger these calls to send that signal. The 'good time' can varies due to the actual
-   * use case. In Kohii, there are 2 following cases:
-   * - The Playback's Container is also the renderer. In this case, the Container/Renderer will
-   * always be there. We suggest that the Listener should request for the Renderer as soon as
-   * possible, and release it as late as possible. The proper place to do that are when the
-   * Playback becomes active (onActive()) and inactive (onInActive()).
-   *
-   * @see [StaticViewRendererPlayback]
-   *
-   * - The Playback's Container is not the Renderer. In this case, the Renderer is expected
-   * to be created on demand and release as early as possible, so that Kohii can reuse it for
-   * other Playback as soon as possible. We suggest that the Listener should request for
-   * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
-   * just right after the Playback pauses (onPause()).
-   *
-   * @see [DynamicViewRendererPlayback]
-   * @see [DynamicFragmentRendererPlayback]
-   */
-  internal interface RendererHolderListener {
-
-    fun considerRequestRenderer(playback: Playback)
-
-    fun considerReleaseRenderer(playback: Playback)
-  }
-
-  internal interface Unbinder {
-
-    fun onUnbind(playback: Playback)
   }
 }
