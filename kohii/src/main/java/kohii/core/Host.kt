@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import kohii.media.VolumeInfo
+import kohii.v1.Kohii
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
@@ -164,12 +165,11 @@ abstract class Host constructor(
         .withDefault { emptyList() }
 
     val manualCandidates = with(grouped.getValue(true)) {
-      val started = this@with.asSequence()
-          .find { playback ->
-            val playable = manager.findPlayableForContainer(playback.container)
-            manager.master.playablesPendingStates
-                .filter { it.key === playable?.tag /* ref */ }
-                .isNotEmpty()
+      val started = asSequence()
+          .find {
+            manager.master.playablesPendingStates[it.tag] == Kohii.PENDING_PLAY ||
+                // Started by client.
+                manager.master.playablesStartedByClient.contains(it.tag)
           }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }

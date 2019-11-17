@@ -425,6 +425,26 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     playback.manager.refresh()
   }
 
+  fun stick(lifecycleOwner: LifecycleOwner) {
+    val manager = groups.asSequence()
+        .map { it.managers.find { m -> m.lifecycleOwner === lifecycleOwner } }
+        .firstOrNull()
+    if (manager != null) {
+      manager.group.stick(manager)
+      manager.refresh()
+    }
+  }
+
+  fun unstick(lifecycleOwner: LifecycleOwner) {
+    val manager = groups.asSequence()
+        .map { it.managers.find { m -> m.lifecycleOwner === lifecycleOwner } }
+        .firstOrNull()
+    if (manager != null) {
+      manager.group.unstick(manager)
+      manager.refresh()
+    }
+  }
+
   fun unstick(playback: Playback) {
     playback.manager.group.unstick(playback.manager)
     playback.manager.unstick(playback.host)
@@ -492,7 +512,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
           threshold = options.threshold,
           preload = options.preload,
           repeatMode = options.repeatMode,
-          controller = options.controller,
+          // TODO 2019/11/18 temporarily disable manual playback. Will revise the logic.
+          // controller = options.controller,
           callbacks = options.callbacks
       )
 

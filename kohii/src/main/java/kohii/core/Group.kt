@@ -178,7 +178,11 @@ class Group(
     val toPlay = linkedSetOf<Playback>() // Need the order.
     val toPause = ArraySet<Playback>()
 
-    managers.forEach {
+    stickyManager?.let {
+      val (canPlay, canPause) = it.splitPlaybacks()
+      toPlay.addAll(canPlay)
+      toPause.addAll(canPause)
+    } ?: managers.forEach {
       val (canPlay, canPause) = it.splitPlaybacks()
       toPlay.addAll(canPlay)
       toPause.addAll(canPause)

@@ -24,6 +24,8 @@ internal interface HeadlessPlayback {
 }
 
 interface Prioritized : Comparable<Prioritized> {
+
+  @JvmDefault
   override fun compareTo(other: Prioritized): Int {
     return 0
   }

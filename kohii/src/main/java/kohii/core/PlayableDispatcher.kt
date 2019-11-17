@@ -64,12 +64,15 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
         if (nextState == Kohii.PENDING_PLAY) justPlay(playable)
         else justPause(playable)
       } else {
+        // no history of User action, let's determine next action by System
         if (controller.kohiiCanStart()) {
           master.playablesPendingStates[playable.tag] = Kohii.PENDING_PLAY
-          if (!controller.kohiiCanPause()) {
-            // Mark a Playable as started by User --> System will not pause it.
-            master.playablesStartedByClient.add(playable.tag)
-          }
+          // If we come here from a manual start, master.playableStartedByClient must
+          // contains the playable tag already.
+          // if (!controller.kohiiCanPause()) {
+          // Mark a Playable as started by User --> System will not pause it.
+          //   master.playablesStartedByClient.add(playable.tag)
+          // }
           justPlay(playable)
         }
       }
