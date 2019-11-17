@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,46 +14,38 @@
   ~ limitations under the License.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     >
 
-  <FrameLayout
-      android:id="@id/playerContainer"
+  <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+      android:id="@+id/playerContainer"
       android:layout_width="match_parent"
-      android:layout_height="0dp"
-      app:layout_constraintDimensionRatio="16:10"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
+      android:layout_height="wrap_content"
+      android:minHeight="240dp"
+      app:resize_mode="fixed_width"
       >
     <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@id/playerView"
+        android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:keep_content_on_player_reset="true"
         app:resize_mode="fixed_width"
         app:show_buffering="when_playing"
         app:surface_type="texture_view"
-        app:use_controller="true"
         />
-  </FrameLayout>
+  </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
 
   <androidx.core.widget.NestedScrollView
-      android:id="@id/scrollView"
+      android:id="@+id/scrollView"
       android:layout_width="match_parent"
       android:layout_height="0dp"
+      android:layout_weight="1"
       app:layout_behavior="@string/appbar_scrolling_view_behavior"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/playerContainer"
-      tools:context=".ui.sview.ScrollViewFragment"
       >
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -80,7 +71,7 @@
       </FrameLayout>
 
       <TextView
-          android:id="@id/textContent"
+          android:id="@+id/textContent"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_margin="@dimen/text_margin"
@@ -89,4 +80,4 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
   </androidx.core.widget.NestedScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>

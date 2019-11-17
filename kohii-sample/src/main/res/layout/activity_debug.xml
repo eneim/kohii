@@ -16,7 +16,7 @@
 
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fragmentContainer"
-    android:name="kohii.v1.sample.ui.pagers.ViewPager1WithRecyclerViewFragmentsFragment"
+    android:name="kohii.v1.sample.ui.pinp.PictureInPictureFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     />

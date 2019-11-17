@@ -46,6 +46,7 @@
     <activity
         android:name=".DevActivity"
         android:label="@string/app_name"
+        android:supportsPictureInPicture="true"
         android:theme="@style/AppTheme.Light" />
 
     <activity-alias

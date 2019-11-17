@@ -332,6 +332,9 @@ abstract class Playback(
   val playbackInfo: PlaybackInfo
     get() = playable?.playbackInfo ?: PlaybackInfo()
 
+  val containerRect: Rect
+    get() = token.containerRect
+
   fun addCallback(callback: Callback) {
     "Playback#addCallback $callback, $this".logDebug()
     this.callbacks.push(callback)
