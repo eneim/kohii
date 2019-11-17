@@ -26,7 +26,7 @@
 
   <fragment
       android:id="@+id/topContainer"
-      android:name="kohii.v1.sample.ui.pager1.Pager1Fragment"
+      android:name="kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment"
       android:layout_width="0dp"
       android:layout_height="0dp"
       app:layout_constraintDimensionRatio="16:10"

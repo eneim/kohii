@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.pager3
+package kohii.v1.sample.ui.pagers
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -22,26 +22,26 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.ViewTarget
+import com.google.android.exoplayer2.Player
+import kohii.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.common.inflateView
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager_2_vertical.viewPager
 import kotlinx.android.synthetic.main.widget_video_container.view.videoFrame
 
 // ViewPager2 whose pages are Views
-class Pager3Fragment : BaseFragment() {
+class ViewPager2WithViewsFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = Pager3Fragment()
+    fun newInstance() = ViewPager2WithViewsFragment()
   }
 
   class VideoViewHolder(
-    val kohii: Kohii,
+    val kohii: Master,
     itemView: View
   ) : ViewHolder(itemView) {
 
@@ -50,23 +50,22 @@ class Pager3Fragment : BaseFragment() {
       kohii.setUp(video.file)
           .with {
             tag = itemTag
-            preLoad = true
-            repeatMode = Playable.REPEAT_MODE_ONE
+            preload = true
+            repeatMode = Player.REPEAT_MODE_ONE
           }
-          .bind(ViewTarget(itemView.videoFrame))
+          .bind(itemView.videoFrame)
     }
   }
 
   class VideoPagerAdapter(
-    val kohii: Kohii,
+    val kohii: Master,
     private val videos: List<Video>
   ) : Adapter<VideoViewHolder>() {
     override fun onCreateViewHolder(
       parent: ViewGroup,
       viewType: Int
     ): VideoViewHolder {
-      val view = LayoutInflater.from(parent.context)
-          .inflate(R.layout.widget_video_container, parent, false)
+      val view = parent.inflateView(R.layout.widget_video_container)
       return VideoViewHolder(kohii, view)
     }
 
@@ -97,9 +96,10 @@ class Pager3Fragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this]
-    kohii.register(this, viewPager, viewPager.getChildAt(0))
+    val kohii = Master[this]
+    kohii.register(this)
+        .attach(viewPager, viewPager.getChildAt(0))
 
-    this.viewPager.adapter = VideoPagerAdapter(kohii, getApp().videos)
+    viewPager.adapter = VideoPagerAdapter(kohii, getApp().videos)
   }
 }

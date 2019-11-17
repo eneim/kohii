@@ -23,9 +23,9 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.getkeepsafe.dexcount'
 
-androidExtensions {
-  experimental = true
-}
+// androidExtensions {
+//   experimental = true
+// }
 
 if (file("google-services.json").exists()) {
   System.out.println("has google-services.json")

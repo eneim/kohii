@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.pager1
+package kohii.v1.sample.ui.pagers
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
+import kohii.core.Master
+import kohii.core.Playback
 import kohii.v1.Prioritized
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -48,21 +48,25 @@ class PageFragment : BaseFragment(), Prioritized {
       video: Video
     ) = newInstance().also {
       it.arguments?.run {
-        putParcelable(pageVideoKey, video)
+        putParcelable(
+            pageVideoKey, video
+        )
         putInt(pageTagKey, position)
       }
     }
   }
 
   val video: Sources by lazy {
-    val video = arguments?.getParcelable<Video>(pageVideoKey)!!
+    val video = arguments?.getParcelable<Video>(
+        pageVideoKey
+    )!!
     val item = video.playlist.first()
         .sources.first()
     item
   }
 
   private var landscape: Boolean = false
-  private var playback: Playback<*>? = null
+  private var playback: Playback? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -71,7 +75,11 @@ class PageFragment : BaseFragment(), Prioritized {
   ): View? {
     landscape = requireActivity().isLandscape()
     val viewRes =
-      if (landscape) R.layout.fragment_pager_page_land else R.layout.fragment_pager_page_port
+      if (landscape) {
+        R.layout.fragment_pager_page_land
+      } else {
+        R.layout.fragment_pager_page_port
+      }
     return inflater.inflate(viewRes, container, false)
   }
 
@@ -80,17 +88,19 @@ class PageFragment : BaseFragment(), Prioritized {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also {
-      it.register(this, view.findViewById(R.id.content))
-    }
+    val kohii = Master[this]
+    kohii.register(this)
+        .attach(view.findViewById(R.id.content) as View)
 
-    val pagePos = requireArguments().getInt(pageTagKey)
+    val pagePos = requireArguments().getInt(
+        pageTagKey
+    )
     val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
     kohii.setUp(video.file)
         .with {
           tag = videoTag
-          repeatMode = Playable.REPEAT_MODE_ONE
-          preLoad = true
+          repeatMode = Player.REPEAT_MODE_ONE
+          preload = true
         }
         .bind(playerView) { playback = it }
 

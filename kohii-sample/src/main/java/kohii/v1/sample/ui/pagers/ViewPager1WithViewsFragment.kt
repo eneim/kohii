@@ -14,32 +14,34 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.pager0
+package kohii.v1.sample.ui.pagers
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.ViewTarget
+import com.google.android.exoplayer2.Player
+import kohii.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.common.getDisplayPoint
+import kohii.v1.sample.common.inflateView
 import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlinx.android.synthetic.main.widget_video_container.view.videoFrame
+import kotlin.math.abs
 
 // ViewPager whose pages are Views
-class PagerViewsFragment : BaseFragment() {
+class ViewPager1WithViewsFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = PagerViewsFragment()
+    fun newInstance() = ViewPager1WithViewsFragment()
   }
 
   class PagerPagesAdapter(
-    val kohii: Kohii,
+    val kohii: Master,
     private val videos: List<Video>
   ) : PagerAdapter() {
 
@@ -59,8 +61,7 @@ class PagerViewsFragment : BaseFragment() {
       position: Int
     ): Any {
       // Normal creation
-      val view = LayoutInflater.from(container.context)
-          .inflate(R.layout.widget_video_container, container, false)
+      val view = container.inflateView(R.layout.widget_video_container)
       container.addView(view)
       // Now bind the content
       val video = videos[position % videos.size].playlist.first()
@@ -69,10 +70,10 @@ class PagerViewsFragment : BaseFragment() {
       kohii.setUp(video.file)
           .with {
             tag = itemTag
-            preLoad = true
-            repeatMode = Playable.REPEAT_MODE_ONE
+            preload = true
+            repeatMode = Player.REPEAT_MODE_ONE
           }
-          .bind(ViewTarget(view.videoFrame))
+          .bind(view.videoFrame)
       return view
     }
 
@@ -100,8 +101,21 @@ class PagerViewsFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also { it.register(this, viewPager) }
+    val kohii = Master[this]
+    kohii.register(this)
+        .attach(viewPager)
 
-    this.viewPager.adapter = PagerPagesAdapter(kohii, getApp().videos)
+    viewPager.apply {
+      adapter = PagerPagesAdapter(kohii, getApp().videos)
+      pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
+
+      val clientWidth = (requireActivity().getDisplayPoint().x - paddingStart - paddingEnd)
+      val offset = paddingStart / clientWidth.toFloat()
+      setPageTransformer(false) { page, position ->
+        val scale = (1f - abs(position - offset) * 0.15f).coerceAtLeast(0.5f)
+        page.scaleX = scale
+        page.scaleY = scale
+      }
+    }
   }
 }
