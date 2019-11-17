@@ -40,7 +40,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-A12"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B1"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -70,9 +70,9 @@ object Libs {
   object AndroidX {
     val appcompat = "androidx.appcompat:appcompat:1.1.0"
     val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
-    val activityKtx = "androidx.activity:activity-ktx:1.1.0-rc01"
+    val activityKtx = "androidx.activity:activity-ktx:1.1.0-rc02"
     val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
-    val browser = "androidx.browser:browser:1.2.0-alpha09"
+    val browser = "androidx.browser:browser:1.0.0"
     val palette = "androidx.palette:palette-ktx:1.0.0"
     val emoji = "androidx.emoji:emoji:1.0.0"
 
@@ -91,7 +91,7 @@ object Libs {
     }
 
     object Navigation {
-      private const val version = "2.2.0-rc01"
+      private const val version = "2.2.0-rc02"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
@@ -101,7 +101,7 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.0-rc01"
+      private const val version = "1.2.0-rc02"
       val fragment = "androidx.fragment:fragment:$version"
       val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
@@ -112,7 +112,7 @@ object Libs {
       val runner = "androidx.test:runner:$version"
       val rules = "androidx.test:rules:$version"
 
-      val espressoCore = "androidx.test.espresso:espresso-core:3.3.0-alpha02"
+      val espressoCore = "androidx.test.espresso:espresso-core:3.2.0-beta01"
     }
 
     val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
@@ -127,8 +127,8 @@ object Libs {
 
     val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
 
-    val core = "androidx.core:core:1.2.0-beta01"
-    val coreKtx = "androidx.core:core-ktx:1.2.0-beta01"
+    val core = "androidx.core:core:1.2.0-beta02"
+    val coreKtx = "androidx.core:core-ktx:1.2.0-beta02"
 
     object Lifecycle {
       private const val version = "2.2.0-rc01"
@@ -151,7 +151,7 @@ object Libs {
     }
 
     object Work {
-      private const val version = "2.3.0-alpha03"
+      private const val version = "2.2.0"
       val runtimeKtx = "androidx.work:work-runtime-ktx:$version"
     }
   }
@@ -185,7 +185,7 @@ object Libs {
   }
 
   object Google {
-    val material = "com.google.android.material:material:1.1.0-beta01"
+    val material = "com.google.android.material:material:1.1.0-beta02"
     val gmsGoogleServices = "com.google.gms:google-services:4.3.2"
     val firebaseCore = "com.google.firebase:firebase-core:17.2.0"
     val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.2.0"

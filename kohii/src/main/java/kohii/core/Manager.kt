@@ -306,7 +306,7 @@ class Manager(
     val renderer = playable.bridge.playerView
     if (playback.detachRenderer(renderer)) {
       group.findRendererProvider(playable)
-          .releaseRenderer(playback, playable.media, playable.bridge.playerView)
+          .releaseRenderer(playback, playable.media, renderer)
     }
   }
 

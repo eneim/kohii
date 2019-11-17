@@ -36,7 +36,7 @@ internal class DynamicFragmentRendererPlayback(
 ) : Playback(manager, host, config, container) {
 
   init {
-    require(tag != Master.NO_TAG) {
+    check(tag != Master.NO_TAG) {
       "Using Fragment as Renderer requires a unique tag when setting up the Playable."
     }
   }
@@ -58,10 +58,10 @@ internal class DynamicFragmentRendererPlayback(
     playable?.considerReleaseRenderer(this)
   }
 
-  override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean {
+  override fun onAttachRenderer(renderer: Any?): Boolean {
     if (renderer == null) return false
     require(renderer is Fragment)
-    require(container.id != View.NO_ID)
+    check(container.id != View.NO_ID)
     val existing = fragmentManager.findFragmentById(container.id)
     if (existing !== renderer) {
       fragmentManager.commitNow(allowStateLoss = true) {
@@ -79,10 +79,10 @@ internal class DynamicFragmentRendererPlayback(
     return true
   }
 
-  override fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean {
+  override fun onDetachRenderer(renderer: Any?): Boolean {
     if (renderer == null) return false
     require(renderer is Fragment)
-    require(container.id != View.NO_ID)
+    check(container.id != View.NO_ID)
     if (renderer.tag == tag.toString()) {
       fragmentManager.commitNow(allowStateLoss = true) {
         remove(renderer)

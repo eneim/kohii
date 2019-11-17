@@ -165,12 +165,12 @@ abstract class Playback(
 
   // Return **true** to indicate that the Renderer is safely attached and
   // can be used by the Playable.
-  abstract fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean
+  abstract fun onAttachRenderer(renderer: Any?): Boolean
 
   // Return **true** to indicate that the Renderer is safely detached and
   // Playable should not use it any further. RendererProvider will then release the Renderer with
   // proper mechanism (eg: put it back to Pool for reuse).
-  abstract fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean
+  abstract fun onDetachRenderer(renderer: Any?): Boolean
 
   internal fun onAdded() {
     "Playback#onAdded $this".logDebug()

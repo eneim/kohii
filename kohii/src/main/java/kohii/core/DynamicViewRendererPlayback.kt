@@ -39,7 +39,7 @@ internal class DynamicViewRendererPlayback(
     playable?.considerReleaseRenderer(this)
   }
 
-  override fun <RENDERER : Any> onAttachRenderer(renderer: RENDERER?): Boolean {
+  override fun onAttachRenderer(renderer: Any?): Boolean {
     if (renderer == null) return false
     require(renderer is View && renderer !== container)
     if (container.contains(renderer)) return false
@@ -49,12 +49,13 @@ internal class DynamicViewRendererPlayback(
       parent.removeView(renderer)
     }
 
+    // default implementation
     container.removeAllViews()
     container.addView(renderer)
     return true
   }
 
-  override fun <RENDERER : Any> onDetachRenderer(renderer: RENDERER?): Boolean {
+  override fun onDetachRenderer(renderer: Any?): Boolean {
     if (renderer == null) return false
     require(renderer is View && renderer !== container)
     if (!container.contains(renderer)) return false
