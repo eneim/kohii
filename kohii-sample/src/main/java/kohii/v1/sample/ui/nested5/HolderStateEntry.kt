@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.nested
+package kohii.v1.sample.ui.nested5
 
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-/**
- * @author eneim (2018/07/06).
- */
-abstract class BaseViewHolder(
-  val inflater: LayoutInflater,
-  layoutRes: Int,
-  val parent: ViewGroup
-) : ViewHolder(inflater.inflate(layoutRes, parent, false)) {
-
-  abstract fun bind(item: Item?)
-
-  open fun onRecycled(success: Boolean) {}
-
-  override fun toString(): String {
-    return "${javaClass.simpleName} -- $adapterPosition"
-  }
-}
+@Parcelize
+data class HolderStateEntry(
+  val first: Int,
+  val second: Int
+) : Parcelable

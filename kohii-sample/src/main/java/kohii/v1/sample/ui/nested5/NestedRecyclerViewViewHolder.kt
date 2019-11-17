@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.nested
+package kohii.v1.sample.ui.nested5
 
 import android.view.View
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kohii.v1.Kohii
 import kohii.v1.sample.R
 
-class NestRvViewHolder(
-  val kohii: Kohii,
-  itemView: View
-) : MainViewHolder(itemView) {
+class NestedRecyclerViewViewHolder(itemView: View) : MainViewHolder(itemView) {
 
-  val container = itemView.findViewById(R.id.recyclerView) as RecyclerView
+  val container: RecyclerView = itemView.findViewById(R.id.recyclerView)
+  val layoutManager: LinearLayoutManager
+    get() = container.layoutManager as LinearLayoutManager
 }

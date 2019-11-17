@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.nested
+package kohii.v1.sample.ui.nested5
 
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import kohii.v1.sample.common.BaseViewHolder
 
-open class MainViewHolder(itemView: View) : ViewHolder(itemView) {
-
-  open fun bind(item: Any?) {}
-}
+open class MainViewHolder(itemView: View) : BaseViewHolder(itemView)
