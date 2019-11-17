@@ -22,25 +22,26 @@
     >
 
   <androidx.fragment.app.FragmentContainerView
-      android:id="@+id/topContainer"
+      android:id="@+id/bottomContainer"
+      style="@style/Widget.Design.NavigationView"
       android:layout_width="0dp"
       android:layout_height="0dp"
-      android:background="@color/card_dark_background"
-      android:elevation="2dp"
-      app:layout_constraintDimensionRatio="16:10"
-      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintDimensionRatio="2:3"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       />
 
   <androidx.fragment.app.FragmentContainerView
-      android:id="@+id/bottomContainer"
+      android:id="@+id/topContainer"
       android:layout_width="0dp"
       android:layout_height="0dp"
+      android:background="@color/card_dark_background"
+      android:elevation="2dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/topContainer"
+      app:layout_constraintStart_toEndOf="@id/bottomContainer"
+      app:layout_constraintTop_toTopOf="parent"
       />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

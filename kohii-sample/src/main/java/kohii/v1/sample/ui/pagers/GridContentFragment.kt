@@ -34,7 +34,7 @@ class GridContentFragment : BaseFragment(), Prioritized {
   companion object {
     private const val EXTRA_PAGE_POS = "kohii.v1.demo.pager::page"
 
-    fun newInstance(pagePos: Int) = GridContentFragment().also {
+    fun newInstance(pagePos: Int = -1) = GridContentFragment().also {
       val args = Bundle()
       args.putInt(EXTRA_PAGE_POS, pagePos)
       it.arguments = args
@@ -43,7 +43,7 @@ class GridContentFragment : BaseFragment(), Prioritized {
 
   private val master by lazy(NONE) { Master[this] }
   private val pagePos: Int
-    get() = requireArguments().getInt(EXTRA_PAGE_POS)
+    get() = arguments?.getInt(EXTRA_PAGE_POS) ?: -1
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -61,9 +61,10 @@ class GridContentFragment : BaseFragment(), Prioritized {
     master.register(this, MemoryMode.LOW)
         .attach(container)
 
+    val spanCount = resources.getInteger(R.integer.grid_span)
     val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
       override fun getSpanSize(position: Int): Int {
-        return if (position % 6 == 3) 2 else 1
+        return if (position % 6 == 3 || position % 6 == spanCount) 2 else 1
       }
     }
 

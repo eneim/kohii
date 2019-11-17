@@ -40,5 +40,5 @@
   <dimen name="overlay_collapse_max_width">420dp</dimen>
 
   <integer name="column_number">1</integer>
-
+  <integer name="grid_span">3</integer>
 </resources>

@@ -29,7 +29,7 @@
       android:orientation="vertical"
       android:padding="4dp"
       app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-      app:spanCount="3"
+      app:spanCount="@integer/grid_span"
       />
 
 </FrameLayout>

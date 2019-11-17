@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.setPadding
 import androidx.viewpager.widget.PagerAdapter
 import com.google.android.exoplayer2.Player
 import kohii.core.Master
@@ -107,7 +108,7 @@ class ViewPager1WithViewsFragment : BaseFragment() {
 
     viewPager.apply {
       adapter = PagerPagesAdapter(kohii, getApp().videos)
-      pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
+      setPadding(0)
 
       val clientWidth = (requireActivity().getDisplayPoint().x - paddingStart - paddingEnd)
       val offset = paddingStart / clientWidth.toFloat()
