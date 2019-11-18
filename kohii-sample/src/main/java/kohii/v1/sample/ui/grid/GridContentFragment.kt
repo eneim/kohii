@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.debug
+package kohii.v1.sample.ui.grid
 
 import android.content.Context
 import android.os.Bundle

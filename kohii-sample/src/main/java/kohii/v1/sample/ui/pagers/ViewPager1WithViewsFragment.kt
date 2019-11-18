@@ -71,6 +71,7 @@ class ViewPager1WithViewsFragment : BaseFragment() {
       kohii.setUp(video.file)
           .with {
             tag = itemTag
+            delay = 500
             preload = true
             repeatMode = Player.REPEAT_MODE_ONE
           }

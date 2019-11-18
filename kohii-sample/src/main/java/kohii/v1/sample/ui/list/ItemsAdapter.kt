@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.list
 
 import android.view.LayoutInflater
 import android.view.View
@@ -28,8 +28,8 @@ import kohii.core.Rebinder
 import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
-import kohii.v1.sample.ui.rview.BaseViewHolder.OnClickListener
-import kohii.v1.sample.ui.rview.data.Item
+import kohii.v1.sample.ui.list.BaseViewHolder.OnClickListener
+import kohii.v1.sample.ui.list.data.Item
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class ItemsAdapter(
   private val kohii: Master,
-  private val fragment: RecyclerViewFragment,
+  private val fragment: VerticalListRecyclerViewFragment,
   private val items: List<Item>,
   private val dp2Px: (Int) -> Int
 ) : Adapter<BaseViewHolder>() {
@@ -95,7 +95,7 @@ class ItemsAdapter(
     return true
   }
 
-  class VideoClickImpl(private val fragment: RecyclerViewFragment) : OnClickListener {
+  class VideoClickImpl(private val fragment: VerticalListRecyclerViewFragment) : OnClickListener {
     private val enterTransitionStarted: AtomicBoolean = AtomicBoolean()
 
     override fun onItemClick(

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.list
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import kohii.v1.sample.ui.rview.data.Item
+import kohii.v1.sample.ui.list.data.Item
 
 /**
  * @author eneim (2018/07/06).

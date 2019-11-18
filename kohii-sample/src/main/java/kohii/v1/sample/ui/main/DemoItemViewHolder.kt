@@ -21,17 +21,18 @@ import android.widget.TextView
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 
-class DemoItemViewHolder(parent: ViewGroup) : BaseViewHolder(
-    parent, R.layout.holder_main_demo_item
-) {
+class DemoItemViewHolder(
+  parent: ViewGroup
+) : BaseViewHolder(parent, R.layout.holder_main_demo_item) {
 
   private val demoTitle: TextView = itemView.findViewById(R.id.demoTitle)
   private val demoSubtitle: TextView = itemView.findViewById(R.id.demoSubtitle)
 
   override fun bind(item: Any?) {
     (item as? DemoItem)?.also {
-      demoTitle.setText(it.title)
-      demoSubtitle.setText(it.subTitle)
+      if (it.title != 0) demoTitle.setText(it.title) else demoTitle.text =
+        it.fragmentClass.simpleName
+      if (it.subTitle != 0) demoSubtitle.setText(it.subTitle) else demoSubtitle.text = "Debug"
     }
   }
 }

@@ -24,14 +24,18 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.combo.ExoPlayerVideosFragment
-import kohii.v1.sample.ui.debug.GridContentFragment
+import kohii.v1.sample.ui.grid.GridContentFragment
+import kohii.v1.sample.ui.echo.EchoFragment
+import kohii.v1.sample.ui.fbook.FbookFragment
 import kohii.v1.sample.ui.main.DemoItem
-import kohii.v1.sample.ui.mix.MixMediaFragment
 import kohii.v1.sample.ui.motion.MotionFragment
-import kohii.v1.sample.ui.nested1.VerticalRecyclerViewInsideNestedScrollViewFragment
-import kohii.v1.sample.ui.nested2.HorizontalRecyclerViewInsideNestedScrollViewFragment
-import kohii.v1.sample.ui.nested3.NestedScrollViewInsideRecyclerViewFragment
-import kohii.v1.sample.ui.nested4.VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment
+import kohii.v1.sample.ui.mstdtl.MasterDetailFragment
+import kohii.v1.sample.ui.overlay.OverlayViewFragment
+import kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment
+import kohii.v1.sample.ui.pagers.ViewPager1WithViewsFragment
+import kohii.v1.sample.ui.pagers.ViewPager2WithFragmentsFragment
+import kohii.v1.sample.ui.pagers.ViewPager2WithViewsFragment
+import kohii.v1.sample.ui.list.VerticalListRecyclerViewFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
 import kohii.v1.sample.ui.youtube1.YouTube1Fragment
 import kohii.v1.sample.ui.youtube2.YouTube2Fragment
@@ -46,6 +50,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 class DemoApp : Application() {
 
   companion object {
+
     const val assetVideoUri = "file:///android_asset/bbb_45s_hevc.mp4"
   }
 
@@ -53,7 +58,6 @@ class DemoApp : Application() {
       .add(KotlinJsonAdapterFactory())
       .build()
 
-  // shared between demos
   val videos by lazy(NONE) {
     val jsonAdapter: JsonAdapter<List<Video>> =
       moshi.adapter(Types.newParameterizedType(List::class.java, Video::class.java))
@@ -91,31 +95,20 @@ class DemoApp : Application() {
     }
 
     listOf(
-        DemoItem(fragmentClass = ExoPlayerVideosFragment::class.java),
-        DemoItem(fragmentClass = GridContentFragment::class.java),
-        DemoItem(fragmentClass = MixMediaFragment::class.java),
-        DemoItem(fragmentClass = MotionFragment::class.java),
-        DemoItem(fragmentClass = ScrollViewFragment::class.java),
-        DemoItem(fragmentClass = VerticalRecyclerViewInsideNestedScrollViewFragment::class.java),
         DemoItem(
-            fragmentClass = VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment::class.java
-        ),
-        DemoItem(fragmentClass = HorizontalRecyclerViewInsideNestedScrollViewFragment::class.java),
-        DemoItem(fragmentClass = NestedScrollViewInsideRecyclerViewFragment::class.java)
-        /* , DemoItem(
             R.string.demo_title_debug,
             R.string.demo_desc_debug,
             GridContentFragment::class.java
         ), DemoItem(
-            R.string.demo_title_fbook,
-            R.string.demo_desc_fbook,
-            FbookFragment::class.java
-        ) */
-    ) /* + youtubeDemos + listOf(
+        R.string.demo_title_fbook,
+        R.string.demo_desc_fbook,
+        FbookFragment::class.java
+    )
+    ) + youtubeDemos + listOf(
         DemoItem(
             R.string.demo_title_recycler_view_1,
             R.string.demo_desc_recycler_view_1,
-            RecyclerViewFragment::class.java
+            VerticalListRecyclerViewFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_recycler_view_2,
@@ -141,32 +134,33 @@ class DemoApp : Application() {
             R.string.demo_title_nested_scrollview_2,
             R.string.demo_desc_nested_scrollview_2,
             ScrollViewFragment::class.java
-        ), DemoItem(
+        ),
+        DemoItem(
             R.string.demo_title_pager_1,
             R.string.demo_desc_pager_1,
-            Pager1Fragment::class.java
+            ViewPager1WithFragmentsFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_pager_2,
             R.string.demo_desc_pager_2,
-            PagerViewsFragment::class.java
+            ViewPager1WithViewsFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_pager_3,
             R.string.demo_desc_pager_3,
-            Pager2Fragment::class.java
+            ViewPager2WithFragmentsFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_pager_4,
             R.string.demo_desc_pager_4,
-            Pager3Fragment::class.java
+            ViewPager2WithViewsFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_master_detail,
             R.string.demo_desc_master_detail,
             MasterDetailFragment::class.java
         )
-    ) */
+    )
   }
 
   @Suppress("RedundantOverride")

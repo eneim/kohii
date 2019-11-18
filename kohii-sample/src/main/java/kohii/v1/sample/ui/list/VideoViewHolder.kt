@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.list
 
 import android.view.LayoutInflater
 import android.view.View
@@ -28,7 +28,7 @@ import kohii.core.Playback
 import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
-import kohii.v1.sample.ui.rview.data.Item
+import kohii.v1.sample.ui.list.data.Item
 
 /**
  * @author eneim (2018/07/06).

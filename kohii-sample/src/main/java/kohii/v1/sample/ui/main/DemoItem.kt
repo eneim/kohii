@@ -20,7 +20,7 @@ import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 
 data class DemoItem(
-  @StringRes val title: Int,
-  @StringRes val subTitle: Int,
+  @StringRes val title: Int = 0,
+  @StringRes val subTitle: Int = 0,
   val fragmentClass: Class<out Fragment>
 )

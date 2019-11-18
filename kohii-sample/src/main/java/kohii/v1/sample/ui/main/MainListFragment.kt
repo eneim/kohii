@@ -26,10 +26,10 @@ import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
-class MainFragment : BaseFragment() {
+class MainListFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = MainFragment()
+    fun newInstance() = MainListFragment()
   }
 
   override fun onCreateView(
@@ -45,8 +45,9 @@ class MainFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    recyclerView.adapter = DemoItemsAdapter(getApp()) {
-      requireActivity().title = getString(it.title)
+    recyclerView.adapter = DemoItemsAdapter(getApp().demoItems) {
+      requireActivity().title =
+        if (it.title != 0) getString(it.title) else it.fragmentClass.simpleName
       parentFragmentManager.commit {
         setReorderingAllowed(true) // Optimize for shared element transition
         replace(

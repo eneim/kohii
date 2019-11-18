@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.pager1
+package kohii.v1.sample.ui.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,32 +23,32 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import kohii.v1.Kohii
+import kohii.core.Master
+import kohii.core.Master.MemoryMode.LOW
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.getDisplayPoint
-import kohii.v1.sample.data.Video
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlin.math.abs
 
-// ViewPager whose pages are Fragments
-class Pager1Fragment : BaseFragment() {
+class MainPagerFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = Pager1Fragment()
+    fun newInstance() = MainPagerFragment()
   }
 
-  class VideoPagerAdapter(
+  class PagerAdapter(
     fm: FragmentManager,
-    private val videos: List<Video>
+    val items: List<DemoItem>
   ) : FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-
     override fun getItem(position: Int): Fragment {
-      return PageFragment.newInstance(position, videos[position % videos.size])
+      return items[position].fragmentClass.newInstance()
     }
 
-    override fun getCount() = Int.MAX_VALUE
+    override fun getCount(): Int {
+      return items.size
+    }
   }
 
   override fun onCreateView(
@@ -64,11 +64,11 @@ class Pager1Fragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Kohii[this].register(this, viewPager)
+    Master[this].register(this, LOW)
+        .attach(viewPager)
 
     this.viewPager.also {
-      it.adapter =
-        VideoPagerAdapter(childFragmentManager, getApp().videos)
+      it.adapter = PagerAdapter(childFragmentManager, getApp().demoItems)
       it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
       val clientWidth =
         (requireActivity().getDisplayPoint().x - it.paddingStart - it.paddingEnd).toFloat()

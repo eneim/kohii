@@ -19,9 +19,9 @@ package kohii.v1.sample.ui.nested1
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.core.Master
+import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R.layout
 import kohii.v1.sample.common.inflateView
-import kohii.v1.sample.ui.manual.videoUrl
 
 internal class VerticalItemsAdapter(
   private val master: Master,
@@ -44,7 +44,7 @@ internal class VerticalItemsAdapter(
     position: Int
   ) {
     holder.container.setAspectRatio(16 / 9F)
-    master.setUp(videoUrl)
+    master.setUp(assetVideoUri)
         .with { tag = "NESTED::RV::VER::${holder.adapterPosition}" }
         .bind(holder.container)
   }

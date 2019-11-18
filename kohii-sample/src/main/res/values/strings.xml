@@ -184,7 +184,7 @@
   </string>
 
   <string name="demo_desc_pager_1">
-    Pager (1) shows how Kohii could work in ViewPager. Each page will start the Playback with 500ms
+    Pager (1) shows how Kohii could work in ViewPager where pages are Fragments. Each page will start the Playback with 500ms
     delay.\n\nThis demo also shows different layout in landscape and portrait orientation,
     while the Playback keeps playing smoothly.\n\nVideos are from Caminandes (CC 3.0 open movie).
   </string>

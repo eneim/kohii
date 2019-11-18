@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.debug
+package kohii.v1.sample.ui.grid
 
-import android.view.ViewGroup
-import android.widget.TextView
-import androidx.core.text.parseAsHtml
-import kohii.v1.sample.R.layout
-import kohii.v1.sample.R.string
-import kohii.v1.sample.common.BaseViewHolder
+import android.view.MotionEvent
+import androidx.recyclerview.selection.ItemDetailsLookup
+import androidx.recyclerview.widget.RecyclerView
+import kohii.core.Rebinder
 
-internal class TextViewHolder(
-  parent: ViewGroup
-) : BaseViewHolder(parent, layout.widget_simple_textview) {
-
-  val textContent = itemView as TextView
-
-  init {
-    textContent.maxLines = 5
-  }
-
-  override fun bind(item: Any?) {
-    super.bind(item)
-    textContent.text = itemView.context.getString(string.lib_intro)
-        .parseAsHtml()
+internal class VideoItemDetailsLookup(val recyclerView: RecyclerView) : ItemDetailsLookup<Rebinder<*>>() {
+  override fun getItemDetails(event: MotionEvent): ItemDetails<Rebinder<*>>? {
+    val view = recyclerView.findChildViewUnder(event.x, event.y) ?: return null
+    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder
+        ?: return null
+    return holder.itemDetails
   }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.list
 
 import android.annotation.SuppressLint
 import android.graphics.Color
@@ -28,7 +28,7 @@ import androidx.core.view.isVisible
 import kohii.v1.sample.R
 import kohii.v1.sample.svg.GlideApp
 import kohii.v1.sample.svg.SvgSoftwareLayerSetter
-import kohii.v1.sample.ui.rview.data.Item
+import kohii.v1.sample.ui.list.data.Item
 
 /**
  * @author eneim (2018/07/06).

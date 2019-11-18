@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.list
 
 import android.os.Bundle
 import android.view.LayoutInflater

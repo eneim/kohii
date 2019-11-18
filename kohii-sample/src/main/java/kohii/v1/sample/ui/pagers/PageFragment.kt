@@ -48,9 +48,7 @@ class PageFragment : BaseFragment(), Prioritized {
       video: Video
     ) = newInstance().also {
       it.arguments?.run {
-        putParcelable(
-            pageVideoKey, video
-        )
+        putParcelable(pageVideoKey, video)
         putInt(pageTagKey, position)
       }
     }
@@ -99,6 +97,7 @@ class PageFragment : BaseFragment(), Prioritized {
     kohii.setUp(video.file)
         .with {
           tag = videoTag
+          delay = 500
           repeatMode = Player.REPEAT_MODE_ONE
           preload = true
         }

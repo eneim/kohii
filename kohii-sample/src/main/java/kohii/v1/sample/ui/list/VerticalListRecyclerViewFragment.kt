@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview
+package kohii.v1.sample.ui.list
 
 import android.content.Context
 import android.os.Bundle
@@ -39,7 +39,7 @@ import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.doOnNextLayoutAs
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.toPixel
-import kohii.v1.sample.ui.rview.data.Item
+import kohii.v1.sample.ui.list.data.Item
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 import okio.buffer
 import okio.source
@@ -48,10 +48,10 @@ import okio.source
  * @author eneim (2018/07/06).
  */
 @Keep
-class RecyclerViewFragment : BaseFragment() {
+class VerticalListRecyclerViewFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = RecyclerViewFragment()
+    fun newInstance() = VerticalListRecyclerViewFragment()
   }
 
   private val items: List<Item> by lazy {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.rview.data
+package kohii.v1.sample.ui.list.data
 
 import androidx.annotation.Keep
 
