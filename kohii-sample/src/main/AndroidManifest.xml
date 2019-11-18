@@ -51,7 +51,7 @@
 
     <activity-alias
         android:name="Home"
-        android:targetActivity=".MainActivity">
+        android:targetActivity=".DevActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
 

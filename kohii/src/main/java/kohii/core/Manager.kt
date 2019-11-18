@@ -311,7 +311,6 @@ class Manager(
 
   // Public APIs
 
-  @Suppress("MemberVisibilityCanBePrivate")
   fun <RENDERER : Any> registerRendererProvider(
     type: Class<RENDERER>,
     provider: RendererProvider<RENDERER>

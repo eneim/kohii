@@ -25,8 +25,8 @@ import kohii.v1.sample.common.BaseViewHolder
 
 internal class ItemsAdapter(
   private val master: Master,
-  val shouldBindVideo: (Rebinder<*>?) -> Boolean,
-  val onVideoClick: (Rebinder<*>) -> Unit
+  val shouldBindVideo: (Rebinder?) -> Boolean,
+  val onVideoClick: (Rebinder) -> Unit
 ) : Adapter<BaseViewHolder>() {
 
   companion object {

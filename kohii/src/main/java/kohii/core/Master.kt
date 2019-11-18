@@ -381,8 +381,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   fun setUp(url: String) = setUp(url.toUri())
 
   @ExoPlayer
-  fun fetchRebinder(tag: Any?): Rebinder<PlayerView>? {
-    return if (tag == null) null else requestDefaultEngine().creator.createRebinder(tag)
+  fun fetchRebinder(tag: Any?): Rebinder? {
+    return if (tag == null) null else Rebinder(tag)
   }
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.

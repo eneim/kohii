@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -41,7 +40,7 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(),
   private val videoFragment by lazy(NONE) {
     childFragmentManager.findFragmentById(R.id.mainPanel) as GridContentFragment
   }
-  private var selected: PlayerViewRebinder? by Delegates.observable<PlayerViewRebinder?>(
+  private var selected: Rebinder? by Delegates.observable<Rebinder?>(
       null,
       onChange = { _, from, to ->
         if (from == to /* equals */) return@observable
@@ -61,7 +60,7 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(),
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    return inflater.inflate(R.layout.fragment_debug, container, false)
+    return inflater.inflate(R.layout.fragment_grid, container, false)
   }
 
   override fun onViewCreated(
@@ -76,17 +75,17 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(),
 
   // GridContentFragment.Callback
 
-  override fun onSelected(rebinder: Rebinder<*>) {
-    if (rebinder is PlayerViewRebinder) viewModel.selectedRebinder.value = rebinder
+  override fun onSelected(rebinder: Rebinder) {
+    viewModel.selectedRebinder.value = rebinder
   }
 
   // SinglePlayerFragment.Callback
 
-  override fun onShown(rebinder: PlayerViewRebinder) {
+  override fun onShown(rebinder: Rebinder) {
     viewModel.selectedRebinder.value = rebinder
   }
 
-  override fun onDismiss(rebinder: PlayerViewRebinder) {
+  override fun onDismiss(rebinder: Rebinder) {
     viewModel.selectedRebinder.value = null
   }
 }

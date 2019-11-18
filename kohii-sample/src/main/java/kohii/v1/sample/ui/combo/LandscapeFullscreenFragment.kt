@@ -24,10 +24,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.DefaultController
 import kohii.core.Master
-import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -43,7 +41,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
     private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
 
     fun newInstance(
-      rebinder: Rebinder<PlayerView>,
+      rebinder: Rebinder,
       initData: InitData
     ): LandscapeFullscreenFragment {
       val bundle = Bundle().also {
@@ -105,7 +103,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
 
     val (initData, rebinder) = requireArguments().let {
       requireNotNull(it.getParcelable<InitData>(KEY_INIT_DATA)) to
-          requireNotNull(it.getParcelable<PlayerViewRebinder>(KEY_REBINDER))
+          requireNotNull(it.getParcelable<Rebinder>(KEY_REBINDER))
     }
 
     container.setAspectRatio(initData.aspectRatio)

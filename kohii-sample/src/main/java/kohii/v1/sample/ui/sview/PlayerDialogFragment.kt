@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Rebinder
@@ -40,7 +39,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     private const val KEY_REBINDER = "kohii:player:dialog:rebinder"
 
     fun newInstance(
-      rebinder: Rebinder<PlayerView>,
+      rebinder: Rebinder,
       initData: InitData
     ): PlayerDialogFragment {
       val bundle = Bundle().also {
@@ -57,11 +56,11 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
     fun onDialogActive()
 
-    fun onDialogInActive(rebinder: Rebinder<PlayerView>)
+    fun onDialogInActive(rebinder: Rebinder)
   }
 
   private lateinit var kohii: Master
-  private lateinit var rebinder: Rebinder<PlayerView>
+  private lateinit var rebinder: Rebinder
 
   private var playback: Playback? = null
 
@@ -96,7 +95,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
   override fun onStart() {
     super.onStart()
     val rebinder =
-      requireNotNull(requireArguments().getParcelable<Rebinder<PlayerView>>(KEY_REBINDER))
+      requireNotNull(requireArguments().getParcelable<Rebinder>(KEY_REBINDER))
     rebinder.with {
       callbacks = arrayOf(this@PlayerDialogFragment)
     }

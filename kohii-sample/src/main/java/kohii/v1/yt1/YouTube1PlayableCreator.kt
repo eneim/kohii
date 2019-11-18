@@ -20,15 +20,7 @@ import kohii.core.Creator
 import kohii.core.Master
 import kohii.core.Playable
 import kohii.core.Playable.Config
-import kohii.core.Rebinder
 import kohii.media.Media
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.RawValue
-
-@Parcelize
-class YouTube1Rebinder(
-  override val tag: @RawValue Any
-) : Rebinder<YouTubePlayerFragment>(tag, YouTubePlayerFragment::class.java)
 
 class YouTube1PlayableCreator : Creator<YouTubePlayerFragment>(
     YouTubePlayerFragment::class.java
@@ -40,10 +32,6 @@ class YouTube1PlayableCreator : Creator<YouTubePlayerFragment>(
     media: Media
   ): Playable<YouTubePlayerFragment> {
     return YouTube1Playable(master, media, config, YouTubeBridge(media))
-  }
-
-  override fun createRebinder(tag: Any): Rebinder<YouTubePlayerFragment> {
-    return YouTube1Rebinder(tag)
   }
 
   override fun cleanUp() {

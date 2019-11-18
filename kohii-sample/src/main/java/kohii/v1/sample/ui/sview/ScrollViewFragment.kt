@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Common
 import kohii.core.Master
 import kohii.core.Playback
@@ -96,7 +95,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   override fun onDialogActive() {
   }
 
-  override fun onDialogInActive(rebinder: Rebinder<PlayerView>) {
+  override fun onDialogInActive(rebinder: Rebinder) {
     rebinder.bind(kohii, playerView) {
       playback = it
     }

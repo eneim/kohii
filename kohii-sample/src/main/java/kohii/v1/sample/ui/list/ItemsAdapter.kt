@@ -22,7 +22,6 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Master
 import kohii.core.Rebinder
 import kohii.v1.sample.PlayerInfo
@@ -107,7 +106,7 @@ class ItemsAdapter(
       if (transView == null) return
       val transName = ViewCompat.getTransitionName(transView) ?: return
       @Suppress("UNCHECKED_CAST")
-      val data = payload as? Pair<Rebinder<PlayerView>, InitData> ?: return
+      val data = payload as? Pair<Rebinder, InitData> ?: return
       val initData = data.second
 
       fragment.recordPlayerInfo(PlayerInfo(adapterPos, itemView.top))

@@ -23,11 +23,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.DefaultController
 import kohii.core.Master
 import kohii.core.Playback
-import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InfinityDialogFragment
@@ -49,7 +47,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     private const val KEY_RATIO = "kohii:fragment:player:ratio"
 
     fun newInstance(
-      rebinder: Rebinder<PlayerView>,
+      rebinder: Rebinder,
       ratio: Float
     ) = BigPlayerDialog().also {
       val args = Bundle()
@@ -60,7 +58,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
   }
 
   private lateinit var kohii: Master
-  private lateinit var rebinderFromArgs: PlayerViewRebinder
+  private lateinit var rebinderFromArgs: Rebinder
 
   @Suppress("MemberVisibilityCanBePrivate")
   var floatPlayerController: FloatPlayerController? = null
@@ -73,7 +71,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     )
   }
 
-  override val rebinder: PlayerViewRebinder
+  override val rebinder: Rebinder
     get() = this.rebinderFromArgs
 
   override fun onAttach(context: Context) {

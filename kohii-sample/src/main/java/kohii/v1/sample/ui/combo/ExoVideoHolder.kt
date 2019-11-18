@@ -21,7 +21,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.snackbar.Snackbar
 import kohii.core.Playback
 import kohii.core.Rebinder
@@ -40,7 +39,7 @@ class ExoVideoHolder(
     container.setAspectRatio(2.0F)
   }
 
-  var rebinder: Rebinder<PlayerView>? = null
+  var rebinder: Rebinder? = null
   var aspectRatio: Float = 1F
 
   // Playback.PlaybackListener

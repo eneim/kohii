@@ -16,11 +16,11 @@
 
 package kohii.v1.sample.ui.fbook
 
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 
 data class OverlayPlayerInfo(
   val mode: Int = -1,
-  val rebinder: PlayerViewRebinder
+  val rebinder: Rebinder
 ) {
   companion object {
     const val MODE_FULLSCREEN = 1

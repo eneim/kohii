@@ -16,9 +16,9 @@
 
 package kohii.v1.sample.ui.fbook.player
 
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 
 interface FloatPlayerController {
 
-  fun showFloatPlayer(rebinder: PlayerViewRebinder)
+  fun showFloatPlayer(rebinder: Rebinder)
 }

@@ -33,7 +33,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import kohii.core.Master
 import kohii.core.Playback
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.core.Scope
 import kohii.media.VolumeInfo
 import kohii.v1.sample.R
@@ -63,7 +63,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
   private var playback: Playback? = null
 
-  private var selection: Pair<Int, PlayerViewRebinder?> by Delegates.observable<Pair<Int, PlayerViewRebinder?>>(
+  private var selection: Pair<Int, Rebinder?> by Delegates.observable<Pair<Int, Rebinder?>>(
       initialValue = -1 to null,
       onChange = { _, from, to ->
         if (from == to) return@observable
@@ -228,7 +228,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   @Suppress("MemberVisibilityCanBePrivate")
   internal fun selectRebinder(
     position: Int,
-    rebinder: PlayerViewRebinder
+    rebinder: Rebinder
   ) {
     overlayViewModel.selectedRebinder.value = position to rebinder
   }

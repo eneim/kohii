@@ -20,4 +20,4 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import kohii.core.Engine
 import kohii.core.Master
 
-class YouTube2Engine(master: Master) : Engine<YouTubePlayerView>(master, NewYtPlayableCreator())
+class YouTube2Engine(master: Master) : Engine<YouTubePlayerView>(master, YouTube2PlayableCreator())

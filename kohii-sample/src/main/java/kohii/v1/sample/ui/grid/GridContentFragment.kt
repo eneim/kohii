@@ -65,7 +65,7 @@ class GridContentFragment : BaseFragment() {
     return inflater.inflate(R.layout.fragment_debug_child, container, false)
   }
 
-  private lateinit var selectionTracker: SelectionTracker<Rebinder<*>>
+  private lateinit var selectionTracker: SelectionTracker<Rebinder>
   private lateinit var videoKeyProvider: VideoTagKeyProvider
   private lateinit var videoItemDetailsLookup: VideoItemDetailsLookup
 
@@ -90,7 +90,7 @@ class GridContentFragment : BaseFragment() {
     videoKeyProvider = VideoTagKeyProvider(container)
     videoItemDetailsLookup = VideoItemDetailsLookup(container)
 
-    selectionTracker = SelectionTracker.Builder<Rebinder<*>>(
+    selectionTracker = SelectionTracker.Builder<Rebinder>(
         "${BuildConfig.APPLICATION_ID}::sample::debug",
         container,
         videoKeyProvider,
@@ -108,16 +108,16 @@ class GridContentFragment : BaseFragment() {
     selectionTracker.onSaveInstanceState(outState)
   }
 
-  internal fun select(rebinder: Rebinder<*>) {
+  internal fun select(rebinder: Rebinder) {
     selectionTracker.select(rebinder)
   }
 
-  internal fun deselect(rebinder: Rebinder<*>) {
+  internal fun deselect(rebinder: Rebinder) {
     selectionTracker.deselect(rebinder)
   }
 
   interface Callback {
 
-    fun onSelected(rebinder: Rebinder<*>)
+    fun onSelected(rebinder: Rebinder)
   }
 }

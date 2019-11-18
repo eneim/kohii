@@ -39,3 +39,6 @@ annotation class Stable
 // Indicate that a resource is for use with ExoPlayer only.
 @Retention(SOURCE)
 annotation class ExoPlayer
+
+@Retention(SOURCE)
+annotation class Media2

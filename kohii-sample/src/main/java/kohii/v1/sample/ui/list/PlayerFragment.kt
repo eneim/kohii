@@ -24,9 +24,7 @@ import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Master
-import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
 import kohii.v1.Prioritized
 import kohii.v1.sample.R
@@ -47,7 +45,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
     private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
 
     fun newInstance(
-      rebinder: Rebinder<PlayerView>,
+      rebinder: Rebinder,
       initData: InitData
     ): PlayerFragment {
       val bundle = Bundle().also {
@@ -82,7 +80,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
 
     val (initData, rebinder) = requireArguments().let {
       requireNotNull(it.getParcelable<InitData>(KEY_INIT_DATA)) to
-          requireNotNull(it.getParcelable<PlayerViewRebinder>(KEY_REBINDER))
+          requireNotNull(it.getParcelable<Rebinder>(KEY_REBINDER))
     }
 
     val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout

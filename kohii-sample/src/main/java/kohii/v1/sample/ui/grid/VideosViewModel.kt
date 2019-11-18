@@ -18,9 +18,9 @@ package kohii.v1.sample.ui.grid
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 
 class VideosViewModel : ViewModel() {
 
-  val selectedRebinder = MutableLiveData<PlayerViewRebinder>(null)
+  val selectedRebinder = MutableLiveData<Rebinder>(null)
 }

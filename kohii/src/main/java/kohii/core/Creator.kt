@@ -29,7 +29,5 @@ abstract class Creator<RENDERER : Any>(
     media: Media
   ): Playable<RENDERER>
 
-  abstract fun createRebinder(tag: Any): Rebinder<RENDERER>
-
   abstract fun cleanUp()
 }

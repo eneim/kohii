@@ -27,7 +27,7 @@ import kohii.core.Common
 import kohii.core.Manager
 import kohii.core.Master
 import kohii.core.Playback
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
@@ -38,7 +38,7 @@ internal class VideoViewHolder(
   parent: ViewGroup,
   val kohii: Master,
   val manager: Manager,
-  val shouldBind: (PlayerViewRebinder?) -> Boolean
+  val shouldBind: (Rebinder?) -> Boolean
 ) : FbookItemHolder(parent),
     Playback.PlaybackListener,
     Playback.Callback {
@@ -69,8 +69,8 @@ internal class VideoViewHolder(
 
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
   // be useful in some verifications.
-  internal val rebinder: PlayerViewRebinder?
-    get() = this.videoTag?.let { PlayerViewRebinder(it) }
+  internal val rebinder: Rebinder?
+    get() = this.videoTag?.let { Rebinder(it) }
 
   override fun bind(item: Any?) {
     super.bind(item)

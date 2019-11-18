@@ -21,7 +21,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.getkeepsafe.dexcount'
+// apply plugin: 'com.getkeepsafe.dexcount'
 
 // androidExtensions {
 //   experimental = true
@@ -75,6 +75,7 @@ dependencies {
   implementation Libs.AndroidX.Media.player
   implementation Libs.AndroidX.Media.session
   implementation Libs.AndroidX.Media.widget
+  implementation "com.google.guava:guava:28.1-android"
 
   implementation Libs.Kotlin.stdlibJdk7
   implementation Libs.AndroidX.appcompat

@@ -89,10 +89,6 @@ internal class PlayerViewPlayableCreator(
     )
   }
 
-  override fun createRebinder(tag: Any): Rebinder<PlayerView> {
-    return PlayerViewRebinder(tag)
-  }
-
   override fun cleanUp() {
     defaultBridgeProvider.cleanUp()
   }

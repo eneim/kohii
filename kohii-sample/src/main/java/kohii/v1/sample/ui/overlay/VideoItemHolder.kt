@@ -25,7 +25,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import kohii.core.Playback
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Video
 import kotlin.properties.Delegates
@@ -74,8 +74,8 @@ internal class VideoItemHolder(
     get() = this.videoFile?.let { "$it::$adapterPosition" }
 
   // Trick
-  internal val rebinder: PlayerViewRebinder?
-    get() = this.videoTag?.let { PlayerViewRebinder(it) }
+  internal val rebinder: Rebinder?
+    get() = this.videoTag?.let { Rebinder(it) }
 
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
@@ -101,8 +101,8 @@ internal class VideoItemHolder(
 
   // Selection
 
-  fun getItemDetails(): ItemDetails<PlayerViewRebinder> {
-    return object : ItemDetails<PlayerViewRebinder>() {
+  fun getItemDetails(): ItemDetails<Rebinder> {
+    return object : ItemDetails<Rebinder>() {
       override fun getSelectionKey() = rebinder
 
       override fun getPosition() = adapterPosition

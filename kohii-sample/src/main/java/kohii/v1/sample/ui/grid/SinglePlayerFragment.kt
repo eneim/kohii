@@ -24,7 +24,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
 import kohii.core.Master
 import kohii.core.Playback
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.holder_player_view.playerContainer
@@ -37,7 +37,7 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
 
     private const val EXTRA_REBINDER = "${BuildConfig.APPLICATION_ID}::debug::rebinder"
 
-    fun newInstance(rebinder: PlayerViewRebinder) = SinglePlayerFragment().also {
+    fun newInstance(rebinder: Rebinder) = SinglePlayerFragment().also {
       val args = Bundle()
       args.putParcelable(EXTRA_REBINDER, rebinder)
       it.arguments = args
@@ -65,8 +65,8 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
   }
 
   private lateinit var master: Master
-  private val rebinder by lazy(NONE) {
-    requireNotNull(arguments?.getParcelable<PlayerViewRebinder>(EXTRA_REBINDER))
+  private val rebinder: Rebinder by lazy(NONE) {
+    requireNotNull(arguments?.getParcelable<Rebinder>(EXTRA_REBINDER))
   }
 
   override fun onViewCreated(
@@ -97,8 +97,8 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
 
   interface Callback {
 
-    fun onShown(rebinder: PlayerViewRebinder)
+    fun onShown(rebinder: Rebinder)
 
-    fun onDismiss(rebinder: PlayerViewRebinder)
+    fun onDismiss(rebinder: Rebinder)
   }
 }

@@ -49,11 +49,11 @@ class Binder<RENDERER : Any>(
   fun bind(
     container: ViewGroup,
     callback: ((Playback) -> Unit)? = null
-  ): Rebinder<RENDERER>? {
+  ): Rebinder? {
     val tag = options.tag
     val playable = providePlayable(media, tag, Config(tag = tag))
     engine.master.bind(playable, tag, container, options, callback)
-    return if (tag != NO_TAG) engine.creator.createRebinder(tag) else null
+    return if (tag != NO_TAG) Rebinder(tag) else null
   }
 
   private fun providePlayable(

@@ -30,12 +30,10 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Common
 import kohii.core.Manager
 import kohii.core.Master
 import kohii.core.Playback
-import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
 import kohii.core.Scope
 import kohii.media.VolumeInfo
@@ -73,7 +71,7 @@ class FbookFragment : BaseFragment(),
 
   private val viewModel: FbookViewModel by viewModels()
 
-  private var currentSelectedRebinder: PlayerViewRebinder? = null
+  private var currentSelectedRebinder: Rebinder? = null
   private var currentSelectedPlayback: Playback? by Delegates.observable<Playback?>(
       initialValue = null,
       onChange = { _, from, to ->
@@ -81,7 +79,7 @@ class FbookFragment : BaseFragment(),
         from?.removePlaybackListener(this@FbookFragment)
         if (to != null) {
           to.addPlaybackListener(this@FbookFragment)
-          currentSelectedRebinder = kohii.fetchRebinder(to.tag) as PlayerViewRebinder?
+          currentSelectedRebinder = kohii.fetchRebinder(to.tag)
         }
       }
   )
@@ -92,7 +90,7 @@ class FbookFragment : BaseFragment(),
   private var rebindAction: (() -> Unit)? = null
   private var overlayPlayback: Playback? = null
 
-  private var currentOverlayRebinder: PlayerViewRebinder? = null
+  private var currentOverlayRebinder: Rebinder? = null
   private var currentOverlayPlayerInfo by Delegates.observable<OverlayPlayerInfo?>(
       initialValue = null,
       onChange = { _, from, to ->
@@ -157,7 +155,7 @@ class FbookFragment : BaseFragment(),
 
     recyclerView.adapter = adapter
 
-    val savedBinder: PlayerViewRebinder? = savedInstanceState?.getParcelable(STATE_KEY_REBINDER)
+    val savedBinder: Rebinder? = savedInstanceState?.getParcelable(STATE_KEY_REBINDER)
     if (savedBinder != null) {
       if (requireActivity().isLandscape()) {
         val info = OverlayPlayerInfo(OverlayPlayerInfo.MODE_FULLSCREEN, savedBinder)
@@ -205,7 +203,7 @@ class FbookFragment : BaseFragment(),
 
   // FloatPlayerController
 
-  override fun showFloatPlayer(rebinder: PlayerViewRebinder) {
+  override fun showFloatPlayer(rebinder: Rebinder) {
     val overlayPlayerInfo = OverlayPlayerInfo(OverlayPlayerInfo.MODE_FLOAT, rebinder)
     viewModel.overlayPlayerInfo.value = overlayPlayerInfo
   }
@@ -260,7 +258,7 @@ class FbookFragment : BaseFragment(),
 
   // Other util methods
 
-  private fun clearPlayerSelection(rebinder: PlayerViewRebinder) {
+  private fun clearPlayerSelection(rebinder: Rebinder) {
     val adapter = recyclerView.adapter
     if (adapter != null) {
       recyclerView.filterVisibleHolder<VideoViewHolder> { it.rebinder == rebinder }
@@ -272,18 +270,18 @@ class FbookFragment : BaseFragment(),
     overlayPlayback = null
   }
 
-  private fun openFullscreenPlayer(rebinder: Rebinder<PlayerView>) {
+  private fun openFullscreenPlayer(rebinder: Rebinder) {
     val player = BigPlayerDialog.newInstance(rebinder, 16 / 9.toFloat())
     player.show(childFragmentManager, rebinder.tag.toString())
   }
 
-  private fun closeFullscreenPlayer(rebinder: Rebinder<PlayerView>) {
+  private fun closeFullscreenPlayer(rebinder: Rebinder) {
     val dialog = childFragmentManager.findFragmentByTag(rebinder.tag.toString())
     if (dialog is BigPlayerDialog) dialog.dismissAllowingStateLoss()
   }
 
   @SuppressLint("InlinedApi")
-  private fun openFloatPlayer(rebinder: Rebinder<PlayerView>) {
+  private fun openFloatPlayer(rebinder: Rebinder) {
     if (!floatPlayerManager.floating.get()) {
       rebindAction = {
         floatPlayerManager.openFloatPlayer { playerView ->
@@ -327,7 +325,7 @@ class FbookFragment : BaseFragment(),
   }
 
   @Suppress("UNUSED_PARAMETER")
-  private fun closeFloatPlayer(rebinder: Rebinder<PlayerView>) {
+  private fun closeFloatPlayer(rebinder: Rebinder) {
     floatPlayerManager.closeFloatPlayer {}
   }
 }

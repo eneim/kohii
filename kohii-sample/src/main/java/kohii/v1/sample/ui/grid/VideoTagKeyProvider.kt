@@ -25,12 +25,12 @@ import kohii.core.Rebinder
 
 internal class VideoTagKeyProvider(
   val recyclerView: RecyclerView
-) : ItemKeyProvider<Rebinder<*>>(
+) : ItemKeyProvider<Rebinder>(
     SCOPE_CACHED
 ) {
 
-  private val posToKey = SparseArray<Rebinder<*>>()
-  private val keyToPos = HashMap<Rebinder<*>, Int>()
+  private val posToKey = SparseArray<Rebinder>()
+  private val keyToPos = HashMap<Rebinder, Int>()
 
   init {
     require(recyclerView.adapter?.hasStableIds() == true)
@@ -45,11 +45,11 @@ internal class VideoTagKeyProvider(
     })
   }
 
-  override fun getKey(position: Int): Rebinder<*>? {
+  override fun getKey(position: Int): Rebinder? {
     return posToKey[position]
   }
 
-  override fun getPosition(key: Rebinder<*>): Int {
+  override fun getPosition(key: Rebinder): Int {
     return keyToPos[key] ?: RecyclerView.NO_POSITION
   }
 

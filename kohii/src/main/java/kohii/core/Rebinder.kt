@@ -19,12 +19,11 @@ package kohii.core
 import android.os.Parcelable
 import android.view.ViewGroup
 import kotlinx.android.parcel.IgnoredOnParcel
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 
-abstract class Rebinder<RENDERER : Any>(
-  open val tag: @RawValue Any,
-  open val rendererType: Class<RENDERER>
-) : Parcelable {
+@Parcelize
+class Rebinder(val tag: @RawValue Any) : Parcelable {
 
   class Options {
     var threshold: Float = 0.65F
@@ -36,7 +35,7 @@ abstract class Rebinder<RENDERER : Any>(
 
   @IgnoredOnParcel var options = Options()
 
-  inline fun with(options: Options.() -> Unit): Rebinder<RENDERER> {
+  inline fun with(options: Options.() -> Unit): Rebinder {
     this.options.apply(options)
     return this
   }
@@ -50,9 +49,7 @@ abstract class Rebinder<RENDERER : Any>(
         .filter { it.value == tag /* equals */ }
         .firstOrNull()
         ?.key
-    require(playable != null && this.rendererType.isAssignableFrom(playable.rendererType)) {
-      "Failed requirement: $playable, FOUND: ${playable?.rendererType}, EXPECTED: $rendererType"
-    }
+    requireNotNull(playable)
     master.bind(playable, tag, container, Binder.Options().also {
       it.tag = tag
       it.threshold = options.threshold

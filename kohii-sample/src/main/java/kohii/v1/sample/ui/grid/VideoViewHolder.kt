@@ -19,8 +19,6 @@ package kohii.v1.sample.ui.grid
 import android.view.ViewGroup
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
 import kohii.v1.sample.R.id
 import kohii.v1.sample.R.layout
@@ -42,11 +40,11 @@ internal class VideoViewHolder(
   internal val videoTag: String?
     get() = videoUrl?.let { "HOLDER::〜$adapterPosition" }
 
-  internal val rebinder: Rebinder<PlayerView>?
-    get() = videoTag?.let { PlayerViewRebinder(it) }
+  internal val rebinder: Rebinder?
+    get() = videoTag?.let { Rebinder(it) }
 
-  internal val itemDetails: ItemDetails<Rebinder<*>>
-    get() = object : ItemDetails<Rebinder<*>>() {
+  internal val itemDetails: ItemDetails<Rebinder>
+    get() = object : ItemDetails<Rebinder>() {
       override fun getSelectionKey() = rebinder
       override fun getPosition() = adapterPosition
     }

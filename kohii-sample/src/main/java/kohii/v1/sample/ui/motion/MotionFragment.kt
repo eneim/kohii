@@ -24,7 +24,7 @@ import androidx.annotation.Keep
 import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
 import kohii.core.Master
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
@@ -83,7 +83,7 @@ class MotionFragment : BaseFragment(), Presenter {
     video: Video
   ) {
     val playerView = (container as ViewGroup)[0]
-    val rebinder = playerView.getTag(R.id.motion_view_tag) as PlayerViewRebinder?
+    val rebinder = playerView.getTag(R.id.motion_view_tag) as Rebinder?
     if (rebinder != null) {
       startActivity(
           PlayerActivity.createIntent(

@@ -21,7 +21,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.core.Manager
 import kohii.core.Master
-import kohii.core.PlayerViewRebinder
+import kohii.core.Rebinder
 import kohii.media.VolumeInfo
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.fbook.vh.FbookItemHolder
@@ -34,7 +34,7 @@ internal class FbookAdapter(
   val manager: Manager,
   val videos: List<Video>,
   val fragment: FbookFragment,
-  val shouldBindVideo: (PlayerViewRebinder?) -> Boolean,
+  val shouldBindVideo: (Rebinder?) -> Boolean,
   val volumeClick: (VideoViewHolder) -> Unit
 ) : Adapter<FbookItemHolder>() {
 
