@@ -14,20 +14,20 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fragmentContainer"
+    android:name="kohii.v1.sample.ui.overlay.OverlayViewFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
 
-  <androidx.media2.widget.VideoView
-      android:id="@+id/videoView"
-      android:layout_width="match_parent"
-      android:layout_height="300dp"
-      android:layout_gravity="center"
-      app:enableControlView="true"
-      app:viewType="textureView"
-      />
+  <!--  <androidx.media2.widget.VideoView-->
+  <!--      android:id="@+id/videoView"-->
+  <!--      android:layout_width="match_parent"-->
+  <!--      android:layout_height="300dp"-->
+  <!--      android:layout_gravity="center"-->
+  <!--      app:enableControlView="true"-->
+  <!--      app:viewType="textureView"-->
+  <!--      />-->
 
-</FrameLayout>
+</fragment>

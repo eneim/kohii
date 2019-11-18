@@ -65,11 +65,10 @@ class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
     kohii.register(this)
         .attach(playerContainer)
 
-    kohii.setUp(assetVideoUri)
-        .with {
-          tag = "${javaClass.name}::$videoUrl"
-          repeatMode = Common.REPEAT_MODE_ONE
-        }
+    kohii.setUp(assetVideoUri) {
+      tag = "${javaClass.name}::$videoUrl"
+      repeatMode = Common.REPEAT_MODE_ONE
+    }
         .bind(playerView) {
           it.addPlaybackListener(this@PictureInPictureFragment)
           playback = it

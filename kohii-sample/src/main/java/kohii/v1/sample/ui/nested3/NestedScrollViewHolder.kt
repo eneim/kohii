@@ -23,7 +23,7 @@ import androidx.core.widget.NestedScrollView
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Manager
-import kohii.v1.sample.DemoApp
+import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.R.id
 import kohii.v1.sample.R.string
@@ -64,8 +64,9 @@ internal class NestedScrollViewHolder(
   override fun onAttached() {
     super.onAttached()
     manager.attach(scrollView)
-    manager.master.setUp(DemoApp.assetVideoUri)
-        .with { tag = "NESTED::NSV::$adapterPosition" }
+    manager.master.setUp(assetVideoUri) {
+      tag = "NESTED::NSV::$adapterPosition"
+    }
         .bind(playerView)
   }
 

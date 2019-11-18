@@ -82,18 +82,17 @@ internal class VideoItemsAdapter(
           .into(holder.thumbnail)
 
       if (shouldBindVideo(holder.rebinder)) {
-        kohii.setUp(requireNotNull(holder.videoFile))
-            .with {
-              tag = requireNotNull(holder.videoTag)
-              repeatMode = Common.REPEAT_MODE_ONE
-              callbacks = arrayOf(
-                  holder,
-                  object : Playback.Callback {
-                    override fun onRemoved(playback: Playback) {
-                      playback.removePlaybackListener(holder)
-                    }
-                  })
-            }
+        kohii.setUp(requireNotNull(holder.videoFile)) {
+          tag = requireNotNull(holder.videoTag)
+          repeatMode = Common.REPEAT_MODE_ONE
+          callbacks = arrayOf(
+              holder,
+              object : Playback.Callback {
+                override fun onRemoved(playback: Playback) {
+                  playback.removePlaybackListener(holder)
+                }
+              })
+        }
             .bind(holder.playerViewContainer) {
               it.addPlaybackListener(holder)
             }

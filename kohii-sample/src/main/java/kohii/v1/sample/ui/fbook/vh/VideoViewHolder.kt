@@ -86,8 +86,7 @@ internal class VideoViewHolder(
           .sources.first()
 
       if (shouldBind(this.rebinder)) {
-        kohii.setUp(assetVideoUri)
-            .with(params)
+        kohii.setUp(assetVideoUri, params)
             .bind(playerView) { pk ->
               volume.isSelected = !pk.volumeInfo.mute
               pk.addPlaybackListener(this@VideoViewHolder)

@@ -90,7 +90,7 @@ class Group(
 
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
-  private val rendererProviders = mutableMapOf<Class<*>, RendererProvider<*>>()
+  private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
   private val defaultRendererProvider = PlayerViewProvider()
 
   override fun equals(other: Any?): Boolean {
@@ -138,25 +138,24 @@ class Group(
         .firstOrNull()
   }
 
-  internal fun <RENDERER : Any> findRendererProvider(playable: Playable<RENDERER>): RendererProvider<RENDERER> {
-    val cache = rendererProviders[playable.rendererType]
+  internal fun findRendererProvider(playable: Playable): RendererProvider {
+    val cache = rendererProviders[playable.config.rendererType]
         ?: rendererProviders.asSequence().firstOrNull {
           // If there is a RendererProvider of subclass, we can use it.
-          playable.rendererType.isAssignableFrom(it.key)
+          playable.config.rendererType.isAssignableFrom(it.key)
         }?.value
-    @Suppress("UNCHECKED_CAST")
-    return requireNotNull(cache) as RendererProvider<RENDERER>
+    return requireNotNull(cache)
   }
 
-  internal fun <RENDERER : Any> registerRendererProvider(
-    type: Class<RENDERER>,
-    provider: RendererProvider<RENDERER>
+  internal fun registerRendererProvider(
+    type: Class<*>,
+    provider: RendererProvider
   ) {
     rendererProviders.put(type, provider)
         ?.clear()
   }
 
-  internal fun <RENDERER : Any> unregisterRendererProvider(provider: RendererProvider<RENDERER>) {
+  internal fun unregisterRendererProvider(provider: RendererProvider) {
     rendererProviders
         .filterValues { it === provider }
         .keys

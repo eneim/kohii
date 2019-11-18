@@ -68,8 +68,11 @@ class RecyclerViewHost(
 
   override fun onAdded() {
     super.onAdded()
-    require(ViewCompat.isAttachedToWindow(root))
     root.addOnScrollListener(scrollListener)
+  }
+
+  override fun onAttached() {
+    super.onAttached()
     root.doOnLayout {
       if (root.scrollState == RecyclerView.SCROLL_STATE_IDLE) manager.refresh()
     }

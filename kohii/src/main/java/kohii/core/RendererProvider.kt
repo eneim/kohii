@@ -22,20 +22,19 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.media.Media
 
-interface RendererProvider<RENDERER : Any> : LifecycleObserver {
+interface RendererProvider : LifecycleObserver {
 
   @JvmDefault
   fun acquireRenderer(
     playback: Playback,
-    media: Media,
-    rendererType: Class<RENDERER>
-  ): RENDERER? = null
+    media: Media
+  ): Any? = null
 
   @JvmDefault
   fun releaseRenderer(
     playback: Playback,
     media: Media,
-    renderer: RENDERER?
+    renderer: Any?
   ) {
   }
 

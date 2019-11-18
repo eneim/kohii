@@ -28,7 +28,7 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
   }
 
   override fun handleMessage(msg: Message): Boolean {
-    if (msg.what == MSG_PLAY) (msg.obj as Playable<*>).onPlay()
+    if (msg.what == MSG_PLAY) (msg.obj as Playable).onPlay()
     return true
   }
 
@@ -42,7 +42,7 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     if (handler.isInitialized()) handler.value.removeCallbacksAndMessages(null)
   }
 
-  internal fun play(playable: Playable<*>) {
+  internal fun play(playable: Playable) {
     playable.onReady()
 
     val controller = playable.playback?.config?.controller
@@ -78,7 +78,7 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     }
   }
 
-  internal fun pause(playable: Playable<*>) {
+  internal fun pause(playable: Playable) {
     if (master.groups.find { it.organizer.selection.isNotEmpty() } != null) {
       justPause(playable)
       return
@@ -105,7 +105,7 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     }
   }
 
-  private fun justPlay(playable: Playable<*>) {
+  private fun justPlay(playable: Playable) {
     val delay = playable.playback?.config?.delay ?: 0
     if (handler.isInitialized()) handler.value.removeMessages(MSG_PLAY, playable)
     if (delay > 0) {
@@ -116,7 +116,7 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     }
   }
 
-  private fun justPause(playable: Playable<*>) {
+  private fun justPause(playable: Playable) {
     if (handler.isInitialized()) handler.value.removeMessages(MSG_PLAY, playable)
     playable.onPause()
   }

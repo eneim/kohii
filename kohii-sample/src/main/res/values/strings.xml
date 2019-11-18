@@ -131,8 +131,17 @@
     ]]>
   </string>
 
+  <string name="demo_title_recycler_view_0">
+    Kohii + RecyclerView (Grid)
+  </string>
+
+  <string name="demo_desc_recycler_view_0">
+    RecyclerView (Grid) shows a grid with both text and Videos. Video item will have span of 2 and when click to it, it will
+    show a dialog and keep playing the Video there.
+  </string>
+
   <string name="demo_title_recycler_view_1">
-    Kohii + RecyclerView (1)
+    Kohii + RecyclerView (List)
   </string>
 
   <string name="demo_desc_recycler_view_1">

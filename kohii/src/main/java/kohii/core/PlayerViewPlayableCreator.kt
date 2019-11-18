@@ -38,7 +38,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 
 internal class PlayerViewPlayableCreator(
   val app: Application
-) : Creator<PlayerView>(PlayerView::class.java) {
+) : Creator(PlayerView::class.java) {
 
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
@@ -80,7 +80,7 @@ internal class PlayerViewPlayableCreator(
     master: Master,
     config: Config,
     media: Media
-  ): Playable<PlayerView> {
+  ): Playable {
     return PlayerViewPlayable(
         master,
         media,

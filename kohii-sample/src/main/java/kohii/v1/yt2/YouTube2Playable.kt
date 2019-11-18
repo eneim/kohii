@@ -17,8 +17,8 @@
 package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import kohii.core.AbstractPlayable
 import kohii.core.Master
-import kohii.core.Playable
 import kohii.media.Media
 import kohii.v1.Bridge
 
@@ -27,7 +27,15 @@ class YouTube2Playable(
   media: Media,
   config: Config,
   bridge: Bridge<YouTubePlayerView>
-) : Playable<YouTubePlayerView>(master, media, config, YouTubePlayerView::class.java, bridge) {
+) : AbstractPlayable<YouTubePlayerView>(master, media, config, bridge) {
+
+  override fun shouldAttachRenderer(renderer: Any?) {
+    if (renderer is YouTubePlayerView) bridge.renderer = renderer
+  }
+
+  override fun shouldDetachRenderer() {
+    bridge.renderer = null
+  }
 
   override fun onConfigChange() = false
 }

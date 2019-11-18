@@ -68,13 +68,12 @@ class ViewPager1WithViewsFragment : BaseFragment() {
       val video = videos[position % videos.size].playlist.first()
           .sources.first()
       val itemTag = "$javaClass::$position::${video.file}"
-      kohii.setUp(video.file)
-          .with {
-            tag = itemTag
-            delay = 500
-            preload = true
-            repeatMode = Common.REPEAT_MODE_ONE
-          }
+      kohii.setUp(video.file) {
+        tag = itemTag
+        delay = 500
+        preload = true
+        repeatMode = Common.REPEAT_MODE_ONE
+      }
           .bind(view.videoFrame)
       return view
     }

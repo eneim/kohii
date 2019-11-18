@@ -25,9 +25,7 @@ import kohii.core.Rebinder
 
 internal class VideoTagKeyProvider(
   val recyclerView: RecyclerView
-) : ItemKeyProvider<Rebinder>(
-    SCOPE_CACHED
-) {
+) : ItemKeyProvider<Rebinder>(SCOPE_CACHED) {
 
   private val posToKey = SparseArray<Rebinder>()
   private val keyToPos = HashMap<Rebinder, Int>()
@@ -54,8 +52,7 @@ internal class VideoTagKeyProvider(
   }
 
   internal fun onAttached(view: View) {
-    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder
-        ?: return
+    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder ?: return
     val id = holder.itemId
     if (id != RecyclerView.NO_ID) {
       val position = holder.adapterPosition
@@ -68,8 +65,7 @@ internal class VideoTagKeyProvider(
   }
 
   internal fun onDetached(view: View) {
-    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder
-        ?: return
+    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder ?: return
     val id = holder.itemId
     // only if id == NO_ID, we remove this View from cache.
     // when id != NO_ID, it means that this View is still bound to an Item.

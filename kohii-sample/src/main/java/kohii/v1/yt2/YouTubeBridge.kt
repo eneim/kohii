@@ -144,7 +144,7 @@ class YouTubeBridge(
     // no-ops
   }
 
-  override fun ensurePreparation() {
+  override fun ready() {
     // no-ops
   }
 

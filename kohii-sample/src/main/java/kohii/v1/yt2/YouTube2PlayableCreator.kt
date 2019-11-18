@@ -18,18 +18,18 @@ package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.core.Creator
-import kohii.core.Master
 import kohii.core.Playable
+import kohii.core.Master
 import kohii.core.Playable.Config
 import kohii.media.Media
 
-class YouTube2PlayableCreator : Creator<YouTubePlayerView>(YouTubePlayerView::class.java) {
+class YouTube2PlayableCreator : Creator(YouTubePlayerView::class.java) {
 
   override fun createPlayable(
     master: Master,
     config: Config,
     media: Media
-  ): Playable<YouTubePlayerView> {
+  ): Playable {
     return YouTube2Playable(master, media, config, YouTubeBridge(media))
   }
 

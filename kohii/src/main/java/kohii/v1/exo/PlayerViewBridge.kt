@@ -129,7 +129,7 @@ internal open class PlayerViewBridge(
       field?.setErrorMessageProvider(this)
     }
 
-  override fun ensurePreparation() {
+  override fun ready() {
     prepareMediaSource()
     requireNotNull(player) { "Player must be available." }
     ensurePlayerView()

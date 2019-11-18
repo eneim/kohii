@@ -21,11 +21,12 @@ import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.widget.RecyclerView
 import kohii.core.Rebinder
 
-internal class VideoItemDetailsLookup(val recyclerView: RecyclerView) : ItemDetailsLookup<Rebinder>() {
+internal class VideoItemDetailsLookup(
+  val recyclerView: RecyclerView
+) : ItemDetailsLookup<Rebinder>() {
   override fun getItemDetails(event: MotionEvent): ItemDetails<Rebinder>? {
     val view = recyclerView.findChildViewUnder(event.x, event.y) ?: return null
-    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder
-        ?: return null
+    val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder ?: return null
     return holder.itemDetails
   }
 }

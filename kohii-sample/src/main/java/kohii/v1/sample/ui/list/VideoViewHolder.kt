@@ -58,13 +58,12 @@ class VideoViewHolder(
       val itemTag = "${javaClass.canonicalName}::${item.content}::$adapterPosition"
       payload = InitData(tag = itemTag, aspectRatio = item.width / item.height.toFloat())
       playerContainer.setAspectRatio(payload!!.aspectRatio)
-      rebinder = kohii.setUp(item.content)
-          .with {
-            tag = itemTag
-            preload = true
-            repeatMode = Common.REPEAT_MODE_ONE
-            callbacks = arrayOf(this@VideoViewHolder)
-          }
+      rebinder = kohii.setUp(item.content) {
+        tag = itemTag
+        preload = true
+        repeatMode = Common.REPEAT_MODE_ONE
+        callbacks = arrayOf(this@VideoViewHolder)
+      }
           .bind(playerView) {
             playback = it
             listener.onItemLoaded(itemView, adapterPosition)

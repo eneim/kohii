@@ -23,8 +23,7 @@ import kohii.media.Media
 import kohii.onEachAcquired
 import kohii.v1.BuildConfig
 
-abstract class RecyclerRendererProvider<RENDERER : Any>(private val poolSize: Int) :
-    RendererProvider<RENDERER> {
+abstract class RecyclerRendererProvider(private val poolSize: Int) : RendererProvider {
 
   constructor() : this(2)
 
@@ -35,7 +34,7 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(private val poolSize: In
     ) = "${BuildConfig.LIBRARY_PACKAGE_NAME}::pool::$containerType::$mediaType"
   }
 
-  private val keyToPool = ArrayMap<String, SimplePool<RENDERER>>()
+  private val keyToPool = ArrayMap<String, SimplePool<Any>>()
 
   open fun getContainerType(container: Any): Int = 0
 
@@ -45,18 +44,17 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(private val poolSize: In
   abstract fun createRenderer(
     playback: Playback,
     mediaType: Int
-  ): RENDERER
+  ): Any
 
   @CallSuper
   override fun acquireRenderer(
     playback: Playback,
-    media: Media,
-    rendererType: Class<RENDERER>
-  ): RENDERER {
+    media: Media
+  ): Any {
     // The Container is also a Renderer, we return it right away.
-    @Suppress("UNCHECKED_CAST")
-    if (rendererType.isAssignableFrom(playback.container.javaClass))
-      return playback.container as RENDERER
+    val playable = requireNotNull(playback.playable)
+    if (playable.config.rendererType.isAssignableFrom(playback.container.javaClass))
+      return playback.container
     val containerType = getContainerType(playback.container)
     val mediaType = getMediaType(media)
     val poolKey = poolKey(containerType, mediaType)
@@ -68,7 +66,7 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(private val poolSize: In
   override fun releaseRenderer(
     playback: Playback,
     media: Media,
-    renderer: RENDERER?
+    renderer: Any?
   ) {
     if (renderer == null || playback.container === renderer) return
     val containerType = getContainerType(playback.container)
@@ -83,5 +81,5 @@ abstract class RecyclerRendererProvider<RENDERER : Any>(private val poolSize: In
     keyToPool.forEach { it.value.onEachAcquired { renderer -> onClear(renderer) } }
   }
 
-  protected open fun onClear(renderer: RENDERER) {}
+  protected open fun onClear(renderer: Any) {}
 }

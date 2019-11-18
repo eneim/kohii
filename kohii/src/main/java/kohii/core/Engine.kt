@@ -19,6 +19,7 @@ package kohii.core
 import android.net.Uri
 import androidx.annotation.CallSuper
 import androidx.core.net.toUri
+import kohii.core.Binder.Options
 import kohii.media.Media
 import kohii.media.MediaItem
 
@@ -30,17 +31,26 @@ import kohii.media.MediaItem
 // TODO need to support sub-type of a Renderer type. Eg: PlayerView and classes that extend it.
 abstract class Engine<RENDERER : Any>(
   val master: Master,
-  internal val creator: Creator<RENDERER>
+  internal val creator: Creator
 ) {
 
   // TODO implement the method below.
   // abstract fun <T> supportRendererType(type: Class<T>): Boolean
 
-  open fun setUp(media: Media): Binder<RENDERER> = Binder(this, media)
+  inline fun setUp(
+    media: Media,
+    crossinline options: Options.() -> Unit = {}
+  ): Binder<RENDERER> = Binder(this, media).also { options(it.options) }
 
-  open fun setUp(uri: Uri) = setUp(MediaItem(uri))
+  inline fun setUp(
+    uri: Uri,
+    crossinline options: Options.() -> Unit = {}
+  ) = setUp(MediaItem(uri), options)
 
-  open fun setUp(url: String) = setUp(url.toUri())
+  inline fun setUp(
+    url: String,
+    crossinline options: Options.() -> Unit = {}
+  ) = setUp(url.toUri(), options)
 
   @CallSuper
   open fun cleanUp() {

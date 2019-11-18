@@ -58,11 +58,11 @@ class YouTube2Fragment : BaseFragment() {
     val manager = kohii.register(this)
         .attach(recyclerView)
     manager.registerRendererProvider(YouTubePlayerView::class.java,
-        object : RecyclerRendererProvider<YouTubePlayerView>() {
+        object : RecyclerRendererProvider() {
           override fun createRenderer(
             playback: Playback,
             mediaType: Int
-          ): YouTubePlayerView {
+          ): Any {
             val iFramePlayerOptions = IFramePlayerOptions.Builder()
                 .controls(0)
                 .build()
@@ -77,8 +77,8 @@ class YouTube2Fragment : BaseFragment() {
             }
           }
 
-          override fun onClear(renderer: YouTubePlayerView) {
-            renderer.release()
+          override fun onClear(renderer: Any) {
+            (renderer as? YouTubePlayerView)?.release()
           }
         })
 

@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.main
 
-import android.text.Html
 import android.view.ViewGroup
 import androidx.core.text.parseAsHtml
 import androidx.recyclerview.widget.RecyclerView.Adapter
@@ -55,7 +54,7 @@ class DemoItemsAdapter(
   ) {
     if (position <= 0) {
       val content = holder.getString(R.string.lib_intro)
-          .parseAsHtml(Html.FROM_HTML_MODE_COMPACT)
+          .parseAsHtml()
       holder.bind(content)
     } else {
       holder.bind(items[position - 1])

@@ -70,8 +70,9 @@ internal class ItemsAdapter(
       holder.videoUrl = assetVideoUri
       val videoTag = holder.videoTag
       if (shouldBindVideo(holder.rebinder)) {
-        master.setUp(assetVideoUri)
-            .with { tag = requireNotNull(videoTag) }
+        master.setUp(assetVideoUri) {
+          tag = requireNotNull(videoTag)
+        }
             .bind(holder.container)
       }
     } else holder.bind(position)

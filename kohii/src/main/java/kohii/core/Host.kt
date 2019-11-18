@@ -24,8 +24,6 @@ import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
-import androidx.core.view.doOnAttach
-import androidx.core.view.doOnDetach
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
@@ -138,19 +136,25 @@ abstract class Host constructor(
 
   @CallSuper
   open fun onAdded() {
+  }
+
+  @CallSuper
+  open fun onAttached() {
     val containerParam = rootContainer?.layoutParams
     if (containerParam is CoordinatorLayout.LayoutParams) {
-      root.doOnAttach {
-        if (containerParam.behavior is ScrollingViewBehavior) {
-          val behaviorWrapper = BehaviorWrapper(containerParam.behavior!!, manager)
-          containerParam.behavior = behaviorWrapper
-        }
+      if (containerParam.behavior is ScrollingViewBehavior) {
+        val behaviorWrapper = BehaviorWrapper(containerParam.behavior!!, manager)
+        containerParam.behavior = behaviorWrapper
       }
+    }
+  }
 
-      root.doOnDetach {
-        if (containerParam.behavior is BehaviorWrapper) {
-          (containerParam.behavior as BehaviorWrapper).onDetach()
-        }
+  @CallSuper
+  open fun onDetached() {
+    val containerParam = rootContainer?.layoutParams
+    if (containerParam is CoordinatorLayout.LayoutParams) {
+      if (containerParam.behavior is BehaviorWrapper) {
+        (containerParam.behavior as BehaviorWrapper).onDetach()
       }
     }
   }
@@ -196,6 +200,7 @@ abstract class Host constructor(
                 // Started by client.
                 manager.master.playablesStartedByClient.contains(it.tag)
           }
+
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 

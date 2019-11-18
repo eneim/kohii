@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.commit
+import kohii.v1.sample.MainActivity
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
@@ -46,8 +47,10 @@ class MainListFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     recyclerView.adapter = DemoItemsAdapter(getApp().demoItems) {
-      requireActivity().title =
-        if (it.title != 0) getString(it.title) else it.fragmentClass.simpleName
+      requireActivity().let { act ->
+        if (act is MainActivity) act.updateTitle(getString(it.title))
+        else act.title = getString(it.title)
+      }
       parentFragmentManager.commit {
         setReorderingAllowed(true) // Optimize for shared element transition
         replace(

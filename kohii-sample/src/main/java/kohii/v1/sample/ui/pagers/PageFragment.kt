@@ -31,6 +31,8 @@ import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.isLandscape
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
+import kotlinx.android.synthetic.main.fragment_pager_page.content
+import kotlinx.android.synthetic.main.fragment_pager_page.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
 class PageFragment : BaseFragment(), Prioritized {
@@ -71,14 +73,7 @@ class PageFragment : BaseFragment(), Prioritized {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    landscape = requireActivity().isLandscape()
-    val viewRes =
-      if (landscape) {
-        R.layout.fragment_pager_page_land
-      } else {
-        R.layout.fragment_pager_page_port
-      }
-    return inflater.inflate(viewRes, container, false)
+    return inflater.inflate(R.layout.fragment_pager_page, container, false)
   }
 
   override fun onViewCreated(
@@ -88,25 +83,24 @@ class PageFragment : BaseFragment(), Prioritized {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Master[this]
     kohii.register(this)
-        .attach(view.findViewById(R.id.content) as View)
+        .attach(content)
 
+    landscape = requireActivity().isLandscape()
     val pagePos = requireArguments().getInt(
         pageTagKey
     )
-    val videoTag = "${javaClass.canonicalName}::${video.file}::$pagePos"
-    kohii.setUp(video.file)
-        .with {
-          tag = videoTag
-          delay = 500
-          repeatMode = Common.REPEAT_MODE_ONE
-          preload = true
-        }
+    val videoTag = "PAGE::$pagePos::${video.file}"
+    kohii.setUp(video.file) {
+      tag = videoTag
+      delay = 500
+      repeatMode = Common.REPEAT_MODE_ONE
+      preload = true
+    }
         .bind(playerView) { playback = it }
 
     view.doOnLayout {
-      val container = view.findViewById<View>(R.id.playerContainer)
       // [1] Update resize mode based on Window size.
-      (container as? AspectRatioFrameLayout)?.also { ctn ->
+      playerContainer.also { ctn ->
         if (it.width * 9 >= it.height * 16) {
           // if (it.width * it.height >= it.height * it.width) { // how about this?
           ctn.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT

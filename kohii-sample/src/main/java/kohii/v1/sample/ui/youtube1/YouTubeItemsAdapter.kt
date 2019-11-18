@@ -97,16 +97,15 @@ class YouTubeItemsAdapter(
       val item = getItem(position)
       holder.bind(item)
       val videoId = item?.id ?: "EOjq4OIWKqM"
-      engine.setUp(videoId)
-          .with {
-            tag = videoId
-            threshold = 0.99F
-            callbacks += object : Callback {
-              override fun onRemoved(playback: Playback) {
-                playback.removePlaybackListener(holder)
-              }
-            }
+      engine.setUp(videoId) {
+        tag = videoId
+        threshold = 0.99F
+        callbacks += object : Callback {
+          override fun onRemoved(playback: Playback) {
+            playback.removePlaybackListener(holder)
           }
+        }
+      }
           .bind(holder.fragmentPlace) {
             it.addPlaybackListener(holder)
             holder.playback = it

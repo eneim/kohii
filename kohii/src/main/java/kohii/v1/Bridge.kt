@@ -27,7 +27,7 @@ interface Bridge<RENDERER : Any> {
   val playbackState: Int
 
   //  set/get
-  var renderer: RENDERER? // TODO rename to 'renderer'
+  var renderer: RENDERER?
 
   // set/get
   var playbackInfo: PlaybackInfo
@@ -58,7 +58,7 @@ interface Bridge<RENDERER : Any> {
   fun prepare(loadSource: Boolean)
 
   // Ensure resource is ready to play. PlaybackDispatcher will require this for manual playback.
-  fun ensurePreparation()
+  fun ready()
 
   /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to true */
   fun play()

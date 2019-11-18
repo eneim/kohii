@@ -20,7 +20,4 @@ import com.google.android.exoplayer2.ui.PlayerView
 
 internal class PlayerViewEngine(
   master: Master
-) : Engine<PlayerView>(
-    master,
-    PlayerViewPlayableCreator(master.app)
-)
+) : Engine<PlayerView>(master, PlayerViewPlayableCreator(master.app))

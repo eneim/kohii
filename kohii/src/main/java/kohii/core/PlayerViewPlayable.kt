@@ -26,7 +26,16 @@ internal class PlayerViewPlayable(
   media: Media,
   config: Config,
   bridge: Bridge<PlayerView>
-) : Playable<PlayerView>(master, media, config, PlayerView::class.java, bridge) {
+) : AbstractPlayable<PlayerView>(master, media, config, bridge) {
+
+  override fun shouldAttachRenderer(renderer: Any?) {
+    require(renderer is PlayerView)
+    bridge.renderer = renderer
+  }
+
+  override fun shouldDetachRenderer() {
+    bridge.renderer = null
+  }
 
   override fun considerRequestRenderer(playback: Playback) {
     super.considerRequestRenderer(playback)

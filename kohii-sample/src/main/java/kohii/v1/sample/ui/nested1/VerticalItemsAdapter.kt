@@ -44,8 +44,9 @@ internal class VerticalItemsAdapter(
     position: Int
   ) {
     holder.container.setAspectRatio(16 / 9F)
-    master.setUp(assetVideoUri)
-        .with { tag = "NESTED::RV::VER::${holder.adapterPosition}" }
+    master.setUp(assetVideoUri) {
+      tag = "NESTED::RV::VER::${holder.adapterPosition}"
+    }
         .bind(holder.container)
   }
 }

@@ -133,7 +133,7 @@ class Manager(
         .clear()
     stickyHost = null // will pop current sticky Host from the Stack
     hosts.toMutableList()
-        .onEach { detachHost(it.root) }
+        .onEach { removeHost(it.root) }
         .clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
@@ -150,7 +150,7 @@ class Manager(
     refresh()
   }
 
-  internal fun findPlayableForContainer(container: ViewGroup): Playable<*>? {
+  internal fun findPlayableForContainer(container: ViewGroup): Playable? {
     val playback = playbacks[container]
     return master.playables.keys.find { it.playback === playback }
   }
@@ -186,24 +186,29 @@ class Manager(
     if (playback != null) refresh()
   }
 
-  private fun attachHost(view: View) {
+  private fun addHost(view: View) {
     val existing = hosts.find { it.root === view }
     require(existing == null) { "This host ${existing?.root} is attached already." }
     val host = Host[this@Manager, view]
     if (hosts.add(host)) {
+      host.onAdded()
       view.doOnAttach { v ->
-        host.onAdded()
-        v.doOnDetach { detachHost(it) } // In case the View is detached immediately ...
+        host.onAttached()
+        v.doOnDetach {
+          detachHost(v)
+        } // In case the View is detached immediately ...
       }
     }
   }
 
   private fun detachHost(view: View) {
-    hosts.forEach {
-      if (it.root === view && hosts.remove(it)) {
-        it.onRemoved()
-      }
-    }
+    hosts.firstOrNull { it.root === view }
+        ?.onDetached()
+  }
+
+  private fun removeHost(view: View) {
+    hosts.firstOrNull { it.root === view && hosts.remove(it) }
+        ?.onRemoved()
   }
 
   internal fun refresh() {
@@ -289,18 +294,18 @@ class Manager(
     playback.onInActive()
   }
 
-  internal fun <RENDERER : Any> requestRenderer(
+  internal fun requestRenderer(
     playback: Playback,
-    playable: Playable<RENDERER>
-  ): RENDERER? {
+    playable: Playable
+  ): Any? {
     val renderer = group.findRendererProvider(playable)
-        .acquireRenderer(playback, playable.media, playable.rendererType)
+        .acquireRenderer(playback, playable.media)
     return if (playback.attachRenderer(renderer)) renderer else null
   }
 
-  internal fun <RENDERER : Any> releaseRenderer(
+  internal fun releaseRenderer(
     playback: Playback,
-    playable: Playable<RENDERER>
+    playable: Playable
   ) {
     val renderer = playable.bridge.renderer
     if (playback.detachRenderer(renderer)) {
@@ -311,20 +316,20 @@ class Manager(
 
   // Public APIs
 
-  fun <RENDERER : Any> registerRendererProvider(
-    type: Class<RENDERER>,
-    provider: RendererProvider<RENDERER>
+  fun registerRendererProvider(
+    type: Class<*>,
+    provider: RendererProvider
   ) {
     group.registerRendererProvider(type, provider)
   }
 
   @Suppress("MemberVisibilityCanBePrivate")
-  fun <RENDERER : Any> unregisterRendererProvider(provider: RendererProvider<RENDERER>) {
+  fun unregisterRendererProvider(provider: RendererProvider) {
     group.unregisterRendererProvider(provider)
   }
 
   fun attach(vararg views: View): Manager {
-    views.forEach { this.attachHost(it) }
+    views.forEach { this.addHost(it) }
     return this
   }
 
@@ -340,7 +345,7 @@ class Manager(
 
   @Suppress("unused")
   fun detach(vararg views: View): Manager {
-    views.forEach { this.detachHost(it) }
+    views.forEach { this.removeHost(it) }
     return this
   }
 

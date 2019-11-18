@@ -41,8 +41,9 @@ internal class HorizontalItemsAdapter(private val master: Master) : Adapter<Hori
     position: Int
   ) {
     holder.container.setAspectRatio(16 / 9F)
-    master.setUp(assetVideoUri)
-        .with { tag = "NESTED::RV::HOZ::${holder.adapterPosition}" }
+    master.setUp(assetVideoUri) {
+      tag = "NESTED::RV::HOZ::${holder.adapterPosition}"
+    }
         .bind(holder.container)
   }
 }

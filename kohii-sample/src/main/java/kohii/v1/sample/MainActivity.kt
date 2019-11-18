@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("UnusedImport")
-
 package kohii.v1.sample
 
 import android.content.res.Configuration
@@ -28,6 +26,7 @@ import kohii.v1.sample.ui.combo.LandscapeFullscreenFragment
 import kohii.v1.sample.ui.main.MainListFragment
 import kotlinx.android.synthetic.main.main_activity.appBarLayout
 import kotlinx.android.synthetic.main.main_activity.toolbar
+import kotlinx.android.synthetic.main.main_activity.toolbarLayout
 
 class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragment.Callback {
 
@@ -74,6 +73,10 @@ class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragme
     } else {
       decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }
+  }
+
+  internal fun updateTitle(title: String) {
+    toolbarLayout.title = title
   }
 
   // LandscapeFullscreenFragment.Callback

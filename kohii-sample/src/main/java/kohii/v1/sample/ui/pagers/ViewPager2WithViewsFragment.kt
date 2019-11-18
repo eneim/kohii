@@ -47,12 +47,11 @@ class ViewPager2WithViewsFragment : BaseFragment() {
 
     fun bind(video: Sources) {
       val itemTag = "$javaClass::$adapterPosition::${video.file}"
-      kohii.setUp(video.file)
-          .with {
-            tag = itemTag
-            preload = true
-            repeatMode = Common.REPEAT_MODE_ONE
-          }
+      kohii.setUp(video.file) {
+        tag = itemTag
+        preload = true
+        repeatMode = Common.REPEAT_MODE_ONE
+      }
           .bind(itemView.videoFrame)
     }
   }

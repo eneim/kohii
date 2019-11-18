@@ -70,11 +70,10 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
-    val rebinder = kohii.setUp(videoUrl)
-        .with {
-          tag = videoTag
-          repeatMode = Common.REPEAT_MODE_ONE
-        }
+    val rebinder = kohii.setUp(videoUrl) {
+      tag = videoTag
+      repeatMode = Common.REPEAT_MODE_ONE
+    }
         .bind(playerView) { playback = it }
 
     playerContainer.setOnClickListener {

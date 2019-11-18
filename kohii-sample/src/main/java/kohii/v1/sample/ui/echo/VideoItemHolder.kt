@@ -84,15 +84,14 @@ class VideoItemHolder(
               .load(newVal.imageUrl)
               .into(videoImage)
 
-          kohii.setUp(newVal.file)
-              .with {
-                tag = requireNotNull(tagKey)
-                callbacks += object : Playback.Callback {
-                  override fun onRemoved(playback: Playback) {
-                    playback.removePlaybackListener(this@VideoItemHolder)
-                  }
-                }
+          kohii.setUp(newVal.file) {
+            tag = requireNotNull(tagKey)
+            callbacks += object : Playback.Callback {
+              override fun onRemoved(playback: Playback) {
+                playback.removePlaybackListener(this@VideoItemHolder)
               }
+            }
+          }
               .bind(playerViewContainer) { playback ->
                 this@VideoItemHolder.playback = playback
                 volumeInfo?.let { kohii.applyVolumeInfo(it, playback, Scope.PLAYBACK) }

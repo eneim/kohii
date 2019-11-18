@@ -64,12 +64,11 @@ class VideoViewHolder(
       itemTag = "${javaClass.canonicalName}::${item.uri}::$adapterPosition"
       mediaName.text = item.name
 
-      kohii.setUp(mediaItem)
-          .with {
-            tag = requireNotNull(itemTag)
-            preload = false
-            repeatMode = Common.REPEAT_MODE_ONE
-          }
+      kohii.setUp(mediaItem) {
+        tag = requireNotNull(itemTag)
+        preload = false
+        repeatMode = Common.REPEAT_MODE_ONE
+      }
           .bind(playerView)
     }
   }

@@ -60,17 +60,16 @@ class ExoVideosAdapter(
     val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
     val itemTag = "${javaClass.canonicalName}::${item.uri}::${holder.adapterPosition}"
 
-    holder.rebinder = kohii.setUp(mediaItem)
-        .with {
-          tag = itemTag
-          // preLoad = false
-          repeatMode = Common.REPEAT_MODE_ONE
-          callbacks += object : Callback {
-            override fun onRemoved(playback: Playback) {
-              playback.removePlaybackListener(holder)
-            }
-          }
+    holder.rebinder = kohii.setUp(mediaItem) {
+      tag = itemTag
+      // preLoad = false
+      repeatMode = Common.REPEAT_MODE_ONE
+      callbacks += object : Callback {
+        override fun onRemoved(playback: Playback) {
+          playback.removePlaybackListener(holder)
         }
+      }
+    }
         .bind(holder.container) {
           onLoad?.invoke(holder, position)
           it.addPlaybackListener(holder)

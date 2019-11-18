@@ -16,8 +16,8 @@
 
 package kohii.v1.yt1
 
+import kohii.core.AbstractPlayable
 import kohii.core.Master
-import kohii.core.Playable
 import kohii.media.Media
 import kohii.v1.Bridge
 
@@ -26,9 +26,15 @@ class YouTube1Playable(
   media: Media,
   config: Config,
   bridge: Bridge<YouTubePlayerFragment>
-) : Playable<YouTubePlayerFragment>(
-    master, media, config, YouTubePlayerFragment::class.java, bridge
-) {
+) : AbstractPlayable<YouTubePlayerFragment>(master, media, config, bridge) {
+
+  override fun shouldAttachRenderer(renderer: Any?) {
+    if (renderer is YouTubePlayerFragment) bridge.renderer = renderer
+  }
+
+  override fun shouldDetachRenderer() {
+    bridge.renderer = null
+  }
 
   override fun onConfigChange() = false
 }

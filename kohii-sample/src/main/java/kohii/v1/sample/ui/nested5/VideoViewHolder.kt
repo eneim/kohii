@@ -49,13 +49,12 @@ class VideoViewHolder(
         itemTag = "NEST::$parentPosition::${videoItem.uri}::$adapterPosition"
         mediaName.text = videoItem.name
 
-        kohii.setUp(assetVideoUri)
-            .with {
-              tag = requireNotNull(itemTag)
-              preload = false
-              repeatMode = Common.REPEAT_MODE_ONE
-              callbacks = arrayOf(this@VideoViewHolder)
-            }
+        kohii.setUp(assetVideoUri) {
+          tag = requireNotNull(itemTag)
+          preload = false
+          repeatMode = Common.REPEAT_MODE_ONE
+          callbacks = arrayOf(this@VideoViewHolder)
+        }
             .bind(playerContainer)
       }
     }

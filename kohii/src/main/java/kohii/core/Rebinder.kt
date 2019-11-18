@@ -18,12 +18,17 @@ package kohii.core
 
 import android.os.Parcelable
 import android.view.ViewGroup
+import kohii.core.Master.Companion.NO_TAG
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 
 @Parcelize
-class Rebinder(val tag: @RawValue Any) : Parcelable {
+data class Rebinder(val tag: @RawValue Any) : Parcelable {
+
+  init {
+    require(tag != NO_TAG) { "Rebinder requires unique tag." }
+  }
 
   class Options {
     var threshold: Float = 0.65F
@@ -33,7 +38,9 @@ class Rebinder(val tag: @RawValue Any) : Parcelable {
     var callbacks: Array<Playback.Callback> = emptyArray()
   }
 
-  @IgnoredOnParcel var options = Options()
+  @PublishedApi
+  @IgnoredOnParcel
+  internal var options = Options()
 
   inline fun with(options: Options.() -> Unit): Rebinder {
     this.options.apply(options)

@@ -64,11 +64,10 @@ internal class ItemsAdapter(
     if (holder is VideoViewHolder) {
       holder.videoUrl = assetVideoUri
       val videoTag = holder.videoTag
-      master.setUp(assetVideoUri)
-          .with {
-            tag = requireNotNull(videoTag)
-            repeatMode = Common.REPEAT_MODE_ONE
-          }
+      master.setUp(assetVideoUri) {
+        tag = requireNotNull(videoTag)
+        repeatMode = Common.REPEAT_MODE_ONE
+      }
           .bind(holder.container) {
             it.addPlaybackListener(holder)
           }

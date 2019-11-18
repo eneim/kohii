@@ -27,6 +27,7 @@ import kohii.v1.sample.ui.combo.ExoPlayerVideosFragment
 import kohii.v1.sample.ui.echo.EchoFragment
 import kohii.v1.sample.ui.fbook.FbookFragment
 import kohii.v1.sample.ui.grid.GridContentFragment
+import kohii.v1.sample.ui.grid.GridRecyclerViewWithUserClickFragment
 import kohii.v1.sample.ui.list.VerticalListRecyclerViewFragment
 import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.sample.ui.motion.MotionFragment
@@ -96,9 +97,9 @@ class DemoApp : Application() {
 
     listOf(
         DemoItem(
-            R.string.demo_title_debug,
-            R.string.demo_desc_debug,
-            GridContentFragment::class.java
+            R.string.demo_title_recycler_view_0,
+            R.string.demo_desc_recycler_view_0,
+            GridRecyclerViewWithUserClickFragment::class.java
         ), DemoItem(
         R.string.demo_title_fbook,
         R.string.demo_desc_fbook,

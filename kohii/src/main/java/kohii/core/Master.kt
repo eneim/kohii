@@ -145,11 +145,11 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
           }
         }
         MSG_RELEASE_PLAYABLE -> {
-          val playable = (msg.obj as Playable<*>)
-          playable.bridge.release()
+          val playable = (msg.obj as Playable)
+          playable.onRelease()
         }
         MSG_DESTROY_PLAYABLE -> {
-          val playable = msg.obj as Playable<*>
+          val playable = msg.obj as Playable
           val clearState = msg.arg1 == 0
           master.onTearDown(playable, clearState)
         }
@@ -160,7 +160,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   val app = context.applicationContext as Application
 
   internal val groups = mutableSetOf<Group>()
-  internal val playables = mutableMapOf<Playable<*>, Any /* Playable tag */>()
+  internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
   // We want to keep the map of manual Playables even if the Activity is destroyed and recreated.
   // TODO when to remove entries of this map?
@@ -204,15 +204,15 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   private val engines = mutableMapOf<Class<*>, Engine<*>>()
-  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest<*>>()
+  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
 
   /**
    * @param container container is the [ViewGroup] that holds the Video. It should be an empty
    * ViewGroup, or a PlayerView itself. Note that View can be created from [android.app.Service] so
    * its Context is no need to be an [android.app.Activity]
    */
-  internal fun <RENDERER : Any> bind(
-    playable: Playable<RENDERER>,
+  internal fun bind(
+    playable: Playable,
     tag: Any,
     container: ViewGroup,
     options: Options,
@@ -235,7 +235,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   internal fun tearDown(
-    playable: Playable<*>,
+    playable: Playable,
     clearState: Boolean
   ) {
     dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
@@ -244,7 +244,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   internal fun onTearDown(
-    playable: Playable<*>,
+    playable: Playable,
     clearState: Boolean
   ) {
     check(playable.manager == null) {
@@ -254,7 +254,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
       "Teardown $playable, found playback: ${playable.playback}"
     }
     playable.onPause()
-    playable.onRelease()
+    trySavePlaybackInfo(playable)
+    releasePlayable(playable)
     playables.remove(playable)
     if (clearState) {
       playbackInfoStore.remove(playable.tag)
@@ -266,7 +267,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     if (playables.isEmpty()) cleanUp()
   }
 
-  internal fun trySavePlaybackInfo(playable: Playable<*>) {
+  internal fun trySavePlaybackInfo(playable: Playable) {
     if (playable.tag === NO_TAG) return
     if (!playbackInfoStore.containsKey(playable.tag)) {
       val info = playable.playbackInfo
@@ -276,7 +277,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   // If this method is called, it must be before any call to playable.bridge.prepare(flag)
-  internal fun tryRestorePlaybackInfo(playable: Playable<*>) {
+  internal fun tryRestorePlaybackInfo(playable: Playable) {
     if (playable.tag === NO_TAG) return
     val cache = playbackInfoStore.remove(playable.tag)
     // Only restoring playback state if there is cached state, and the player is not ready yet.
@@ -334,20 +335,21 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   internal fun preparePlayable(
-    playable: Playable<*>,
+    playable: Playable,
     loadSource: Boolean = false
   ) {
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
-    playable.bridge.prepare(loadSource)
+    playable.onPrepare(loadSource)
   }
 
-  internal fun releasePlayable(playable: Playable<*>) {
+  internal fun releasePlayable(playable: Playable) {
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
         .sendToTarget()
   }
 
-  private fun requestDefaultEngine(): Engine<PlayerView> {
+  @PublishedApi
+  internal fun requestDefaultEngine(): Engine<PlayerView> {
     @Suppress("UNCHECKED_CAST")
     return engines.getOrPut(PlayerView::class.java) { PlayerViewEngine(this) } as Engine<PlayerView>
   }
@@ -370,15 +372,36 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   @ExoPlayer
-  fun setUp(media: Media): Binder<PlayerView> {
-    return requestDefaultEngine().setUp(media)
+  inline fun setUp(
+    media: Media,
+    crossinline options: Options.() -> Unit = { }
+  ): Binder<PlayerView> {
+    return requestDefaultEngine().setUp(media, options)
   }
 
   @ExoPlayer
-  fun setUp(uri: Uri) = setUp(MediaItem(uri))
+  inline fun setUp(
+    uri: Uri,
+    crossinline options: Options.() -> Unit = {}
+  ) = setUp(MediaItem(uri), options)
 
   @ExoPlayer
-  fun setUp(url: String) = setUp(url.toUri())
+  inline fun setUp(
+    url: String,
+    crossinline options: Options.() -> Unit = {}
+  ) = setUp(url.toUri(), options)
+
+  // For Java
+  @ExoPlayer
+  fun setUp(url: String) = setUp(url) {}
+
+  // For Java
+  @ExoPlayer
+  fun setUp(uri: Uri) = requestDefaultEngine().setUp(uri)
+
+  // For Java
+  @ExoPlayer
+  fun setUp(media: Media) = requestDefaultEngine().setUp(media)
 
   @ExoPlayer
   fun fetchRebinder(tag: Any?): Rebinder? {
@@ -386,7 +409,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
-  fun play(playable: Playable<*>) {
+  fun play(playable: Playable) {
     val controller = playable.playback?.config?.controller
     if (playable.tag !== NO_TAG && controller != null) {
       requireNotNull(playable.playback).also {
@@ -399,7 +422,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   // Must be a request to pause from Client. This method will set necessary flags and refresh all.
-  fun pause(playable: Playable<*>) {
+  fun pause(playable: Playable) {
     val controller = playable.playback?.config?.controller
     if (playable.tag !== NO_TAG && controller != null) {
       playablesPendingStates[playable.tag] = Common.PENDING_PAUSE
@@ -477,8 +500,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     trimMemoryLevel = level
   }
 
-  internal fun <RENDERER : Any> onBind(
-    playable: Playable<RENDERER>,
+  internal fun onBind(
+    playable: Playable,
     tag: Any,
     container: ViewGroup,
     options: Options,
@@ -507,18 +530,21 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
       )
 
       when {
-        // Scenario: Playable accepts renderer of type PlayerView, and the container is an instance of a subclass of PlayerView.
-        playable.rendererType.isAssignableFrom(container::class.java) -> {
+        // Scenario: Playable accepts renderer of type PlayerView, and
+        // the container is an instance PlayerView or its subtype.
+        playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
           StaticViewRendererPlayback(host.manager, host, config, container)
         }
-        View::class.java.isAssignableFrom(playable.rendererType) -> {
+        View::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicViewRendererPlayback(host.manager, host, config, container)
         }
-        Fragment::class.java.isAssignableFrom(playable.rendererType) -> {
+        Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicFragmentRendererPlayback(host.manager, host, config, container)
         }
         else -> {
-          throw IllegalArgumentException("Unsupported Renderer type: ${playable.rendererType}")
+          throw IllegalArgumentException(
+              "Unsupported Renderer type: ${playable.config.rendererType}"
+          )
         }
       }
     }
@@ -575,9 +601,9 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     callback?.invoke(resolvedPlayback)
   }
 
-  internal class BindRequest<RENDERER : Any>(
+  internal class BindRequest(
     val master: Master,
-    val playable: Playable<RENDERER>,
+    val playable: Playable,
     val container: ViewGroup,
     val tag: Any,
     val options: Options,

@@ -19,7 +19,7 @@ package kohii.v1.yt1
 import kohii.core.Playback
 import kohii.core.RecyclerRendererProvider
 
-internal class YouTube1RendererProvider : RecyclerRendererProvider<YouTubePlayerFragment>() {
+internal class YouTube1RendererProvider : RecyclerRendererProvider() {
 
   override fun createRenderer(
     playback: Playback,

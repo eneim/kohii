@@ -200,7 +200,7 @@ class YouTubeBridge(
     // no-ops
   }
 
-  override fun ensurePreparation() {
+  override fun ready() {
     // no-ops
   }
 
@@ -278,7 +278,9 @@ class YouTubeBridge(
 
   @OnLifecycleEvent(ON_DESTROY)
   internal fun onOwnerDestroy(owner: LifecycleOwner) {
+    updatePlaybackInfo()
     player?.performRelease()
+    _playbackState = Common.STATE_IDLE
     owner.lifecycle.removeObserver(this)
   }
 }

@@ -91,7 +91,7 @@ class GridContentFragment : BaseFragment() {
     videoItemDetailsLookup = VideoItemDetailsLookup(container)
 
     selectionTracker = SelectionTracker.Builder<Rebinder>(
-        "${BuildConfig.APPLICATION_ID}::sample::debug",
+        "${BuildConfig.APPLICATION_ID}::sample::grid",
         container,
         videoKeyProvider,
         videoItemDetailsLookup,

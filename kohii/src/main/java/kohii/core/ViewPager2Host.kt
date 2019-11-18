@@ -19,7 +19,6 @@ package kohii.core
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager2.widget.ViewPager2
-import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
 class ViewPager2Host(
@@ -27,17 +26,13 @@ class ViewPager2Host(
   override val root: ViewPager2
 ) : Host(manager, root) {
 
-  private class SimplePageChangeCallback(manager: Manager) : ViewPager2.OnPageChangeCallback() {
-    val weakManager = WeakReference(manager)
-
+  private class SimplePageChangeCallback(val manager: Manager) : ViewPager2.OnPageChangeCallback() {
     override fun onPageScrollStateChanged(state: Int) {
-      weakManager.get()
-          ?.refresh()
+      manager.refresh()
     }
 
     override fun onPageSelected(position: Int) {
-      weakManager.get()
-          ?.refresh()
+      manager.refresh()
     }
   }
 

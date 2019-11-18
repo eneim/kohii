@@ -282,7 +282,7 @@ abstract class Playback(
     volumeInfoUpdater = host.volumeInfo
   }
 
-  internal var playable: Playable<*>? = null
+  internal var playable: Playable? = null
 
   internal fun compareWith(
     other: Playback,

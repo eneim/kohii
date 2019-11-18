@@ -17,8 +17,6 @@
 package kohii.core
 
 import android.view.ViewGroup
-import androidx.annotation.RestrictTo
-import androidx.annotation.RestrictTo.Scope.LIBRARY
 import kohii.core.Master.Companion.NO_TAG
 import kohii.core.Playable.Config
 import kohii.media.Media
@@ -38,20 +36,18 @@ class Binder<RENDERER : Any>(
     var callbacks: Array<Playback.Callback> = emptyArray()
   }
 
-  @RestrictTo(LIBRARY)
-  val options = Options()
-
-  inline fun with(options: Options.() -> Unit): Binder<RENDERER> {
-    this.options.apply(options)
-    return this
-  }
+  @PublishedApi
+  internal val options = Options()
 
   fun bind(
     container: ViewGroup,
     callback: ((Playback) -> Unit)? = null
   ): Rebinder? {
     val tag = options.tag
-    val playable = providePlayable(media, tag, Config(tag = tag))
+    val playable = providePlayable(
+        media, tag,
+        Config(tag = tag, rendererType = engine.creator.rendererType)
+    )
     engine.master.bind(playable, tag, container, options, callback)
     return if (tag != NO_TAG) Rebinder(tag) else null
   }
@@ -60,7 +56,7 @@ class Binder<RENDERER : Any>(
     media: Media,
     tag: Any,
     config: Config
-  ): Playable<RENDERER> {
+  ): Playable {
     var cache = engine.master.playables.asSequence()
         .filterNot { it.value == NO_TAG } // only care about tagged Playables
         .filter { it.value == tag /* equals */ }
@@ -69,9 +65,7 @@ class Binder<RENDERER : Any>(
 
     if (cache != null) {
       require(cache.media == media) // Playable of same tag must have the same Media data.
-      if (cache.config != config ||
-          !engine.creator.rendererType.isAssignableFrom(cache.rendererType)
-      ) {
+      if (cache.config != config) {
         // Scenario: client bind a Video of same tag/media but different Renderer type or Config.
         cache.playback = null // will also set Manager to null
         engine.master.tearDown(cache, true)
@@ -79,9 +73,6 @@ class Binder<RENDERER : Any>(
       }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    return cache as? Playable<RENDERER> ?: engine.creator.createPlayable(
-        engine.master, config, media
-    )
+    return cache ?: engine.creator.createPlayable(engine.master, config, media)
   }
 }
