@@ -18,8 +18,8 @@ package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.core.Creator
-import kohii.core.Playable
 import kohii.core.Master
+import kohii.core.Playable
 import kohii.core.Playable.Config
 import kohii.media.Media
 

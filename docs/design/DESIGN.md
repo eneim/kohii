@@ -7,8 +7,9 @@
 
 - [ ] Callbacks
   - [x] Callbacks for **Kohii** components status.
-  - [ ] Callbacks for playback status.
-  - [ ] (Nice to have) *Opinionated callbacks* that tell client when it *should show/hide thumbnail*.
+  - [x] Callbacks for playback status.
+  - [x] (Nice to have) *Opinionated callbacks* that tell client when it *should show/hide thumbnail*.
+    - ``beforePlay()`` and ``afterPause()``
 
 - [x] Handle configuration change
   - [x] Retain playback on configuration changes.
@@ -17,9 +18,7 @@
   - [x] Allow client to have full control over Playbacks: client can start/pause any Playback without the control of system/Kohii.
   - [x] Allow client to have half-manual control over Playbacks: client can start/pause any Playback on demand, but Kohii can also start/pause the Playback regarding some conditions.
   - [ ] Global control: simple method to pause/resume everything. The resume behavior follow each Playback's config.
-
-- [ ] Volume control
-  - [ ] Sophisticated Volume control at many levels: Kohii scope (global), Manager scope, Host scope, Playback scope.
+  - [x] Flexible VolumeInfo update mechanism: allow to change VolumeInfo for individual Video or all Videos in the same parent.
 
 - [ ] ExoPlayer related implementations
   - [x] First-class support for playback using ExoPlayer/PlayerView.
@@ -39,24 +38,26 @@
   - [x] ``MemoryMode`` setting, allows client to control how Videos will be kept when it is not playing. For example in HIGH MemoryMode, many Videos can keep resource at the same time, so the playback will be really smooth, but in LOW MemoryMode, any paused Video will be released to save resource.
   - [ ] Ads support with Mopub, IMA.
 
-- [ ] Demos
+- [x] Demos
   - [x] Basic RecyclerView sample, no nesting.
   - [x] Basic NestedScrollView sample, no nesting.
   - [x] RecyclerView with NestedScrollView nested in a ViewHolder.
-  - [ ] RecyclerView with RecyclerView nested in a ViewHolder.
+  - [x] RecyclerView with RecyclerView nested in a ViewHolder.
   - [x] NestedScrollView with a RecyclerView nested inside.
   - [x] RecyclerView with user interaction (eg: Click).
   - [x] NestedScrollView with user interaction (eg: Click).
   - [x] ViewPager where pages are PlayerViews or FrameLayouts.
-  - [ ] ViewPager where pages are RecyclerViews with Videos.
+  - ~~[ ] ViewPager where pages are RecyclerViews with Videos.~~ (It is recommended to use Fragment with RecyclerView inside ViewPager instead)
   - [x] ViewPager where pages are Fragments contain PlayerViews or FrameLayout.
-  - [ ] ViewPager where pages are Fragments contain RecyclerView with Videos.
+  - [x] ViewPager where pages are Fragments contain RecyclerView with Videos.
   - [x] ViewPager2 where pages are PlayerViews or FrameLayouts.
-  - [ ] ViewPager2 where pages are RecyclerViews with Videos.
+  - ~~[ ] ViewPager2 where pages are RecyclerViews with Videos.~~ (It is recommended to use Fragment with RecyclerView inside ViewPager instead)
   - [x] ViewPager2 where pages are Fragments contain PlayerViews or FrameLayout.
-  - [ ] ViewPager2 where pages are Fragments contain RecyclerView with Videos.
-  - [ ] Multiple Fragments where each contains RecyclerView with Videos.
+  - [x] ViewPager2 where pages are Fragments contain RecyclerView with Videos.
+  - [x] Multiple Fragments where each contains RecyclerView or ViewPager with Videos.
   - [x] Sample to mimic Facebook.
+  - [x] YouTube sample using Android Player SDK (the Official SDK).
+  - [x] YouTube sample using PierfrancescoSoffritti/android-youtube-player.
   
 - [ ] Background Playback support
   - [ ] Allow configuration to enable/disable background Playback. The config would allow to setup: flag to turn the feature on/off, necessary information for the foreground notification (eg Bitmap for the Notification large image).
