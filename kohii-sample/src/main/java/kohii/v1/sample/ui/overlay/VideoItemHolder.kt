@@ -91,7 +91,7 @@ internal class VideoItemHolder(
     thumbnail.isVisible = true
   }
 
-  override fun onEnd(playback: Playback) {
+  override fun onEnded(playback: Playback) {
     thumbnail.isVisible = true
   }
 

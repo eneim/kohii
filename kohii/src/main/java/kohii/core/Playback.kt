@@ -382,11 +382,11 @@ abstract class Playback(
       }
       Player.STATE_READY -> {
         listeners.forEach {
-          if (playWhenReady) it.onPlay(this@Playback) else it.onPause(this@Playback)
+          if (playWhenReady) it.onPlaying(this@Playback) else it.onPaused(this@Playback)
         }
       }
       Player.STATE_ENDED -> {
-        listeners.forEach { it.onEnd(this@Playback) }
+        listeners.forEach { it.onEnded(this@Playback) }
       }
     }
   }
@@ -405,7 +405,7 @@ abstract class Playback(
 
   override fun onRenderedFirstFrame() {
     "Playback#onRenderedFirstFrame, $this".logDebug()
-    listeners.forEach { it.onFirstFrameRendered(this) }
+    listeners.forEach { it.onRendered(this) }
   }
 
   // ErrorListener
@@ -419,13 +419,16 @@ abstract class Playback(
   interface PlaybackListener {
 
     /** Called when a Video is rendered on the Surface for the first time */
-    fun onFirstFrameRendered(playback: Playback) {}
+    @JvmDefault
+    fun onRendered(playback: Playback) {
+    }
 
     /**
      * Called when buffering status of the playback is changed.
      *
      * @param playWhenReady true if the Video will start playing once buffered enough, false otherwise.
      */
+    @JvmDefault
     fun onBuffering(
       playback: Playback,
       playWhenReady: Boolean
@@ -433,18 +436,31 @@ abstract class Playback(
     } // ExoPlayer state: 2
 
     /** Called when the Video starts playing */
-    fun onPlay(playback: Playback) {} // ExoPlayer state: 3, play flag: true
+    @JvmDefault
+    fun onPlaying(playback: Playback) {
+    } // ExoPlayer state: 3, play flag: true
 
     /** Called when the Video is paused */
-    fun onPause(playback: Playback) {} // ExoPlayer state: 3, play flag: false
+    @JvmDefault
+    fun onPaused(playback: Playback) {
+    } // ExoPlayer state: 3, play flag: false
 
     /** Called when the Video finishes its playback */
-    fun onEnd(playback: Playback) {} // ExoPlayer state: 4
+    @JvmDefault
+    fun onEnded(playback: Playback) {
+    } // ExoPlayer state: 4
 
-    fun beforePlay(playback: Playback) {}
+    /** Called when the Playback receives [onPlay]. It can be called many times */
+    @JvmDefault
+    fun beforePlay(playback: Playback) {
+    }
 
-    fun afterPause(playback: Playback) {}
+    /** Called when the Playback receives [onPause]. It can be called many times */
+    @JvmDefault
+    fun afterPause(playback: Playback) {
+    }
 
+    @JvmDefault
     fun onVideoSizeChanged(
       playback: Playback,
       width: Int,
@@ -454,6 +470,7 @@ abstract class Playback(
     ) {
     }
 
+    @JvmDefault
     fun onError(
       playback: Playback,
       exception: Exception
@@ -463,17 +480,29 @@ abstract class Playback(
 
   interface Callback {
 
-    fun onActive(playback: Playback) {}
+    @JvmDefault
+    fun onActive(playback: Playback) {
+    }
 
-    fun onInActive(playback: Playback) {}
+    @JvmDefault
+    fun onInActive(playback: Playback) {
+    }
 
-    fun onAdded(playback: Playback) {}
+    @JvmDefault
+    fun onAdded(playback: Playback) {
+    }
 
-    fun onRemoved(playback: Playback) {}
+    @JvmDefault
+    fun onRemoved(playback: Playback) {
+    }
 
-    fun onAttached(playback: Playback) {}
+    @JvmDefault
+    fun onAttached(playback: Playback) {
+    }
 
-    fun onDetached(playback: Playback) {}
+    @JvmDefault
+    fun onDetached(playback: Playback) {
+    }
   }
 
   interface Controller {
@@ -486,12 +515,14 @@ abstract class Playback(
     // - If user scrolls a Playback so that a it is not visible enough, system will pause the Playback.
     // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously played by User,
     // or pause it if it was paused by User before (= do nothing).
+    @JvmDefault
     fun kohiiCanPause(): Boolean = true
 
     // - Allow System to start a Playback.
     // When true:
     // - Kohii can start a Playback automatically. But once user pause it manually, Only user can resume it,
     // Kohii should never start/resume the Playback.
+    @JvmDefault
     fun kohiiCanStart(): Boolean = false
   }
 }

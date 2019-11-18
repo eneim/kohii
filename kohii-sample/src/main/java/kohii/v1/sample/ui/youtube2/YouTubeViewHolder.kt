@@ -56,7 +56,7 @@ class YouTubeViewHolder(
     }
   }
 
-  override fun onEnd(playback: Playback) {
+  override fun onEnded(playback: Playback) {
     thumbnail.isVisible = true
   }
 

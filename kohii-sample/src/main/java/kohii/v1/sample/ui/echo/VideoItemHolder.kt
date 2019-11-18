@@ -137,7 +137,7 @@ class VideoItemHolder(
     videoImage.isVisible = true
   }
 
-  override fun onEnd(playback: Playback) {
+  override fun onEnded(playback: Playback) {
     videoImage.isVisible = true
   }
 }

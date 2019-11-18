@@ -65,7 +65,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
   @Suppress("MemberVisibilityCanBePrivate")
   var floatPlayerController: FloatPlayerController? = null
   @Suppress("MemberVisibilityCanBePrivate")
-  var playerCallback: PlayerPanel.Callback? = null
+  var playerCallback: Callback? = null
 
   private val systemUiOptions by lazy {
     AtomicInteger(
@@ -172,7 +172,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     playerCallback?.onPlayerInActive(this, playback)
   }
 
-  override fun onEnd(playback: Playback) {
+  override fun onEnded(playback: Playback) {
     playback.removePlaybackListener(this)
     dismissAllowingStateLoss()
   }

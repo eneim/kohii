@@ -240,8 +240,8 @@ class FbookFragment : BaseFragment(),
 
   // Playback.PlaybackListener
 
-  override fun onEnd(playback: Playback) {
-    super.onEnd(playback)
+  override fun onEnded(playback: Playback) {
+    super.onEnded(playback)
     if (playback === currentSelectedPlayback) {
       playback.removePlaybackListener(this)
       currentSelectedPlayback = null
@@ -291,7 +291,7 @@ class FbookFragment : BaseFragment(),
               ?.with { repeatMode = Player.REPEAT_MODE_OFF }
               ?.bind(kohii, playerView) { playback ->
                 playback.addPlaybackListener(object : Playback.PlaybackListener {
-                  override fun onEnd(playback: Playback) {
+                  override fun onEnded(playback: Playback) {
                     kohii.unstick(playback)
                     playback.removePlaybackListener(this)
                     viewModel.overlayPlayerInfo.value = null
