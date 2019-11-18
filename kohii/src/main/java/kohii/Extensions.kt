@@ -29,7 +29,6 @@ import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig
 import kohii.v1.PlayerEventListener
-import kohii.v1.Rebinder
 import kohii.v1.VolumeInfoController
 import kotlin.math.abs
 
@@ -78,18 +77,6 @@ fun Player.removeEventListener(listener: PlayerEventListener?) {
   this.metadataComponent?.removeMetadataOutput(listener)
 }
 
-inline fun <reified RENDERER : Any> Rebinder<*>?.safeCast(): Rebinder<RENDERER>? {
-  @Suppress("UNCHECKED_CAST")
-  if (this?.rendererType === RENDERER::class.java) return this as Rebinder<RENDERER>
-  return null
-}
-
-inline fun <reified RENDERER : Any> Rebinder<*>?.forceCast(): Rebinder<RENDERER> {
-  require(this != null && this.rendererType === RENDERER::class.java)
-  @Suppress("UNCHECKED_CAST")
-  return this as Rebinder<RENDERER>
-}
-
 inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   var item: T?
   do {
@@ -100,8 +87,7 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
 }
 
 // Return a View that is ancestor of container, and has direct parent is a CoordinatorLayout
-@Suppress("unused")
-fun findSuitableParent(
+fun findCoordinatorLayoutDirectChildContainer(
   root: View,
   target: View?
 ): View? {

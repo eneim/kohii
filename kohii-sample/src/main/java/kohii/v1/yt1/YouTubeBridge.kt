@@ -32,11 +32,11 @@ import com.google.android.youtube.player.YouTubePlayer.PlaybackEventListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStateChangeListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.MINIMAL
 import com.google.android.youtube.player.YouTubePlayer.Provider
+import kohii.core.Common
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.BaseBridge
-import kohii.v1.Playable
 import kotlin.properties.Delegates
 
 class YouTubeBridge(
@@ -85,7 +85,7 @@ class YouTubeBridge(
   )
 
   private var _playbackState by Delegates.observable(
-      initialValue = Playable.STATE_IDLE,
+      initialValue = Common.STATE_IDLE,
       onChange = { _, oldVal, newVal ->
         if (oldVal == newVal) return@observable
         Log.i("Kohii::YT1", "state change: $newVal")
@@ -97,14 +97,14 @@ class YouTubeBridge(
 
   private fun updatePlaybackInfo() {
     player?.let {
-      if (_playbackState != Playable.STATE_IDLE) {
+      if (_playbackState != Common.STATE_IDLE) {
         _playbackInfo = _playbackInfo.copy(resumePosition = it.currentTimeMillis.toLong())
       }
     }
   }
 
   private fun allowedToPlay(): Boolean {
-    return this.playerView?.allowedToPlay() == true
+    return this.renderer?.allowedToPlay() == true
   }
 
   // Update this value will trigger player to seek.
@@ -136,7 +136,7 @@ class YouTubeBridge(
   override val playbackState: Int
     get() = _playbackState
 
-  override var playerView: YouTubePlayerFragment? = null
+  override var renderer: YouTubePlayerFragment? = null
     set(value) {
       if (field === value) return
       field?.also {
@@ -153,7 +153,7 @@ class YouTubeBridge(
   override fun play() {
     if (!this.isPlaying() || _loadedVideoId != media.uri.toString()) {
       this._playWhenReady = true
-      this.playerView?.let {
+      this.renderer?.let {
         if (it.view != null) {
           this.player?.play() ?: it.initialize(initializedListener)
         }
@@ -180,7 +180,7 @@ class YouTubeBridge(
 
   override fun reset(resetPlayer: Boolean) {
     this.pause()
-    _playbackState = Playable.STATE_IDLE
+    _playbackState = Common.STATE_IDLE
     _playbackInfo = PlaybackInfo()
   }
 
@@ -194,7 +194,7 @@ class YouTubeBridge(
     _playbackInfo = PlaybackInfo(temp.resumeWindow, temp.resumePosition, this.volumeInfo)
   }
 
-  override var repeatMode = Playable.REPEAT_MODE_OFF
+  override var repeatMode = Common.REPEAT_MODE_OFF
 
   override fun prepare(loadSource: Boolean) {
     // no-ops
@@ -216,22 +216,22 @@ class YouTubeBridge(
 
   override fun onBuffering(isBuffering: Boolean) {
     Log.i("Kohii::YT1", "Event: onBuffering $isBuffering")
-    _playbackState = if (isBuffering) Playable.STATE_BUFFERING else _playbackState
+    _playbackState = if (isBuffering) Common.STATE_BUFFERING else _playbackState
   }
 
   override fun onPlaying() {
     Log.i("Kohii::YT1", "Event: onPlaying")
-    _playbackState = Playable.STATE_READY
+    _playbackState = Common.STATE_READY
   }
 
   override fun onPaused() {
     Log.i("Kohii::YT1", "Event: onPaused")
-    _playbackState = Playable.STATE_READY
+    _playbackState = Common.STATE_READY
   }
 
   override fun onStopped() {
     Log.i("Kohii::YT1", "Event: onStopped")
-    _playbackState = Playable.STATE_END
+    _playbackState = Common.STATE_ENDED
   }
 
   // [END] PlaybackEventListener
@@ -258,7 +258,7 @@ class YouTubeBridge(
 
   override fun onVideoEnded() {
     Log.d("Kohii::YT1", "State: onVideoEnded")
-    _playbackState = Playable.STATE_END
+    _playbackState = Common.STATE_ENDED
   }
 
   override fun onError(reason: ErrorReason?) {

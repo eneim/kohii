@@ -17,6 +17,7 @@
 package kohii.core
 
 import android.net.Uri
+import androidx.annotation.CallSuper
 import androidx.core.net.toUri
 import kohii.media.Media
 import kohii.media.MediaItem
@@ -40,4 +41,9 @@ abstract class Engine<RENDERER : Any>(
   open fun setUp(uri: Uri) = setUp(MediaItem(uri))
 
   open fun setUp(url: String) = setUp(url.toUri())
+
+  @CallSuper
+  open fun cleanUp() {
+    creator.cleanUp()
+  }
 }

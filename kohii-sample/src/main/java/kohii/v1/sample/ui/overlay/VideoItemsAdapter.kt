@@ -20,7 +20,7 @@ import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.google.android.exoplayer2.Player
+import kohii.core.Common
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.PlayerViewRebinder
@@ -85,7 +85,7 @@ internal class VideoItemsAdapter(
         kohii.setUp(requireNotNull(holder.videoFile))
             .with {
               tag = requireNotNull(holder.videoTag)
-              repeatMode = Player.REPEAT_MODE_ONE
+              repeatMode = Common.REPEAT_MODE_ONE
               callbacks = arrayOf(
                   holder,
                   object : Playback.Callback {

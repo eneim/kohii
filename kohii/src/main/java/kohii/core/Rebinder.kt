@@ -18,7 +18,6 @@ package kohii.core
 
 import android.os.Parcelable
 import android.view.ViewGroup
-import com.google.android.exoplayer2.Player
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.RawValue
 
@@ -30,7 +29,7 @@ abstract class Rebinder<RENDERER : Any>(
   class Options {
     var threshold: Float = 0.65F
     var preload: Boolean = false
-    var repeatMode: Int = Player.REPEAT_MODE_OFF
+    var repeatMode: Int = Common.REPEAT_MODE_OFF
     var controller: Playback.Controller? = null
     var callbacks: Array<Playback.Callback> = emptyArray()
   }

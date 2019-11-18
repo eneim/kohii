@@ -28,7 +28,6 @@ import kohii.ExoPlayer
 import kohii.core.Playable.Config
 import kohii.media.Media
 import kohii.v1.BuildConfig
-import kohii.v1.Kohii
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
 import kohii.v1.exo.DefaultExoPlayerProvider
@@ -48,7 +47,7 @@ internal class PlayerViewPlayableCreator(
 
   @ExoPlayer
   internal val defaultBridgeProvider by lazy(NONE) {
-    val userAgent = Kohii.getUserAgent(this.app, BuildConfig.LIB_NAME)
+    val userAgent = Common.getUserAgent(this.app, BuildConfig.LIB_NAME)
     val httpDataSource =
       DefaultHttpDataSourceFactory(userAgent)
 
@@ -86,11 +85,15 @@ internal class PlayerViewPlayableCreator(
         master,
         media,
         config,
-        defaultBridgeProvider.provideBridge(master.kohii, media)
+        defaultBridgeProvider.provideBridge(master.app, media)
     )
   }
 
   override fun createRebinder(tag: Any): Rebinder<PlayerView> {
     return PlayerViewRebinder(tag)
+  }
+
+  override fun cleanUp() {
+    defaultBridgeProvider.cleanUp()
   }
 }

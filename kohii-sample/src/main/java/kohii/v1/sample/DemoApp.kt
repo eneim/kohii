@@ -24,9 +24,10 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.combo.ExoPlayerVideosFragment
-import kohii.v1.sample.ui.grid.GridContentFragment
 import kohii.v1.sample.ui.echo.EchoFragment
 import kohii.v1.sample.ui.fbook.FbookFragment
+import kohii.v1.sample.ui.grid.GridContentFragment
+import kohii.v1.sample.ui.list.VerticalListRecyclerViewFragment
 import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.sample.ui.motion.MotionFragment
 import kohii.v1.sample.ui.mstdtl.MasterDetailFragment
@@ -35,7 +36,6 @@ import kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment
 import kohii.v1.sample.ui.pagers.ViewPager1WithViewsFragment
 import kohii.v1.sample.ui.pagers.ViewPager2WithFragmentsFragment
 import kohii.v1.sample.ui.pagers.ViewPager2WithViewsFragment
-import kohii.v1.sample.ui.list.VerticalListRecyclerViewFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
 import kohii.v1.sample.ui.youtube1.YouTube1Fragment
 import kohii.v1.sample.ui.youtube2.YouTube2Fragment

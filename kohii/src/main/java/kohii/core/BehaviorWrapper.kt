@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.internal
+package kohii.core
 
 import android.graphics.Rect
 import android.os.Handler
@@ -26,13 +26,12 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
 import androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
 import androidx.core.view.WindowInsetsCompat
-import kohii.v1.PlaybackManager
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class BehaviorWrapper<V : View>(
   private val delegate: Behavior<in V>,
-  manager: PlaybackManager
+  manager: Manager
 ) : Behavior<V>(null, null), Handler.Callback {
 
   companion object {
@@ -44,18 +43,21 @@ internal class BehaviorWrapper<V : View>(
 
   private val scrollConsumed = AtomicBoolean(false)
   private val handler = Handler(this)
-  private var managerRef = WeakReference(manager)
+  private val weakManager = WeakReference(manager)
 
   override fun handleMessage(msg: Message?): Boolean {
     when (msg?.what) {
       EVENT_SCROLL, EVENT_TOUCH -> {
         scrollConsumed.set(false)
         handler.removeMessages(EVENT_IDLE)
-        handler.sendEmptyMessageDelayed(EVENT_IDLE, EVENT_DELAY)
+        handler.sendEmptyMessageDelayed(
+            EVENT_IDLE,
+            EVENT_DELAY
+        )
       }
       EVENT_IDLE ->
         // idle --> consume it.
-        if (!scrollConsumed.getAndSet(true)) managerRef.get()?.dispatchRefreshAll()
+        if (!scrollConsumed.getAndSet(true)) weakManager.get()?.refresh()
     }
     return true
   }

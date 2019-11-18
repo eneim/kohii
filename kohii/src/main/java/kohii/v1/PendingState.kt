@@ -16,27 +16,7 @@
 
 package kohii.v1
 
-import android.net.Uri
-import kohii.media.Media
-import kohii.media.MediaItem
-
-// Use this instead of Kohii instance to provide more customizable detail.
-abstract class PlayableCreator<RENDERER : Any>(
-  protected val kohii: Kohii,
-  internal val rendererType: Class<RENDERER>
-) {
-
-  fun setUp(uri: Uri) = this.setUp(MediaItem(uri))
-
-  fun setUp(url: String) = this.setUp(Uri.parse(url))
-
-  fun setUp(media: Media): Binder<RENDERER> {
-    return Binder(kohii, media, this)
-  }
-
-  abstract fun createPlayable(
-    kohii: Kohii,
-    media: Media,
-    config: Playable.Config
-  ): Playable<RENDERER>
-}
+/**
+ * @author eneim (2018/06/24).
+ */
+inline class PendingState(val value: Boolean)

@@ -25,7 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.Player
+import kohii.core.Common
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
@@ -68,7 +68,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
     kohii.setUp(assetVideoUri)
         .with {
           tag = "${javaClass.name}::$videoUrl"
-          repeatMode = Player.REPEAT_MODE_ONE
+          repeatMode = Common.REPEAT_MODE_ONE
         }
         .bind(playerView) {
           it.addPlaybackListener(this@PictureInPictureFragment)

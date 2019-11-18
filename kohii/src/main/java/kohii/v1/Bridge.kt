@@ -18,16 +18,16 @@ package kohii.v1
 
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackParameters
+import com.google.android.exoplayer2.Player.RepeatMode
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.v1.Playable.RepeatMode
 
 interface Bridge<RENDERER : Any> {
 
   val playbackState: Int
 
   //  set/get
-  var playerView: RENDERER? // TODO rename to 'renderer'
+  var renderer: RENDERER? // TODO rename to 'renderer'
 
   // set/get
   var playbackInfo: PlaybackInfo

@@ -30,15 +30,15 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.core.Common
 import kohii.core.Manager
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.PlayerViewRebinder
 import kohii.core.Rebinder
+import kohii.core.Scope
 import kohii.media.VolumeInfo
-import kohii.v1.Scope
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
@@ -288,8 +288,9 @@ class FbookFragment : BaseFragment(),
       rebindAction = {
         floatPlayerManager.openFloatPlayer { playerView ->
           currentOverlayPlayerInfo?.rebinder
-              ?.with { repeatMode = Player.REPEAT_MODE_OFF }
+              ?.with { repeatMode = Common.REPEAT_MODE_OFF }
               ?.bind(kohii, playerView) { playback ->
+                dummyPlayer.isVisible = false // View.GONE
                 playback.addPlaybackListener(object : Playback.PlaybackListener {
                   override fun onEnded(playback: Playback) {
                     kohii.unstick(playback)

@@ -29,11 +29,11 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import kohii.core.Common
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.BaseBridge
-import kohii.v1.Playable
 import kotlin.properties.Delegates
 
 class YouTubeBridge(
@@ -60,11 +60,11 @@ class YouTubeBridge(
 
   fun mapState(original: PlayerState): Int {
     return when (original) {
-      PLAYING -> Playable.STATE_READY
-      BUFFERING -> Playable.STATE_BUFFERING
-      ENDED -> Playable.STATE_END
-      PAUSED -> Playable.STATE_READY
-      else -> Playable.STATE_IDLE
+      PLAYING -> Common.STATE_READY
+      BUFFERING -> Common.STATE_BUFFERING
+      ENDED -> Common.STATE_ENDED
+      PAUSED -> Common.STATE_READY
+      else -> Common.STATE_IDLE
     }
   }
 
@@ -95,7 +95,7 @@ class YouTubeBridge(
       }
   )
 
-  override var playerView: YouTubePlayerView? = null
+  override var renderer: YouTubePlayerView? = null
     set(value) {
       if (field === value) return
       if (value == null) player = null
@@ -120,7 +120,7 @@ class YouTubeBridge(
 
   override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
-  override var repeatMode: Int by Delegates.observable(Playable.REPEAT_MODE_OFF,
+  override var repeatMode: Int by Delegates.observable(Common.REPEAT_MODE_OFF,
       onChange = { _, _, _ -> /* youtube library doesn't have looping support */ })
 
   override val playbackState: Int
@@ -158,7 +158,7 @@ class YouTubeBridge(
   override fun play() {
     if (tracker.state !== PLAYING || tracker.videoId != media.uri.toString()) {
       val player = this.player
-      val playerView = requireNotNull(playerView)
+      val playerView = requireNotNull(renderer)
       if (tracker.videoId == media.uri.toString() && player != null) {
         player.play()
       } else {

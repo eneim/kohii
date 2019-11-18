@@ -22,7 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.setPadding
 import androidx.viewpager.widget.PagerAdapter
-import com.google.android.exoplayer2.Player
+import kohii.core.Common
 import kohii.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -73,7 +73,7 @@ class ViewPager1WithViewsFragment : BaseFragment() {
             tag = itemTag
             delay = 500
             preload = true
-            repeatMode = Player.REPEAT_MODE_ONE
+            repeatMode = Common.REPEAT_MODE_ONE
           }
           .bind(view.videoFrame)
       return view

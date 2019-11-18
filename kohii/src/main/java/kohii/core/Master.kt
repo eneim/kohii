@@ -36,7 +36,6 @@ import androidx.core.net.toUri
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
 import kohii.core.Binder.Options
@@ -46,9 +45,7 @@ import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.v1.Kohii
 import kohii.v1.PendingState
-import kohii.v1.Scope
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
@@ -161,7 +158,6 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   val app = context.applicationContext as Application
-  val kohii = Kohii[app]
 
   internal val groups = mutableSetOf<Group>()
   internal val playables = mutableMapOf<Playable<*>, Any /* Playable tag */>()
@@ -265,6 +261,9 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
       playablesStartedByClient.remove(playable.tag)
       playablesPendingStates.remove(playable.tag)
     }
+
+    // TODO consider to cleanup Engines if no more Playables available.
+    if (playables.isEmpty()) cleanUp()
   }
 
   internal fun trySavePlaybackInfo(playable: Playable<*>) {
@@ -281,7 +280,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     if (playable.tag === NO_TAG) return
     val cache = playbackInfoStore.remove(playable.tag)
     // Only restoring playback state if there is cached state, and the player is not ready yet.
-    if (cache != null && playable.playerState <= Player.STATE_IDLE /* TODO change to internal const */) {
+    if (cache != null && playable.playerState <= Common.STATE_IDLE /* TODO change to internal const */) {
       "Master#tryRestorePlaybackInfo $cache, $playable".logInfo()
       playable.playbackInfo = cache
     }
@@ -325,9 +324,13 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   @Suppress("UNUSED_PARAMETER")
   internal fun onGroupUpdated(group: Group) {
     // If no Manager is online, cleanup stuffs
-    if (groups.map { it.managers }.isEmpty() && playables.isEmpty() /* TODO double check this */) {
-      kohii.cleanUp()
+    if (groups.map { it.managers }.isEmpty() && playables.isEmpty()) {
+      cleanUp()
     }
+  }
+
+  private fun cleanUp() {
+    engines.forEach { it.value.cleanUp() }
   }
 
   internal fun preparePlayable(
@@ -382,27 +385,13 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     return if (tag == null) null else requestDefaultEngine().creator.createRebinder(tag)
   }
 
-  @Suppress("MemberVisibilityCanBePrivate", "unused")
-  fun <RENDERER : Any> registerEngine(
-    key: Class<RENDERER>,
-    engine: Engine<RENDERER>
-  ) {
-    engines[key] = engine
-  }
-
-  @Suppress("unused")
-  fun <RENDERER : Any> unregisterEngine(engine: Engine<RENDERER>) {
-    engines.filter { it.value === engine }
-        .keys.forEach { engines.remove(it) }
-  }
-
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
   fun play(playable: Playable<*>) {
     val controller = playable.playback?.config?.controller
     if (playable.tag !== NO_TAG && controller != null) {
       requireNotNull(playable.playback).also {
         if (it.token.shouldPrepare()) playable.onReady()
-        playablesPendingStates[playable.tag] = Kohii.PENDING_PLAY
+        playablesPendingStates[playable.tag] = Common.PENDING_PLAY
         if (!controller.kohiiCanPause()) playablesStartedByClient.add(playable.tag)
         it.manager.refresh()
       }
@@ -413,7 +402,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   fun pause(playable: Playable<*>) {
     val controller = playable.playback?.config?.controller
     if (playable.tag !== NO_TAG && controller != null) {
-      playablesPendingStates[playable.tag] = Kohii.PENDING_PAUSE
+      playablesPendingStates[playable.tag] = Common.PENDING_PAUSE
       playablesStartedByClient.remove(playable.tag)
       requireNotNull(playable.playback).manager.refresh()
     }

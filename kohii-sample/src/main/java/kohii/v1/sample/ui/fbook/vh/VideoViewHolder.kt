@@ -22,8 +22,8 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
-import com.google.android.exoplayer2.Player
 import kohii.core.Binder.Options
+import kohii.core.Common
 import kohii.core.Manager
 import kohii.core.Master
 import kohii.core.Playback
@@ -91,7 +91,7 @@ internal class VideoViewHolder(
             .bind(playerView) { pk ->
               volume.isSelected = !pk.volumeInfo.mute
               pk.addPlaybackListener(this@VideoViewHolder)
-              playAgain.isVisible = pk.playerState == Player.STATE_ENDED
+              playAgain.isVisible = pk.playerState == Common.STATE_ENDED
               playback = pk
             }
       }
@@ -99,7 +99,7 @@ internal class VideoViewHolder(
   }
 
   override fun beforePlay(playback: Playback) {
-    if (playback.playerState != Player.STATE_ENDED) {
+    if (playback.playerState != Common.STATE_ENDED) {
       thumbnail.isVisible = false
       playAgain.isVisible = false
     }

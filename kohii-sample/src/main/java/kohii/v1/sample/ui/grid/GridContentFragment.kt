@@ -77,9 +77,10 @@ class GridContentFragment : BaseFragment() {
     master.register(this, MemoryMode.BALANCED)
         .attach(container)
 
+    val spanCount = resources.getInteger(R.integer.grid_span)
     val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
       override fun getSpanSize(position: Int): Int {
-        return if (position % 6 == 3) 2 else 1
+        return if (position % 6 == 3 || position % 6 == spanCount) 2 else 1
       }
     }
 

@@ -16,10 +16,10 @@
 
 package kohii.v1.yt1
 
+import kohii.core.Creator
 import kohii.core.Master
 import kohii.core.Playable
 import kohii.core.Playable.Config
-import kohii.core.Creator
 import kohii.core.Rebinder
 import kohii.media.Media
 import kotlinx.android.parcel.Parcelize
@@ -44,5 +44,9 @@ class YouTube1PlayableCreator : Creator<YouTubePlayerFragment>(
 
   override fun createRebinder(tag: Any): Rebinder<YouTubePlayerFragment> {
     return YouTube1Rebinder(tag)
+  }
+
+  override fun cleanUp() {
+    // nothing to doo
   }
 }

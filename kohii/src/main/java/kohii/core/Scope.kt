@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.core
 
-// These scopes will be used for global actions.
-@Suppress("unused")
-enum class Scope(val priority: Int) {
-  GLOBAL(1),
-  GROUP(2),
-  MANAGER(3),
-  HOST(4),
-  PLAYBACK(5)
+enum class Scope {
+  GLOBAL,
+  GROUP,
+  MANAGER,
+  HOST,
+  PLAYBACK
 }

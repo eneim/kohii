@@ -20,9 +20,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.core.Common
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Rebinder
@@ -62,7 +62,7 @@ class VideoViewHolder(
           .with {
             tag = itemTag
             preload = true
-            repeatMode = Player.REPEAT_MODE_ONE
+            repeatMode = Common.REPEAT_MODE_ONE
             callbacks = arrayOf(this@VideoViewHolder)
           }
           .bind(playerView) {

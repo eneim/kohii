@@ -21,8 +21,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import kohii.core.Common
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.v1.Prioritized
@@ -98,7 +98,7 @@ class PageFragment : BaseFragment(), Prioritized {
         .with {
           tag = videoTag
           delay = 500
-          repeatMode = Player.REPEAT_MODE_ONE
+          repeatMode = Common.REPEAT_MODE_ONE
           preload = true
         }
         .bind(playerView) { playback = it }

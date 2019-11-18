@@ -23,7 +23,6 @@ import androidx.annotation.FloatRange
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
-import com.google.android.exoplayer2.Player
 import kohii.core.Host.Companion.BOTH_AXIS
 import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
@@ -104,7 +103,7 @@ abstract class Playback(
     val delay: Int = 0,
     val threshold: Float = 0.65F,
     val preload: Boolean = false,
-    val repeatMode: Int = Player.REPEAT_MODE_OFF,
+    val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val controller: Controller? = null,
     val callbacks: Array<Callback> = emptyArray()
   ) {
@@ -324,7 +323,7 @@ abstract class Playback(
   val tag = config.tag
 
   val playerState: Int
-    get() = playable?.playerState ?: Player.STATE_IDLE
+    get() = playable?.playerState ?: Common.STATE_IDLE
 
   val volumeInfo: VolumeInfo
     get() = volumeInfoUpdater
@@ -375,17 +374,17 @@ abstract class Playback(
   ) {
     "Playback#onPlayerStateChanged $playWhenReady - $playbackState, $this".logDebug()
     when (playbackState) {
-      Player.STATE_IDLE -> {
+      Common.STATE_IDLE -> {
       }
-      Player.STATE_BUFFERING -> {
+      Common.STATE_BUFFERING -> {
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       }
-      Player.STATE_READY -> {
+      Common.STATE_READY -> {
         listeners.forEach {
           if (playWhenReady) it.onPlaying(this@Playback) else it.onPaused(this@Playback)
         }
       }
-      Player.STATE_ENDED -> {
+      Common.STATE_ENDED -> {
         listeners.forEach { it.onEnded(this@Playback) }
       }
     }

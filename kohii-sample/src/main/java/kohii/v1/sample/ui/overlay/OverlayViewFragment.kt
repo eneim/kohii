@@ -34,8 +34,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.PlayerViewRebinder
+import kohii.core.Scope
 import kohii.media.VolumeInfo
-import kohii.v1.Scope
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment

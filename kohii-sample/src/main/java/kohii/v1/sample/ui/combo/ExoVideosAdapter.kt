@@ -19,7 +19,7 @@ package kohii.v1.sample.ui.combo
 import android.net.Uri
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.google.android.exoplayer2.Player
+import kohii.core.Common
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Playback.Callback
@@ -64,7 +64,7 @@ class ExoVideosAdapter(
         .with {
           tag = itemTag
           // preLoad = false
-          repeatMode = Player.REPEAT_MODE_ONE
+          repeatMode = Common.REPEAT_MODE_ONE
           callbacks += object : Callback {
             override fun onRemoved(playback: Playback) {
               playback.removePlaybackListener(holder)

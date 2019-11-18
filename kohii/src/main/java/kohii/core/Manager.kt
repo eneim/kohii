@@ -32,15 +32,14 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kohii.core.Master.MemoryMode
 import kohii.core.Master.MemoryMode.LOW
+import kohii.core.Scope.GLOBAL
+import kohii.core.Scope.GROUP
+import kohii.core.Scope.HOST
+import kohii.core.Scope.MANAGER
+import kohii.core.Scope.PLAYBACK
 import kohii.media.VolumeInfo
 import kohii.partitionToMutableSets
 import kohii.v1.Prioritized
-import kohii.v1.Scope
-import kohii.v1.Scope.GLOBAL
-import kohii.v1.Scope.GROUP
-import kohii.v1.Scope.HOST
-import kohii.v1.Scope.MANAGER
-import kohii.v1.Scope.PLAYBACK
 import java.util.ArrayDeque
 import kotlin.properties.Delegates
 
@@ -303,7 +302,7 @@ class Manager(
     playback: Playback,
     playable: Playable<RENDERER>
   ) {
-    val renderer = playable.bridge.playerView
+    val renderer = playable.bridge.renderer
     if (playback.detachRenderer(renderer)) {
       group.findRendererProvider(playable)
           .releaseRenderer(playback, playable.media, renderer)
@@ -364,6 +363,18 @@ class Manager(
     playbacks.forEach { if (it.value.host === host) it.value.volumeInfoUpdater = volumeInfo }
   }
 
+  /**
+   * Apply a specific [VolumeInfo] to all Playbacks in a [Scope].
+   * - The smaller a scope's priority is, the wider applicable range it will be.
+   * - Applying new [VolumeInfo] to smaller [Scope] will change [VolumeInfo] of Playbacks in that [Scope].
+   * - If the [Scope] is from [Scope.HOST], any new [Playback] added to that [Host] will be configured
+   * with the updated [VolumeInfo].
+   *
+   * @param target is the container to apply new [VolumeInfo] to. This must be set together with the [Scope].
+   * For example, if client wants to apply the [VolumeInfo] to [Scope.PLAYBACK], the receiver must be the [Playback]
+   * to apply to. If client wants to apply to [Scope.HOST], the receiver must be either the [Playback] inside that [Host],
+   * or the root object of a [Host].
+   */
   fun applyVolumeInfo(
     volumeInfo: VolumeInfo,
     target: Any,

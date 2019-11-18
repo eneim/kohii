@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.pagers
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.google.android.exoplayer2.Player
+import kohii.core.Common
 import kohii.core.Master
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseViewHolder
@@ -67,7 +67,7 @@ internal class ItemsAdapter(
       master.setUp(assetVideoUri)
           .with {
             tag = requireNotNull(videoTag)
-            repeatMode = Player.REPEAT_MODE_ONE
+            repeatMode = Common.REPEAT_MODE_ONE
           }
           .bind(holder.container) {
             it.addPlaybackListener(holder)

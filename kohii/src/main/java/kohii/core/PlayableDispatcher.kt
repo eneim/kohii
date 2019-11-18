@@ -19,7 +19,6 @@ package kohii.core
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import kohii.v1.Kohii
 import kotlin.LazyThreadSafetyMode.NONE
 
 internal class PlayableDispatcher(val master: Master) : Handler.Callback {
@@ -61,12 +60,12 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
 
       val nextState = master.playablesPendingStates[playable.tag]
       if (nextState != null) { // We set a flag somewhere by User/Client reaction.
-        if (nextState == Kohii.PENDING_PLAY) justPlay(playable)
+        if (nextState == Common.PENDING_PLAY) justPlay(playable)
         else justPause(playable)
       } else {
         // no history of User action, let's determine next action by System
         if (controller.kohiiCanStart()) {
-          master.playablesPendingStates[playable.tag] = Kohii.PENDING_PLAY
+          master.playablesPendingStates[playable.tag] = Common.PENDING_PLAY
           // If we come here from a manual start, master.playableStartedByClient must
           // contains the playable tag already.
           // if (!controller.kohiiCanPause()) {
@@ -98,7 +97,7 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
       }
 
       val nextState = master.playablesPendingStates[playable.tag]
-      if (nextState != null && nextState == Kohii.PENDING_PAUSE) {
+      if (nextState != null && nextState == Common.PENDING_PAUSE) {
         justPause(playable)
       } else if (controller.kohiiCanPause()) {
         justPause(playable)

@@ -30,4 +30,6 @@ abstract class Creator<RENDERER : Any>(
   ): Playable<RENDERER>
 
   abstract fun createRebinder(tag: Any): Rebinder<RENDERER>
+
+  abstract fun cleanUp()
 }

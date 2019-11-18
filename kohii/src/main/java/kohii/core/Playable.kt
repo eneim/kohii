@@ -63,9 +63,9 @@ abstract class Playable<RENDERER : Any>(
   }
 
   /**
-   * Return **true** to indicate that this Playable would survive configuration changes and no
+   * Return `true` to indicate that this Playable would survive configuration changes and no
    * playback reloading would be required. In special cases like YouTube playback, it is recommended
-   * to return **false** so Kohii will handle the resource recycling correctly.
+   * to return `false` so Kohii will handle the resource recycling correctly.
    */
   protected open fun onConfigChange(): Boolean {
     "Playable#onConfigChange $this".logInfo()
@@ -225,9 +225,9 @@ abstract class Playable<RENDERER : Any>(
   open fun considerRequestRenderer(playback: Playback) {
     "Playable#considerRequestRenderer $playback, $this".logInfo()
     require(playback === this.playback)
-    if (bridge.playerView == null || manager !== playback.manager) { // Only request for Renderer if we do not have one.
+    if (bridge.renderer == null || manager !== playback.manager) { // Only request for Renderer if we do not have one.
       val renderer = playback.manager.requestRenderer(playback, this)
-      bridge.playerView = renderer
+      bridge.renderer = renderer
     }
   }
 
@@ -266,9 +266,9 @@ abstract class Playable<RENDERER : Any>(
   open fun considerReleaseRenderer(playback: Playback) {
     "Playable#considerReleaseRenderer $playback, $this".logInfo()
     require(this.playback == null || this.playback === playback)
-    if (bridge.playerView != null) { // Only release the Renderer if we do have one to release.
+    if (bridge.renderer != null) { // Only release the Renderer if we do have one to release.
       playback.manager.releaseRenderer(playback, this)
-      bridge.playerView = null
+      bridge.renderer = null
     }
   }
 

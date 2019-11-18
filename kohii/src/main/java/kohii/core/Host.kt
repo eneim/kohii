@@ -22,13 +22,17 @@ import android.view.View.OnAttachStateChangeListener
 import android.view.View.OnLayoutChangeListener
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
+import androidx.core.view.doOnAttach
+import androidx.core.view.doOnDetach
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
+import kohii.findCoordinatorLayoutDirectChildContainer
 import kohii.media.VolumeInfo
-import kohii.v1.Kohii
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
@@ -72,6 +76,14 @@ abstract class Host constructor(
   }
 
   private val containers = mutableSetOf<Any>()
+
+  // The direct child of CoordinatorLayout that is an ancestor of this root if exist.
+  private val rootContainer: CoordinatorLayout? by lazy(NONE) {
+    val found = findCoordinatorLayoutDirectChildContainer(
+        manager.group.activity.window.peekDecorView(), root
+    )
+    return@lazy if (found is CoordinatorLayout) found else null
+  }
 
   abstract fun accepts(container: ViewGroup): Boolean
 
@@ -126,8 +138,21 @@ abstract class Host constructor(
 
   @CallSuper
   open fun onAdded() {
-    // this.volumeInfoUpdater = manager.volumeInfo
-    // TODO setup support for CoordinatorLayout
+    val containerParam = rootContainer?.layoutParams
+    if (containerParam is CoordinatorLayout.LayoutParams) {
+      root.doOnAttach {
+        if (containerParam.behavior is ScrollingViewBehavior) {
+          val behaviorWrapper = BehaviorWrapper(containerParam.behavior!!, manager)
+          containerParam.behavior = behaviorWrapper
+        }
+      }
+
+      root.doOnDetach {
+        if (containerParam.behavior is BehaviorWrapper) {
+          (containerParam.behavior as BehaviorWrapper).onDetach()
+        }
+      }
+    }
   }
 
   @CallSuper
@@ -167,7 +192,7 @@ abstract class Host constructor(
     val manualCandidates = with(grouped.getValue(true)) {
       val started = asSequence()
           .find {
-            manager.master.playablesPendingStates[it.tag] == Kohii.PENDING_PLAY ||
+            manager.master.playablesPendingStates[it.tag] == Common.PENDING_PLAY ||
                 // Started by client.
                 manager.master.playablesStartedByClient.contains(it.tag)
           }
