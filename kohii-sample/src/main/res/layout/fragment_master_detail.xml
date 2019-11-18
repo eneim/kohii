@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,45 +14,33 @@
   ~ limitations under the License.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     >
 
-  <fragment
+  <androidx.fragment.app.FragmentContainerView
       android:id="@+id/topContainer"
-      android:name="kohii.v1.sample.ui.pager1.Pager1Fragment"
       android:layout_width="0dp"
       android:layout_height="0dp"
+      android:background="@color/card_dark_background"
+      android:elevation="2dp"
       app:layout_constraintDimensionRatio="16:10"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       />
 
-  <Space
-      android:id="@+id/space"
-      android:layout_width="0dp"
-      android:layout_height="4dp"
-      android:background="@color/red"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/topContainer"
-      />
-
-  <fragment
+  <androidx.fragment.app.FragmentContainerView
       android:id="@+id/bottomContainer"
-      android:name="kohii.v1.sample.ui.overlay.OverlayViewFragment"
       android:layout_width="0dp"
       android:layout_height="0dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/space"
+      app:layout_constraintTop_toBottomOf="@id/topContainer"
       />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

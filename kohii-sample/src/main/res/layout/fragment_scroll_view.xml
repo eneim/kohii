@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +14,10 @@
   ~ limitations under the License.
   -->
 
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@id/scrollView"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -32,15 +30,16 @@
       android:orientation="vertical"
       >
 
-    <FrameLayout
-        android:id="@id/playerContainer"
+    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+        android:id="@+id/playerContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
         android:focusable="true"
+        app:resize_mode="fixed_width"
         >
       <com.google.android.exoplayer2.ui.PlayerView
-          android:id="@id/playerView"
+          android:id="@+id/playerView"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:minHeight="171.4dp"
@@ -50,10 +49,10 @@
           app:surface_type="texture_view"
           app:use_controller="false"
           />
-    </FrameLayout>
+    </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
 
     <TextView
-        android:id="@id/textContent"
+        android:id="@+id/textContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"

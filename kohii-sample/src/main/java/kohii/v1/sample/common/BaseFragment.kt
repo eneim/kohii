@@ -17,7 +17,9 @@
 package kohii.v1.sample.common
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -80,3 +82,10 @@ open class BaseFragment : Fragment() {
 }
 
 fun BaseFragment.getApp() = this.requireActivity().application as DemoApp
+
+fun Fragment.checkOverlayPermission(): Boolean {
+  if (Build.VERSION.SDK_INT < 23) {
+    return true
+  }
+  return Settings.canDrawOverlays(this.requireContext())
+}

@@ -18,7 +18,6 @@ package kohii.v1.exo
 
 import com.google.android.exoplayer2.Player
 import kohii.media.Media
-import kohii.v1.Cleanable
 
 /**
  * @author eneim (2018/10/27).
@@ -26,7 +25,7 @@ import kohii.v1.Cleanable
  * A Pool to store unused Player instance. As initializing a Player is relatively expensive,
  * we try to cache them for reuse.
  */
-interface ExoPlayerProvider : Cleanable {
+interface ExoPlayerProvider {
 
   fun acquirePlayer(media: Media): Player
 
@@ -34,4 +33,6 @@ interface ExoPlayerProvider : Cleanable {
     media: Media,
     player: Player
   )
+
+  fun cleanUp()
 }

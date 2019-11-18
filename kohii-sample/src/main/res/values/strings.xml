@@ -19,6 +19,12 @@
 
   <item name="motion_view_tag" format="integer" type="id" />
 
+  <string name="small_text">
+    "All material objects, regardless of size, have a resting elevation, or default elevation "
+    "that does not change. If an object changes elevation, it should return to its resting "
+    "elevation as soon as possible."
+  </string>
+
   <string name="large_text">
     "A material metaphor is the unifying theory of a rationalized space and a system of motion."
     "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
@@ -125,8 +131,17 @@
     ]]>
   </string>
 
+  <string name="demo_title_recycler_view_0">
+    Kohii + RecyclerView (Grid)
+  </string>
+
+  <string name="demo_desc_recycler_view_0">
+    RecyclerView (Grid) shows a grid with both text and Videos. Video item will have span of 2 and when click to it, it will
+    show a dialog and keep playing the Video there.
+  </string>
+
   <string name="demo_title_recycler_view_1">
-    Kohii + RecyclerView (1)
+    Kohii + RecyclerView (List)
   </string>
 
   <string name="demo_desc_recycler_view_1">
@@ -178,7 +193,7 @@
   </string>
 
   <string name="demo_desc_pager_1">
-    Pager (1) shows how Kohii could work in ViewPager. Each page will start the Playback with 500ms
+    Pager (1) shows how Kohii could work in ViewPager where pages are Fragments. Each page will start the Playback with 500ms
     delay.\n\nThis demo also shows different layout in landscape and portrait orientation,
     while the Playback keeps playing smoothly.\n\nVideos are from Caminandes (CC 3.0 open movie).
   </string>
@@ -261,5 +276,13 @@
 
   <string name="demo_desc_youtube_2">
     Kohii with YouTube videos using https://github.com/PierfrancescoSoffritti/android-youtube-player library.
+  </string>
+
+  <string name="demo_title_debug">
+    Kohii + Debug
+  </string>
+
+  <string name="demo_desc_debug">
+    Debug Kohii
   </string>
 </resources>

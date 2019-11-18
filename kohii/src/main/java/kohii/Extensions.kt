@@ -16,20 +16,21 @@
 
 package kohii
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.graphics.Rect
 import android.util.Log
 import android.view.View
-import android.view.View.OnAttachStateChangeListener
-import androidx.collection.SparseArrayCompat
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.Pools.Pool
-import androidx.core.view.ViewCompat
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig
 import kohii.v1.PlayerEventListener
-import kohii.v1.Rebinder
 import kohii.v1.VolumeInfoController
+import kotlin.math.abs
 
 /**
  * @author eneim (2018/10/27).
@@ -76,18 +77,6 @@ fun Player.removeEventListener(listener: PlayerEventListener?) {
   this.metadataComponent?.removeMetadataOutput(listener)
 }
 
-inline fun <reified RENDERER : Any> Rebinder<*>?.safeCast(): Rebinder<RENDERER>? {
-  @Suppress("UNCHECKED_CAST")
-  if (this?.rendererType === RENDERER::class.java) return this as Rebinder<RENDERER>
-  return null
-}
-
-inline fun <reified RENDERER : Any> Rebinder<*>?.forceCast(): Rebinder<RENDERER> {
-  require(this != null && this.rendererType === RENDERER::class.java)
-  @Suppress("UNCHECKED_CAST")
-  return this as Rebinder<RENDERER>
-}
-
 inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   var item: T?
   do {
@@ -97,9 +86,8 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   } while (true)
 }
 
-// Return a View that is ancestor of target, and has direct parent is a CoordinatorLayout
-@Suppress("unused")
-fun findSuitableParent(
+// Return a View that is ancestor of container, and has direct parent is a CoordinatorLayout
+fun findCoordinatorLayoutDirectChildContainer(
   root: View,
   target: View?
 ): View? {
@@ -120,88 +108,55 @@ fun findSuitableParent(
   return null
 }
 
-internal inline fun View.doOnAttach(crossinline action: (View) -> Unit) {
-  if (ViewCompat.isAttachedToWindow(this)) {
-    action(this)
-  } else {
-    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
-      override fun onViewDetachedFromWindow(v: View?) {
-        // ignore
-      }
-
-      override fun onViewAttachedToWindow(v: View?) {
-        v?.removeOnAttachStateChangeListener(this)
-        action(this@doOnAttach)
-      }
-    })
-  }
-}
-
-internal inline fun View.doOnDetach(crossinline action: (View) -> Unit) {
-  if (!ViewCompat.isAttachedToWindow(this)) {
-    action(this)
-  } else {
-    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
-      override fun onViewDetachedFromWindow(v: View?) {
-        v?.removeOnAttachStateChangeListener(this)
-        action(this@doOnDetach)
-      }
-
-      override fun onViewAttachedToWindow(v: View?) {
-        // ignore
-      }
-    })
-  }
-}
-
-inline fun <E> SparseArrayCompat<E>.getOrPut(
-  key: Int,
-  creator: () -> E
-): E {
-  var result = this[key]
-  if (result == null) {
-    result = creator.invoke()
-    this.put(key, result)
-  }
-  return result!!
-}
-
-inline fun <E> SparseArrayCompat<E>.forEach(actor: (E, Int) -> Unit) {
-  val size = this.size()
-  if (size > 0) {
-    for (index in 0 until size) {
-      val key = this.keyAt(index)
-      val value = this.valueAt(index)
-      actor.invoke(value, key)
+internal inline fun <T, R> Iterable<T>.partitionToMutableSets(
+  predicate: (T) -> Boolean,
+  transform: (T) -> R
+): Pair<MutableSet<R>, MutableSet<R>> {
+  val first = mutableSetOf<R>()
+  val second = mutableSetOf<R>()
+  for (element in this) {
+    if (predicate(element)) {
+      first.add(transform(element))
+    } else {
+      second.add(transform(element))
     }
   }
+  return Pair(first, second)
 }
 
-fun <T> Set<T>.plusNotNull(element: T?): Set<T> {
-  if (element != null) return this + element
-  return this
+internal infix fun Rect.distanceTo(target: Pair<Pair<Int, Int>, Pair<Int, Int>>): Int {
+  val (targetCenterX, targetHalfWidth) = target.first
+  val (targetCenterY, targetHalfHeight) = target.second
+  val distanceX = abs(this.centerX() - targetCenterX) / targetHalfWidth
+  val distanceY = abs(this.centerY() - targetCenterY) / targetHalfHeight
+  return distanceX + distanceY // no need to be the fancy Euclid sqrt distance.
+}
+
+// Learn from Glide: com/bumptech/glide/manager/RequestManagerRetriever.java#L304
+fun Context.findActivity(): Activity? {
+  return if (this is Activity) this else if (this is ContextWrapper) baseContext.findActivity() else null
 }
 
 // Because I want to compose the message first, then log it.
-internal fun String.logDebug(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logDebug(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.d(tag, this)
   }
 }
 
-internal fun String.logInfo(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logInfo(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.i(tag, this)
   }
 }
 
-internal fun String.logWarn(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logWarn(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.w(tag, this)
   }
 }
 
-internal fun String.logError(tag: String = BuildConfig.LIBRARY_PACKAGE_NAME) {
+internal fun String.logError(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.e(tag, this)
   }

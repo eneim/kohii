@@ -16,13 +16,15 @@
 
 package kohii.v1
 
+import android.content.Context
 import kohii.media.Media
 
 interface BridgeProvider<RENDERER : Any> {
 
   fun provideBridge(
-    kohii: Kohii,
-    media: Media,
-    config: Playable.Config
+    context: Context,
+    media: Media
   ): Bridge<RENDERER>
+
+  fun cleanUp()
 }

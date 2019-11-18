@@ -18,16 +18,16 @@ package kohii.v1
 
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackParameters
+import com.google.android.exoplayer2.Player.RepeatMode
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
-import kohii.v1.Playable.RepeatMode
 
 interface Bridge<RENDERER : Any> {
 
   val playbackState: Int
 
   //  set/get
-  var playerView: RENDERER?
+  var renderer: RENDERER?
 
   // set/get
   var playbackInfo: PlaybackInfo
@@ -58,7 +58,7 @@ interface Bridge<RENDERER : Any> {
   fun prepare(loadSource: Boolean)
 
   // Ensure resource is ready to play. PlaybackDispatcher will require this for manual playback.
-  fun ensurePreparation()
+  fun ready()
 
   /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to true */
   fun play()
@@ -70,7 +70,7 @@ interface Bridge<RENDERER : Any> {
    * Reset all resource, so that the playback can start all over again. This is to cleanup the
    * playback for reuse. The ExoPlayer instance must be still usable without calling [prepare].
    */
-  fun reset()
+  fun reset(resetPlayer: Boolean = true)
 
   /**
    * Release all resource. After this, the Player instance is released to the Player pool and the

@@ -47,6 +47,32 @@ allprojects {
   }
 
   apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
+
+  tasks.withType(JavaCompile).configureEach { task ->
+    task.sourceCompatibility = JavaVersion.VERSION_1_8
+    task.targetCompatibility = JavaVersion.VERSION_1_8
+  }
+
+  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach { task ->
+    task.kotlinOptions {
+      jvmTarget = "1.8"
+    }
+  }
+
+  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile).configureEach { task ->
+    task.kotlinOptions {
+      freeCompilerArgs += [
+          '-XXLanguage:+InlineClasses',
+          '-Xjvm-default=enable'
+      ]
+    }
+  }
+
+  tasks.withType(Test) {
+    testLogging {
+      events "skipped", "failed", "passed"
+    }
+  }
 }
 
 task clean(type: Delete) {

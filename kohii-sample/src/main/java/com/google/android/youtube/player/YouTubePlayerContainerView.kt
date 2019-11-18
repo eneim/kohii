@@ -20,7 +20,6 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
@@ -33,9 +32,7 @@ class YouTubePlayerContainerView @JvmOverloads constructor(
   context: Context,
   attrs: AttributeSet? = null,
   defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr),
-    YouTubePlayer.Provider,
-    LifecycleObserver {
+) : FrameLayout(context, attrs, defStyleAttr), YouTubePlayer.Provider, LifecycleObserver {
 
   internal var activity: Activity =
     context as? Activity ?: throw IllegalArgumentException("Need Activity")
@@ -72,7 +69,7 @@ class YouTubePlayerContainerView @JvmOverloads constructor(
     apiKey: String,
     onInitializedListener: YouTubePlayer.OnInitializedListener?
   ) {
-    if (this.playerView != null) this.playerView!!.initialize(apiKey, onInitializedListener)
+    this.playerView?.initialize(apiKey, onInitializedListener)
   }
 
   @OnLifecycleEvent(Lifecycle.Event.ON_START)
@@ -98,7 +95,6 @@ class YouTubePlayerContainerView @JvmOverloads constructor(
   @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
   internal fun onDestroy(owner: LifecycleOwner) {
     owner.lifecycle.removeObserver(this)
-    Log.w("Kohii::YTT", "destroyed: $playerView")
     this.playerView?.let {
       it.c(activity.isFinishing)
       it.removeAllViews()

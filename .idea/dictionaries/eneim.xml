@@ -11,6 +11,7 @@
       <w>dexcount</w>
       <w>emoji</w>
       <w>eneim</w>
+      <w>everytime</w>
       <w>exoplayer</w>
       <w>fbook</w>
       <w>firebase</w>
@@ -35,6 +36,7 @@
       <w>rebinder</w>
       <w>recyclerview</w>
       <w>renderers</w>
+      <w>roadmap</w>
       <w>robolectric</w>
       <w>rtmp</w>
       <w>smoothstreaming</w>
@@ -43,7 +45,9 @@
       <w>targethost</w>
       <w>textureview</w>
       <w>transcoder</w>
+      <w>unbinder</w>
       <w>unmute</w>
+      <w>unstick</w>
       <w>viewmodel</w>
     </words>
   </dictionary>

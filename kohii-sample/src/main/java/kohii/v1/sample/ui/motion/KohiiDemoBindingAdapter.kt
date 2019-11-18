@@ -20,9 +20,9 @@ import androidx.core.view.ViewCompat
 import androidx.databinding.BindingAdapter
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.core.Common
+import kohii.core.Master
 import kohii.media.MediaItem
-import kohii.v1.Kohii
-import kohii.v1.Playable
 import kohii.v1.sample.R
 
 /**
@@ -35,17 +35,15 @@ import kohii.v1.sample.R
 fun setVideo(
   view: PlayerView,
   video: Video,
-  kohii: Kohii
+  kohii: Master
 ) {
   (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)
       ?.setAspectRatio(video.width / video.height)
 
-  val rebinder = kohii.setUp(MediaItem(video.url, "mp4"))
-      .with {
-        tag = "${video.javaClass.canonicalName}::${video.url}"
-        preLoad = true
-        repeatMode = Playable.REPEAT_MODE_ONE
-      }
+  val rebinder = kohii.setUp(MediaItem(video.url, "mp4")) {
+    tag = "${video.javaClass.canonicalName}::${video.url}"
+    repeatMode = Common.REPEAT_MODE_ONE
+  }
       .bind(view)
   view.setTag(R.id.motion_view_tag, rebinder)
   ViewCompat.setTransitionName(view, video.url)

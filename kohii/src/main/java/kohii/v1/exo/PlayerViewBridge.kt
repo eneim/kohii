@@ -16,6 +16,7 @@
 
 package kohii.v1.exo
 
+import android.content.Context
 import android.util.Log
 import android.util.Pair
 import android.widget.Toast
@@ -34,6 +35,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.util.ErrorMessageProvider
 import kohii.addEventListener
+import kohii.core.Common
 import kohii.getVolumeInfo
 import kohii.media.Media
 import kohii.media.PlaybackInfo
@@ -43,8 +45,6 @@ import kohii.media.VolumeInfo
 import kohii.removeEventListener
 import kohii.setVolumeInfo
 import kohii.v1.BaseBridge
-import kohii.v1.Kohii
-import kohii.v1.Playable
 import kohii.v1.PlayerEventListener
 import kohii.v1.R
 import kohii.v1.VolumeInfoController
@@ -53,9 +53,8 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 internal open class PlayerViewBridge(
-  kohii: Kohii,
+  context: Context,
   private val media: Media,
   private val playerProvider: ExoPlayerProvider,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
@@ -73,21 +72,21 @@ internal open class PlayerViewBridge(
     }
   }
 
-  private val context = kohii.app
+  private val context = context.applicationContext
   private val mediaSourceFactory = mediaSourceFactoryProvider.provideMediaSourceFactory(media)
 
   private var listenerApplied = false
   private var sourcePrepared = false
 
   private var _playbackInfo = PlaybackInfo() // Backing field for PlaybackInfo set/get
-  private var _repeatMode = Playable.REPEAT_MODE_OFF // Backing field
+  private var _repeatMode = Common.REPEAT_MODE_OFF // Backing field
   private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
-
-  internal var mediaSource: MediaSource? = null
-  internal var player: Player? = null
+  private var mediaSource: MediaSource? = null
 
   private var lastSeenTrackGroupArray: TrackGroupArray? = null
   private var inErrorState = false
+
+  internal var player: Player? = null
 
   override val playbackState: Int
     get() = player?.playbackState ?: -1
@@ -109,7 +108,7 @@ internal open class PlayerViewBridge(
     this.inErrorState = false
   }
 
-  override var playerView: PlayerView? = null
+  override var renderer: PlayerView? = null
     set(value) {
       if (field === value) return // same reference
       this.lastSeenTrackGroupArray = null
@@ -130,25 +129,26 @@ internal open class PlayerViewBridge(
       field?.setErrorMessageProvider(this)
     }
 
-  override fun ensurePreparation() {
+  override fun ready() {
     prepareMediaSource()
     requireNotNull(player) { "Player must be available." }
     ensurePlayerView()
   }
 
   override fun play() {
-    player!!.playWhenReady = true
+    requireNotNull(player).playWhenReady = true
   }
 
   override fun pause() {
     if (sourcePrepared) player?.playWhenReady = false
   }
 
-  override fun reset() {
-    _playbackInfo.reset()
+  override fun reset(resetPlayer: Boolean) {
+    if (resetPlayer) _playbackInfo = PlaybackInfo()
+    else updatePlaybackInfo()
     player?.also {
       it.setVolumeInfo(VolumeInfo(false, 1.0F))
-      it.stop(true)
+      it.stop(resetPlayer)
     }
     this.mediaSource = null // So it will be re-prepared later.
     this.sourcePrepared = false
@@ -158,7 +158,9 @@ internal open class PlayerViewBridge(
 
   override fun release() {
     this.removeEventListener(this)
-    this.playerView = null
+    // this.playerView = null // Bridge's owner must do this.
+    this.renderer?.player = null
+    _playbackInfo = PlaybackInfo()
     player?.also {
       if (listenerApplied) {
         it.removeEventListener(eventListeners)
@@ -223,9 +225,7 @@ internal open class PlayerViewBridge(
     playbackInfo: PlaybackInfo,
     volumeOnly: Boolean
   ) {
-    _playbackInfo.resumeWindow = playbackInfo.resumeWindow
-    _playbackInfo.resumePosition = playbackInfo.resumePosition
-    _playbackInfo.volumeInfo = playbackInfo.volumeInfo
+    _playbackInfo = playbackInfo
 
     player?.also {
       it.setVolumeInfo(_playbackInfo.volumeInfo)
@@ -247,16 +247,17 @@ internal open class PlayerViewBridge(
 
   private fun updatePlaybackInfo() {
     player?.also {
-      if (it.playbackState == Player.STATE_IDLE) return
-      _playbackInfo.resumeWindow = it.currentWindowIndex
-      _playbackInfo.resumePosition =
-        if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET
-      _playbackInfo.volumeInfo = it.getVolumeInfo()
+      if (it.playbackState == Common.STATE_IDLE) return
+      _playbackInfo = PlaybackInfo(
+          it.currentWindowIndex,
+          if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET,
+          it.getVolumeInfo()
+      )
     }
   }
 
   private fun ensurePlayerView() {
-    playerView?.also { if (it.player != this.player) it.player = this.player }
+    renderer?.also { if (it.player !== this.player) it.player = this.player }
   }
 
   private fun prepareMediaSource() {
@@ -268,7 +269,7 @@ internal open class PlayerViewBridge(
     }
 
     // Player is reset, need to prepare again.
-    if (player?.playbackState == Player.STATE_IDLE) {
+    if (player?.playbackState == Common.STATE_IDLE) {
       sourcePrepared = false
     }
 
@@ -288,7 +289,7 @@ internal open class PlayerViewBridge(
       player = playerProvider.acquirePlayer(this.media)
     }
 
-    player!!.also {
+    requireNotNull(player).also {
       if (!listenerApplied) {
         (player as? VolumeInfoController)?.addVolumeChangedListener(volumeListeners)
         it.addEventListener(eventListeners)
@@ -350,7 +351,7 @@ internal open class PlayerViewBridge(
 
   override fun onPlayerError(error: ExoPlaybackException?) {
     Log.e("Kohii::Bridge", "Error: ${error?.cause}")
-    if (playerView == null) {
+    if (renderer == null) {
       var errorString: String? = null
       if (error?.type == ExoPlaybackException.TYPE_RENDERER) {
         val exception = error.rendererException

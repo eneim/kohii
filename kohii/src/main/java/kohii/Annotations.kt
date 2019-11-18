@@ -34,8 +34,11 @@ annotation class Experiment
 annotation class Beta(val message: String = "")
 
 @Retention(SOURCE)
-annotation class Release
+annotation class Stable
 
 // Indicate that a resource is for use with ExoPlayer only.
 @Retention(SOURCE)
 annotation class ExoPlayer
+
+@Retention(SOURCE)
+annotation class Media2

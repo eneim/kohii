@@ -35,10 +35,4 @@ data class PlaybackInfo(
     const val TIME_UNSET = Long.MIN_VALUE + 1
     const val INDEX_UNSET = -1
   }
-
-  fun reset() {
-    resumeWindow = INDEX_UNSET
-    resumePosition = TIME_UNSET
-    volumeInfo = VolumeInfo.SCRAP
-  }
 }

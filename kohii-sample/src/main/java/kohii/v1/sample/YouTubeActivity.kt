@@ -24,7 +24,7 @@ import com.google.android.youtube.player.YouTubePlayer.OnInitializedListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.CHROMELESS
 import com.google.android.youtube.player.YouTubePlayer.Provider
 import kohii.v1.sample.common.BaseActivity
-import kohii.v1.ytb.YouTubePlayerFragment
+import kohii.v1.yt1.YouTubePlayerFragment
 
 class YouTubeActivity : BaseActivity() {
 

@@ -16,50 +16,47 @@
 
 package kohii.v1.sample.ui.mix
 
-import android.annotation.SuppressLint
 import android.net.Uri
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.view.get
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.core.Common
+import kohii.core.Master
 import kohii.media.MediaItem
-import kohii.v1.Kohii
-import kohii.v1.Playable
 import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseViewHolder
+import kohii.v1.sample.common.inflateView
+import kohii.v1.sample.data.DrmItem
+import kohii.v1.sample.data.Item
 
 /**
  * @author eneim (2018/07/06).
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
-  inflater: LayoutInflater,
   parent: ViewGroup,
-  val kohii: Kohii
+  val kohii: Master
 ) : BaseViewHolder(
-    inflater,
-    R.layout.holder_mix_view,
-    parent
+    parent,
+    R.layout.holder_mix_view
 ) {
 
-  val mediaName = itemView.findViewById(R.id.videoTitle) as TextView
-  val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
+  private val mediaName = itemView.findViewById(R.id.videoTitle) as TextView
+  private val playerContainer = itemView.findViewById(R.id.playerContainer) as FrameLayout
 
   var itemTag: String? = null
 
-  @SuppressLint("SetTextI18n")
-  override fun bind(item: Item?) {
+  override fun bind(item: Any?) {
     if (playerContainer[0] is PlayerView) playerContainer.removeViewAt(0)
-
-    if (item != null) {
+    if (item is Item) {
       val drmItem = item.drmScheme?.let { DrmItem(item) }
       // Dynamically create the PlayerView instance.
       val playerView = (drmItem?.let {
         // Encrypted video must be played on SurfaceView.
-        inflater.inflate(R.layout.playerview_surface, playerContainer, false)
-      } ?: inflater.inflate(R.layout.playerview_texture, playerContainer, false)) as PlayerView
+        playerContainer.inflateView(R.layout.playerview_surface)
+      } ?: playerContainer.inflateView(R.layout.playerview_texture)) as PlayerView
       playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       playerContainer.addView(playerView, 0)
 
@@ -67,13 +64,17 @@ class VideoViewHolder(
       itemTag = "${javaClass.canonicalName}::${item.uri}::$adapterPosition"
       mediaName.text = item.name
 
-      kohii.setUp(mediaItem)
-          .with {
-            tag = itemTag
-            preLoad = false
-            repeatMode = Playable.REPEAT_MODE_ONE
-          }
+      kohii.setUp(mediaItem) {
+        tag = requireNotNull(itemTag)
+        preload = false
+        repeatMode = Common.REPEAT_MODE_ONE
+      }
           .bind(playerView)
     }
+  }
+
+  override fun onRecycled(success: Boolean) {
+    super.onRecycled(success)
+    itemTag = null
   }
 }

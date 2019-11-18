@@ -25,8 +25,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
-import kohii.v1.Kohii
-import kohii.v1.Playback.Controller
+import kohii.core.Common
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_pip.pipButton
@@ -35,14 +37,14 @@ import kotlinx.android.synthetic.main.fragment_pip.playerView
 import kotlinx.android.synthetic.main.fragment_pip.scrollView
 
 @RequiresApi(VERSION_CODES.O)
-class PictureInPictureFragment : BaseFragment() {
+class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
 
   companion object {
-    val videoUrl = "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8"
     fun newInstance() = PictureInPictureFragment()
   }
 
   private val mPictureInPictureParamsBuilder = PictureInPictureParams.Builder()
+  private var playback: Playback? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -52,39 +54,55 @@ class PictureInPictureFragment : BaseFragment() {
     return inflater.inflate(R.layout.fragment_pip, container, false)
   }
 
-  lateinit var kohii: Kohii
-
   override fun onViewCreated(
     view: View,
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
     pipButton.setOnClickListener { minimize() }
+    playerContainer.setAspectRatio(16 / 9F)
+    val kohii = Master[this]
+    kohii.register(this)
+        .attach(playerContainer)
 
-    kohii = Kohii[this].also { it.register(this, playerContainer) }
-    kohii.setUp(videoUrl)
-        .with {
-          tag = "${javaClass.name}::videoUrl"
-          controller = object : Controller {
-            override fun pauseBySystem(): Boolean {
-              return true
-            }
-          }
+    kohii.setUp(assetVideoUri) {
+      tag = "${javaClass.name}::$videoUrl"
+      repeatMode = Common.REPEAT_MODE_ONE
+    }
+        .bind(playerView) {
+          it.addPlaybackListener(this@PictureInPictureFragment)
+          playback = it
         }
-        .bind(playerView)
   }
 
-  private fun minimize() {
-    mPictureInPictureParamsBuilder.setAspectRatio(
-        Rational(playerContainer.width, playerContainer.height)
-    )
-    scrollView.isVisible = false
-    requireActivity().enterPictureInPictureMode(mPictureInPictureParamsBuilder.build())
+  @Suppress("MemberVisibilityCanBePrivate")
+  internal fun minimize() {
+    playback?.let {
+      mPictureInPictureParamsBuilder
+          .setAspectRatio(Rational(playerContainer.width, playerContainer.height))
+          .setSourceRectHint(it.containerRect)
+
+      requireActivity().enterPictureInPictureMode(mPictureInPictureParamsBuilder.build())
+    }
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    playback?.removePlaybackListener(this)
+    playback = null
   }
 
   override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
-    super.onPictureInPictureModeChanged(isInPictureInPictureMode)
     scrollView.isVisible = !isInPictureInPictureMode
-    playerView.useController = !isInPictureInPictureMode
+  }
+
+  override fun onVideoSizeChanged(
+    playback: Playback,
+    width: Int,
+    height: Int,
+    unAppliedRotationDegrees: Int,
+    pixelWidthHeightRatio: Float
+  ) {
+    playerContainer.setAspectRatio(width / height.toFloat())
   }
 }

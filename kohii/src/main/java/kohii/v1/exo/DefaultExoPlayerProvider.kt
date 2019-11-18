@@ -102,7 +102,7 @@ class DefaultExoPlayerProvider(
     media: Media,
     player: Player
   ) {
-    player.stop(true)
+    // player.stop(true) // client must stop/do proper cleanup by itself.
     if (drmPlayerCache.containsKey(player)) {
       player.release()
       drmSessionManagerProvider?.releaseDrmSessionManager(drmPlayerCache.remove(player))

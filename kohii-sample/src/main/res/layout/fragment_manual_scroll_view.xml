@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,7 @@
   ~ limitations under the License.
   -->
 
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@id/scrollView"
@@ -32,14 +30,33 @@
       android:orientation="vertical"
       >
 
-    <FrameLayout
+    <TextView
+        android:id="@+id/libIntro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/playerContainer1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:background="@color/card_dark_background"
         android:clickable="true"
         android:focusable="true"
+        android:orientation="vertical"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
         >
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="8dp"
+          android:text="Video 1"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+
       <com.google.android.exoplayer2.ui.PlayerView
           android:id="@+id/playerView1"
           android:layout_width="match_parent"
@@ -51,16 +68,28 @@
           app:surface_type="texture_view"
           app:use_controller="false"
           />
-    </FrameLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
-    <FrameLayout
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/playerContainer2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:background="@color/card_dark_background"
         android:clickable="true"
         android:focusable="true"
+        android:orientation="vertical"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
         >
+
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="8dp"
+          android:text="Video 2"
+          android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+          />
+
       <com.google.android.exoplayer2.ui.PlayerView
           android:id="@+id/playerView2"
           android:layout_width="match_parent"
@@ -72,7 +101,7 @@
           app:surface_type="texture_view"
           app:use_controller="false"
           />
-    </FrameLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <TextView
         android:id="@id/textContent"

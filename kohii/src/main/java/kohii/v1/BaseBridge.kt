@@ -47,8 +47,4 @@ abstract class BaseBridge<RENDERER : Any> : Bridge<RENDERER> {
   override fun removeErrorListener(errorListener: ErrorListener?) {
     this.errorListeners.remove(errorListener)
   }
-
-  override fun toString(): String {
-    return "${javaClass.simpleName}::${super.hashCode()}"
-  }
 }

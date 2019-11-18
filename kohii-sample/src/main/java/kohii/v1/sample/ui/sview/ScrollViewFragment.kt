@@ -21,15 +21,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
-import kohii.v1.Rebinder
+import kohii.core.Common
+import kohii.core.Master
+import kohii.core.Playback
+import kohii.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.ui.player.InitData
-import kohii.v1.sample.ui.player.PlayerDialogFragment
+import kohii.v1.sample.common.InitData
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
 import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView
@@ -49,26 +47,33 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
-  private lateinit var kohii: Kohii
-  private var playback: Playback<*>? = null
+  private lateinit var kohii: Master
+  private var playback: Playback? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    val viewRes = R.layout.fragment_scroll_view
-    return inflater.inflate(viewRes, container, false)
+    return inflater.inflate(R.layout.fragment_scroll_view, container, false)
+  }
+
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    kohii = Master[this]
+    kohii.register(this)
+        .attach(scrollView)
   }
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {
     super.onActivityCreated(savedInstanceState)
-    kohii = Kohii[this].also { it.register(this, this.scrollView) }
-    val rebinder = kohii.setUp(videoUrl)
-        .with {
-          tag = videoTag
-          repeatMode = Playable.REPEAT_MODE_ONE
-        }
+    val rebinder = kohii.setUp(videoUrl) {
+      tag = videoTag
+      repeatMode = Common.REPEAT_MODE_ONE
+    }
         .bind(playerView) { playback = it }
 
     playerContainer.setOnClickListener {
@@ -89,8 +94,8 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   override fun onDialogActive() {
   }
 
-  override fun onDialogInActive(rebinder: Rebinder<PlayerView>) {
-    rebinder.rebind(kohii, playerView) {
+  override fun onDialogInActive(rebinder: Rebinder) {
+    rebinder.bind(kohii, playerView) {
       playback = it
     }
   }

@@ -17,19 +17,19 @@
 package kohii.v1.sample.ui.youtube1
 
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
-import kohii.v1.PlayableCreator
+import kohii.core.Engine
+import kohii.core.Playback
+import kohii.core.Playback.Callback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
-import kohii.v1.ytb.YouTubePlayerFragment
+import kohii.v1.yt1.YouTubePlayerFragment
 
 class YouTubeItemsAdapter(
-  private val creator: PlayableCreator<YouTubePlayerFragment>,
-  private val fragmentManager: FragmentManager
+  private val engine: Engine<YouTubePlayerFragment>
 ) : PagedListAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
   override fun areItemsTheSame(
     oldItem: Video,
@@ -83,7 +83,7 @@ class YouTubeItemsAdapter(
     viewType: Int
   ): BaseViewHolder {
     return when (viewType) {
-      R.layout.holder_youtube_container -> YouTubeViewHolder(parent, viewType, fragmentManager)
+      R.layout.holder_youtube_container -> YouTubeViewHolder(parent)
       R.layout.holder_loading -> BaseViewHolder(parent, viewType)
       else -> throw IllegalArgumentException("unknown view type $viewType")
     }
@@ -97,13 +97,17 @@ class YouTubeItemsAdapter(
       val item = getItem(position)
       holder.bind(item)
       val videoId = item?.id ?: "EOjq4OIWKqM"
-      creator.setUp(videoId)
-          .with {
-            tag = videoId
-            threshold = 0.99F
+      engine.setUp(videoId) {
+        tag = videoId
+        threshold = 0.99F
+        callbacks += object : Callback {
+          override fun onRemoved(playback: Playback) {
+            playback.removePlaybackListener(holder)
           }
-          .bind(holder) {
-            it.addPlaybackEventListener(holder)
+        }
+      }
+          .bind(holder.fragmentPlace) {
+            it.addPlaybackListener(holder)
             holder.playback = it
           }
     }

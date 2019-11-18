@@ -28,9 +28,7 @@ abstract class BaseViewHolder(
   inflater: LayoutInflater,
   layoutRes: Int,
   parent: ViewGroup
-) : ViewHolder(
-    inflater.inflate(layoutRes, parent, false)
-) {
+) : ViewHolder(inflater.inflate(layoutRes, parent, false)) {
 
   open fun bind(item: Any?) {}
 
