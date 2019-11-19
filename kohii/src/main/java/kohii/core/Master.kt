@@ -31,10 +31,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
-import androidx.core.app.ComponentActivity
 import androidx.core.net.toUri
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.ExoPlayer
@@ -190,7 +190,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   private fun registerInternal(
-    activity: ComponentActivity,
+    activity: FragmentActivity,
     host: Any,
     managerLifecycleOwner: LifecycleOwner,
     memoryMode: MemoryMode = MemoryMode.AUTO
@@ -365,7 +365,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   fun register(
-    activity: ComponentActivity,
+    activity: FragmentActivity,
     memoryMode: MemoryMode = MemoryMode.AUTO
   ): Manager {
     return registerInternal(activity, activity, activity, memoryMode = memoryMode)

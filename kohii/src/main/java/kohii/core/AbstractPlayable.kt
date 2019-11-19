@@ -35,7 +35,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   protected val master: Master,
   media: Media,
   config: Config,
-  public final override val bridge: Bridge<RENDERER>
+  protected val bridge: Bridge<RENDERER>
 ) : Playable(media, config), Playback.Callback {
 
   override val tag: Any = config.tag
@@ -184,16 +184,12 @@ abstract class AbstractPlayable<RENDERER : Any>(
     this.playback = null // Will also clear current Manager.
   }
 
-  protected abstract fun shouldAttachRenderer(renderer: Any?)
-
-  protected abstract fun shouldDetachRenderer()
-
   override fun considerRequestRenderer(playback: Playback) {
     "Playable#considerRequestRenderer $playback, $this".logInfo()
     require(playback === this.playback)
     if (bridge.renderer == null || manager !== playback.manager) { // Only request for Renderer if we do not have one.
       val renderer = playback.manager.requestRenderer(playback, this)
-      shouldAttachRenderer(renderer)
+      this.renderer = renderer
     }
   }
 
@@ -202,7 +198,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     require(this.playback == null || this.playback === playback)
     if (bridge.renderer != null) { // Only release the Renderer if we do have one to release.
       playback.manager.releaseRenderer(playback, this)
-      shouldDetachRenderer()
+      this.renderer = null
     }
   }
 
@@ -236,7 +232,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     }
   }
 
-  override fun onVolumeInfoChange(
+  override fun onVolumeInfoChanged(
     playback: Playback,
     from: VolumeInfo,
     to: VolumeInfo

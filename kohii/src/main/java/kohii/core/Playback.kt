@@ -274,7 +274,7 @@ abstract class Playback(
       onChange = { _, from, to ->
         if (from == to) return@observable
         "Playback#volumeInfo $from --> $to, $this".logDebug()
-        playable?.onVolumeInfoChange(this, from, to)
+        playable?.onVolumeInfoChanged(this, from, to)
       }
   )
 

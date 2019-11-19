@@ -28,13 +28,12 @@ class YouTube1Playable(
   bridge: Bridge<YouTubePlayerFragment>
 ) : AbstractPlayable<YouTubePlayerFragment>(master, media, config, bridge) {
 
-  override fun shouldAttachRenderer(renderer: Any?) {
-    if (renderer is YouTubePlayerFragment) bridge.renderer = renderer
-  }
-
-  override fun shouldDetachRenderer() {
-    bridge.renderer = null
-  }
+  override var renderer: Any?
+    get() = bridge.renderer
+    set(value) {
+      require(value is YouTubePlayerFragment)
+      bridge.renderer = value
+    }
 
   override fun onConfigChange() = false
 }

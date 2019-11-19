@@ -29,13 +29,12 @@ class YouTube2Playable(
   bridge: Bridge<YouTubePlayerView>
 ) : AbstractPlayable<YouTubePlayerView>(master, media, config, bridge) {
 
-  override fun shouldAttachRenderer(renderer: Any?) {
-    if (renderer is YouTubePlayerView) bridge.renderer = renderer
-  }
-
-  override fun shouldDetachRenderer() {
-    bridge.renderer = null
-  }
+  override var renderer: Any?
+    get() = bridge.renderer
+    set(value) {
+      require(value is YouTubePlayerView)
+      bridge.renderer = value
+    }
 
   override fun onConfigChange() = false
 }

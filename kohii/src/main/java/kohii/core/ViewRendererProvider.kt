@@ -21,7 +21,7 @@ import androidx.core.view.ViewCompat
 import kohii.media.Media
 
 abstract class ViewRendererProvider(poolSize: Int) :
-    RecyclerRendererProvider(poolSize) {
+    RecycledRendererProvider(poolSize) {
 
   constructor() : this(2)
 

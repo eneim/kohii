@@ -23,7 +23,7 @@ import kohii.media.Media
 import kohii.onEachAcquired
 import kohii.v1.BuildConfig
 
-abstract class RecyclerRendererProvider(private val poolSize: Int) : RendererProvider {
+abstract class RecycledRendererProvider(private val poolSize: Int) : RendererProvider {
 
   constructor() : this(2)
 
@@ -53,8 +53,9 @@ abstract class RecyclerRendererProvider(private val poolSize: Int) : RendererPro
   ): Any {
     // The Container is also a Renderer, we return it right away.
     val playable = requireNotNull(playback.playable)
-    if (playable.config.rendererType.isAssignableFrom(playback.container.javaClass))
+    if (playable.config.rendererType.isAssignableFrom(playback.container.javaClass)) {
       return playback.container
+    }
     val containerType = getContainerType(playback.container)
     val mediaType = getMediaType(media)
     val poolKey = poolKey(containerType, mediaType)

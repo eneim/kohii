@@ -33,7 +33,7 @@ abstract class Playable(
 
   abstract val tag: Any
 
-  internal abstract val bridge: Bridge<*>
+  abstract var renderer: Any?
 
   internal abstract var playback: Playback?
 
@@ -67,11 +67,11 @@ abstract class Playable(
   abstract fun onConfigChange(): Boolean
 
   /**
-   * Once the Playback finds it is good time for the Listener to request/release the Renderer, it
+   * Once the Playback finds it is good time for the Playable to request/release the Renderer, it
    * will trigger these calls to send that signal. The 'good time' can varies due to the actual
    * use case. In Kohii, there are 2 following cases:
    * - The Playback's Container is also the renderer. In this case, the Container/Renderer will
-   * always be there. We suggest that the Listener should request for the Renderer as soon as
+   * always be there. We suggest that the Playable should request for the Renderer as soon as
    * possible, and release it as late as possible. The proper place to do that are when the
    * Playback becomes active (onActive()) and inactive (onInActive()).
    *
@@ -79,20 +79,20 @@ abstract class Playable(
    *
    * - The Playback's Container is not the Renderer. In this case, the Renderer is expected
    * to be created on demand and release as early as possible, so that Kohii can reuse it for
-   * other Playback as soon as possible. We suggest that the Listener should request for
+   * other Playback as soon as possible. We suggest that the Playable should request for
    * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
    * just right after the Playback pauses (onPause()).
    *
-   * Flow:  If Bridge<RENDERER> needs a renderer
-   *          ⬇
-   *        Playable#considerRequestRenderer(playback)
-   *          ⬇
+   * Flow:  Playable#considerRequestRenderer(playback)
+   *          ↓
+   *        If Bridge<RENDERER> needs a renderer
+   *          ↓
    *        Manager#requestRenderer(playback, playable)
-   *          ⬇
+   *          ↓
    *        Playback#attachRenderer(renderer)
-   *          ⬇
+   *          ↓
    *        Playback#onAttachRenderer(renderer)
-   *          ⬇
+   *          ↓
    *        If valid renderer returns, do the update for Bridge<RENDERER>
    *
    * @see [DynamicViewRendererPlayback]
@@ -101,11 +101,11 @@ abstract class Playable(
   abstract fun considerRequestRenderer(playback: Playback)
 
   /**
-   * Once the Playback finds it is good time for the Listener to request/release the Renderer, it
+   * Once the Playback finds it is good time for the Playable to request/release the Renderer, it
    * will trigger these calls to send that signal. The 'good time' can varies due to the actual
    * use case. In Kohii, there are 2 following cases:
    * - The Playback's Container is also the renderer. In this case, the Container/Renderer will
-   * always be there. We suggest that the Listener should request for the Renderer as soon as
+   * always be there. We suggest that the Playable should request for the Renderer as soon as
    * possible, and release it as late as possible. The proper place to do that are when the
    * Playback becomes active (onActive()) and inactive (onInActive()).
    *
@@ -113,21 +113,23 @@ abstract class Playable(
    *
    * - The Playback's Container is not the Renderer. In this case, the Renderer is expected
    * to be created on demand and release as early as possible, so that Kohii can reuse it for
-   * other Playback as soon as possible. We suggest that the Listener should request for
+   * other Playback as soon as possible. We suggest that the Playable should request for
    * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
    * just right after the Playback pauses (onPause()).
    *
-   * Flow:  If Bridge<RENDERER> has a renderer to release
-   *          ⬇
-   *        Update the renderer in Bridge<RENDERER>
-   *          ⬇
+   * Flow:  Playable#considerRequestRenderer(playback)
+   *          ↓
+   *        If Bridge<RENDERER> has a renderer to release
+   *          ↓
    *        Manager#releaseRenderer(playback, playable)
-   *          ⬇
+   *          ↓
    *        Playback#detachRenderer(renderer)
-   *          ⬇
+   *          ↓
    *        Playback#onDetachRenderer(renderer)
-   *          ⬇
+   *          ↓
    *        If the renderer is managed by pool, it will now be released back to the pool for reuse.
+   *          ↓
+   *        Update the renderer in Bridge<RENDERER>
    *
    * @see [DynamicViewRendererPlayback]
    * @see [DynamicFragmentRendererPlayback]
@@ -140,7 +142,7 @@ abstract class Playable(
     to: Int
   )
 
-  internal abstract fun onVolumeInfoChange(
+  internal abstract fun onVolumeInfoChanged(
     playback: Playback,
     from: VolumeInfo,
     to: VolumeInfo

@@ -27,7 +27,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFram
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.core.Master
 import kohii.core.Playback
-import kohii.core.RecyclerRendererProvider
+import kohii.core.RecycledRendererProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.yt2.YouTube2Engine
@@ -58,7 +58,7 @@ class YouTube2Fragment : BaseFragment() {
     val manager = kohii.register(this)
         .attach(recyclerView)
     manager.registerRendererProvider(YouTubePlayerView::class.java,
-        object : RecyclerRendererProvider() {
+        object : RecycledRendererProvider() {
           override fun createRenderer(
             playback: Playback,
             mediaType: Int
