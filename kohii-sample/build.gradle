@@ -114,7 +114,7 @@ configurations {
 
 dependencies {
   implementation fileTree(include: ['*.jar'], dir: 'libs')
-  implementation project(':kohii')
+  implementation project(':kohii-core')
 
   implementation Libs.ExoPlayer.all
 
