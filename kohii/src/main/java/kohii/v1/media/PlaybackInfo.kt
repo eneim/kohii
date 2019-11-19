@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.media
 
-import android.net.Uri
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-interface Media {
+/**
+ * @author eneim (2018/06/24).
+ */
+@Parcelize
+data class PlaybackInfo(
+  var resumeWindow: Int,
+  var resumePosition: Long,
+  var volumeInfo: VolumeInfo
+) : Parcelable {
 
-  val uri: Uri
+  constructor() : this(
+      INDEX_UNSET,
+      TIME_UNSET,
+      VolumeInfo.SCRAP
+  )
 
-  val type: String?
-
-  val mediaDrm: MediaDrm?
+  companion object {
+    const val TIME_UNSET = Long.MIN_VALUE + 1
+    const val INDEX_UNSET = -1
+  }
 }

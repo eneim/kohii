@@ -19,7 +19,7 @@ package kohii.core
 import android.view.ViewGroup
 import kohii.core.Master.Companion.NO_TAG
 import kohii.core.Playable.Config
-import kohii.media.Media
+import kohii.v1.media.Media
 
 class Binder<RENDERER : Any>(
   private val engine: Engine<RENDERER>,

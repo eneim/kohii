@@ -18,7 +18,7 @@ package kohii.v1.yt1
 
 import kohii.core.AbstractPlayable
 import kohii.core.Master
-import kohii.media.Media
+import kohii.v1.media.Media
 import kohii.v1.Bridge
 
 class YouTube1Playable(

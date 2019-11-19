@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.media
 
 import android.net.Uri
 import android.os.Parcelable

@@ -25,7 +25,7 @@ import com.google.android.material.button.MaterialButton
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Scope
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Video

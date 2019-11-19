@@ -16,10 +16,9 @@
 
 package kohii.core
 
-import kohii.media.Media
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
-import kohii.v1.Bridge
+import kohii.v1.media.Media
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 
 abstract class Playable(
   val media: Media,

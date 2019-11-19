@@ -33,7 +33,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import kohii.v1.Prioritized
 import java.util.ArrayDeque

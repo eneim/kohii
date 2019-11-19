@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.media
 
 import android.os.Parcelable
 import androidx.core.util.ObjectsCompat

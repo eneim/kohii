@@ -14,35 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.media
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import android.net.Uri
 
-/**
- * @author eneim (2018/06/24).
- */
-@Parcelize
-data class VolumeInfo(
-  var mute: Boolean = false,
-  var volume: Float = 1F
-) : Parcelable {
+interface Media {
 
-  constructor(original: VolumeInfo) : this(original.mute, original.volume)
+  val uri: Uri
 
-  fun setTo(
-    mute: Boolean,
-    volume: Float
-  ) {
-    this.mute = mute
-    this.volume = volume
-  }
+  val type: String?
 
-  fun setTo(volumeInfo: VolumeInfo) {
-    this.setTo(volumeInfo.mute, volumeInfo.volume)
-  }
-
-  companion object {
-    val SCRAP = VolumeInfo(false, 1F)
-  }
+  val mediaDrm: MediaDrm?
 }

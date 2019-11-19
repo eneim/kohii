@@ -19,7 +19,7 @@ package kohii.v1.sample.ui.echo
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.core.Master
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Video
 

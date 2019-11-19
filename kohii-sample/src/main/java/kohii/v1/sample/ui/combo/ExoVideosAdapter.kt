@@ -23,7 +23,7 @@ import kohii.core.Common
 import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Playback.Callback
-import kohii.media.MediaItem
+import kohii.v1.media.MediaItem
 import kohii.v1.sample.data.DrmItem
 import kohii.v1.sample.data.Item
 
@@ -57,7 +57,8 @@ class ExoVideosAdapter(
     holder.videoTitle.text = item.name
 
     val drmItem = item.drmScheme?.let { DrmItem(item) }
-    val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
+    val mediaItem =
+      MediaItem(Uri.parse(item.uri), item.extension, drmItem)
     val itemTag = "${javaClass.canonicalName}::${item.uri}::${holder.adapterPosition}"
 
     holder.rebinder = kohii.setUp(mediaItem) {

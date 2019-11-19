@@ -18,7 +18,7 @@ package kohii.core
 
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.media.Media
+import kohii.v1.media.Media
 import kohii.v1.Bridge
 
 internal class PlayerViewPlayable(

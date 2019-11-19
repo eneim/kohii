@@ -25,9 +25,9 @@ import kohii.core.Master.MemoryMode.LOW
 import kohii.core.Master.MemoryMode.NORMAL
 import kohii.v1.logInfo
 import kohii.v1.logWarn
-import kohii.media.Media
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
+import kohii.v1.media.Media
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.Bridge
 import kotlin.properties.Delegates
 

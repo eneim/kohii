@@ -29,7 +29,7 @@ import com.google.android.exoplayer2.text.Cue
 import com.google.android.exoplayer2.text.TextOutput
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.video.VideoListener
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
 
 interface Prioritized : Comparable<Prioritized> {

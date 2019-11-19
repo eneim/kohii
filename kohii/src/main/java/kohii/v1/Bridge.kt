@@ -19,8 +19,8 @@ package kohii.v1
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player.RepeatMode
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 
 interface Bridge<RENDERER : Any> {
 

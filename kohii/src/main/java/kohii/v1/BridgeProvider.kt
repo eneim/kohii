@@ -17,7 +17,7 @@
 package kohii.v1
 
 import android.content.Context
-import kohii.media.Media
+import kohii.v1.media.Media
 
 interface BridgeProvider<RENDERER : Any> {
 

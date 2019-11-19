@@ -18,7 +18,7 @@ package kohii.core
 
 import android.view.LayoutInflater
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.media.Media
+import kohii.v1.media.Media
 import kohii.v1.R
 
 internal class PlayerViewProvider : ViewRendererProvider() {

@@ -36,7 +36,7 @@ import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Rebinder
 import kohii.core.Scope
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
@@ -149,7 +149,8 @@ class FbookFragment : BaseFragment(),
         shouldBindVideo = { rebinder -> currentOverlayRebinder != rebinder },
         volumeClick = {
           val current = requireNotNull(viewModel.timelineVolume.value)
-          viewModel.timelineVolume.value = VolumeInfo(!current.mute, current.volume)
+          viewModel.timelineVolume.value =
+            VolumeInfo(!current.mute, current.volume)
         }
     )
 

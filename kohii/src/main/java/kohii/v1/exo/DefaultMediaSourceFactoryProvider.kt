@@ -30,7 +30,7 @@ import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import kohii.media.Media
+import kohii.v1.media.Media
 
 /**
  * @author eneim (2018/10/27).

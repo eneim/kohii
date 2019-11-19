@@ -28,8 +28,8 @@ import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
 import kohii.core.Host.Companion.VERTICAL
 import kohii.v1.logDebug
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.BuildConfig
 import kohii.v1.ErrorListener
 import kohii.v1.PlayerEventListener

@@ -31,7 +31,7 @@ import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Util
 import kohii.v1.logInfo
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.VolumeChangedListener
 import kohii.v1.VolumeChangedListeners
 import kohii.v1.VolumeInfoController
@@ -74,7 +74,8 @@ open class KohiiExoPlayer(
   }
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
-  private val _volumeInfo = VolumeInfo(false, 1.0F) // backing field.
+  private val _volumeInfo =
+    VolumeInfo(false, 1.0F) // backing field.
 
   override val volumeInfo
     get() = VolumeInfo(_volumeInfo)

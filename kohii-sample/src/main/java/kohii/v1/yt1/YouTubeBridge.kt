@@ -33,9 +33,9 @@ import com.google.android.youtube.player.YouTubePlayer.PlayerStateChangeListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.MINIMAL
 import com.google.android.youtube.player.YouTubePlayer.Provider
 import kohii.core.Common
-import kohii.media.Media
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
+import kohii.v1.media.Media
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.BaseBridge
 import kotlin.properties.Delegates
 
@@ -131,7 +131,8 @@ class YouTubeBridge(
       _playbackInfo = value
     }
 
-  override val volumeInfo: VolumeInfo = VolumeInfo()
+  override val volumeInfo: VolumeInfo =
+    VolumeInfo()
 
   override val playbackState: Int
     get() = _playbackState
@@ -191,7 +192,9 @@ class YouTubeBridge(
 
   override fun seekTo(positionMs: Long) {
     val temp = this.playbackInfo
-    _playbackInfo = PlaybackInfo(temp.resumeWindow, temp.resumePosition, this.volumeInfo)
+    _playbackInfo = PlaybackInfo(
+        temp.resumeWindow, temp.resumePosition, this.volumeInfo
+    )
   }
 
   override var repeatMode = Common.REPEAT_MODE_OFF

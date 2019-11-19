@@ -30,9 +30,9 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.core.Common
-import kohii.media.Media
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
+import kohii.v1.media.Media
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.BaseBridge
 import kotlin.properties.Delegates
 
@@ -86,7 +86,9 @@ class YouTubeBridge(
   }
 
   private var _playbackInfo: PlaybackInfo by Delegates.observable(
-      PlaybackInfo(0, 0, VolumeInfo()),
+      PlaybackInfo(
+          0, 0, VolumeInfo()
+      ),
       onChange = { _, _, _ ->
         // Note: we ignore volume setting here.
         // if (newVal.resumePosition != oldVal.resumePosition) {
@@ -114,7 +116,9 @@ class YouTubeBridge(
 
   private fun updatePlaybackInfo(player: YouTubePlayer?) {
     if (player != null) {
-      _playbackInfo = PlaybackInfo(0, tracker.currentSecond.toLong(), _playbackInfo.volumeInfo)
+      _playbackInfo = PlaybackInfo(
+          0, tracker.currentSecond.toLong(), _playbackInfo.volumeInfo
+      )
     }
   }
 
@@ -130,7 +134,8 @@ class YouTubeBridge(
     return tracker.state === PLAYING
   }
 
-  override val volumeInfo: VolumeInfo = VolumeInfo()
+  override val volumeInfo: VolumeInfo =
+    VolumeInfo()
 
   override fun seekTo(positionMs: Long) {
     val playbackInfo = this.playbackInfo

@@ -19,7 +19,7 @@ package kohii.core
 import androidx.annotation.CallSuper
 import androidx.collection.ArrayMap
 import androidx.core.util.Pools.SimplePool
-import kohii.media.Media
+import kohii.v1.media.Media
 import kohii.v1.onEachAcquired
 import kohii.v1.BuildConfig
 

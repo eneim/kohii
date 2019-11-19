@@ -22,7 +22,7 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.core.Common
 import kohii.core.Master
-import kohii.media.MediaItem
+import kohii.v1.media.MediaItem
 import kohii.v1.sample.R
 
 /**

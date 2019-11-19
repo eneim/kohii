@@ -41,10 +41,10 @@ import kohii.v1.ExoPlayer
 import kohii.core.Binder.Options
 import kohii.v1.findActivity
 import kohii.v1.logInfo
-import kohii.media.Media
-import kohii.media.MediaItem
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
+import kohii.v1.media.Media
+import kohii.v1.media.MediaItem
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.PendingState
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates

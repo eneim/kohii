@@ -18,7 +18,7 @@ package kohii.v1.sample.data
 
 import android.os.Parcelable
 import com.squareup.moshi.Json
-import kohii.media.MediaDrm
+import kohii.v1.media.MediaDrm
 import kotlinx.android.parcel.Parcelize
 
 /**

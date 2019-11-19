@@ -30,7 +30,7 @@ import com.google.android.exoplayer2.drm.UnsupportedDrmException
 import com.google.android.exoplayer2.drm.UnsupportedDrmException.REASON_UNSUPPORTED_SCHEME
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.util.Util.getDrmUuid
-import kohii.media.Media
+import kohii.v1.media.Media
 import kohii.v1.R
 import java.util.UUID
 import kotlin.LazyThreadSafetyMode.NONE

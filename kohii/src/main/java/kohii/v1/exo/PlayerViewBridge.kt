@@ -37,11 +37,11 @@ import com.google.android.exoplayer2.util.ErrorMessageProvider
 import kohii.v1.addEventListener
 import kohii.core.Common
 import kohii.v1.getVolumeInfo
-import kohii.media.Media
-import kohii.media.PlaybackInfo
-import kohii.media.PlaybackInfo.Companion.INDEX_UNSET
-import kohii.media.PlaybackInfo.Companion.TIME_UNSET
-import kohii.media.VolumeInfo
+import kohii.v1.media.Media
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.PlaybackInfo.Companion.INDEX_UNSET
+import kohii.v1.media.PlaybackInfo.Companion.TIME_UNSET
+import kohii.v1.media.VolumeInfo
 import kohii.v1.removeEventListener
 import kohii.v1.setVolumeInfo
 import kohii.v1.BaseBridge
@@ -78,7 +78,8 @@ internal open class PlayerViewBridge(
   private var listenerApplied = false
   private var sourcePrepared = false
 
-  private var _playbackInfo = PlaybackInfo() // Backing field for PlaybackInfo set/get
+  private var _playbackInfo =
+    PlaybackInfo() // Backing field for PlaybackInfo set/get
   private var _repeatMode = Common.REPEAT_MODE_OFF // Backing field
   private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
   private var mediaSource: MediaSource? = null

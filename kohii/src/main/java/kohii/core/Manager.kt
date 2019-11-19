@@ -37,7 +37,7 @@ import kohii.core.Scope.GROUP
 import kohii.core.Scope.HOST
 import kohii.core.Scope.MANAGER
 import kohii.core.Scope.PLAYBACK
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import kohii.v1.Prioritized
 import java.util.ArrayDeque

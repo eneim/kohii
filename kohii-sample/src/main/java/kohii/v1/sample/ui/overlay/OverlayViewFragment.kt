@@ -35,7 +35,7 @@ import kohii.core.Master
 import kohii.core.Playback
 import kohii.core.Rebinder
 import kohii.core.Scope
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
@@ -146,7 +146,8 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
     actionButton.setOnClickListener {
       val current = overlayViewModel.recyclerViewVolume.value!!
-      overlayViewModel.recyclerViewVolume.value = VolumeInfo(!current.mute, current.volume)
+      overlayViewModel.recyclerViewVolume.value =
+        VolumeInfo(!current.mute, current.volume)
     }
 
     overlaySheet = BottomSheetBehavior.from(bottomSheet)

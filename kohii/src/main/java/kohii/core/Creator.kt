@@ -17,7 +17,7 @@
 package kohii.core
 
 import kohii.core.Playable.Config
-import kohii.media.Media
+import kohii.v1.media.Media
 
 abstract class Creator(internal val rendererType: Class<*>) {
 

@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.core.Manager
 import kohii.core.Master
 import kohii.core.Rebinder
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.fbook.vh.FbookItemHolder
 import kohii.v1.sample.ui.fbook.vh.PhotoViewHolder

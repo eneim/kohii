@@ -18,7 +18,7 @@ package kohii.core
 
 import android.view.View
 import androidx.core.view.ViewCompat
-import kohii.media.Media
+import kohii.v1.media.Media
 
 abstract class ViewRendererProvider(poolSize: Int) :
     RecycledRendererProvider(poolSize) {

@@ -21,7 +21,7 @@ import kohii.core.Creator
 import kohii.core.Master
 import kohii.core.Playable
 import kohii.core.Playable.Config
-import kohii.media.Media
+import kohii.v1.media.Media
 
 class YouTube2PlayableCreator : Creator(YouTubePlayerView::class.java) {
 

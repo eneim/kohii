@@ -20,8 +20,8 @@ import android.net.Uri
 import androidx.annotation.CallSuper
 import androidx.core.net.toUri
 import kohii.core.Binder.Options
-import kohii.media.Media
-import kohii.media.MediaItem
+import kohii.v1.media.Media
+import kohii.v1.media.MediaItem
 
 // TODO may need RendererProvider<RENDERER> in Engine instance? Problem: we want to keep Engine
 //  instance at global/Application scope. Since Renderer must live in Activity scope, keeping a

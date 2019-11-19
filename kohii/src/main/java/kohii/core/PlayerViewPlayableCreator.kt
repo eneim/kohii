@@ -26,7 +26,7 @@ import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvicto
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.v1.ExoPlayer
 import kohii.core.Playable.Config
-import kohii.media.Media
+import kohii.v1.media.Media
 import kohii.v1.BuildConfig
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider

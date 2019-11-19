@@ -18,7 +18,7 @@ package kohii.v1.exo
 
 import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
-import kohii.media.Media
+import kohii.v1.media.Media
 
 /**
  * @author eneim (2018/10/27).

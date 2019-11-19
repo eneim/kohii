@@ -20,7 +20,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import kohii.media.Media
+import kohii.v1.media.Media
 
 interface RendererProvider : LifecycleObserver {
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.media
+package kohii.v1.media
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
@@ -23,16 +23,26 @@ import kotlinx.android.parcel.Parcelize
  * @author eneim (2018/06/24).
  */
 @Parcelize
-data class PlaybackInfo(
-  var resumeWindow: Int,
-  var resumePosition: Long,
-  var volumeInfo: VolumeInfo
+data class VolumeInfo(
+  var mute: Boolean = false,
+  var volume: Float = 1F
 ) : Parcelable {
 
-  constructor() : this(INDEX_UNSET, TIME_UNSET, VolumeInfo.SCRAP)
+  constructor(original: VolumeInfo) : this(original.mute, original.volume)
+
+  fun setTo(
+    mute: Boolean,
+    volume: Float
+  ) {
+    this.mute = mute
+    this.volume = volume
+  }
+
+  fun setTo(volumeInfo: VolumeInfo) {
+    this.setTo(volumeInfo.mute, volumeInfo.volume)
+  }
 
   companion object {
-    const val TIME_UNSET = Long.MIN_VALUE + 1
-    const val INDEX_UNSET = -1
+    val SCRAP = VolumeInfo(false, 1F)
   }
 }

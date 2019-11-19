@@ -18,7 +18,7 @@ package kohii.v1.exo
 
 import com.google.android.exoplayer2.source.MediaSource
 import kohii.v1.ExoPlayer
-import kohii.media.Media
+import kohii.v1.media.Media
 
 @ExoPlayer
 class HybridMediaItem(

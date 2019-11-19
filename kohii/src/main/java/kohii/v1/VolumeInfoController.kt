@@ -16,7 +16,7 @@
 
 package kohii.v1
 
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 
 interface VolumeInfoController {
 
