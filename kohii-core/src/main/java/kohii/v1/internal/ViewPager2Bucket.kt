@@ -18,37 +18,41 @@ package kohii.v1.internal
 
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver.OnScrollChangedListener
-import kohii.v1.core.Host
+import androidx.viewpager2.widget.ViewPager2
+import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kotlin.LazyThreadSafetyMode.NONE
 
-open class ViewGroupHost(
+class ViewPager2Bucket(
   manager: Manager,
-  override val root: ViewGroup
-) : Host(manager, root) {
+  override val root: ViewPager2
+) : Bucket(manager, root) {
 
-  private val globalScrollChangeListener by lazy(NONE) {
-    OnScrollChangedListener { manager.refresh() }
+  private class SimplePageChangeCallback(val manager: Manager) : ViewPager2.OnPageChangeCallback() {
+    override fun onPageScrollStateChanged(state: Int) {
+      manager.refresh()
+    }
+
+    override fun onPageSelected(position: Int) {
+      manager.refresh()
+    }
+  }
+
+  private val pageChangeCallback by lazy(NONE) {
+    SimplePageChangeCallback(
+        manager
+    )
   }
 
   override fun onAdded() {
     super.onAdded()
-    onAddedInternal()
+    root.registerOnPageChangeCallback(pageChangeCallback)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    onRemovedInternal()
-  }
-
-  internal open fun onAddedInternal() {
-    root.viewTreeObserver.addOnScrollChangedListener(globalScrollChangeListener)
-  }
-
-  internal open fun onRemovedInternal() {
-    root.viewTreeObserver.removeOnScrollChangedListener(globalScrollChangeListener)
+    root.unregisterOnPageChangeCallback(pageChangeCallback)
   }
 
   override fun accepts(container: ViewGroup): Boolean {
@@ -66,6 +70,6 @@ open class ViewGroupHost(
   }
 
   override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {
-    return selectByOrientation(candidates, orientation = NONE_AXIS)
+    return selectByOrientation(candidates, orientation = root.orientation)
   }
 }

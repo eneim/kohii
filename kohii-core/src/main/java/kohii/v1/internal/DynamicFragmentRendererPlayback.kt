@@ -24,7 +24,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import kohii.v1.Experiment
-import kohii.v1.core.Host
+import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.Playback
@@ -34,10 +34,10 @@ import kohii.v1.core.Playback
 @Experiment
 internal class DynamicFragmentRendererPlayback(
   manager: Manager,
-  host: Host,
+  bucket: Bucket,
   config: Config,
   container: ViewGroup
-) : Playback(manager, host, config, container) {
+) : Playback(manager, bucket, config, container) {
 
   init {
     check(tag != Master.NO_TAG) {

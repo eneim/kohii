@@ -24,8 +24,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.core.Binder.Options
-import kohii.v1.core.Master.MemoryMode
-import kohii.v1.core.Master.MemoryMode.LOW
+import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.media.Media
 import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
@@ -89,7 +88,7 @@ abstract class Engine<RENDERER : Any> constructor(
   ) {
     when (target) {
       is Playback -> target.manager.applyVolumeInfo(volumeInfo, target, scope)
-      is Host -> target.manager.applyVolumeInfo(volumeInfo, target, scope)
+      is Bucket -> target.manager.applyVolumeInfo(volumeInfo, target, scope)
       is Manager -> target.applyVolumeInfo(volumeInfo, target, scope)
       is Group -> target.managers.forEach { it.applyVolumeInfo(volumeInfo, it, scope) }
       else -> throw IllegalArgumentException("Unknown target for VolumeInfo: $target")
@@ -97,14 +96,14 @@ abstract class Engine<RENDERER : Any> constructor(
   }
 
   fun stick(playback: Playback) {
-    playback.manager.stick(playback.host)
+    playback.manager.stick(playback.bucket)
     playback.manager.group.stick(playback.manager)
     playback.manager.refresh()
   }
 
   fun unstick(playback: Playback) {
     playback.manager.group.unstick(playback.manager)
-    playback.manager.unstick(playback.host)
+    playback.manager.unstick(playback.bucket)
     playback.manager.refresh()
   }
 

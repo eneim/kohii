@@ -25,7 +25,7 @@ import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
-import kohii.v1.core.Master.MemoryMode
+import kohii.v1.core.MemoryMode
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.BuildConfig

@@ -31,17 +31,17 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
 import kohii.v1.findCoordinatorLayoutDirectChildContainer
 import kohii.v1.internal.BehaviorWrapper
-import kohii.v1.internal.NestedScrollViewHost
-import kohii.v1.internal.RecyclerViewHost
-import kohii.v1.internal.ViewGroupHost
-import kohii.v1.internal.ViewGroupV23Host
-import kohii.v1.internal.ViewPager2Host
-import kohii.v1.internal.ViewPagerHost
+import kohii.v1.internal.NestedScrollViewBucket
+import kohii.v1.internal.RecyclerViewBucket
+import kohii.v1.internal.ViewGroupBucket
+import kohii.v1.internal.ViewGroupV23Bucket
+import kohii.v1.internal.ViewPager2Bucket
+import kohii.v1.internal.ViewPagerBucket
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
-abstract class Host constructor(
+abstract class Bucket constructor(
   val manager: Manager,
   open val root: View
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
@@ -63,19 +63,19 @@ abstract class Host constructor(
     internal operator fun get(
       manager: Manager,
       root: View
-    ): Host {
+    ): Bucket {
       return when (root) {
-        is RecyclerView -> RecyclerViewHost(manager, root)
-        is NestedScrollView -> NestedScrollViewHost(
+        is RecyclerView -> RecyclerViewBucket(manager, root)
+        is NestedScrollView -> NestedScrollViewBucket(
             manager, root
         )
-        is ViewPager2 -> ViewPager2Host(manager, root)
-        is ViewPager -> ViewPagerHost(manager, root)
+        is ViewPager2 -> ViewPager2Bucket(manager, root)
+        is ViewPager -> ViewPagerBucket(manager, root)
         is ViewGroup -> {
           if (Build.VERSION.SDK_INT >= 23)
-            ViewGroupV23Host(manager, root)
+            ViewGroupV23Bucket(manager, root)
           else
-            ViewGroupHost(manager, root)
+            ViewGroupBucket(manager, root)
         }
         else -> throw IllegalArgumentException("Unsupported: $root")
       }
@@ -181,7 +181,7 @@ abstract class Host constructor(
       initialValue = VolumeInfo(),
       onChange = { _, from, to ->
         if (from == to) return@observable
-        manager.updateHostVolumeInfo(this, to)
+        manager.updateBucketVolumeInfo(this, to)
       }
   )
 
@@ -224,7 +224,7 @@ abstract class Host constructor(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
-    other as Host
+    other as Bucket
     if (manager !== other.manager) return false
     if (root !== other.root) return false
     return true

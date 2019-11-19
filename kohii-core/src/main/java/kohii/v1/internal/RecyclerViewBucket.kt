@@ -24,16 +24,16 @@ import androidx.recyclerview.widget.RecycleViewUtils
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import kohii.v1.core.Host
+import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
-class RecyclerViewHost(
+class RecyclerViewBucket(
   manager: Manager,
   override val root: RecyclerView
-) : Host(manager, root) {
+) : Bucket(manager, root) {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {

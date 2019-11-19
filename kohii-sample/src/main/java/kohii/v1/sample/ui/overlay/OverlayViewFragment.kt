@@ -163,11 +163,11 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
     overlayViewModel.apply {
       overlayVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, video_player_container, Scope.HOST)
+        manager.applyVolumeInfo(it, video_player_container, Scope.BUCKET)
       }
 
       recyclerViewVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, recyclerView, Scope.HOST)
+        manager.applyVolumeInfo(it, recyclerView, Scope.BUCKET)
         actionButton.text = "Mute RV: ${it.mute}"
       }
 

@@ -19,7 +19,7 @@ package kohii.v1.internal
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.contains
-import kohii.v1.core.Host
+import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 
@@ -27,10 +27,10 @@ import kohii.v1.core.Playback
 // on-demand, right before the playback should start.
 internal class DynamicViewRendererPlayback(
   manager: Manager,
-  host: Host,
+  bucket: Bucket,
   config: Config,
   container: ViewGroup
-) : Playback(manager, host, config, container) {
+) : Playback(manager, bucket, config, container) {
 
   override fun onPlay() {
     super.onPlay()

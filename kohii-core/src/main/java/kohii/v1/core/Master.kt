@@ -36,9 +36,9 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.PendingState
 import kohii.v1.core.Binder.Options
-import kohii.v1.core.Master.MemoryMode.AUTO
-import kohii.v1.core.Master.MemoryMode.BALANCED
-import kohii.v1.core.Master.MemoryMode.LOW
+import kohii.v1.core.MemoryMode.AUTO
+import kohii.v1.core.MemoryMode.BALANCED
+import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Playback.Config
 import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
@@ -50,64 +50,6 @@ import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
 class Master private constructor(context: Context) : PlayableManager, ComponentCallbacks2 {
-
-  enum class MemoryMode {
-    /**
-     * In AUTO mode, Kohii will judge the preferred memory situation using [preferredMemoryMode] method.
-     */
-    AUTO,
-
-    /**
-     * In LOW mode, Kohii will always release resource of unselected Playables/Playbacks
-     * (whose distance to selected ones are from 1).
-     */
-    LOW,
-
-    /**
-     * In NORMAL mode, Kohii will only reset the Playables/Playbacks whose distance to selected ones
-     * are 1 (so 'next to' selected ones). Others will be released.
-     */
-    NORMAL,
-
-    /**
-
-    ▒▒▒▒▒▒▒▒▄▄▄▄▄▄▄▄▒▒▒▒▒▒▒▒
-    ▒▒▒▒▒▄█▀▀░░░░░░▀▀█▄▒▒▒▒▒
-    ▒▒▒▄█▀▄██▄░░░░░░░░▀█▄▒▒▒
-    ▒▒█▀░▀░░▄▀░░░░▄▀▀▀▀░▀█▒▒
-    ▒█▀░░░░███░░░░▄█▄░░░░▀█▒
-    ▒█░░░░░░▀░░░░░▀█▀░░░░░█▒
-    ▒█░░░░░░░░░░░░░░░░░░░░█▒
-    ▒█░░██▄░░▀▀▀▀▄▄░░░░░░░█▒
-    ▒▀█░█░█░░░▄▄▄▄▄░░░░░░█▀▒
-    ▒▒▀█▀░▀▀▀▀░▄▄▄▀░░░░▄█▀▒▒
-    ▒▒▒█░░░░░░▀█░░░░░▄█▀▒▒▒▒
-    ▒▒▒█▄░░░░░▀█▄▄▄█▀▀▒▒▒▒▒▒
-    ▒▒▒▒▀▀▀▀▀▀▀▒▒▒▒▒▒▒▒▒▒▒▒▒
-
-    In BALANCED mode, the release behavior is the same with 'NORMAL' mode, but unselected Playables/Playbacks will not be reset.
-     */
-    BALANCED,
-
-    /**
-     * HIGH mode must be specified by client.
-     *
-     * In HIGH mode, any unselected Playables/Playbacks whose distance to selected ones is less
-     * than 8 will be reset. Others will be released. This mode is memory-intensive and can be
-     * used in many-videos-yet-low-memory-usage scenario like simple/short Videos.
-     */
-    HIGH,
-
-    /**
-     * "For the bravest only"
-     *
-     * INFINITE mode must be specified by client.
-     *
-     * In INFINITE mode, no unselected Playables/Playbacks will ever be released due to distance
-     * change (though Kohii will release the resource once they are inactive).
-     */
-    INFINITE
-  }
 
   companion object {
 
@@ -121,13 +63,9 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     @Volatile private var master: Master? = null
 
     @JvmStatic
-    operator fun get(context: Context) = master ?: synchronized(Master::javaClass) {
+    internal operator fun get(context: Context) = master ?: synchronized(Master::javaClass) {
       master ?: Master(context).also { master = it }
     }
-
-    @JvmStatic
-    operator fun get(fragment: Fragment) =
-      get(fragment.requireContext())
   }
 
   private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
@@ -426,11 +364,11 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         MSG_DESTROY_PLAYABLE, playable
     )
     playables[playable] = tag
-    val host = groups.asSequence()
-        .mapNotNull { it.findHostForContainer(container) }
+    val bucket = groups.asSequence()
+        .mapNotNull { it.findBucketForContainer(container) }
         .firstOrNull()
 
-    requireNotNull(host) { "No Manager and Host available for $container" }
+    requireNotNull(bucket) { "No Manager and Bucket available for $container" }
 
     val createNew by lazy(NONE) {
       val config = Config(
@@ -449,17 +387,17 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         // the container is an instance PlayerView or its subtype.
         playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
           StaticViewRendererPlayback(
-              host.manager, host, config, container
+              bucket.manager, bucket, config, container
           )
         }
         View::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicViewRendererPlayback(
-              host.manager, host, config, container
+              bucket.manager, bucket, config, container
           )
         }
         Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicFragmentRendererPlayback(
-              host.manager, host, config, container
+              bucket.manager, bucket, config, container
           )
         }
         else -> {
@@ -470,7 +408,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
       }
     }
 
-    val sameContainer = host.manager.playbacks[container]
+    val sameContainer = bucket.manager.playbacks[container]
     val samePlayable = playable.playback
 
     val resolvedPlayback = //
@@ -478,7 +416,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         if (samePlayable == null) {
           // both sameContainer and samePlayable are null --> fresh binding
           playable.playback = createNew
-          host.manager.addPlayback(createNew)
+          bucket.manager.addPlayback(createNew)
           createNew
         } else {
           // samePlayable is not null --> a bound Playable to be rebound to other/new Container
@@ -489,7 +427,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
               MSG_DESTROY_PLAYABLE, playable
           )
           playable.playback = createNew
-          host.manager.addPlayback(createNew)
+          bucket.manager.addPlayback(createNew)
           createNew
         }
       } else {
@@ -502,7 +440,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
               MSG_DESTROY_PLAYABLE, playable
           )
           playable.playback = createNew
-          host.manager.addPlayback(createNew)
+          bucket.manager.addPlayback(createNew)
           createNew
         } else {
           // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
@@ -519,7 +457,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
                 MSG_DESTROY_PLAYABLE, playable
             )
             playable.playback = createNew
-            host.manager.addPlayback(createNew)
+            bucket.manager.addPlayback(createNew)
             createNew
           }
         }

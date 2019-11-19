@@ -131,7 +131,7 @@ class FbookFragment : BaseFragment(),
 
     viewModel.apply {
       timelineVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, recyclerView, Scope.HOST)
+        manager.applyVolumeInfo(it, recyclerView, Scope.BUCKET)
         val adapter = recyclerView.adapter
         if (adapter != null) {
           recyclerView.filterVisibleHolder<VideoViewHolder>()

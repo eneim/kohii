@@ -17,7 +17,7 @@
 package kohii.v1.internal
 
 import android.view.ViewGroup
-import kohii.v1.core.Host
+import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 
@@ -26,10 +26,10 @@ import kohii.v1.core.Playback
 // release the Renderer as soon as it is inactive.
 internal class StaticViewRendererPlayback(
   manager: Manager,
-  host: Host,
+  bucket: Bucket,
   config: Config,
   container: ViewGroup
-) : Playback(manager, host, config, container) {
+) : Playback(manager, bucket, config, container) {
 
   override fun onActive() {
     super.onActive()

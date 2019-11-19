@@ -16,21 +16,21 @@
 
 package kohii.v1.internal
 
-import android.os.Build.VERSION_CODES
 import android.view.View
-import android.view.View.OnScrollChangeListener
 import android.view.ViewGroup
-import androidx.annotation.RequiresApi
+import androidx.core.widget.NestedScrollView
+import androidx.core.widget.NestedScrollView.OnScrollChangeListener
+import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
+import kohii.v1.core.Playback
 
-@RequiresApi(VERSION_CODES.M)
-class ViewGroupV23Host(
+class NestedScrollViewBucket(
   manager: Manager,
-  root: ViewGroup
-) : ViewGroupHost(manager, root), OnScrollChangeListener {
+  override val root: NestedScrollView
+) : Bucket(manager, root), OnScrollChangeListener {
 
   override fun onScrollChange(
-    v: View?,
+    v: NestedScrollView?,
     scrollX: Int,
     scrollY: Int,
     oldScrollX: Int,
@@ -39,11 +39,31 @@ class ViewGroupV23Host(
     manager.refresh()
   }
 
-  override fun onAddedInternal() {
+  override fun onAdded() {
+    super.onAdded()
     root.setOnScrollChangeListener(this)
   }
 
-  override fun onRemovedInternal() {
+  override fun onRemoved() {
+    super.onRemoved()
     root.setOnScrollChangeListener(null as OnScrollChangeListener?)
+  }
+
+  override fun accepts(container: ViewGroup): Boolean {
+    var view = container as View
+    var parent = view.parent
+    while (parent != null && parent !== this.root && parent is View) {
+      view = parent
+      parent = view.parent
+    }
+    return parent === this.root
+  }
+
+  override fun allowToPlay(playback: Playback): Boolean {
+    return playback.token.shouldPlay()
+  }
+
+  override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {
+    return selectByOrientation(candidates, orientation = VERTICAL)
   }
 }

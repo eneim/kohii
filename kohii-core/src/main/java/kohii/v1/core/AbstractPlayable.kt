@@ -16,13 +16,12 @@
 
 package kohii.v1.core
 
-import kohii.v1.core.Master.MemoryMode
-import kohii.v1.core.Master.MemoryMode.AUTO
-import kohii.v1.core.Master.MemoryMode.BALANCED
-import kohii.v1.core.Master.MemoryMode.HIGH
-import kohii.v1.core.Master.MemoryMode.INFINITE
-import kohii.v1.core.Master.MemoryMode.LOW
-import kohii.v1.core.Master.MemoryMode.NORMAL
+import kohii.v1.core.MemoryMode.AUTO
+import kohii.v1.core.MemoryMode.BALANCED
+import kohii.v1.core.MemoryMode.HIGH
+import kohii.v1.core.MemoryMode.INFINITE
+import kohii.v1.core.MemoryMode.LOW
+import kohii.v1.core.MemoryMode.NORMAL
 import kohii.v1.core.Playback.Callback
 import kohii.v1.logInfo
 import kohii.v1.logWarn
@@ -36,8 +35,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   media: Media,
   config: Config,
   protected val bridge: Bridge<RENDERER>
-) : Playable(media, config),
-    Callback {
+) : Playable(media, config), Callback {
 
   protected val master = engine.master
 

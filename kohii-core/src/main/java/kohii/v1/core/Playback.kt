@@ -24,10 +24,10 @@ import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
 import kohii.v1.BuildConfig
-import kohii.v1.core.Host.Companion.BOTH_AXIS
-import kohii.v1.core.Host.Companion.HORIZONTAL
-import kohii.v1.core.Host.Companion.NONE_AXIS
-import kohii.v1.core.Host.Companion.VERTICAL
+import kohii.v1.core.Bucket.Companion.BOTH_AXIS
+import kohii.v1.core.Bucket.Companion.HORIZONTAL
+import kohii.v1.core.Bucket.Companion.NONE_AXIS
+import kohii.v1.core.Bucket.Companion.VERTICAL
 import kohii.v1.core.Switch.Callback
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
@@ -39,7 +39,7 @@ import kotlin.properties.Delegates
 
 abstract class Playback(
   internal val manager: Manager,
-  internal val host: Host,
+  internal val bucket: Bucket,
   val config: Config = Config(),
   val container: ViewGroup
 ) : PlayerEventListener,
@@ -86,7 +86,7 @@ abstract class Playback(
     private val threshold: Float = 0.65F,
     @FloatRange(from = -1.0, to = 1.0)
     val areaOffset: Float, // -1 ~ < 0 : inactive or detached, 0 ~ 1: active
-    val containerRect: Rect // Relative Rect to its Host's root View.
+    val containerRect: Rect // Relative Rect to its Bucket's root View.
   ) {
 
     fun shouldPrepare(): Boolean {
@@ -179,13 +179,13 @@ abstract class Playback(
     "Playback#onAdded $this".logDebug()
     playbackState = STATE_ADDED
     callbacks.forEach { it.onAdded(this) }
-    host.addContainer(this.container)
+    bucket.addContainer(this.container)
   }
 
   internal fun onRemoved() {
     "Playback#onRemoved $this".logDebug()
     playbackState = STATE_REMOVED
-    host.removeContainer(this.container)
+    bucket.removeContainer(this.container)
     callbacks.onEach { it.onRemoved(this) }
         .clear()
   }
@@ -275,7 +275,7 @@ abstract class Playback(
       })
 
   internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
-      initialValue = host.volumeInfo,
+      initialValue = bucket.volumeInfo,
       onChange = { _, from, to ->
         if (from == to) return@observable
         "Playback#volumeInfo $from --> $to, $this".logDebug()
@@ -284,7 +284,7 @@ abstract class Playback(
   )
 
   init {
-    volumeInfoUpdater = host.volumeInfo
+    volumeInfoUpdater = bucket.volumeInfo
   }
 
   internal var playable: Playable? = null

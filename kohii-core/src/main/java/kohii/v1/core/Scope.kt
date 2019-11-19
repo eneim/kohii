@@ -20,6 +20,6 @@ enum class Scope {
   GLOBAL,
   GROUP,
   MANAGER,
-  HOST,
+  BUCKET,
   PLAYBACK
 }

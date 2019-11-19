@@ -80,7 +80,7 @@ class Group(
       initialValue = VolumeInfo(),
       onChange = { _, from, to ->
         if (from == to) return@observable
-        // Update VolumeInfo of all Hosts. This operation will then callback to this #applyVolumeInfo
+        // Update VolumeInfo of all Managers. This operation will then callback to this #applyVolumeInfo
         managers.forEach { it.volumeInfoUpdater = to }
       }
   )
@@ -134,10 +134,10 @@ class Group(
     handler.removeMessages(MSG_REFRESH)
   }
 
-  internal fun findHostForContainer(container: ViewGroup): Host? {
+  internal fun findBucketForContainer(container: ViewGroup): Bucket? {
     require(ViewCompat.isAttachedToWindow(container))
     return managers.asSequence()
-        .mapNotNull { it.findHostForContainer(container) }
+        .mapNotNull { it.findBucketForContainer(container) }
         .firstOrNull()
   }
 

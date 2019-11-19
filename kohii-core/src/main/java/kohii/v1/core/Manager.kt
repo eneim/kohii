@@ -32,11 +32,10 @@ import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import kohii.v1.core.Master.MemoryMode
-import kohii.v1.core.Master.MemoryMode.LOW
+import kohii.v1.core.MemoryMode.LOW
+import kohii.v1.core.Scope.BUCKET
 import kohii.v1.core.Scope.GLOBAL
 import kohii.v1.core.Scope.GROUP
-import kohii.v1.core.Scope.HOST
 import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.media.VolumeInfo
@@ -70,20 +69,20 @@ class Manager(
   internal var lock: Boolean by Delegates.observable(group.lock) { _, _, _ -> refresh() }
 
   // Use as both Queue and Stack.
-  // - When adding new Host, we add it to tail of the Queue.
-  // - When promoting a Host as sticky, we push it to head of the Queue.
-  // - When demoting a Host from sticky, we just poll the head.
-  private val hosts = ArrayDeque<Host>(4 /* less than default minimum of ArrayDeque */)
-  // Up to one Host can be sticky at a time.
-  private var stickyHost by Delegates.observable<Host?>(
+  // - When adding new Bucket, we add it to tail of the Queue.
+  // - When promoting a Bucket as sticky, we push it to head of the Queue.
+  // - When demoting a Bucket from sticky, we just poll the head.
+  private val buckets = ArrayDeque<Bucket>(4 /* less than default minimum of ArrayDeque */)
+  // Up to one Bucket can be sticky at a time.
+  private var stickyBucket by Delegates.observable<Bucket?>(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
-        // Move 'to' from hosts.
-        if (to != null /* set new sticky Host */) {
-          hosts.push(to) // Push it to head.
+        // Move 'to' from buckets.
+        if (to != null /* set new sticky Bucket */) {
+          buckets.push(to) // Push it to head.
         } else { // 'to' is null then 'from' must be nonnull. Consider to remove it from head.
-          if (hosts.peek() === from) hosts.pop()
+          if (buckets.peek() === from) buckets.pop()
         }
       }
   )
@@ -96,8 +95,8 @@ class Manager(
       initialValue = VolumeInfo(),
       onChange = { _, from, to ->
         if (from == to) return@observable
-        // Update VolumeInfo of all Hosts. This operation will then callback to this #applyVolumeInfo
-        hosts.forEach { it.volumeInfoUpdater = to }
+        // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
+        buckets.forEach { it.volumeInfoUpdater = to }
       }
   )
 
@@ -134,9 +133,9 @@ class Manager(
     playbacks.values.toMutableList()
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
-    stickyHost = null // will pop current sticky Host from the Stack
-    hosts.toMutableList()
-        .onEach { removeHost(it.root) }
+    stickyBucket = null // will pop current sticky Bucket from the Stack
+    buckets.toMutableList()
+        .onEach { removeBucket(it.root) }
         .clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
@@ -159,9 +158,9 @@ class Manager(
     return master.playables.keys.find { it.playback === playback }
   }
 
-  internal fun findHostForContainer(container: ViewGroup): Host? {
+  internal fun findBucketForContainer(container: ViewGroup): Bucket? {
     require(ViewCompat.isAttachedToWindow(container))
-    return hosts.find { it.accepts(container) }
+    return buckets.find { it.accepts(container) }
   }
 
   internal fun onContainerAttachedToWindow(container: Any?) {
@@ -190,28 +189,28 @@ class Manager(
     if (playback != null) refresh()
   }
 
-  private fun addHost(view: View) {
-    val existing = hosts.find { it.root === view }
-    require(existing == null) { "This host ${existing?.root} is attached already." }
-    val host = Host[this@Manager, view]
-    if (hosts.add(host)) {
-      host.onAdded()
+  private fun addBucket(view: View) {
+    val existing = buckets.find { it.root === view }
+    require(existing == null) { "This bucket's root: ${existing?.root} is attached already." }
+    val bucket = Bucket[this@Manager, view]
+    if (buckets.add(bucket)) {
+      bucket.onAdded()
       view.doOnAttach { v ->
-        host.onAttached()
+        bucket.onAttached()
         v.doOnDetach {
-          detachHost(v)
+          detachBucket(v)
         } // In case the View is detached immediately ...
       }
     }
   }
 
-  private fun detachHost(view: View) {
-    hosts.firstOrNull { it.root === view }
+  private fun detachBucket(view: View) {
+    buckets.firstOrNull { it.root === view }
         ?.onDetached()
   }
 
-  private fun removeHost(view: View) {
-    hosts.firstOrNull { it.root === view && hosts.remove(it) }
+  private fun removeBucket(view: View) {
+    buckets.firstOrNull { it.root === view && buckets.remove(it) }
         ?.onRemoved()
   }
 
@@ -239,16 +238,16 @@ class Manager(
     val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
     val toPlay = ArraySet<Playback>()
 
-    val hostToPlaybacks = playbacks.values.groupBy { it.host } // -> Map<Host, List<Playback>
-    hosts.asSequence()
-        .filter { !hostToPlaybacks[it].isNullOrEmpty() }
+    val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
+    buckets.asSequence()
+        .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
         .map {
-          val all = hostToPlaybacks.getValue(it)
+          val all = bucketToPlaybacks.getValue(it)
           val candidates = all.filter { playback -> it.allowToPlay(playback) }
           it to candidates
         }
-        .map { (host, candidates) ->
-          host.selectToPlay(candidates)
+        .map { (bucket, candidates) ->
+          bucket.selectToPlay(candidates)
         }
         .find { it.isNotEmpty() }
         ?.also {
@@ -333,55 +332,55 @@ class Manager(
   }
 
   fun attach(vararg views: View): Manager {
-    views.forEach { this.addHost(it) }
+    views.forEach { this.addBucket(it) }
     return this
   }
 
-  fun attach(vararg hosts: Host): Manager {
-    hosts.forEach { host ->
-      require(host.manager === this)
-      val existing = this.hosts.find { it.root === host.root }
-      require(existing == null) { "This host ${existing?.root} is attached already." }
-      if (this.hosts.add(host)) host.onAdded()
+  fun attach(vararg buckets: Bucket): Manager {
+    buckets.forEach { bucket ->
+      require(bucket.manager === this)
+      val existing = this.buckets.find { it.root === bucket.root }
+      require(existing == null) { "This bucket root: ${existing?.root} is attached already." }
+      if (this.buckets.add(bucket)) bucket.onAdded()
     }
     return this
   }
 
   @Suppress("unused")
   fun detach(vararg views: View): Manager {
-    views.forEach { this.removeHost(it) }
+    views.forEach { this.removeBucket(it) }
     return this
   }
 
-  internal fun stick(host: Host) {
-    this.stickyHost = host
+  internal fun stick(bucket: Bucket) {
+    this.stickyBucket = bucket
   }
 
-  // Null host --> unstick all current sticky hosts
-  internal fun unstick(host: Host?) {
-    if (host == null || this.stickyHost === host) {
-      this.stickyHost = null
+  // Null bucket --> unstick all current sticky buckets
+  internal fun unstick(bucket: Bucket?) {
+    if (bucket == null || this.stickyBucket === bucket) {
+      this.stickyBucket = null
     }
   }
 
-  internal fun updateHostVolumeInfo(
-    host: Host,
+  internal fun updateBucketVolumeInfo(
+    bucket: Bucket,
     volumeInfo: VolumeInfo
   ) {
-    playbacks.forEach { if (it.value.host === host) it.value.volumeInfoUpdater = volumeInfo }
+    playbacks.forEach { if (it.value.bucket === bucket) it.value.volumeInfoUpdater = volumeInfo }
   }
 
   /**
    * Apply a specific [VolumeInfo] to all Playbacks in a [Scope].
    * - The smaller a scope's priority is, the wider applicable range it will be.
    * - Applying new [VolumeInfo] to smaller [Scope] will change [VolumeInfo] of Playbacks in that [Scope].
-   * - If the [Scope] is from [Scope.HOST], any new [Playback] added to that [Host] will be configured
+   * - If the [Scope] is from [Scope.BUCKET], any new [Playback] added to that [Bucket] will be configured
    * with the updated [VolumeInfo].
    *
    * @param target is the container to apply new [VolumeInfo] to. This must be set together with the [Scope].
    * For example, if client wants to apply the [VolumeInfo] to [Scope.PLAYBACK], the receiver must be the [Playback]
-   * to apply to. If client wants to apply to [Scope.HOST], the receiver must be either the [Playback] inside that [Host],
-   * or the root object of a [Host].
+   * to apply to. If client wants to apply to [Scope.BUCKET], the receiver must be either the [Playback] inside that [Bucket],
+   * or the root object of a [Bucket].
    */
   fun applyVolumeInfo(
     volumeInfo: VolumeInfo,
@@ -393,14 +392,14 @@ class Manager(
         require(target is Playback) { "Expected Playback, found ${target.javaClass.canonicalName}" }
         target.volumeInfoUpdater = volumeInfo
       }
-      HOST -> {
+      BUCKET -> {
         when (target) {
-          is Host -> target.volumeInfoUpdater = volumeInfo
-          is Playback -> target.host.volumeInfoUpdater = volumeInfo
-          // If neither Playback nor Host, must be the root View of the Host.
+          is Bucket -> target.volumeInfoUpdater = volumeInfo
+          is Playback -> target.bucket.volumeInfoUpdater = volumeInfo
+          // If neither Playback nor Bucket, must be the root View of the Bucket.
           else -> {
-            requireNotNull(hosts.find { it.root === target }) {
-              "$target is not a root of any Host."
+            requireNotNull(buckets.find { it.root === target }) {
+              "$target is not a root of any Bucket."
             }
                 .volumeInfoUpdater = volumeInfo
           }
