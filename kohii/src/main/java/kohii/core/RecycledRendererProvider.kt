@@ -20,7 +20,7 @@ import androidx.annotation.CallSuper
 import androidx.collection.ArrayMap
 import androidx.core.util.Pools.SimplePool
 import kohii.media.Media
-import kohii.onEachAcquired
+import kohii.v1.onEachAcquired
 import kohii.v1.BuildConfig
 
 abstract class RecycledRendererProvider(private val poolSize: Int) : RendererProvider {

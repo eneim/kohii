@@ -23,7 +23,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
-import kohii.Experiment
+import kohii.v1.Experiment
 
 // TODO when using with YouTube Player SDK, we want to use its restoring mechanism (init with restore flag).
 //  In that case, we may need to skip the detaching of Fragment.

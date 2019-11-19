@@ -27,7 +27,7 @@ import kohii.core.Host.Companion.BOTH_AXIS
 import kohii.core.Host.Companion.HORIZONTAL
 import kohii.core.Host.Companion.NONE_AXIS
 import kohii.core.Host.Companion.VERTICAL
-import kohii.logDebug
+import kohii.v1.logDebug
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo
 import kohii.v1.BuildConfig

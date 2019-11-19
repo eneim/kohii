@@ -23,8 +23,8 @@ import kohii.core.Master.MemoryMode.HIGH
 import kohii.core.Master.MemoryMode.INFINITE
 import kohii.core.Master.MemoryMode.LOW
 import kohii.core.Master.MemoryMode.NORMAL
-import kohii.logInfo
-import kohii.logWarn
+import kohii.v1.logInfo
+import kohii.v1.logWarn
 import kohii.media.Media
 import kohii.media.PlaybackInfo
 import kohii.media.VolumeInfo

@@ -16,7 +16,7 @@
 
 @file:Suppress("unused")
 
-package kohii
+package kohii.v1
 
 import kotlin.annotation.AnnotationRetention.SOURCE
 

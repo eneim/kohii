@@ -29,7 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
-import kohii.findCoordinatorLayoutDirectChildContainer
+import kohii.v1.findCoordinatorLayoutDirectChildContainer
 import kohii.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates

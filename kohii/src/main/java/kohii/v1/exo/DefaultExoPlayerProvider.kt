@@ -30,7 +30,7 @@ import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.util.Util
 import kohii.media.Media
-import kohii.onEachAcquired
+import kohii.v1.onEachAcquired
 import java.net.CookieHandler
 import java.net.CookieManager
 import java.net.CookiePolicy

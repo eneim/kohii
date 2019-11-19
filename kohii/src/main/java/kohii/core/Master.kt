@@ -37,10 +37,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.ExoPlayer
+import kohii.v1.ExoPlayer
 import kohii.core.Binder.Options
-import kohii.findActivity
-import kohii.logInfo
+import kohii.v1.findActivity
+import kohii.v1.logInfo
 import kohii.media.Media
 import kohii.media.MediaItem
 import kohii.media.PlaybackInfo

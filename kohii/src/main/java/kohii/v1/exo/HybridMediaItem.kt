@@ -17,7 +17,7 @@
 package kohii.v1.exo
 
 import com.google.android.exoplayer2.source.MediaSource
-import kohii.ExoPlayer
+import kohii.v1.ExoPlayer
 import kohii.media.Media
 
 @ExoPlayer

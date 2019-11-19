@@ -24,7 +24,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
-import kohii.ExoPlayer
+import kohii.v1.ExoPlayer
 import kohii.core.Playable.Config
 import kohii.media.Media
 import kohii.v1.BuildConfig

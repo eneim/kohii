@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii
+package kohii.v1
 
 import android.app.Activity
 import android.content.Context
@@ -27,9 +27,6 @@ import androidx.core.util.Pools.Pool
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
 import kohii.media.VolumeInfo
-import kohii.v1.BuildConfig
-import kohii.v1.PlayerEventListener
-import kohii.v1.VolumeInfoController
 import kotlin.math.abs
 
 /**
