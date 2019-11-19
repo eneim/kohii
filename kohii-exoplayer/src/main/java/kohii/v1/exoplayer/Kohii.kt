@@ -20,10 +20,10 @@ import android.content.Context
 import androidx.fragment.app.Fragment
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ExoPlayer
-import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Engine
 import kohii.v1.core.Group
 import kohii.v1.core.Master
+import kohii.v1.core.PlayableCreator
 import kohii.v1.exoplayer.internal.PlayerViewPlayableCreator
 import kohii.v1.exoplayer.internal.PlayerViewProvider
 

@@ -25,25 +25,25 @@ import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.v1.BuildConfig
-import kohii.v1.ExoPlayer
 import kohii.v1.core.Common
-import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
+import kohii.v1.core.PlayableCreator
 import kohii.v1.media.Media
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
-class PlayerViewPlayableCreator(private val app: Application) : PlayableCreator(PlayerView::class.java) {
+class PlayerViewPlayableCreator(
+  private val app: Application
+) : PlayableCreator(PlayerView::class.java) {
 
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
     private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
   }
 
-  @ExoPlayer
-  internal val defaultBridgeProvider by lazy(NONE) {
+  private val defaultBridgeProvider by lazy(NONE) {
     val userAgent = Common.getUserAgent(this.app, BuildConfig.LIB_NAME)
     val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
