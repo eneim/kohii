@@ -18,6 +18,8 @@ package kohii.v1.core
 
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RestrictTo
+import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo
 import com.google.android.exoplayer2.Player
 import kohii.v1.PendingState
@@ -37,7 +39,8 @@ object Common {
   internal val PENDING_PAUSE = PendingState(false)
 
   // ExoPlayer's doesn't catch a RuntimeException and crash if Device has too many App installed.
-  internal fun getUserAgent(
+  @RestrictTo(LIBRARY_GROUP)
+  fun getUserAgent(
     context: Context,
     appName: String
   ): String {

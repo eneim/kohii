@@ -19,9 +19,9 @@ package kohii.v1.exo
 import android.content.Context
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ExoPlayer
-import kohii.v1.media.Media
 import kohii.v1.core.Bridge
 import kohii.v1.core.BridgeCreator
+import kohii.v1.media.Media
 
 /**
  * @author eneim (2018/10/28).

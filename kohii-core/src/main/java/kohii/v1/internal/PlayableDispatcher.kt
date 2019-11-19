@@ -112,10 +112,12 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
   private fun justPlay(playable: Playable) {
     val delay = playable.playback?.config?.delay ?: 0
     if (handler.isInitialized()) handler.value.removeMessages(
-        MSG_PLAY, playable)
+        MSG_PLAY, playable
+    )
     if (delay > 0) {
       val msg = handler.value.obtainMessage(
-          MSG_PLAY, playable)
+          MSG_PLAY, playable
+      )
       handler.value.sendMessageDelayed(msg, delay.toLong())
     } else {
       playable.onPlay()
@@ -124,7 +126,8 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
 
   private fun justPause(playable: Playable) {
     if (handler.isInitialized()) handler.value.removeMessages(
-        MSG_PLAY, playable)
+        MSG_PLAY, playable
+    )
     playable.onPause()
   }
 }

@@ -19,12 +19,12 @@ package kohii.v1.sample.ui.pagers
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.core.Common
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseViewHolder
 
 internal class ItemsAdapter(
-  private val master: Master,
+  private val kohii: Kohii,
   private val pagePos: Int
 ) : Adapter<BaseViewHolder>() {
 
@@ -64,7 +64,7 @@ internal class ItemsAdapter(
     if (holder is VideoViewHolder) {
       holder.videoUrl = assetVideoUri
       val videoTag = holder.videoTag
-      master.setUp(assetVideoUri) {
+      kohii.setUp(assetVideoUri) {
         tag = requireNotNull(videoTag)
         repeatMode = Common.REPEAT_MODE_ONE
       }

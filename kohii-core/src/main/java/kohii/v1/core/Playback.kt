@@ -23,15 +23,15 @@ import androidx.annotation.FloatRange
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
+import kohii.v1.BuildConfig
 import kohii.v1.core.Host.Companion.BOTH_AXIS
 import kohii.v1.core.Host.Companion.HORIZONTAL
 import kohii.v1.core.Host.Companion.NONE_AXIS
 import kohii.v1.core.Host.Companion.VERTICAL
+import kohii.v1.core.Switch.Callback
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kohii.v1.BuildConfig
-import kohii.v1.core.Switch.Callback
 import java.util.ArrayDeque
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
@@ -40,7 +40,7 @@ import kotlin.properties.Delegates
 abstract class Playback(
   internal val manager: Manager,
   internal val host: Host,
-  internal val config: Config = Config(),
+  val config: Config = Config(),
   val container: ViewGroup
 ) : PlayerEventListener,
     ErrorListener, Callback {

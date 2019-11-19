@@ -34,8 +34,12 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedT
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.util.ErrorMessageProvider
+import kohii.v1.R
 import kohii.v1.addEventListener
+import kohii.v1.core.AbstractBridge
 import kohii.v1.core.Common
+import kohii.v1.core.PlayerEventListener
+import kohii.v1.core.VolumeInfoController
 import kohii.v1.getVolumeInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
@@ -44,10 +48,6 @@ import kohii.v1.media.PlaybackInfo.Companion.TIME_UNSET
 import kohii.v1.media.VolumeInfo
 import kohii.v1.removeEventListener
 import kohii.v1.setVolumeInfo
-import kohii.v1.core.AbstractBridge
-import kohii.v1.core.PlayerEventListener
-import kohii.v1.R
-import kohii.v1.core.VolumeInfoController
 import kotlin.math.max
 
 /**

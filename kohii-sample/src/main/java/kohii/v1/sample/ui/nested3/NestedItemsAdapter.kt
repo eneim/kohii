@@ -19,9 +19,13 @@ package kohii.v1.sample.ui.nested3
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.core.Manager
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.common.BaseViewHolder
 
-internal class NestedItemsAdapter(val manager: Manager) : Adapter<BaseViewHolder>() {
+internal class NestedItemsAdapter(
+  val kohii: Kohii,
+  val manager: Manager
+) : Adapter<BaseViewHolder>() {
 
   companion object {
     const val TYPE_SCROLL = 1
@@ -38,15 +42,9 @@ internal class NestedItemsAdapter(val manager: Manager) : Adapter<BaseViewHolder
     viewType: Int
   ): BaseViewHolder {
     return when (viewType) {
-      TYPE_SCROLL -> NestedScrollViewHolder(
-          manager, parent
-      )
-      TYPE_TEXT -> NestedTextViewHolder(
-          parent
-      )
-      TYPE_VIDEO -> NestedVideoViewHolder(
-          manager.master, parent
-      )
+      TYPE_SCROLL -> NestedScrollViewHolder(kohii, manager, parent)
+      TYPE_TEXT -> NestedTextViewHolder(parent)
+      TYPE_VIDEO -> NestedVideoViewHolder(kohii, parent)
       else -> throw IllegalArgumentException("Unknown type $viewType")
     }
   }

@@ -21,7 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -44,14 +44,14 @@ class EchoFragment : BaseFragment() {
   }
 
   private val viewModel: VolumeStateViewModel by viewModels()
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
 
   override fun onViewCreated(
     view: View,
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     kohii.register(this)
         .attach(recyclerView)
 

@@ -23,12 +23,12 @@ import kohii.v1.core.Master.MemoryMode.HIGH
 import kohii.v1.core.Master.MemoryMode.INFINITE
 import kohii.v1.core.Master.MemoryMode.LOW
 import kohii.v1.core.Master.MemoryMode.NORMAL
+import kohii.v1.core.Playback.Callback
 import kohii.v1.logInfo
 import kohii.v1.logWarn
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kohii.v1.core.Playback.Callback
 import kotlin.properties.Delegates
 
 abstract class AbstractPlayable<RENDERER : Any>(

@@ -19,9 +19,9 @@ package kohii.v1.core
 import androidx.annotation.CallSuper
 import androidx.collection.ArrayMap
 import androidx.core.util.Pools.SimplePool
+import kohii.v1.BuildConfig
 import kohii.v1.media.Media
 import kohii.v1.onEachAcquired
-import kohii.v1.BuildConfig
 
 abstract class RecycledRendererProvider(private val poolSize: Int) : RendererProvider {
 

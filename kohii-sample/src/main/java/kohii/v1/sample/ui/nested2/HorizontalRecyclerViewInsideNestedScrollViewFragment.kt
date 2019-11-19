@@ -22,7 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.text.parseAsHtml
 import androidx.recyclerview.widget.PagerSnapHelper
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_horizontal.libIntro
@@ -46,13 +46,13 @@ class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val master = Master[this]
-    master.register(this)
+    val kohii = Kohii[this]
+    kohii.register(this)
         .attach(scrollView, recyclerView)
 
     libIntro.text = getString(R.string.lib_intro).parseAsHtml()
 
-    recyclerView.adapter = HorizontalItemsAdapter(master)
+    recyclerView.adapter = HorizontalItemsAdapter(kohii)
     snapHelper = PagerSnapHelper()
     snapHelper.attachToRecyclerView(recyclerView)
   }

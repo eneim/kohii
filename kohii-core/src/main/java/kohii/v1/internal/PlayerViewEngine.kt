@@ -22,6 +22,7 @@ import kohii.v1.core.Master
 
 internal class PlayerViewEngine(
   master: Master
-) : Engine<PlayerView>(master,
+) : Engine<PlayerView>(
+    master,
     PlayerViewPlayableCreator(master.app)
 )

@@ -16,12 +16,12 @@
 
 package kohii.v1.core
 
+import kohii.v1.internal.DynamicFragmentRendererPlayback
+import kohii.v1.internal.DynamicViewRendererPlayback
+import kohii.v1.internal.StaticViewRendererPlayback
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kohii.v1.internal.StaticViewRendererPlayback
-import kohii.v1.internal.DynamicViewRendererPlayback
-import kohii.v1.internal.DynamicFragmentRendererPlayback
 
 abstract class Playable(
   val media: Media,

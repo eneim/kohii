@@ -24,7 +24,7 @@ import androidx.core.view.get
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Common
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.MediaItem
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
@@ -37,7 +37,7 @@ import kohii.v1.sample.data.Item
  */
 class VideoViewHolder(
   parent: ViewGroup,
-  val kohii: Master
+  val kohii: Kohii
 ) : BaseViewHolder(
     parent,
     R.layout.holder_mix_view

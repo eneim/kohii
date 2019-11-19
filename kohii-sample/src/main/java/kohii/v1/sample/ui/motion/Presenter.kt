@@ -17,7 +17,7 @@
 package kohii.v1.sample.ui.motion
 
 import android.view.View
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 
 /**
  *
@@ -32,5 +32,5 @@ interface Presenter {
     video: Video
   )
 
-  fun requireProvider(): Master
+  fun requireProvider(): Kohii
 }

@@ -22,9 +22,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Scope
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
@@ -32,18 +32,11 @@ import kohii.v1.sample.data.Video
 import kohii.v1.sample.svg.GlideApp
 import kotlin.properties.Delegates
 
-data class VideoItem(
-  val title: String,
-  val description: String,
-  val imageUrl: String,
-  val file: String
-)
-
 @SuppressLint("SetTextI18n")
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoItemHolder(
   parent: ViewGroup,
-  private val kohii: Master
+  private val kohii: Kohii
 ) : BaseViewHolder(parent, R.layout.holder_video_text_overlay), Playback.PlaybackListener {
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView

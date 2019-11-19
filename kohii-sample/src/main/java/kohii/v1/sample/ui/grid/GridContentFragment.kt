@@ -25,9 +25,9 @@ import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
-import kohii.v1.core.Master
 import kohii.v1.core.Master.MemoryMode
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -38,10 +38,10 @@ class GridContentFragment : BaseFragment() {
 
   private var callback: Callback? = null
 
-  private val master by lazy(NONE) { Master[this] }
+  private val kohii by lazy(NONE) { Kohii[this] }
   private val adapter by lazy(NONE) {
     ItemsAdapter(
-        master,
+        kohii,
         shouldBindVideo = { !selectionTracker.isSelected(it) },
         onVideoClick = { callback?.onSelected(it) }
     )
@@ -74,7 +74,7 @@ class GridContentFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    master.register(this, MemoryMode.BALANCED)
+    kohii.register(this, MemoryMode.BALANCED)
         .attach(container)
 
     val spanCount = resources.getInteger(R.integer.grid_span)

@@ -18,10 +18,10 @@ package kohii.v1.internal
 
 import android.view.LayoutInflater
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.media.Media
 import kohii.v1.R
 import kohii.v1.core.Playback
 import kohii.v1.core.ViewRendererProvider
+import kohii.v1.media.Media
 
 internal class PlayerViewProvider : ViewRendererProvider() {
 

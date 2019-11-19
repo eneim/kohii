@@ -32,11 +32,11 @@ import com.google.android.youtube.player.YouTubePlayer.PlaybackEventListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStateChangeListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.MINIMAL
 import com.google.android.youtube.player.YouTubePlayer.Provider
+import kohii.v1.core.AbstractBridge
 import kohii.v1.core.Common
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kohii.v1.core.AbstractBridge
 import kotlin.properties.Delegates
 
 class YouTubeBridge(

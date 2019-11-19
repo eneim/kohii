@@ -21,7 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
@@ -51,7 +51,7 @@ class MixMediaFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Master[this].also {
+    val kohii = Kohii[this].also {
       it.register(this)
           .attach(recyclerView)
     }

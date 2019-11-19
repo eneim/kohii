@@ -22,9 +22,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kotlinx.android.synthetic.main.holder_player_view.playerContainer
@@ -64,7 +64,7 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     return inflater.inflate(R.layout.holder_player_view, container, false)
   }
 
-  private lateinit var master: Master
+  private lateinit var kohii: Kohii
   private val rebinder: Rebinder by lazy(NONE) {
     requireNotNull(arguments?.getParcelable<Rebinder>(EXTRA_REBINDER))
   }
@@ -75,23 +75,23 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
   ) {
     super.onViewCreated(view, savedInstanceState)
     playerContainer.setAspectRatio(16 / 9F)
-    master = Master[this]
-    master.register(this)
+    kohii = Kohii[this]
+    kohii.register(this)
         .attach(playerContainer)
   }
 
   override fun onStart() {
     super.onStart()
     rebinder.with { callbacks = arrayOf(this@SinglePlayerFragment) }
-        .bind(master, playerView) {
+        .bind(kohii, playerView) {
           callback?.onShown(rebinder)
-          master.stick(it)
+          kohii.stick(it)
         }
   }
 
   override fun onInActive(playback: Playback) {
     super.onInActive(playback)
-    master.unstick(playback)
+    kohii.unstick(playback)
     callback?.onDismiss(rebinder)
   }
 

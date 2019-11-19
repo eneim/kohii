@@ -23,7 +23,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.v1.core.Common
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
@@ -41,7 +41,7 @@ class ViewPager2WithViewsFragment : BaseFragment() {
   }
 
   class VideoViewHolder(
-    val kohii: Master,
+    val kohii: Kohii,
     itemView: View
   ) : ViewHolder(itemView) {
 
@@ -57,7 +57,7 @@ class ViewPager2WithViewsFragment : BaseFragment() {
   }
 
   class VideoPagerAdapter(
-    val kohii: Master,
+    val kohii: Kohii,
     private val videos: List<Video>
   ) : Adapter<VideoViewHolder>() {
     override fun onCreateViewHolder(
@@ -95,7 +95,7 @@ class ViewPager2WithViewsFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Master[this]
+    val kohii = Kohii[this]
     kohii.register(this)
         .attach(viewPager, viewPager.getChildAt(0))
 

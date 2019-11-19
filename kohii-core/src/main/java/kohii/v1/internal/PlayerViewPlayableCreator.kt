@@ -24,19 +24,19 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
-import kohii.v1.ExoPlayer
-import kohii.v1.core.Playable.Config
-import kohii.v1.media.Media
 import kohii.v1.BuildConfig
+import kohii.v1.ExoPlayer
 import kohii.v1.core.Common
 import kohii.v1.core.Creator
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
+import kohii.v1.core.Playable.Config
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
 import kohii.v1.exo.DefaultExoPlayerProvider
 import kohii.v1.exo.DefaultMediaSourceFactoryProvider
 import kohii.v1.exo.PlayerViewBridgeCreator
+import kohii.v1.media.Media
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -67,7 +67,8 @@ internal class PlayerViewPlayableCreator(
 
     // MediaSourceFactoryProvider
     val fileDir = this.app.getExternalFilesDir(null) ?: this.app.filesDir
-    val contentDir = File(fileDir,
+    val contentDir = File(
+        fileDir,
         CACHE_CONTENT_DIRECTORY
     )
     val mediaCache: Cache =

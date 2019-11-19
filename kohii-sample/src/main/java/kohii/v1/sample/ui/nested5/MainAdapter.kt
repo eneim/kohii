@@ -24,6 +24,7 @@ import androidx.core.util.putAll
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.core.Manager
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
@@ -31,6 +32,7 @@ import kohii.v1.sample.common.inflateView
 import kohii.v1.sample.data.Item
 
 class MainAdapter(
+  val kohii: Kohii,
   val manager: Manager,
   private val items: List<Item>
 ) : Adapter<BaseViewHolder>() {
@@ -72,7 +74,7 @@ class MainAdapter(
     holder.bind(position)
     if (holder is NestedRecyclerViewViewHolder) {
       manager.attach(holder.container)
-      val adapter = NestedRecyclerViewAdapter(position, items, manager.master)
+      val adapter = NestedRecyclerViewAdapter(position, items, kohii)
       holder.container.adapter = adapter
 
       if (holder.container.onFlingListener == null) {

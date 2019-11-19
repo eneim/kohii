@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt1
+package kohii.v1.sample.ui.echo
 
-import kohii.v1.core.AbstractPlayable
-import kohii.v1.core.Bridge
-import kohii.v1.core.Master
-import kohii.v1.media.Media
+import kohii.v1.media.VolumeInfo
 
-class YouTube1Playable(
-  master: Master,
-  media: Media,
-  config: Config,
-  bridge: Bridge<YouTubePlayerFragment>
-) : AbstractPlayable<YouTubePlayerFragment>(master, media, config, bridge) {
+interface VolumeStore {
 
-  override var renderer: Any?
-    get() = bridge.renderer
-    set(value) {
-      require(value is YouTubePlayerFragment)
-      bridge.renderer = value
-    }
+  fun get(key: Int): VolumeInfo
 
-  override fun onConfigChange() = false
+  fun set(
+    key: Int,
+    volumeInfo: VolumeInfo
+  )
 }

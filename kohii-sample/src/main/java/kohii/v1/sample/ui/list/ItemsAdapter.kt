@@ -22,8 +22,8 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
-import kohii.v1.core.Master
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author eneim (2018/07/06).
  */
 class ItemsAdapter(
-  private val kohii: Master,
+  private val kohii: Kohii,
   private val fragment: VerticalListRecyclerViewFragment,
   private val items: List<Item>,
   private val dp2Px: (Int) -> Int

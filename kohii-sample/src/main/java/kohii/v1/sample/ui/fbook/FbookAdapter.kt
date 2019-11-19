@@ -19,9 +19,8 @@ package kohii.v1.sample.ui.fbook
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.core.Manager
-import kohii.v1.core.Master
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.fbook.vh.FbookItemHolder
@@ -30,8 +29,7 @@ import kohii.v1.sample.ui.fbook.vh.TextViewHolder
 import kohii.v1.sample.ui.fbook.vh.VideoViewHolder
 
 internal class FbookAdapter(
-  val kohii: Master,
-  val manager: Manager,
+  val kohii: Kohii,
   val videos: List<Video>,
   val fragment: FbookFragment,
   val shouldBindVideo: (Rebinder?) -> Boolean,
@@ -66,7 +64,7 @@ internal class FbookAdapter(
     return when (viewType) {
       TYPE_TEXT -> TextViewHolder(parent)
       TYPE_PHOTO -> PhotoViewHolder(parent)
-      TYPE_VIDEO -> VideoViewHolder(parent, kohii, manager, shouldBindVideo).also { vh ->
+      TYPE_VIDEO -> VideoViewHolder(parent, kohii, shouldBindVideo).also { vh ->
         vh.volume.setOnClickListener { volumeClick(vh) }
         vh.playAgain.setOnClickListener {
           // Once completed, a Playback needs to be reset to starting position.

@@ -32,10 +32,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import kohii.v1.core.Common
 import kohii.v1.core.Manager
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.core.Scope
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
@@ -67,7 +67,7 @@ class FbookFragment : BaseFragment(),
     fun newInstance() = FbookFragment()
   }
 
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
 
   private val viewModel: FbookViewModel by viewModels()
 
@@ -125,7 +125,7 @@ class FbookFragment : BaseFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(recyclerView, content)
 
@@ -145,7 +145,7 @@ class FbookFragment : BaseFragment(),
     }
 
     val videos = getApp().videos
-    val adapter = FbookAdapter(kohii, manager, videos, this,
+    val adapter = FbookAdapter(kohii, videos, this,
         shouldBindVideo = { rebinder -> currentOverlayRebinder != rebinder },
         volumeClick = {
           val current = requireNotNull(viewModel.timelineVolume.value)

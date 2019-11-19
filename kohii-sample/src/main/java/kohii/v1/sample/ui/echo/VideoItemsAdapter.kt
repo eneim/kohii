@@ -18,24 +18,14 @@ package kohii.v1.sample.ui.echo
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Video
 
-interface VolumeStore {
-
-  fun get(key: Int): VolumeInfo
-
-  fun set(
-    key: Int,
-    volumeInfo: VolumeInfo
-  )
-}
-
 class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val kohii: Master,
+  private val kohii: Kohii,
   private val volumeStore: VolumeStore,
   internal val volumeInfoUpdater: (VideoItemHolder) -> VolumeInfo?
 ) : Adapter<BaseViewHolder>() {

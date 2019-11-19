@@ -24,20 +24,17 @@ import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.Common
-import kohii.v1.core.Manager
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
 
-@Suppress("MemberVisibilityCanBePrivate")
 internal class VideoViewHolder(
   parent: ViewGroup,
-  val kohii: Master,
-  val manager: Manager,
+  val kohii: Kohii,
   val shouldBind: (Rebinder?) -> Boolean
 ) : FbookItemHolder(parent),
     Playback.PlaybackListener,

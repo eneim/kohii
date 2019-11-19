@@ -18,9 +18,9 @@ package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.AbstractPlayable
+import kohii.v1.core.Bridge
 import kohii.v1.core.Master
 import kohii.v1.media.Media
-import kohii.v1.core.Bridge
 
 class YouTube2Playable(
   master: Master,

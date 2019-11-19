@@ -31,10 +31,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCa
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.core.Scope
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
@@ -91,7 +91,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
   private lateinit var motionLayout: MotionLayout
   private lateinit var overlaySheet: BottomSheetBehavior<*>
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
 
   private val sheetCallback = object : BottomSheetCallback() {
     override fun onSlide(
@@ -127,7 +127,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(recyclerView, video_player_container)
 

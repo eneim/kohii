@@ -30,11 +30,11 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Util
-import kohii.v1.logInfo
-import kohii.v1.media.VolumeInfo
 import kohii.v1.core.VolumeChangedListener
 import kohii.v1.core.VolumeChangedListeners
 import kohii.v1.core.VolumeInfoController
+import kohii.v1.logInfo
+import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**

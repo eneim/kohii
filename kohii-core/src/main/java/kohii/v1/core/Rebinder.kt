@@ -50,6 +50,14 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
   }
 
   fun bind(
+    engine: Engine<*>,
+    container: ViewGroup,
+    callback: ((Playback) -> Unit)? = null
+  ) {
+    this.bind(engine.master, container, callback)
+  }
+
+  fun bind(
     master: Master,
     container: ViewGroup,
     callback: ((Playback) -> Unit)? = null

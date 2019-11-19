@@ -23,7 +23,6 @@ import android.content.ComponentCallbacks2
 import android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
 import android.content.Context
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
@@ -31,29 +30,25 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
-import androidx.core.net.toUri
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ExoPlayer
-import kohii.v1.core.Binder.Options
-import kohii.v1.findActivity
-import kohii.v1.logInfo
-import kohii.v1.media.Media
-import kohii.v1.media.MediaItem
-import kohii.v1.media.PlaybackInfo
-import kohii.v1.media.VolumeInfo
 import kohii.v1.PendingState
+import kohii.v1.core.Binder.Options
 import kohii.v1.core.Master.MemoryMode.AUTO
 import kohii.v1.core.Master.MemoryMode.BALANCED
 import kohii.v1.core.Master.MemoryMode.LOW
 import kohii.v1.core.Playback.Config
+import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
 import kohii.v1.internal.DynamicViewRendererPlayback
 import kohii.v1.internal.PlayerViewEngine
 import kohii.v1.internal.StaticViewRendererPlayback
+import kohii.v1.logInfo
+import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
@@ -129,12 +124,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     @Volatile private var master: Master? = null
 
     @JvmStatic
-    operator fun get(context: Context) = master ?: synchronized(
-        Master::class.java) {
-      master
-          ?: Master(
-              context
-          ).also { master = it }
+    operator fun get(context: Context) = master ?: synchronized(Master::javaClass) {
+      master ?: Master(context).also { master = it }
     }
 
     @JvmStatic
@@ -238,10 +229,12 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
     // Remove any queued releasing for the same Playable, as we are binding it now.
     dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable)
+        MSG_RELEASE_PLAYABLE, playable
+    )
     // Remove any queued destruction for the same Playable, as we are binding it now.
     dispatcher.removeMessages(
-        MSG_DESTROY_PLAYABLE, playable)
+        MSG_DESTROY_PLAYABLE, playable
+    )
     // Keep track of which Playable will be bound to which Container.
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
@@ -259,7 +252,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     clearState: Boolean
   ) {
     dispatcher.removeMessages(
-        MSG_DESTROY_PLAYABLE, playable)
+        MSG_DESTROY_PLAYABLE, playable
+    )
     dispatcher.obtainMessage(MSG_DESTROY_PLAYABLE, clearState.compareTo(true), -1, playable)
         .sendToTarget()
   }
@@ -333,7 +327,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
       requests.filter { it.key.context.findActivity() === group.activity }
           .forEach {
             dispatcher.removeMessages(
-                MSG_BIND_PLAYABLE, it.key)
+                MSG_BIND_PLAYABLE, it.key
+            )
             it.value.playable.playback = null
             requests.remove(it.key)
           }
@@ -361,13 +356,15 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     loadSource: Boolean = false
   ) {
     dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable)
+        MSG_RELEASE_PLAYABLE, playable
+    )
     playable.onPrepare(loadSource)
   }
 
   internal fun releasePlayable(playable: Playable) {
     dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable)
+        MSG_RELEASE_PLAYABLE, playable
+    )
     dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
         .sendToTarget()
   }
@@ -399,37 +396,16 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     return registerInternal(activity, activity, activity, memoryMode = memoryMode)
   }
 
-  @ExoPlayer
-  inline fun setUp(
-    media: Media,
-    crossinline options: Options.() -> Unit = { }
-  ): Binder<PlayerView> {
-    return requestDefaultEngine().setUp(media, options)
+  fun registerEngine(engine: Engine<*>) {
+    engines.put(engine.creator.rendererType, engine)
+        ?.cleanUp()
   }
-
-  @ExoPlayer
-  inline fun setUp(
-    uri: Uri,
-    crossinline options: Options.() -> Unit = {}
-  ) = setUp(MediaItem(uri), options)
 
   @ExoPlayer
   inline fun setUp(
     url: String,
     crossinline options: Options.() -> Unit = {}
-  ) = setUp(url.toUri(), options)
-
-  // For Java
-  @ExoPlayer
-  fun setUp(url: String) = setUp(url) {}
-
-  // For Java
-  @ExoPlayer
-  fun setUp(uri: Uri) = requestDefaultEngine().setUp(uri)
-
-  // For Java
-  @ExoPlayer
-  fun setUp(media: Media) = requestDefaultEngine().setUp(media)
+  ) = requestDefaultEngine().setUp(url, options)
 
   @ExoPlayer
   fun fetchRebinder(tag: Any?): Rebinder? {
@@ -491,20 +467,6 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     playback.manager.refresh()
   }
 
-  fun applyVolumeInfo(
-    volumeInfo: VolumeInfo,
-    target: Any,
-    scope: Scope
-  ) {
-    when (target) {
-      is Playback -> target.manager.applyVolumeInfo(volumeInfo, target, scope)
-      is Host -> target.manager.applyVolumeInfo(volumeInfo, target, scope)
-      is Manager -> target.applyVolumeInfo(volumeInfo, target, scope)
-      is Group -> target.managers.forEach { it.applyVolumeInfo(volumeInfo, it, scope) }
-      else -> throw IllegalArgumentException("Unknown target for VolumeInfo: $target")
-    }
-  }
-
   // Lock all resources.
   fun lock() {
     TODO()
@@ -537,9 +499,11 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   ) {
     // Cancel any pending release/destroy request. This Playable deserves to live a bit longer.
     dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable)
+        MSG_RELEASE_PLAYABLE, playable
+    )
     dispatcher.removeMessages(
-        MSG_DESTROY_PLAYABLE, playable)
+        MSG_DESTROY_PLAYABLE, playable
+    )
     playables[playable] = tag
     val host = groups.asSequence()
         .mapNotNull { it.findHostForContainer(container) }
@@ -601,7 +565,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
           // the 'samePlayable' Playback
           samePlayable.manager.removePlayback(samePlayable)
           dispatcher.removeMessages(
-              MSG_DESTROY_PLAYABLE, playable)
+              MSG_DESTROY_PLAYABLE, playable
+          )
           playable.playback = createNew
           host.manager.addPlayback(createNew)
           createNew
@@ -613,7 +578,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
           // the 'sameContainer'
           sameContainer.manager.removePlayback(sameContainer)
           dispatcher.removeMessages(
-              MSG_DESTROY_PLAYABLE, playable)
+              MSG_DESTROY_PLAYABLE, playable
+          )
           playable.playback = createNew
           host.manager.addPlayback(createNew)
           createNew
@@ -629,7 +595,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
             sameContainer.manager.removePlayback(sameContainer)
             samePlayable.manager.removePlayback(samePlayable)
             dispatcher.removeMessages(
-                MSG_DESTROY_PLAYABLE, playable)
+                MSG_DESTROY_PLAYABLE, playable
+            )
             playable.playback = createNew
             host.manager.addPlayback(createNew)
             createNew

@@ -18,12 +18,12 @@ package kohii.v1.sample.ui.nested4
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.common.BaseViewHolder
 
 internal class ItemsAdapter(
-  private val master: Master,
+  private val kohii: Kohii,
   private val preferItemCount: Int = Int.MAX_VALUE
 ) : Adapter<BaseViewHolder>() {
 
@@ -62,7 +62,7 @@ internal class ItemsAdapter(
     if (holder is VideoViewHolder) {
       holder.videoUrl = DemoApp.assetVideoUri
       val videoTag = holder.videoTag
-      master.setUp(DemoApp.assetVideoUri) {
+      kohii.setUp(DemoApp.assetVideoUri) {
         tag = requireNotNull(videoTag)
       }
           .bind(holder.container)

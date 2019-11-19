@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.mix
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Item
@@ -28,7 +28,7 @@ import kohii.v1.sample.data.Item
  */
 class ItemsAdapter(
   private val items: List<Item>,
-  private val kohii: Master
+  private val kohii: Kohii
 ) : Adapter<BaseViewHolder>() {
 
   init {

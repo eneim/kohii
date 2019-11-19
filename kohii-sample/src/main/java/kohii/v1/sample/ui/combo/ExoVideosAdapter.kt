@@ -20,15 +20,15 @@ import android.net.Uri
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.core.Common
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Playback.Callback
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.MediaItem
 import kohii.v1.sample.data.DrmItem
 import kohii.v1.sample.data.Item
 
 class ExoVideosAdapter(
-  val kohii: Master,
+  val kohii: Kohii,
   private val items: List<Item>,
   private val onClick: ((ExoVideoHolder, Int) -> Unit)? = null,
   private val onLoad: ((ExoVideoHolder, Int) -> Unit)? = null

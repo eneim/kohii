@@ -23,9 +23,9 @@ import androidx.core.view.ViewCompat
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Common
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
 import kohii.v1.sample.ui.list.data.Item
@@ -36,7 +36,7 @@ import kohii.v1.sample.ui.list.data.Item
 class VideoViewHolder(
   inflater: LayoutInflater,
   parent: ViewGroup,
-  private val kohii: Master,
+  private val kohii: Kohii,
   private val listener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
     View.OnClickListener, Playback.Callback {
