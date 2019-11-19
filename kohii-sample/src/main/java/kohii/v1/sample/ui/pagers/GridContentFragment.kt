@@ -23,7 +23,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 import kohii.v1.core.Master
 import kohii.v1.core.Master.MemoryMode
-import kohii.v1.Prioritized
+import kohii.v1.core.Prioritized
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_debug_child.container

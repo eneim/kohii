@@ -35,7 +35,9 @@ import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
-import kohii.v1.Prioritized
+import kohii.v1.internal.Organizer
+import kohii.v1.internal.PlayableDispatcher
+import kohii.v1.internal.PlayerViewProvider
 import java.util.ArrayDeque
 import kotlin.properties.Delegates
 

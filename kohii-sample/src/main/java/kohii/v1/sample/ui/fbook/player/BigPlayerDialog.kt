@@ -23,7 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.v1.core.DefaultController
+import kohii.v1.exo.DefaultControlDispatcher
 import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
@@ -145,7 +145,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
 
     rebinder
         .with {
-          controller = DefaultController(manager, playerView)
+          controller = DefaultControlDispatcher(manager, playerView)
           callbacks = arrayOf(this@BigPlayerDialog)
         }
         .bind(kohii, playerView) {

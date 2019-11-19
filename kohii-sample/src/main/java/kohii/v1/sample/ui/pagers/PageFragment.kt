@@ -25,7 +25,7 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.core.Common
 import kohii.v1.core.Master
 import kohii.v1.core.Playback
-import kohii.v1.Prioritized
+import kohii.v1.core.Prioritized
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.isLandscape

@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import kohii.v1.core.Common
+import kohii.v1.core.Master
+import kohii.v1.core.Playable
 import kotlin.LazyThreadSafetyMode.NONE
 
 internal class PlayableDispatcher(val master: Master) : Handler.Callback {

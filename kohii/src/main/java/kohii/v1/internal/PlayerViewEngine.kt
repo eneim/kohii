@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
-import android.view.LayoutInflater
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.media.Media
-import kohii.v1.R
+import kohii.v1.core.Engine
+import kohii.v1.core.Master
 
-internal class PlayerViewProvider : ViewRendererProvider() {
-
-  override fun getMediaType(media: Media): Int {
-    return if (media.mediaDrm != null) R.layout.kohii_player_surface_view else R.layout.kohii_player_textureview
-  }
-
-  override fun createRenderer(
-    playback: Playback,
-    mediaType: Int
-  ): PlayerView {
-    return LayoutInflater.from(playback.container.context)
-        .inflate(mediaType, playback.container, false) as PlayerView
-  }
-}
+internal class PlayerViewEngine(
+  master: Master
+) : Engine<PlayerView>(master,
+    PlayerViewPlayableCreator(master.app)
+)

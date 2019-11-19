@@ -14,52 +14,40 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
-import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.contains
+import kohii.v1.core.Host
+import kohii.v1.core.Manager
+import kohii.v1.core.Playback
 
-// Playback whose Container is to contain the actual Renderer, and the Renderer is created
-// on-demand, right before the playback should start.
-internal class DynamicViewRendererPlayback(
+// Playback whose Container is also the Renderer.
+// This Playback will request the Playable to setup the Renderer as soon as it is active, and
+// release the Renderer as soon as it is inactive.
+internal class StaticViewRendererPlayback(
   manager: Manager,
   host: Host,
   config: Config,
   container: ViewGroup
 ) : Playback(manager, host, config, container) {
 
-  override fun onPlay() {
-    super.onPlay()
+  override fun onActive() {
+    super.onActive()
     playable?.considerRequestRenderer(this)
   }
 
-  override fun onPause() {
-    super.onPause()
+  override fun onInActive() {
+    super.onInActive()
     playable?.considerReleaseRenderer(this)
   }
 
   override fun onAttachRenderer(renderer: Any?): Boolean {
-    if (renderer == null) return false
-    require(renderer is View && renderer !== container)
-    if (container.contains(renderer)) return false
-
-    val parent = renderer.parent
-    if (parent is ViewGroup && parent !== container) {
-      parent.removeView(renderer)
-    }
-
-    // default implementation
-    container.removeAllViews()
-    container.addView(renderer)
-    return true
+    require(renderer == null || renderer === container)
+    return true // true because we can always use this renderer.
   }
 
   override fun onDetachRenderer(renderer: Any?): Boolean {
-    if (renderer == null) return false
-    require(renderer is View && renderer !== container)
-    if (!container.contains(renderer)) return false
-    container.removeView(renderer)
-    return true
+    require(renderer == null || renderer === container)
+    return false // false because we just never detach this renderer.
   }
 }

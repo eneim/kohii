@@ -31,8 +31,6 @@ import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 import kohii.v1.BuildConfig
-import kohii.v1.ErrorListener
-import kohii.v1.PlayerEventListener
 import kohii.v1.core.Switch.Callback
 import java.util.ArrayDeque
 import kotlin.LazyThreadSafetyMode.NONE
@@ -44,7 +42,8 @@ abstract class Playback(
   internal val host: Host,
   internal val config: Config = Config(),
   val container: ViewGroup
-) : PlayerEventListener, ErrorListener, Callback {
+) : PlayerEventListener,
+    ErrorListener, Callback {
 
   companion object {
     @Suppress("unused")

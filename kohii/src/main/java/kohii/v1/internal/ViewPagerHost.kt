@@ -14,38 +14,45 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver.OnScrollChangedListener
-import kotlin.LazyThreadSafetyMode.NONE
+import androidx.viewpager.widget.ViewPager
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener
+import kohii.v1.core.Host
+import kohii.v1.core.Manager
+import kohii.v1.core.Playback
 
-open class ViewGroupHost(
+class ViewPagerHost(
   manager: Manager,
-  override val root: ViewGroup
-) : Host(manager, root) {
-
-  private val globalScrollChangeListener by lazy(NONE) {
-    OnScrollChangedListener { manager.refresh() }
-  }
+  override val root: ViewPager
+) : Host(manager, root), OnPageChangeListener {
 
   override fun onAdded() {
     super.onAdded()
-    onAddedInternal()
+    root.addOnPageChangeListener(this)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    onRemovedInternal()
+    root.removeOnPageChangeListener(this)
   }
 
-  internal open fun onAddedInternal() {
-    root.viewTreeObserver.addOnScrollChangedListener(globalScrollChangeListener)
+  override fun onPageScrollStateChanged(state: Int) {
+    manager.refresh()
   }
 
-  internal open fun onRemovedInternal() {
-    root.viewTreeObserver.removeOnScrollChangedListener(globalScrollChangeListener)
+  override fun onPageScrolled(
+    position: Int,
+    positionOffset: Float,
+    positionOffsetPixels: Int
+  ) {
+    // Do nothing
+  }
+
+  override fun onPageSelected(position: Int) {
+    manager.refresh()
   }
 
   override fun accepts(container: ViewGroup): Boolean {
@@ -63,6 +70,6 @@ open class ViewGroupHost(
   }
 
   override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {
-    return selectByOrientation(candidates, orientation = NONE_AXIS)
+    return selectByOrientation(candidates, orientation = HORIZONTAL)
   }
 }

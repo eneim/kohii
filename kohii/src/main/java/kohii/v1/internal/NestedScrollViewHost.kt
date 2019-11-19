@@ -14,42 +14,39 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.viewpager.widget.ViewPager
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
+import androidx.core.widget.NestedScrollView
+import androidx.core.widget.NestedScrollView.OnScrollChangeListener
+import kohii.v1.core.Host
+import kohii.v1.core.Manager
+import kohii.v1.core.Playback
 
-class ViewPagerHost(
+class NestedScrollViewHost(
   manager: Manager,
-  override val root: ViewPager
-) : Host(manager, root), OnPageChangeListener {
+  override val root: NestedScrollView
+) : Host(manager, root), OnScrollChangeListener {
+
+  override fun onScrollChange(
+    v: NestedScrollView?,
+    scrollX: Int,
+    scrollY: Int,
+    oldScrollX: Int,
+    oldScrollY: Int
+  ) {
+    manager.refresh()
+  }
 
   override fun onAdded() {
     super.onAdded()
-    root.addOnPageChangeListener(this)
+    root.setOnScrollChangeListener(this)
   }
 
   override fun onRemoved() {
     super.onRemoved()
-    root.removeOnPageChangeListener(this)
-  }
-
-  override fun onPageScrollStateChanged(state: Int) {
-    manager.refresh()
-  }
-
-  override fun onPageScrolled(
-    position: Int,
-    positionOffset: Float,
-    positionOffsetPixels: Int
-  ) {
-    // Do nothing
-  }
-
-  override fun onPageSelected(position: Int) {
-    manager.refresh()
+    root.setOnScrollChangeListener(null as OnScrollChangeListener?)
   }
 
   override fun accepts(container: ViewGroup): Boolean {
@@ -67,6 +64,6 @@ class ViewPagerHost(
   }
 
   override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {
-    return selectByOrientation(candidates, orientation = HORIZONTAL)
+    return selectByOrientation(candidates, orientation = VERTICAL)
   }
 }

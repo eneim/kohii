@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
+import kohii.v1.core.Playback
 import kotlin.properties.Delegates
 
+// TODO revise the design for this class
 internal class Organizer {
 
   internal var selection: List<Playback> by Delegates.observable(

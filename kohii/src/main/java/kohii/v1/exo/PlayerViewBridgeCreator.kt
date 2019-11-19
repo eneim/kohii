@@ -20,19 +20,19 @@ import android.content.Context
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ExoPlayer
 import kohii.v1.media.Media
-import kohii.v1.Bridge
-import kohii.v1.BridgeProvider
+import kohii.v1.core.Bridge
+import kohii.v1.core.BridgeCreator
 
 /**
  * @author eneim (2018/10/28).
  */
 @ExoPlayer
-class PlayerViewBridgeProvider(
+class PlayerViewBridgeCreator(
   private val playerProvider: ExoPlayerProvider,
   private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
-) : BridgeProvider<PlayerView> {
+) : BridgeCreator<PlayerView> {
 
-  override fun provideBridge(
+  override fun createBridge(
     context: Context,
     media: Media
   ): Bridge<PlayerView> {

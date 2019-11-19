@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.core
 
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
@@ -164,3 +164,16 @@ class ErrorListeners : CopyOnWriteArraySet<ErrorListener>(),
     this.forEach { it.onError(error) }
   }
 }
+
+interface VolumeInfoController {
+
+  val volumeInfo: VolumeInfo
+
+  fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
+
+  fun addVolumeChangedListener(listener: VolumeChangedListener)
+
+  fun removeVolumeChangedListener(listener: VolumeChangedListener?)
+}
+
+interface PlayableManager

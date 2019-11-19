@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
@@ -24,6 +24,9 @@ import androidx.recyclerview.widget.RecycleViewUtils
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import kohii.v1.core.Host
+import kohii.v1.core.Manager
+import kohii.v1.core.Playback
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 

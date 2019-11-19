@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +24,10 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import kohii.v1.Experiment
+import kohii.v1.core.Host
+import kohii.v1.core.Manager
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
 
 // TODO when using with YouTube Player SDK, we want to use its restoring mechanism (init with restore flag).
 //  In that case, we may need to skip the detaching of Fragment.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.graphics.Rect
 import android.os.Handler
@@ -26,6 +26,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
 import androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
 import androidx.core.view.WindowInsetsCompat
+import kohii.v1.core.Manager
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -235,7 +236,9 @@ internal class BehaviorWrapper<V : View>(
     ev: MotionEvent
   ): Boolean {
     handler.removeCallbacksAndMessages(null)
-    handler.sendEmptyMessage(EVENT_TOUCH)
+    handler.sendEmptyMessage(
+        EVENT_TOUCH
+    )
     return delegate.onInterceptTouchEvent(parent, child, ev)
   }
 
@@ -310,7 +313,9 @@ internal class BehaviorWrapper<V : View>(
     ev: MotionEvent
   ): Boolean {
     handler.removeCallbacksAndMessages(null)
-    handler.sendEmptyMessage(EVENT_TOUCH)
+    handler.sendEmptyMessage(
+        EVENT_TOUCH
+    )
     return delegate.onTouchEvent(parent, child, ev)
   }
 

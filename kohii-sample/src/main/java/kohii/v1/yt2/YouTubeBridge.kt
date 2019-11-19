@@ -33,12 +33,12 @@ import kohii.v1.core.Common
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kohii.v1.BaseBridge
+import kohii.v1.core.AbstractBridge
 import kotlin.properties.Delegates
 
 class YouTubeBridge(
   private val media: Media
-) : BaseBridge<YouTubePlayerView>() {
+) : AbstractBridge<YouTubePlayerView>() {
 
   private var player: YouTubePlayer? by Delegates.observable<YouTubePlayer?>(
       initialValue = null,

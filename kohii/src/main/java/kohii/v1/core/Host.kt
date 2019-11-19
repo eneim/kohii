@@ -30,6 +30,13 @@ import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
 import kohii.v1.findCoordinatorLayoutDirectChildContainer
+import kohii.v1.internal.BehaviorWrapper
+import kohii.v1.internal.NestedScrollViewHost
+import kohii.v1.internal.RecyclerViewHost
+import kohii.v1.internal.ViewGroupHost
+import kohii.v1.internal.ViewGroupV23Host
+import kohii.v1.internal.ViewPager2Host
+import kohii.v1.internal.ViewPagerHost
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
@@ -59,7 +66,9 @@ abstract class Host constructor(
     ): Host {
       return when (root) {
         is RecyclerView -> RecyclerViewHost(manager, root)
-        is NestedScrollView -> NestedScrollViewHost(manager, root)
+        is NestedScrollView -> NestedScrollViewHost(
+            manager, root
+        )
         is ViewPager2 -> ViewPager2Host(manager, root)
         is ViewPager -> ViewPagerHost(manager, root)
         is ViewGroup -> {

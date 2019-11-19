@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.core
 
 import kotlin.LazyThreadSafetyMode.NONE
 
-abstract class BaseBridge<RENDERER : Any> : Bridge<RENDERER> {
+abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
 
   protected val eventListeners by lazy(NONE) { PlayerEventListeners() }
   protected val volumeListeners by lazy(NONE) { VolumeChangedListeners() }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.core
 
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackParameters

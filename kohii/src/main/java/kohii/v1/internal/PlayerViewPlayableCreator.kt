@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.app.Application
 import com.google.android.exoplayer2.database.ExoDatabaseProvider
@@ -28,11 +28,15 @@ import kohii.v1.ExoPlayer
 import kohii.v1.core.Playable.Config
 import kohii.v1.media.Media
 import kohii.v1.BuildConfig
+import kohii.v1.core.Common
+import kohii.v1.core.Creator
+import kohii.v1.core.Master
+import kohii.v1.core.Playable
 import kohii.v1.exo.DefaultBandwidthMeterFactory
 import kohii.v1.exo.DefaultDrmSessionManagerProvider
 import kohii.v1.exo.DefaultExoPlayerProvider
 import kohii.v1.exo.DefaultMediaSourceFactoryProvider
-import kohii.v1.exo.PlayerViewBridgeProvider
+import kohii.v1.exo.PlayerViewBridgeCreator
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -78,7 +82,7 @@ internal class PlayerViewPlayableCreator(
       DefaultDataSourceFactory(this.app, httpDataSource)
     val mediaSourceFactoryProvider =
       DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
-    PlayerViewBridgeProvider(playerProvider, mediaSourceFactoryProvider)
+    PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
   }
 
   override fun createPlayable(
@@ -90,7 +94,7 @@ internal class PlayerViewPlayableCreator(
         master,
         media,
         config,
-        defaultBridgeProvider.provideBridge(master.app, media)
+        defaultBridgeProvider.createBridge(master.app, media)
     )
   }
 

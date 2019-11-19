@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.exo
 
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
+import kohii.v1.core.Manager
 import kohii.v1.core.Playback.Controller
 
-class DefaultController(
+class DefaultControlDispatcher(
   private val manager: Manager,
   private val container: ViewGroup,
   private val kohiiCanStart: Boolean = true,

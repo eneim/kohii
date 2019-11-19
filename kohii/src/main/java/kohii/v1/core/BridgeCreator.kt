@@ -16,10 +16,15 @@
 
 package kohii.v1.core
 
-import com.google.android.exoplayer2.ui.PlayerView
+import android.content.Context
+import kohii.v1.media.Media
 
-internal class PlayerViewEngine(
-  master: Master
-) : Engine<PlayerView>(master,
-    PlayerViewPlayableCreator(master.app)
-)
+interface BridgeCreator<RENDERER : Any> {
+
+  fun createBridge(
+    context: Context,
+    media: Media
+  ): Bridge<RENDERER>
+
+  fun cleanUp()
+}

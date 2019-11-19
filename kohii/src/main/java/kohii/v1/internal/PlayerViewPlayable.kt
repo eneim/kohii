@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.media.Media
-import kohii.v1.Bridge
+import kohii.v1.core.Bridge
+import kohii.v1.core.AbstractPlayable
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
 
 internal class PlayerViewPlayable(
   master: Master,

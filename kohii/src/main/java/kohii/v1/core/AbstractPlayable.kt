@@ -28,7 +28,6 @@ import kohii.v1.logWarn
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kohii.v1.Bridge
 import kohii.v1.core.Playback.Callback
 import kotlin.properties.Delegates
 

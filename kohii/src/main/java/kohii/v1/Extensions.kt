@@ -26,6 +26,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.util.Pools.Pool
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.AudioComponent
+import kohii.v1.core.PlayerEventListener
+import kohii.v1.core.VolumeInfoController
 import kohii.v1.media.VolumeInfo
 import kotlin.math.abs
 

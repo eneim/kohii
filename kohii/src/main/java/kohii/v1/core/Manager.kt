@@ -39,7 +39,6 @@ import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
-import kohii.v1.Prioritized
 import java.util.ArrayDeque
 import kotlin.properties.Delegates
 

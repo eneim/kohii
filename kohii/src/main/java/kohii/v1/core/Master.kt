@@ -50,6 +50,10 @@ import kohii.v1.core.Master.MemoryMode.AUTO
 import kohii.v1.core.Master.MemoryMode.BALANCED
 import kohii.v1.core.Master.MemoryMode.LOW
 import kohii.v1.core.Playback.Config
+import kohii.v1.internal.DynamicFragmentRendererPlayback
+import kohii.v1.internal.DynamicViewRendererPlayback
+import kohii.v1.internal.PlayerViewEngine
+import kohii.v1.internal.StaticViewRendererPlayback
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 

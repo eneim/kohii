@@ -36,12 +36,12 @@ import kohii.v1.core.Common
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kohii.v1.BaseBridge
+import kohii.v1.core.AbstractBridge
 import kotlin.properties.Delegates
 
 class YouTubeBridge(
   private val media: Media
-) : BaseBridge<YouTubePlayerFragment>(),
+) : AbstractBridge<YouTubePlayerFragment>(),
     PlaybackEventListener,
     PlayerStateChangeListener, LifecycleObserver {
 
