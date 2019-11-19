@@ -23,10 +23,6 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 // apply plugin: 'com.getkeepsafe.dexcount'
 
-// androidExtensions {
-//   experimental = true
-// }
-
 android {
   compileSdkVersion BuildConfig.compileSdkVersion
 
@@ -65,8 +61,6 @@ configurations {
 }
 
 dependencies {
-  implementation fileTree(dir: 'libs', include: ['*.jar'])
-
   implementation Libs.ExoPlayer.all
   implementation Libs.ExoPlayer.cast
   implementation Libs.ExoPlayer.ima
@@ -89,9 +83,6 @@ dependencies {
   implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.service
   kapt Libs.AndroidX.Lifecycle.compiler
-
-  // implementation "androidx.media2:media2:1.0.0-alpha04"
-  // implementation "androidx.leanback:leanback:1.1.0-alpha01"
 
   // Required -- JUnit 4 framework
   testImplementation Libs.Common.junit

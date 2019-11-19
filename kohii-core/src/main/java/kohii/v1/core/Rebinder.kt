@@ -59,7 +59,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
         .firstOrNull()
         ?.key
     requireNotNull(playable)
-    master.bind(playable, tag, container, kohii.v1.core.Binder.Options().also {
+    master.bind(playable, tag, container, Binder.Options().also {
       it.tag = tag
       it.threshold = options.threshold
       it.preload = options.preload
