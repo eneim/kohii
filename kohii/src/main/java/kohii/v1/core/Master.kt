@@ -57,7 +57,6 @@ import kohii.v1.internal.StaticViewRendererPlayback
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
-// TODO how to know if a Playable is being rebound from a config change?
 class Master private constructor(context: Context) : PlayableManager, ComponentCallbacks2 {
 
   enum class MemoryMode {
