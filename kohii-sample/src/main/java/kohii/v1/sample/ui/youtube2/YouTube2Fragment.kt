@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import kohii.v1.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.yt2.YouTube2Engine
@@ -49,8 +48,7 @@ class YouTube2Fragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val master = Master[this]
-    val engine = YouTube2Engine(master)
+    val engine = YouTube2Engine(requireContext())
     engine.register(this)
         .attach(recyclerView)
 

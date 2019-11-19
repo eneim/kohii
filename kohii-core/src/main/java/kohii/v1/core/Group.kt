@@ -88,6 +88,10 @@ class Group(
   internal val volumeInfo: VolumeInfo
     get() = volumeInfoUpdater
 
+  internal var lock: Boolean by Delegates.observable(false) { _, _, lock ->
+    managers.forEach { it.lock = lock }
+  }
+
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
   private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()

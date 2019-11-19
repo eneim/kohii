@@ -16,6 +16,7 @@
 
 package kohii.v1.core
 
+import android.content.Context
 import android.net.Uri
 import androidx.annotation.CallSuper
 import androidx.core.net.toUri
@@ -30,11 +31,17 @@ import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
 
 // TODO support manual Playback creation in Engine instance.
-abstract class Engine<RENDERER : Any>(
-  val master: Master,
-  internal val playableCreator: PlayableCreator
+abstract class Engine<RENDERER : Any> constructor(
+  val context: Context,
+  internal val playableCreator: PlayableCreator<RENDERER>
 ) {
 
+  internal val master = Master[context]
+
+  init {
+    @Suppress("LeakingThis")
+    master.registerEngine(this)
+  }
   // TODO implement the method below.
   // abstract fun <T> supportRendererType(type: Class<T>): Boolean
 
@@ -119,6 +126,16 @@ abstract class Engine<RENDERER : Any>(
       manager.group.unstick(manager)
       manager.refresh()
     }
+  }
+
+  // target == null --> lock all
+  fun lock() {
+    master.groups.forEach { it.lock = true }
+  }
+
+  // target == null --> unlock all
+  fun unlock() {
+    master.groups.forEach { it.lock = false }
   }
 
   @CallSuper

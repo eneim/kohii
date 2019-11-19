@@ -56,8 +56,8 @@ class DefaultControlDispatcher(
   ): Boolean {
     val playable = manager.findPlayableForContainer(container)
     if (playable != null) {
-      if (playWhenReady) manager.master.play(playable)
-      else manager.master.pause(playable)
+      if (playWhenReady) manager.play(playable)
+      else manager.pause(playable)
     }
     return true
   }

@@ -275,7 +275,6 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
       playablesPendingStates.remove(playable.tag)
     }
 
-    // TODO consider to cleanup Engines if no more Playables available.
     if (playables.isEmpty()) cleanUp()
   }
 
@@ -367,16 +366,8 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         .sendToTarget()
   }
 
-  // Public APIs
-
-  fun registerEngine(engine: Engine<*>) {
-    engines.put(engine.playableCreator.rendererType, engine)
-        ?.cleanUp()
-    groups.forEach { engine.inject(it) }
-  }
-
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
-  fun play(playable: Playable) {
+  internal fun play(playable: Playable) {
     val controller = playable.playback?.config?.controller
     if (playable.tag !== NO_TAG && controller != null) {
       requireNotNull(playable.playback).also {
@@ -389,7 +380,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   }
 
   // Must be a request to pause from Client. This method will set necessary flags and refresh all.
-  fun pause(playable: Playable) {
+  internal fun pause(playable: Playable) {
     val controller = playable.playback?.config?.controller
     if (playable.tag !== NO_TAG && controller != null) {
       playablesPendingStates[playable.tag] = Common.PENDING_PAUSE
@@ -398,45 +389,12 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     }
   }
 
-  fun stick(playback: Playback) {
-    playback.manager.stick(playback.host)
-    playback.manager.group.stick(playback.manager)
-    playback.manager.refresh()
-  }
+  // Public APIs
 
-  fun stick(lifecycleOwner: LifecycleOwner) {
-    val manager = groups.asSequence()
-        .map { it.managers.find { m -> m.lifecycleOwner === lifecycleOwner } }
-        .firstOrNull()
-    if (manager != null) {
-      manager.group.stick(manager)
-      manager.refresh()
-    }
-  }
-
-  fun unstick(lifecycleOwner: LifecycleOwner) {
-    val manager = groups.asSequence()
-        .map { it.managers.find { m -> m.lifecycleOwner === lifecycleOwner } }
-        .firstOrNull()
-    if (manager != null) {
-      manager.group.unstick(manager)
-      manager.refresh()
-    }
-  }
-
-  fun unstick(playback: Playback) {
-    playback.manager.group.unstick(playback.manager)
-    playback.manager.unstick(playback.host)
-    playback.manager.refresh()
-  }
-
-  // Lock all resources.
-  fun lock() {
-    TODO()
-  }
-
-  fun unlock() {
-    TODO()
+  fun registerEngine(engine: Engine<*>) {
+    engines.put(engine.playableCreator.rendererType, engine)
+        ?.cleanUp()
+    groups.forEach { engine.inject(it) }
   }
 
   // ComponentCallbacks2

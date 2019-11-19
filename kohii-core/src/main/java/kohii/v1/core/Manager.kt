@@ -45,7 +45,7 @@ import java.util.ArrayDeque
 import kotlin.properties.Delegates
 
 class Manager(
-  val master: Master,
+  internal val master: Master,
   internal val group: Group,
   internal val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
@@ -66,6 +66,8 @@ class Manager(
       return ltr
     }
   }
+
+  internal var lock: Boolean by Delegates.observable(group.lock) { _, _, _ -> refresh() }
 
   // Use as both Queue and Stack.
   // - When adding new Host, we add it to tail of the Queue.
@@ -414,6 +416,14 @@ class Manager(
         this.master.groups.forEach { it.volumeInfoUpdater = volumeInfo }
       }
     }
+  }
+
+  fun play(playable: Playable) {
+    master.play(playable)
+  }
+
+  fun pause(playable: Playable) {
+    master.pause(playable)
   }
 
   interface OnSelectionListener {

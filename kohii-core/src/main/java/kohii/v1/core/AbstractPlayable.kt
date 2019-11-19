@@ -32,12 +32,14 @@ import kohii.v1.media.VolumeInfo
 import kotlin.properties.Delegates
 
 abstract class AbstractPlayable<RENDERER : Any>(
-  protected val master: Master,
+  engine: Engine<RENDERER>,
   media: Media,
   config: Config,
   protected val bridge: Bridge<RENDERER>
 ) : Playable(media, config),
     Callback {
+
+  protected val master = engine.master
 
   override val tag: Any = config.tag
 

@@ -19,10 +19,10 @@ package kohii.v1.core
 import kohii.v1.core.Playable.Config
 import kohii.v1.media.Media
 
-abstract class PlayableCreator(internal val rendererType: Class<*>) {
+abstract class PlayableCreator<RENDERER: Any>(internal val rendererType: Class<RENDERER>) {
 
   abstract fun createPlayable(
-    master: Master,
+    engine: Engine<RENDERER>,
     config: Config,
     media: Media
   ): Playable

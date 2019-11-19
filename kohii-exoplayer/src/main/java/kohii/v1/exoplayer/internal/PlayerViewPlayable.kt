@@ -20,21 +20,21 @@ import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
-import kohii.v1.core.Master
+import kohii.v1.core.Engine
 import kohii.v1.core.Playback
 import kohii.v1.media.Media
 
 class PlayerViewPlayable(
-  master: Master,
+  engine: Engine<PlayerView>,
   media: Media,
   config: Config,
   bridge: Bridge<PlayerView>
-) : AbstractPlayable<PlayerView>(master, media, config, bridge) {
+) : AbstractPlayable<PlayerView>(engine, media, config, bridge) {
 
   override var renderer: Any?
     get() = bridge.renderer
     set(value) {
-      require(value is PlayerView)
+      require(value is PlayerView?)
       bridge.renderer = value
     }
 
