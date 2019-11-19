@@ -35,7 +35,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.util.ErrorMessageProvider
 import kohii.v1.addEventListener
-import kohii.core.Common
+import kohii.v1.core.Common
 import kohii.v1.getVolumeInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo

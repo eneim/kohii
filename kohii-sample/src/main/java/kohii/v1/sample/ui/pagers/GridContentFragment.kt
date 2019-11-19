@@ -21,8 +21,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
-import kohii.core.Master
-import kohii.core.Master.MemoryMode
+import kohii.v1.core.Master
+import kohii.v1.core.Master.MemoryMode
 import kohii.v1.Prioritized
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment

@@ -17,7 +17,7 @@
 package kohii.v1.sample.ui.motion
 
 import android.view.View
-import kohii.core.Master
+import kohii.v1.core.Master
 
 /**
  *

@@ -22,9 +22,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Scope
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.Scope
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder

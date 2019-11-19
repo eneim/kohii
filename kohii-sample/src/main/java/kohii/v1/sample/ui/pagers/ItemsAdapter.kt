@@ -18,8 +18,8 @@ package kohii.v1.sample.ui.pagers
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Common
-import kohii.core.Master
+import kohii.v1.core.Common
+import kohii.v1.core.Master
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseViewHolder
 

@@ -16,8 +16,8 @@
 
 package kohii.v1.yt1
 
-import kohii.core.Playback
-import kohii.core.RecycledRendererProvider
+import kohii.v1.core.Playback
+import kohii.v1.core.RecycledRendererProvider
 
 internal class YouTube1RendererProvider : RecycledRendererProvider() {
 

@@ -19,9 +19,9 @@ package kohii.v1.sample.ui.nested5
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
+import kohii.v1.core.Common
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder

@@ -23,7 +23,7 @@ import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.util.putAll
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Manager
+import kohii.v1.core.Manager
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder

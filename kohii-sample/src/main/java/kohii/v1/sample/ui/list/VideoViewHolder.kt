@@ -22,10 +22,10 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Common
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
 import kohii.v1.sample.ui.list.data.Item

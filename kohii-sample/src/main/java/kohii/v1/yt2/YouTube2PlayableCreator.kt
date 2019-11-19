@@ -17,10 +17,10 @@
 package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Creator
-import kohii.core.Master
-import kohii.core.Playable
-import kohii.core.Playable.Config
+import kohii.v1.core.Creator
+import kohii.v1.core.Master
+import kohii.v1.core.Playable
+import kohii.v1.core.Playable.Config
 import kohii.v1.media.Media
 
 class YouTube2PlayableCreator : Creator(YouTubePlayerView::class.java) {

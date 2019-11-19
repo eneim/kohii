@@ -23,8 +23,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SimpleOnItemTouchListener
-import kohii.core.Master
-import kohii.core.Master.MemoryMode
+import kohii.v1.core.Master
+import kohii.v1.core.Master.MemoryMode
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_debug_nestsv_in_rv.recyclerView

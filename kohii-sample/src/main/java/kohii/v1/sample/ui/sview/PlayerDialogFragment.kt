@@ -24,9 +24,9 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
 import kotlinx.android.synthetic.main.fragment_player.playerContainer

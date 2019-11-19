@@ -22,8 +22,8 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.transition.TransitionSet
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Master
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData

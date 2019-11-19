@@ -24,8 +24,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Video
 import kotlin.properties.Delegates

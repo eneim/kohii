@@ -31,7 +31,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.core.Master
+import kohii.v1.core.Master
 import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.PlayerInfoHolder
 import kohii.v1.sample.R

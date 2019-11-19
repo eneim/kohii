@@ -19,7 +19,7 @@ package kohii.v1.sample.ui.overlay
 import android.view.MotionEvent
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.widget.RecyclerView
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
 
 class VideoItemLookup(val parent: RecyclerView) : ItemDetailsLookup<Rebinder>() {
   override fun getItemDetails(event: MotionEvent): ItemDetails<Rebinder>? {

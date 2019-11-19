@@ -19,10 +19,10 @@ package kohii.v1.sample.ui.combo
 import android.net.Uri
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Playback.Callback
+import kohii.v1.core.Common
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.Playback.Callback
 import kohii.v1.media.MediaItem
 import kohii.v1.sample.data.DrmItem
 import kohii.v1.sample.data.Item

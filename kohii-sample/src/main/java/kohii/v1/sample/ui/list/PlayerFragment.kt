@@ -24,8 +24,8 @@ import androidx.core.app.SharedElementCallback
 import androidx.core.view.ViewCompat
 import androidx.transition.TransitionInflater
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Master
+import kohii.v1.core.Rebinder
 import kohii.v1.Prioritized
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment

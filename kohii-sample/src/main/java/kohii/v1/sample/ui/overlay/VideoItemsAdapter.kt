@@ -20,10 +20,10 @@ import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Common
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.svg.GlideApp
 

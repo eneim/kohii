@@ -31,7 +31,7 @@ import android.view.WindowManager
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.FragmentActivity
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Master
+import kohii.v1.core.Master
 import kohii.v1.sample.R
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs

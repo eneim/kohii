@@ -19,7 +19,7 @@ package kohii.v1.sample.ui.nested4
 import android.view.ViewGroup
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R.id
 import kohii.v1.sample.R.layout
 import kohii.v1.sample.common.BaseViewHolder

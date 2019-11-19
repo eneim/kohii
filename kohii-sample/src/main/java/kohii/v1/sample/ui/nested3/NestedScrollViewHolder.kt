@@ -22,7 +22,7 @@ import androidx.core.text.parseAsHtml
 import androidx.core.widget.NestedScrollView
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Manager
+import kohii.v1.core.Manager
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.R.id

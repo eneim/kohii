@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.nested4
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Master
+import kohii.v1.core.Master
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.common.BaseViewHolder
 

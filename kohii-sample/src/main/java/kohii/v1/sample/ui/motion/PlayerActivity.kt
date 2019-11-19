@@ -21,8 +21,8 @@ import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Master
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
 import kohii.v1.sample.common.InitData

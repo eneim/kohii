@@ -16,8 +16,8 @@
 
 package kohii.v1.yt1
 
-import kohii.core.AbstractPlayable
-import kohii.core.Master
+import kohii.v1.core.AbstractPlayable
+import kohii.v1.core.Master
 import kohii.v1.media.Media
 import kohii.v1.Bridge
 

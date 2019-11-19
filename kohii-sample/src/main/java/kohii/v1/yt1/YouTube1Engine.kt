@@ -16,8 +16,8 @@
 
 package kohii.v1.yt1
 
-import kohii.core.Engine
-import kohii.core.Master
+import kohii.v1.core.Engine
+import kohii.v1.core.Master
 
 class YouTube1Engine(
   master: Master

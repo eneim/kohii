@@ -17,7 +17,7 @@
 package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Engine
-import kohii.core.Master
+import kohii.v1.core.Engine
+import kohii.v1.core.Master
 
 class YouTube2Engine(master: Master) : Engine<YouTubePlayerView>(master, YouTube2PlayableCreator())

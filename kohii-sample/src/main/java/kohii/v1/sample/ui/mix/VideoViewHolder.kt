@@ -23,8 +23,8 @@ import android.widget.TextView
 import androidx.core.view.get
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Common
-import kohii.core.Master
+import kohii.v1.core.Common
+import kohii.v1.core.Master
 import kohii.v1.media.MediaItem
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder

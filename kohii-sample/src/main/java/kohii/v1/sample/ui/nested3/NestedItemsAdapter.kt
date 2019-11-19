@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.nested3
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Manager
+import kohii.v1.core.Manager
 import kohii.v1.sample.common.BaseViewHolder
 
 internal class NestedItemsAdapter(val manager: Manager) : Adapter<BaseViewHolder>() {

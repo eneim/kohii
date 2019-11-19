@@ -29,7 +29,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Common
+import kohii.v1.core.Common
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -124,7 +124,8 @@ class YouTubeBridge(
 
   override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
-  override var repeatMode: Int by Delegates.observable(Common.REPEAT_MODE_OFF,
+  override var repeatMode: Int by Delegates.observable(
+      Common.REPEAT_MODE_OFF,
       onChange = { _, _, _ -> /* youtube library doesn't have looping support */ })
 
   override val playbackState: Int

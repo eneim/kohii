@@ -16,7 +16,7 @@
 
 package kohii.v1.sample.ui.fbook
 
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
 
 data class OverlayPlayerInfo(
   val mode: Int = -1,

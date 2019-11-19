@@ -23,10 +23,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.DefaultController
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.DefaultController
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InfinityDialogFragment
 import kohii.v1.sample.common.isLandscape

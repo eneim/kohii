@@ -24,7 +24,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import androidx.core.text.parseAsHtml
 import androidx.recyclerview.widget.GridLayoutManager
-import kohii.core.Master
+import kohii.v1.core.Master
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment

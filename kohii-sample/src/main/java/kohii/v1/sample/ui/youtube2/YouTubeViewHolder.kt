@@ -23,7 +23,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.google.api.services.youtube.model.Video
-import kohii.core.Playback
+import kohii.v1.core.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.svg.GlideApp

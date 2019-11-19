@@ -25,9 +25,9 @@ import androidx.lifecycle.observe
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.RecycledRendererProvider
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.RecycledRendererProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.yt2.YouTube2Engine

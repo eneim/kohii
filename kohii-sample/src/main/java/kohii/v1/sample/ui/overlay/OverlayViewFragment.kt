@@ -31,10 +31,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCa
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
-import kohii.core.Scope
+import kohii.v1.core.Master
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.core.Scope
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer

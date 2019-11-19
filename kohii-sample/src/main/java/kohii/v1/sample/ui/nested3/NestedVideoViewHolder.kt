@@ -19,7 +19,7 @@ package kohii.v1.sample.ui.nested3
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Master
+import kohii.v1.core.Master
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R.id
 import kohii.v1.sample.R.layout

@@ -22,8 +22,8 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.material.snackbar.Snackbar
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 

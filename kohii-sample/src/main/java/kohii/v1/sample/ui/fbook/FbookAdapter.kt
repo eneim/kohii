@@ -19,9 +19,9 @@ package kohii.v1.sample.ui.fbook
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Manager
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Manager
+import kohii.v1.core.Master
+import kohii.v1.core.Rebinder
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.fbook.vh.FbookItemHolder

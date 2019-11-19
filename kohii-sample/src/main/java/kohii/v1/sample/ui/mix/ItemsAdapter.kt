@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.mix
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Master
+import kohii.v1.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Item

@@ -23,8 +23,8 @@ import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Master
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData

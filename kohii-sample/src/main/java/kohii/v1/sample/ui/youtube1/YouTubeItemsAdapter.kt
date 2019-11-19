@@ -20,9 +20,9 @@ import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
-import kohii.core.Engine
-import kohii.core.Playback
-import kohii.core.Playback.Callback
+import kohii.v1.core.Engine
+import kohii.v1.core.Playback
+import kohii.v1.core.Playback.Callback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
