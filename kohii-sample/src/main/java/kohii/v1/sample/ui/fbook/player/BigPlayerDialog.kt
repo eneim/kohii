@@ -23,10 +23,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
-import kohii.v1.exo.DefaultControlDispatcher
+import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InfinityDialogFragment
 import kohii.v1.sample.common.isLandscape
@@ -57,7 +57,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     }
   }
 
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
   private lateinit var rebinderFromArgs: Rebinder
 
   @Suppress("MemberVisibilityCanBePrivate")
@@ -109,7 +109,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(playerContainer)
 

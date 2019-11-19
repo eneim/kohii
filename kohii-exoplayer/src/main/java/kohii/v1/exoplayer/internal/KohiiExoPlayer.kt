@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.exoplayer.internal
 
 import android.content.Context
 import android.os.Looper
@@ -33,7 +33,6 @@ import com.google.android.exoplayer2.util.Util
 import kohii.v1.core.VolumeChangedListener
 import kohii.v1.core.VolumeChangedListeners
 import kohii.v1.core.VolumeInfoController
-import kohii.v1.logInfo
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -64,14 +63,6 @@ open class KohiiExoPlayer(
     drmSessionManager,
     looper
 ), VolumeInfoController {
-
-  companion object {
-    var instanceCount = 0
-  }
-
-  init {
-    "Player: ${++instanceCount}".logInfo()
-  }
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
   private val _volumeInfo =

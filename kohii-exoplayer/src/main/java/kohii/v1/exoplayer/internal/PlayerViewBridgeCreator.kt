@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.exoplayer.internal
 
 import android.content.Context
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.ExoPlayer
 import kohii.v1.core.Bridge
 import kohii.v1.core.BridgeCreator
 import kohii.v1.media.Media
 
-/**
- * @author eneim (2018/10/28).
- */
-@ExoPlayer
 class PlayerViewBridgeCreator(
   private val playerProvider: ExoPlayerProvider,
   private val mediaSourceFactoryProvider: MediaSourceFactoryProvider

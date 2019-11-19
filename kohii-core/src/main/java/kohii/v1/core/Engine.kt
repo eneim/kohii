@@ -29,19 +29,17 @@ import kohii.v1.media.Media
 import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
 
-// TODO may need RendererProvider<RENDERER> in Engine instance? Problem: we want to keep Engine
-//  instance at global/Application scope. Since Renderer must live in Activity scope, keeping a
-//  RendererProvider in Engine may cause a memory leak if not well designed.
-
 // TODO support manual Playback creation in Engine instance.
-// TODO need to support sub-type of a Renderer type. Eg: PlayerView and classes that extend it.
 abstract class Engine<RENDERER : Any>(
   val master: Master,
-  internal val creator: Creator
+  internal val playableCreator: PlayableCreator
 ) {
 
   // TODO implement the method below.
   // abstract fun <T> supportRendererType(type: Class<T>): Boolean
+
+  open fun inject(group: Group) {
+  }
 
   inline fun setUp(
     media: Media,
@@ -67,12 +65,15 @@ abstract class Engine<RENDERER : Any>(
   fun register(
     fragment: Fragment,
     memoryMode: MemoryMode = LOW
-  ): Manager = master.register(fragment, memoryMode)
+  ): Manager {
+    val (activity, lifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
+    return master.registerInternal(activity, fragment, lifecycleOwner, memoryMode = memoryMode)
+  }
 
   fun register(
     activity: FragmentActivity,
     memoryMode: MemoryMode = LOW
-  ): Manager = master.register(activity, memoryMode)
+  ): Manager = master.registerInternal(activity, activity, activity, memoryMode = memoryMode)
 
   fun applyVolumeInfo(
     volumeInfo: VolumeInfo,
@@ -91,6 +92,12 @@ abstract class Engine<RENDERER : Any>(
   fun stick(playback: Playback) {
     playback.manager.stick(playback.host)
     playback.manager.group.stick(playback.manager)
+    playback.manager.refresh()
+  }
+
+  fun unstick(playback: Playback) {
+    playback.manager.group.unstick(playback.manager)
+    playback.manager.unstick(playback.host)
     playback.manager.refresh()
   }
 
@@ -114,14 +121,8 @@ abstract class Engine<RENDERER : Any>(
     }
   }
 
-  fun unstick(playback: Playback) {
-    playback.manager.group.unstick(playback.manager)
-    playback.manager.unstick(playback.host)
-    playback.manager.refresh()
-  }
-
   @CallSuper
   open fun cleanUp() {
-    creator.cleanUp()
+    playableCreator.cleanUp()
   }
 }

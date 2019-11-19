@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.core
 
-import android.content.Context
-import com.google.android.exoplayer2.upstream.BandwidthMeter
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import kohii.v1.core.Playable.Config
+import kohii.v1.media.Media
 
-class DefaultBandwidthMeterFactory : BandwidthMeterFactory {
+abstract class PlayableCreator(internal val rendererType: Class<*>) {
 
-  override fun createBandwidthMeter(context: Context): BandwidthMeter =
-    DefaultBandwidthMeter.Builder(context).build()
+  abstract fun createPlayable(
+    master: Master,
+    config: Config,
+    media: Media
+  ): Playable
+
+  abstract fun cleanUp()
 }

@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-package kohii.v1.internal
+package kohii.v1.exoplayer.internal
 
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.core.Engine
-import kohii.v1.core.Master
+import com.google.android.exoplayer2.Player
+import kohii.v1.media.Media
 
-internal class PlayerViewEngine(
-  master: Master
-) : Engine<PlayerView>(
-    master,
-    PlayerViewPlayableCreator(master.app)
-)
+/**
+ * @author eneim (2018/10/27).
+ *
+ * A Pool to store unused Player instance. As initializing a Player is relatively expensive,
+ * we try to cache them for reuse.
+ */
+interface ExoPlayerProvider {
+
+  fun acquirePlayer(media: Media): Player
+
+  fun releasePlayer(
+    media: Media,
+    player: Player
+  )
+
+  fun cleanUp()
+}

@@ -26,7 +26,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.core.Rebinder
-import kohii.v1.exo.DefaultControlDispatcher
+import kohii.v1.exoplayer.DefaultControlDispatcher
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -114,8 +114,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
     val manager = kohii.register(this)
         .attach(playerContainer)
     rebinder.with {
-      controller =
-        DefaultControlDispatcher(manager, playerView)
+      controller = DefaultControlDispatcher(manager, playerView)
     }
         .bind(kohii, playerView)
 

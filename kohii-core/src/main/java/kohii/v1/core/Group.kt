@@ -30,12 +30,10 @@ import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
 import kohii.v1.internal.Organizer
 import kohii.v1.internal.PlayableDispatcher
-import kohii.v1.internal.PlayerViewProvider
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
@@ -93,7 +91,6 @@ class Group(
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
   private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
-  private val defaultRendererProvider = PlayerViewProvider()
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -107,7 +104,7 @@ class Group(
     return activity.hashCode()
   }
 
-  internal val playbacks: Collection<Playback>
+  private val playbacks: Collection<Playback>
     get() = managers.flatMap { it.playbacks.values }
 
   @OnLifecycleEvent(ON_CREATE)
@@ -149,15 +146,19 @@ class Group(
     return requireNotNull(cache)
   }
 
-  internal fun registerRendererProvider(
+  fun registerRendererProvider(
     type: Class<*>,
     provider: RendererProvider
   ) {
-    rendererProviders.put(type, provider)
-        ?.clear()
+    val existing = rendererProviders.asSequence()
+        .firstOrNull { it.value === provider }
+    if (existing == null) {
+      rendererProviders.put(type, provider)
+          ?.clear()
+    }
   }
 
-  internal fun unregisterRendererProvider(provider: RendererProvider) {
+  fun unregisterRendererProvider(provider: RendererProvider) {
     rendererProviders
         .filterValues { it === provider }
         .keys
@@ -238,7 +239,6 @@ class Group(
     if (stickyManager === manager) stickyManager = null
     if (managers.remove(manager)) master.onGroupUpdated(this)
     if (managers.size == 0) {
-      this.unregisterRendererProvider(defaultRendererProvider)
       rendererProviders.onEach { it.value.clear() }
           .clear()
     }
@@ -248,10 +248,6 @@ class Group(
   // - Ensure the order of Manager by its Priority
   // - Ensure stickyManager is in the head.
   internal fun onManagerCreated(manager: Manager) {
-    if (managers.size == 0) {
-      this.registerRendererProvider(PlayerView::class.java, defaultRendererProvider)
-    }
-
     val updated: Boolean
     // 1. Pop out the sticky Manager if available.
     val sticky = if (managers.peek()?.sticky == true) managers.pop() else null

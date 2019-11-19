@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.exoplayer.internal
 
 import android.net.Uri
 import com.google.android.exoplayer2.offline.DownloadRequest

@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.exoplayer.internal
 
-import com.google.android.exoplayer2.source.MediaSource
-import kohii.v1.ExoPlayer
+import com.google.android.exoplayer2.source.ads.AdsMediaSource
 import kohii.v1.media.Media
 
-@ExoPlayer
-class HybridMediaItem(
-  val media: Media,
-  val mediaSource: MediaSource
-) : Media by media, MediaSource by mediaSource
+/**
+ * @author eneim (2018/10/27).
+ */
+interface MediaSourceFactoryProvider {
+
+  fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory
+}

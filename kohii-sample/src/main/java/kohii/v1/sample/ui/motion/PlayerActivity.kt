@@ -21,8 +21,8 @@ import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.v1.core.Master
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
 import kohii.v1.sample.common.InitData
@@ -72,7 +72,7 @@ class PlayerActivity : BaseActivity() {
         playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       }
 
-      val kohii = Master[this]
+      val kohii = Kohii[this]
       kohii.register(this)
           .attach(playerContainer)
       rebinder.bind(kohii, this.playerView)

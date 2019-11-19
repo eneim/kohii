@@ -48,7 +48,7 @@ class Binder<RENDERER : Any>(
     val tag = options.tag
     val playable = providePlayable(
         media, tag,
-        Config(tag = tag, rendererType = engine.creator.rendererType)
+        Config(tag = tag, rendererType = engine.playableCreator.rendererType)
     )
     engine.master.bind(playable, tag, container, options, callback)
     return if (tag != NO_TAG) Rebinder(tag) else null
@@ -75,6 +75,6 @@ class Binder<RENDERER : Any>(
       }
     }
 
-    return cache ?: engine.creator.createPlayable(engine.master, config, media)
+    return cache ?: engine.playableCreator.createPlayable(engine.master, config, media)
   }
 }

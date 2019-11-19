@@ -26,8 +26,6 @@ import kohii.v1.core.Master
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.yt1.YouTube1Engine
-import kohii.v1.yt1.YouTube1RendererProvider
-import kohii.v1.yt1.YouTubePlayerFragment
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class YouTube1Fragment : BaseFragment() {
@@ -51,15 +49,11 @@ class YouTube1Fragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Master[this]
-    val manager = kohii.register(this)
+    val master = Master[this]
+    val engine = YouTube1Engine(master)
+    engine.register(this)
         .attach(recyclerView)
-    manager.registerRendererProvider(
-        YouTubePlayerFragment::class.java,
-        YouTube1RendererProvider()
-    )
 
-    val engine = YouTube1Engine(kohii)
     val adapter = YouTubeItemsAdapter(engine)
     recyclerView.adapter = adapter
 

@@ -61,9 +61,7 @@ configurations {
 }
 
 dependencies {
-  implementation Libs.ExoPlayer.all
-  implementation Libs.ExoPlayer.cast
-  implementation Libs.ExoPlayer.ima
+  implementation Libs.ExoPlayer.core
 
   implementation Libs.AndroidX.Media.common
   implementation Libs.AndroidX.Media.player

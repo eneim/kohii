@@ -27,20 +27,15 @@ import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.v1.BuildConfig
 import kohii.v1.ExoPlayer
 import kohii.v1.core.Common
-import kohii.v1.core.Creator
+import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
-import kohii.v1.exo.DefaultBandwidthMeterFactory
-import kohii.v1.exo.DefaultDrmSessionManagerProvider
-import kohii.v1.exo.DefaultExoPlayerProvider
-import kohii.v1.exo.DefaultMediaSourceFactoryProvider
-import kohii.v1.exo.PlayerViewBridgeCreator
 import kohii.v1.media.Media
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
-class PlayerViewPlayableCreator(private val app: Application) : Creator(PlayerView::class.java) {
+class PlayerViewPlayableCreator(private val app: Application) : PlayableCreator(PlayerView::class.java) {
 
   companion object {
     private const val CACHE_CONTENT_DIRECTORY = "kohii_content"

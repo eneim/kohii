@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.exoplayer.internal
 
 import android.content.Context
 import androidx.core.util.Pools
@@ -56,7 +56,9 @@ class DefaultExoPlayerProvider(
   }
 
   // Cache...
-  private val plainPlayerPool = Pools.SimplePool<Player>(MAX_POOL_SIZE)
+  private val plainPlayerPool = Pools.SimplePool<Player>(
+      MAX_POOL_SIZE
+  )
   private val drmPlayerCache = HashMap<ExoPlayer, DrmSessionManager<*>>()
 
   init {
@@ -89,9 +91,10 @@ class DefaultExoPlayerProvider(
           bandwidthMeterFactory.createBandwidthMeter(this.context),
           drmSessionManager,
           Util.getLooper()
-      ).also {
-        drmPlayerCache[it] = drmSessionManager
-      }
+      )
+          .also {
+            drmPlayerCache[it] = drmSessionManager
+          }
     }
 
     (result as? SimpleExoPlayer)?.also { it.setAudioAttributes(it.audioAttributes, true) }

@@ -16,13 +16,13 @@
 
 package kohii.v1.yt1
 
-import kohii.v1.core.Creator
+import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.media.Media
 
-class YouTube1PlayableCreator : Creator(YouTubePlayerFragment::class.java) {
+class YouTube1PlayableCreator : PlayableCreator(YouTubePlayerFragment::class.java) {
 
   override fun createPlayable(
     master: Master,

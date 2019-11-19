@@ -24,9 +24,9 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.app.AppCompatDialogFragment
-import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
 import kotlinx.android.synthetic.main.fragment_player.playerContainer
@@ -59,7 +59,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     fun onDialogInActive(rebinder: Rebinder)
   }
 
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
   private lateinit var rebinder: Rebinder
 
   private var playback: Playback? = null
@@ -86,7 +86,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     val initData = requireNotNull(requireArguments().getParcelable<InitData>(KEY_INIT_DATA))
     playerContainer.setAspectRatio(initData.aspectRatio)
 
-    kohii = Master[this].also {
+    kohii = Kohii[this].also {
       it.register(this)
           .attach(playerContainer)
     }

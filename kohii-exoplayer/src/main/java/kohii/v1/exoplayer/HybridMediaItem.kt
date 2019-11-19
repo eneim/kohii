@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.exoplayer
 
-import com.google.android.exoplayer2.source.ads.AdsMediaSource
+import com.google.android.exoplayer2.source.MediaSource
+import kohii.v1.ExoPlayer
 import kohii.v1.media.Media
 
-/**
- * @author eneim (2018/10/27).
- */
-interface MediaSourceFactoryProvider {
-
-  fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory
-}
+@ExoPlayer
+class HybridMediaItem(
+  val media: Media,
+  val mediaSource: MediaSource
+) : Media by media, MediaSource by mediaSource

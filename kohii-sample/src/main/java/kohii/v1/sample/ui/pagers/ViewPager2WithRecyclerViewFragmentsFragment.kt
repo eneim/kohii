@@ -24,7 +24,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
-import kohii.v1.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getDisplayPoint
@@ -63,7 +63,7 @@ class ViewPager2WithRecyclerViewFragmentsFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Master[this].register(this)
+    Kohii[this].register(this)
         .attach(viewPager)
 
     viewPager.apply {

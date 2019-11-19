@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-package kohii.v1.internal
+package kohii.v1.exoplayer.internal
 
+import android.os.Build
 import android.view.LayoutInflater
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.R
 import kohii.v1.core.Playback
 import kohii.v1.core.ViewRendererProvider
+import kohii.v1.exoplayer.R
 import kohii.v1.media.Media
 
 internal class PlayerViewProvider : ViewRendererProvider() {
 
   override fun getMediaType(media: Media): Int {
-    return if (media.mediaDrm != null) R.layout.kohii_player_surface_view else R.layout.kohii_player_textureview
+    return if (media.mediaDrm != null || Build.VERSION.SDK_INT >= 24 /* SurfaceView is better */) {
+      R.layout.kohii_player_surface_view
+    } else {
+      R.layout.kohii_player_textureview
+    }
   }
 
   override fun createRenderer(

@@ -20,16 +20,18 @@ import android.content.Context
 import androidx.fragment.app.Fragment
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ExoPlayer
-import kohii.v1.core.Creator
+import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Engine
+import kohii.v1.core.Group
 import kohii.v1.core.Master
 import kohii.v1.exoplayer.internal.PlayerViewPlayableCreator
+import kohii.v1.exoplayer.internal.PlayerViewProvider
 
 @ExoPlayer
 class Kohii private constructor(
   master: Master,
-  creator: Creator
-) : Engine<PlayerView>(master, creator) {
+  playableCreator: PlayableCreator
+) : Engine<PlayerView>(master, playableCreator) {
 
   companion object {
 
@@ -47,5 +49,9 @@ class Kohii private constructor(
 
     @JvmStatic
     operator fun get(fragment: Fragment) = get(fragment.requireContext())
+  }
+
+  override fun inject(group: Group) {
+    group.registerRendererProvider(PlayerView::class.java, PlayerViewProvider())
   }
 }

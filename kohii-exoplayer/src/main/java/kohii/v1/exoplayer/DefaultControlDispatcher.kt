@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exo
+package kohii.v1.exoplayer
 
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher

@@ -22,12 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.Master
-import kohii.v1.core.Playback
-import kohii.v1.core.RecycledRendererProvider
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.yt2.YouTube2Engine
@@ -54,35 +49,11 @@ class YouTube2Fragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Master[this]
-    val manager = kohii.register(this)
+    val master = Master[this]
+    val engine = YouTube2Engine(master)
+    engine.register(this)
         .attach(recyclerView)
-    manager.registerRendererProvider(YouTubePlayerView::class.java,
-        object : RecycledRendererProvider() {
-          override fun createRenderer(
-            playback: Playback,
-            mediaType: Int
-          ): Any {
-            val iFramePlayerOptions = IFramePlayerOptions.Builder()
-                .controls(0)
-                .build()
 
-            val container = playback.container
-            return YouTubePlayerView(container.context).also {
-              it.enableAutomaticInitialization = false
-              it.enableBackgroundPlayback(false)
-              it.getPlayerUiController()
-                  .showUi(false)
-              it.initialize(object : AbstractYouTubePlayerListener() {}, true, iFramePlayerOptions)
-            }
-          }
-
-          override fun onClear(renderer: Any) {
-            (renderer as? YouTubePlayerView)?.release()
-          }
-        })
-
-    val engine = YouTube2Engine(kohii)
     val adapter = YouTubeItemsAdapter(engine, childFragmentManager)
     recyclerView.adapter = adapter
 

@@ -34,8 +34,6 @@ import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.ExoPlayer
 import kohii.v1.PendingState
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.Master.MemoryMode.AUTO
@@ -45,7 +43,6 @@ import kohii.v1.core.Playback.Config
 import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
 import kohii.v1.internal.DynamicViewRendererPlayback
-import kohii.v1.internal.PlayerViewEngine
 import kohii.v1.internal.StaticViewRendererPlayback
 import kohii.v1.logInfo
 import kohii.v1.media.PlaybackInfo
@@ -192,7 +189,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     return if (trimMemoryLevel >= TRIM_MEMORY_RUNNING_CRITICAL) LOW else BALANCED
   }
 
-  private fun registerInternal(
+  internal fun registerInternal(
     activity: FragmentActivity,
     host: Any,
     managerLifecycleOwner: LifecycleOwner,
@@ -319,6 +316,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   internal fun onGroupCreated(group: Group) {
     groups.add(group)
+    engines.forEach { it.value.inject(group) }
     dispatcher.sendEmptyMessage(MSG_CLEANUP)
   }
 
@@ -369,47 +367,12 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
         .sendToTarget()
   }
 
-  @PublishedApi
-  internal fun requestDefaultEngine(): Engine<PlayerView> {
-    @Suppress("UNCHECKED_CAST")
-    return engines.getOrPut(PlayerView::class.java) {
-      PlayerViewEngine(
-          this
-      )
-    } as Engine<PlayerView>
-  }
-
   // Public APIs
 
-  fun register(
-    fragment: Fragment,
-    memoryMode: MemoryMode = LOW
-  ): Manager {
-    val (activity, lifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
-    return registerInternal(activity, fragment, lifecycleOwner, memoryMode = memoryMode)
-  }
-
-  fun register(
-    activity: FragmentActivity,
-    memoryMode: MemoryMode = AUTO
-  ): Manager {
-    return registerInternal(activity, activity, activity, memoryMode = memoryMode)
-  }
-
   fun registerEngine(engine: Engine<*>) {
-    engines.put(engine.creator.rendererType, engine)
+    engines.put(engine.playableCreator.rendererType, engine)
         ?.cleanUp()
-  }
-
-  @ExoPlayer
-  inline fun setUp(
-    url: String,
-    crossinline options: Options.() -> Unit = {}
-  ) = requestDefaultEngine().setUp(url, options)
-
-  @ExoPlayer
-  fun fetchRebinder(tag: Any?): Rebinder? {
-    return if (tag == null) null else Rebinder(tag)
+    groups.forEach { engine.inject(it) }
   }
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.

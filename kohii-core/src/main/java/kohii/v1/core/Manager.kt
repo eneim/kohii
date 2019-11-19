@@ -18,6 +18,8 @@ package kohii.v1.core
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RestrictTo
+import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
 import androidx.collection.ArraySet
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
@@ -149,7 +151,8 @@ class Manager(
     refresh()
   }
 
-  internal fun findPlayableForContainer(container: ViewGroup): Playable? {
+  @RestrictTo(LIBRARY_GROUP)
+  fun findPlayableForContainer(container: ViewGroup): Playable? {
     val playback = playbacks[container]
     return master.playables.keys.find { it.playback === playback }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2018 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.exoplayer.internal
 
-import kohii.v1.core.Playable.Config
+import com.google.android.exoplayer2.drm.DrmSessionManager
+import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
 import kohii.v1.media.Media
 
-abstract class Creator(internal val rendererType: Class<*>) {
+/**
+ * @author eneim (2018/10/27).
+ */
+interface DrmSessionManagerProvider {
 
-  abstract fun createPlayable(
-    master: Master,
-    config: Config,
-    media: Media
-  ): Playable
+  fun provideDrmSessionManager(media: Media): DrmSessionManager<FrameworkMediaCrypto>?
 
-  abstract fun cleanUp()
+  fun releaseDrmSessionManager(sessionManager: DrmSessionManager<*>?)
+
+  fun cleanUp()
 }
