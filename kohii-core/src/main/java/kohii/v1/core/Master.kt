@@ -16,13 +16,19 @@
 
 package kohii.v1.core
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.Application
+import android.content.BroadcastReceiver
 import android.content.ComponentCallbacks2
 import android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.os.Build.VERSION
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
@@ -30,10 +36,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
+import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.exoplayer2.util.Util
 import kohii.v1.PendingState
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.MemoryMode.AUTO
@@ -43,8 +51,8 @@ import kohii.v1.core.Playback.Config
 import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
 import kohii.v1.internal.DynamicViewRendererPlayback
+import kohii.v1.internal.MasterNetworkCallback
 import kohii.v1.internal.StaticViewRendererPlayback
-import kohii.v1.logInfo
 import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
@@ -128,6 +136,35 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
+  private val networkActionReceiver = lazy(NONE) {
+    object : BroadcastReceiver() {
+      override fun onReceive(
+        context: Context?,
+        intent: Intent?
+      ) {
+        if (isInitialStickyBroadcast) return
+        val action = intent?.action
+        if (context != null) {
+          Master[context].onNetworkChanged()
+        }
+      }
+    }
+  }
+
+  @SuppressLint("NewApi") // will only be used in proper API level.
+  private val networkCallback = lazy(NONE) {
+    MasterNetworkCallback(this)
+  }
+
+  internal fun onNetworkChanged() {
+    this.networkType = Util.getNetworkType(app)
+  }
+
+  private var networkType: Int by Delegates.observable(Util.getNetworkType(app)) { _, from, to ->
+    if (from == to) return@observable
+    playables.forEach { it.key.onNetworkTypeChanged(from, to) }
+  }
+
   internal var trimMemoryLevel: Int by Delegates.observable(
       initialValue = RunningAppProcessInfo().let {
         ActivityManager.getMyMemoryState(it)
@@ -137,6 +174,9 @@ class Master private constructor(context: Context) : PlayableManager {
         if (from != to) groups.forEach { it.onRefresh() }
       }
   )
+
+  private val engines = mutableMapOf<Class<*>, Engine<*>>()
+  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
     if (actual !== AUTO) return actual
@@ -160,9 +200,6 @@ class Master private constructor(context: Context) : PlayableManager {
             this, group, host, managerLifecycleOwner, memoryMode
         )
   }
-
-  private val engines = mutableMapOf<Class<*>, Engine<*>>()
-  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
 
   /**
    * @param container container is the [ViewGroup] that holds the Video. It should be an empty
@@ -236,7 +273,6 @@ class Master private constructor(context: Context) : PlayableManager {
     if (playable.tag === NO_TAG) return
     if (!playbackInfoStore.containsKey(playable.tag)) {
       val info = playable.playbackInfo
-      "Master#trySavePlaybackInfo $info, $playable".logInfo()
       playbackInfoStore[playable.tag] = info
     }
   }
@@ -247,7 +283,6 @@ class Master private constructor(context: Context) : PlayableManager {
     val cache = playbackInfoStore.remove(playable.tag)
     // Only restoring playback state if there is cached state, and the player is not ready yet.
     if (cache != null && playable.playerState <= Common.STATE_IDLE /* TODO change to internal const */) {
-      "Master#tryRestorePlaybackInfo $cache, $playable".logInfo()
       playable.playbackInfo = cache
     }
   }
@@ -292,18 +327,37 @@ class Master private constructor(context: Context) : PlayableManager {
   @Suppress("UNUSED_PARAMETER")
   internal fun onGroupUpdated(group: Group) {
     // If no Manager is online, cleanup stuffs
-    if (groups.map { it.managers }.isEmpty() && playables.isEmpty()) {
+    if (groups.flatMap { it.managers }.isEmpty() && playables.isEmpty()) {
       cleanUp()
     }
   }
 
   internal fun onFirstManagerCreated(group: Group) {
-    if (groups.isEmpty()) app.registerComponentCallbacks(componentCallbacks)
+    if (groups.flatMap { it.managers }.isEmpty()) {
+      app.registerComponentCallbacks(componentCallbacks)
+      if (VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
+        val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
+        networkManager?.registerDefaultNetworkCallback(networkCallback.value)
+      } else {
+        @Suppress("DEPRECATION")
+        app.registerReceiver(
+            networkActionReceiver.value, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        )
+      }
+    }
     engines.forEach { it.value.inject(group) }
   }
 
   internal fun onLastManagerDestroyed(group: Group) {
-    if (groups.map { it.managers }.isEmpty()) app.unregisterComponentCallbacks(componentCallbacks)
+    if (groups.flatMap { it.managers }.isEmpty()) {
+      if (networkCallback.isInitialized() && VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
+        val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
+        networkManager?.unregisterNetworkCallback(networkCallback.value)
+      } else if (networkActionReceiver.isInitialized()) {
+        app.unregisterReceiver(networkActionReceiver.value)
+      }
+      app.unregisterComponentCallbacks(componentCallbacks)
+    }
   }
 
   private fun cleanUp() {
@@ -349,22 +403,6 @@ class Master private constructor(context: Context) : PlayableManager {
       playablesStartedByClient.remove(playable.tag)
       requireNotNull(playable.playback).manager.refresh()
     }
-  }
-
-  // Public APIs
-
-  // target == null --> lock all
-  // TODO design 'lock' policy.
-  /**
-   * Will lock all
-   */
-  fun lock() {
-    groups.forEach { it.lock = true }
-  }
-
-  // target == null --> unlock all
-  fun unlock() {
-    groups.forEach { it.lock = false }
   }
 
   internal fun registerEngine(engine: Engine<*>) {
@@ -502,5 +540,18 @@ class Master private constructor(context: Context) : PlayableManager {
     internal fun onBind() {
       master.onBind(playable, tag, container, options, callback)
     }
+  }
+
+  // Public APIs
+
+  // target == null --> lock all
+  // TODO design 'lock' policy.
+  fun lock() {
+    groups.forEach { it.lock = true }
+  }
+
+  // target == null --> unlock all
+  fun unlock() {
+    groups.forEach { it.lock = false }
   }
 }

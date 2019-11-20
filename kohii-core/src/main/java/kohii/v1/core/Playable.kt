@@ -152,7 +152,6 @@ abstract class Playable(
   )
 
   internal abstract fun onNetworkTypeChanged(
-    playback: Playback,
     from: Int,
     to: Int
   )

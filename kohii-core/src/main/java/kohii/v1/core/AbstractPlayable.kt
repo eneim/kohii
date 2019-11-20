@@ -257,7 +257,6 @@ abstract class AbstractPlayable<RENDERER : Any>(
   }
 
   override fun onNetworkTypeChanged(
-    playback: Playback,
     from: Int,
     to: Int
   ) {
