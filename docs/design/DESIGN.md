@@ -5,7 +5,7 @@
   - [x] Automatically update the playbacks in RecyclerView, NestedScrollView or general ViewGroup.
   - [x] Automatically update the playbacks in ViewPager, ViewPager2.
 
-- [ ] Callbacks
+- [x] Callbacks
   - [x] Callbacks for **Kohii** components status.
   - [x] Callbacks for playback status.
   - [x] (Nice to have) *Opinionated callbacks* that tell client when it *should show/hide thumbnail*.
@@ -15,9 +15,9 @@
   - [x] Retain playback on configuration changes.
 
 - [ ] Manual control over Playbacks
-  - [x] Allow client to have full control over Playbacks: client can start/pause any Playback without the control of system/Kohii.
-  - [x] Allow client to have half-manual control over Playbacks: client can start/pause any Playback on demand, but Kohii can also start/pause the Playback regarding some conditions.
-  - [ ] Global control: simple method to pause/resume everything. The resume behavior follow each Playback's config.
+  - [ ] Allow client to have full control over Playbacks: client can start/pause any Playback without the control of system/Kohii.
+  - [ ] Allow client to have half-manual control over Playbacks: client can start/pause any Playback on demand, but Kohii can also start/pause the Playback regarding some conditions.
+  - [x] Global control: simple method to pause/resume everything. The resume behavior follow each Playback's config.
   - [x] Flexible VolumeInfo update mechanism: allow to change VolumeInfo for individual Video or all Videos in the same parent.
 
 - [ ] ExoPlayer related implementations
