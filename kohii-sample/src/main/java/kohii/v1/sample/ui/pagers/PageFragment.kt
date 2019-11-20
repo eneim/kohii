@@ -22,10 +22,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.v1.Prioritized
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.core.Prioritized
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.isLandscape
@@ -81,7 +81,7 @@ class PageFragment : BaseFragment(), Prioritized {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Master[this]
+    val kohii = Kohii[this]
     kohii.register(this)
         .attach(content)
 

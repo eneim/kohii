@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.overlay
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
 
 class VideosViewModel : ViewModel() {
 

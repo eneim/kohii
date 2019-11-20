@@ -19,16 +19,16 @@ package kohii.v1.sample.ui.combo
 import android.net.Uri
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Playback.Callback
-import kohii.media.MediaItem
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.core.Playback.Callback
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.MediaItem
 import kohii.v1.sample.data.DrmItem
 import kohii.v1.sample.data.Item
 
 class ExoVideosAdapter(
-  val kohii: Master,
+  val kohii: Kohii,
   private val items: List<Item>,
   private val onClick: ((ExoVideoHolder, Int) -> Unit)? = null,
   private val onLoad: ((ExoVideoHolder, Int) -> Unit)? = null
@@ -57,7 +57,8 @@ class ExoVideosAdapter(
     holder.videoTitle.text = item.name
 
     val drmItem = item.drmScheme?.let { DrmItem(item) }
-    val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
+    val mediaItem =
+      MediaItem(Uri.parse(item.uri), item.extension, drmItem)
     val itemTag = "${javaClass.canonicalName}::${item.uri}::${holder.adapterPosition}"
 
     holder.rebinder = kohii.setUp(mediaItem) {
@@ -66,13 +67,13 @@ class ExoVideosAdapter(
       repeatMode = Common.REPEAT_MODE_ONE
       callbacks += object : Callback {
         override fun onRemoved(playback: Playback) {
-          playback.removePlaybackListener(holder)
+          playback.removeStateListener(holder)
         }
       }
     }
         .bind(holder.container) {
           onLoad?.invoke(holder, position)
-          it.addPlaybackListener(holder)
+          it.addStateListener(holder)
         }
   }
 }

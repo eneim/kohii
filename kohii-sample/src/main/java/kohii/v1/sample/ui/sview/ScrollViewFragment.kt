@@ -21,10 +21,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
@@ -47,7 +47,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
   private var playback: Playback? = null
 
   override fun onCreateView(
@@ -63,7 +63,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     kohii.register(this)
         .attach(scrollView)
   }

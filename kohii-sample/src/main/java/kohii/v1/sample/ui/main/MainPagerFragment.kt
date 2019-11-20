@@ -23,8 +23,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import kohii.core.Master
-import kohii.core.Master.MemoryMode.LOW
+import kohii.v1.core.MemoryMode.LOW
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
@@ -64,7 +64,7 @@ class MainPagerFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Master[this].register(this, LOW)
+    Kohii[this].register(this, LOW)
         .attach(viewPager)
 
     this.viewPager.also {

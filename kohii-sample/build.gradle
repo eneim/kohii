@@ -23,12 +23,8 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.getkeepsafe.dexcount'
 
-// androidExtensions {
-//   experimental = true
-// }
-
 if (file("google-services.json").exists()) {
-  System.out.println("has google-services.json")
+  System.out.println("google-services.json found!")
   apply plugin: 'com.google.gms.google-services'
   apply plugin: 'io.fabric'
 } else {
@@ -114,7 +110,8 @@ configurations {
 
 dependencies {
   implementation fileTree(include: ['*.jar'], dir: 'libs')
-  implementation project(':kohii')
+  implementation project(':kohii-core')
+  implementation project(':kohii-exoplayer')
 
   implementation Libs.ExoPlayer.all
 

@@ -22,14 +22,14 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.material.snackbar.Snackbar
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 
 class ExoVideoHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_player_container_with_title), Playback.PlaybackListener {
+) : BaseViewHolder(parent, R.layout.holder_player_container_with_title), Playback.StateListener {
 
   internal val container = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   internal val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView

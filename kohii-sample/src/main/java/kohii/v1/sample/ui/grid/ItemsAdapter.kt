@@ -18,13 +18,13 @@ package kohii.v1.sample.ui.grid
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseViewHolder
 
 internal class ItemsAdapter(
-  private val master: Master,
+  private val kohii: Kohii,
   val shouldBindVideo: (Rebinder?) -> Boolean,
   val onVideoClick: (Rebinder) -> Unit
 ) : Adapter<BaseViewHolder>() {
@@ -70,10 +70,12 @@ internal class ItemsAdapter(
       holder.videoUrl = assetVideoUri
       val videoTag = holder.videoTag
       if (shouldBindVideo(holder.rebinder)) {
-        master.setUp(assetVideoUri) {
+        kohii.setUp(assetVideoUri) {
           tag = requireNotNull(videoTag)
         }
-            .bind(holder.container)
+            .bind(holder.container) {
+              it.addStateListener(holder)
+            }
       }
     } else holder.bind(position)
   }

@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.ui.combo
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
@@ -24,9 +25,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.DefaultController
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
@@ -70,6 +71,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
     callback = null
   }
 
+  @SuppressLint("SourceLockedOrientationActivity")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     // Orientation change will cause this fragment to be recreated, we don't want that to happen.
@@ -108,10 +110,12 @@ class LandscapeFullscreenFragment : BaseFragment() {
 
     container.setAspectRatio(initData.aspectRatio)
 
-    val kohii = Master[this]
+    val kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(playerContainer)
-    rebinder.with { controller = DefaultController(manager, playerView) }
+    rebinder.with {
+      controller = DefaultControlDispatcher(manager, playerView)
+    }
         .bind(kohii, playerView)
 
     (requireActivity() as AppCompatActivity).also {
@@ -139,6 +143,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
     }
   }
 
+  @SuppressLint("SourceLockedOrientationActivity")
   override fun onDestroy() {
     (requireActivity() as AppCompatActivity).also {
       // check previous rotation

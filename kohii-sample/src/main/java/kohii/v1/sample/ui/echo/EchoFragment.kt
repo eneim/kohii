@@ -21,8 +21,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import kohii.core.Master
-import kohii.media.VolumeInfo
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
@@ -44,14 +44,14 @@ class EchoFragment : BaseFragment() {
   }
 
   private val viewModel: VolumeStateViewModel by viewModels()
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
 
   override fun onViewCreated(
     view: View,
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     kohii.register(this)
         .attach(recyclerView)
 
@@ -59,7 +59,9 @@ class EchoFragment : BaseFragment() {
       val playback = it.playback
       return@VideoItemsAdapter if (playback != null) {
         val currentVolumeInfo = viewModel.get(it.adapterPosition)
-        val nextVolumeInfo = VolumeInfo(!currentVolumeInfo.mute, currentVolumeInfo.volume)
+        val nextVolumeInfo = VolumeInfo(
+            !currentVolumeInfo.mute, currentVolumeInfo.volume
+        )
         viewModel.set(it.adapterPosition, nextVolumeInfo)
         nextVolumeInfo
       } else {

@@ -47,7 +47,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:3.5.2"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-beta04"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:8.2.0"
 

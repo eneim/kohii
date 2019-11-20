@@ -23,9 +23,9 @@ import android.widget.TextView
 import androidx.core.view.get
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Common
-import kohii.core.Master
-import kohii.media.MediaItem
+import kohii.v1.core.Common
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.MediaItem
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.common.inflateView
@@ -37,7 +37,7 @@ import kohii.v1.sample.data.Item
  */
 class VideoViewHolder(
   parent: ViewGroup,
-  val kohii: Master
+  val kohii: Kohii
 ) : BaseViewHolder(
     parent,
     R.layout.holder_mix_view
@@ -60,7 +60,8 @@ class VideoViewHolder(
       playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       playerContainer.addView(playerView, 0)
 
-      val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
+      val mediaItem =
+        MediaItem(Uri.parse(item.uri), item.extension, drmItem)
       itemTag = "${javaClass.canonicalName}::${item.uri}::$adapterPosition"
       mediaName.text = item.name
 

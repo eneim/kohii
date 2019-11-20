@@ -16,8 +16,8 @@
 
 package kohii.v1.sample.ui.fbook.player
 
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 
 interface PlayerPanel {
 

@@ -24,7 +24,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import androidx.core.text.parseAsHtml
 import androidx.recyclerview.widget.GridLayoutManager
-import kohii.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -56,8 +56,8 @@ class VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val master = Master[this]
-    master.register(this)
+    val kohii = Kohii[this]
+    kohii.register(this)
         .attach(scrollView, recyclerView)
 
     libIntro.text = getString(R.string.lib_intro).parseAsHtml()
@@ -80,12 +80,12 @@ class VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment
       it.spanCount = 3
       it.spanSizeLookup = spanSizeLookup
     }
-    recyclerView.adapter = ItemsAdapter(master, 13)
+    recyclerView.adapter = ItemsAdapter(kohii, 13)
 
-    master.setUp(assetVideoUri)
+    kohii.setUp(assetVideoUri)
         .bind(dummyPlayer1)
 
-    master.setUp(assetVideoUri)
+    kohii.setUp(assetVideoUri)
         .bind(dummyPlayer2)
   }
 }

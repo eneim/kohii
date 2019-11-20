@@ -26,7 +26,7 @@ import androidx.core.util.forEach
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import kohii.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
@@ -55,11 +55,11 @@ class RecyclerViewInsideRecyclerViewFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
 
-    val kohii = Master[this]
+    val kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(recyclerView)
 
-    adapter = MainAdapter(manager, getApp().exoItems)
+    adapter = MainAdapter(kohii, manager, getApp().exoItems)
     if (savedInstanceState != null) adapter.onRestoreState(savedInstanceState)
 
     recyclerView.adapter = adapter

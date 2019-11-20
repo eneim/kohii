@@ -22,29 +22,22 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Scope
-import kohii.media.VolumeInfo
+import kohii.v1.core.Playback
+import kohii.v1.core.Scope
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.svg.GlideApp
 import kotlin.properties.Delegates
 
-data class VideoItem(
-  val title: String,
-  val description: String,
-  val imageUrl: String,
-  val file: String
-)
-
 @SuppressLint("SetTextI18n")
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoItemHolder(
   parent: ViewGroup,
-  private val kohii: Master
-) : BaseViewHolder(parent, R.layout.holder_video_text_overlay), Playback.PlaybackListener {
+  private val kohii: Kohii
+) : BaseViewHolder(parent, R.layout.holder_video_text_overlay), Playback.StateListener {
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
@@ -88,14 +81,14 @@ class VideoItemHolder(
             tag = requireNotNull(tagKey)
             callbacks += object : Playback.Callback {
               override fun onRemoved(playback: Playback) {
-                playback.removePlaybackListener(this@VideoItemHolder)
+                playback.removeStateListener(this@VideoItemHolder)
               }
             }
           }
               .bind(playerViewContainer) { playback ->
                 this@VideoItemHolder.playback = playback
                 volumeInfo?.let { kohii.applyVolumeInfo(it, playback, Scope.PLAYBACK) }
-                playback.addPlaybackListener(this)
+                playback.addStateListener(this)
               }
         } else {
           this.playback = null

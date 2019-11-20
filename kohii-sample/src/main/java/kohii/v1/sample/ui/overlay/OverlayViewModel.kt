@@ -18,8 +18,8 @@ package kohii.v1.sample.ui.overlay
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kohii.core.Rebinder
-import kohii.media.VolumeInfo
+import kohii.v1.core.Rebinder
+import kohii.v1.media.VolumeInfo
 
 class OverlayViewModel : ViewModel() {
 

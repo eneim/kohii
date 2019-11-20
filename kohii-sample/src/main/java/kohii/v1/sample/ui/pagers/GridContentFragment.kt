@@ -21,13 +21,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
-import kohii.core.Master
-import kohii.core.Master.MemoryMode
-import kohii.v1.Prioritized
+import kohii.v1.core.MemoryMode
+import kohii.v1.core.Prioritized
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_debug_child.container
-import kotlin.LazyThreadSafetyMode.NONE
 
 class GridContentFragment : BaseFragment(), Prioritized {
 
@@ -41,7 +40,7 @@ class GridContentFragment : BaseFragment(), Prioritized {
     }
   }
 
-  private val master by lazy(NONE) { Master[this] }
+  private lateinit var kohii: Kohii
   private val pagePos: Int
     get() = arguments?.getInt(EXTRA_PAGE_POS) ?: -1
 
@@ -58,7 +57,8 @@ class GridContentFragment : BaseFragment(), Prioritized {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    master.register(this, MemoryMode.LOW)
+    kohii = Kohii[this]
+    kohii.register(this, MemoryMode.LOW)
         .attach(container)
 
     val spanCount = resources.getInteger(R.integer.grid_span)
@@ -69,6 +69,6 @@ class GridContentFragment : BaseFragment(), Prioritized {
     }
 
     (container.layoutManager as? GridLayoutManager)?.spanSizeLookup = spanSizeLookup
-    container.adapter = ItemsAdapter(master, pagePos)
+    container.adapter = ItemsAdapter(kohii, pagePos)
   }
 }

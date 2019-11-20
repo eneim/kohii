@@ -22,8 +22,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.setPadding
 import androidx.viewpager.widget.PagerAdapter
-import kohii.core.Common
-import kohii.core.Master
+import kohii.v1.core.Common
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
@@ -42,7 +42,7 @@ class ViewPager1WithViewsFragment : BaseFragment() {
   }
 
   class PagerPagesAdapter(
-    val kohii: Master,
+    val kohii: Kohii,
     private val videos: List<Video>
   ) : PagerAdapter() {
 
@@ -102,7 +102,7 @@ class ViewPager1WithViewsFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Master[this]
+    val kohii = Kohii[this]
     kohii.register(this)
         .attach(viewPager)
 

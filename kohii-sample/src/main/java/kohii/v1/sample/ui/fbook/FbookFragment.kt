@@ -30,13 +30,13 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import kohii.core.Common
-import kohii.core.Manager
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
-import kohii.core.Scope
-import kohii.media.VolumeInfo
+import kohii.v1.core.Common
+import kohii.v1.core.Manager
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.core.Scope
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
@@ -58,7 +58,7 @@ import kotlin.properties.Delegates
 class FbookFragment : BaseFragment(),
     BackPressConsumer,
     FloatPlayerController,
-    PlayerPanel.Callback, Manager.OnSelectionListener, Playback.PlaybackListener {
+    PlayerPanel.Callback, Manager.OnSelectionListener, Playback.StateListener {
 
   companion object {
     private const val STATE_KEY_REBINDER = "kohii::fbook::arg::rebinder"
@@ -67,7 +67,7 @@ class FbookFragment : BaseFragment(),
     fun newInstance() = FbookFragment()
   }
 
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
 
   private val viewModel: FbookViewModel by viewModels()
 
@@ -76,9 +76,9 @@ class FbookFragment : BaseFragment(),
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
-        from?.removePlaybackListener(this@FbookFragment)
+        from?.removeStateListener(this@FbookFragment)
         if (to != null) {
-          to.addPlaybackListener(this@FbookFragment)
+          to.addStateListener(this@FbookFragment)
           currentSelectedRebinder = kohii.fetchRebinder(to.tag)
         }
       }
@@ -125,13 +125,13 @@ class FbookFragment : BaseFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(recyclerView, content)
 
     viewModel.apply {
       timelineVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, recyclerView, Scope.HOST)
+        manager.applyVolumeInfo(it, recyclerView, Scope.BUCKET)
         val adapter = recyclerView.adapter
         if (adapter != null) {
           recyclerView.filterVisibleHolder<VideoViewHolder>()
@@ -145,11 +145,12 @@ class FbookFragment : BaseFragment(),
     }
 
     val videos = getApp().videos
-    val adapter = FbookAdapter(kohii, manager, videos, this,
+    val adapter = FbookAdapter(kohii, videos, this,
         shouldBindVideo = { rebinder -> currentOverlayRebinder != rebinder },
         volumeClick = {
           val current = requireNotNull(viewModel.timelineVolume.value)
-          viewModel.timelineVolume.value = VolumeInfo(!current.mute, current.volume)
+          viewModel.timelineVolume.value =
+            VolumeInfo(!current.mute, current.volume)
         }
     )
 
@@ -241,7 +242,7 @@ class FbookFragment : BaseFragment(),
   override fun onEnded(playback: Playback) {
     super.onEnded(playback)
     if (playback === currentSelectedPlayback) {
-      playback.removePlaybackListener(this)
+      playback.removeStateListener(this)
       currentSelectedPlayback = null
       currentSelectedRebinder = null
     }
@@ -289,10 +290,10 @@ class FbookFragment : BaseFragment(),
               ?.with { repeatMode = Common.REPEAT_MODE_OFF }
               ?.bind(kohii, playerView) { playback ->
                 dummyPlayer.isVisible = false // View.GONE
-                playback.addPlaybackListener(object : Playback.PlaybackListener {
+                playback.addStateListener(object : Playback.StateListener {
                   override fun onEnded(playback: Playback) {
                     kohii.unstick(playback)
-                    playback.removePlaybackListener(this)
+                    playback.removeStateListener(this)
                     viewModel.overlayPlayerInfo.value = null
                   }
                 })

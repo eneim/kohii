@@ -16,8 +16,45 @@
 
 package kohii.v1.yt2
 
+import android.content.Context
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Engine
-import kohii.core.Master
+import kohii.v1.core.Engine
+import kohii.v1.core.Group
+import kohii.v1.core.Playback
+import kohii.v1.core.RecycledRendererProvider
 
-class YouTube2Engine(master: Master) : Engine<YouTubePlayerView>(master, YouTube2PlayableCreator())
+class YouTube2Engine(
+  context: Context
+) : Engine<YouTubePlayerView>(context, YouTube2PlayableCreator()) {
+
+  override fun inject(group: Group) {
+    group.registerRendererProvider(
+        YouTubePlayerView::class.java,
+        object : RecycledRendererProvider() {
+          override fun createRenderer(
+            playback: Playback,
+            mediaType: Int
+          ): Any {
+            val iFramePlayerOptions = IFramePlayerOptions.Builder()
+                .controls(0)
+                .build()
+
+            val container = playback.container
+            return YouTubePlayerView(container.context).also {
+              it.enableAutomaticInitialization = false
+              it.enableBackgroundPlayback(false)
+              it.getPlayerUiController()
+                  .showUi(false)
+              it.initialize(object : AbstractYouTubePlayerListener() {}, true, iFramePlayerOptions)
+            }
+          }
+
+          override fun onClear(renderer: Any) {
+            (renderer as? YouTubePlayerView)?.release()
+          }
+        }
+    )
+  }
+}

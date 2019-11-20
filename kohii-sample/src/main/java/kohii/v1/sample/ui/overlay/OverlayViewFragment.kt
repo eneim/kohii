@@ -31,11 +31,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCa
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
-import kohii.core.Scope
-import kohii.media.VolumeInfo
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.core.Scope
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
@@ -91,7 +91,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
   private lateinit var motionLayout: MotionLayout
   private lateinit var overlaySheet: BottomSheetBehavior<*>
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
 
   private val sheetCallback = object : BottomSheetCallback() {
     override fun onSlide(
@@ -127,7 +127,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(recyclerView, video_player_container)
 
@@ -146,7 +146,8 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
     actionButton.setOnClickListener {
       val current = overlayViewModel.recyclerViewVolume.value!!
-      overlayViewModel.recyclerViewVolume.value = VolumeInfo(!current.mute, current.volume)
+      overlayViewModel.recyclerViewVolume.value =
+        VolumeInfo(!current.mute, current.volume)
     }
 
     overlaySheet = BottomSheetBehavior.from(bottomSheet)
@@ -162,11 +163,11 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
     overlayViewModel.apply {
       overlayVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, video_player_container, Scope.HOST)
+        manager.applyVolumeInfo(it, video_player_container, Scope.BUCKET)
       }
 
       recyclerViewVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, recyclerView, Scope.HOST)
+        manager.applyVolumeInfo(it, recyclerView, Scope.BUCKET)
         actionButton.text = "Mute RV: ${it.mute}"
       }
 

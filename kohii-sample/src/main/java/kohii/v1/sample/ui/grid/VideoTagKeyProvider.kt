@@ -21,7 +21,7 @@ import android.view.View
 import androidx.recyclerview.selection.ItemKeyProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
 
 internal class VideoTagKeyProvider(
   val recyclerView: RecyclerView

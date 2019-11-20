@@ -19,14 +19,14 @@ package kohii.v1.sample.ui.nested3
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R.id
 import kohii.v1.sample.R.layout
 import kohii.v1.sample.common.BaseViewHolder
 
 internal class NestedVideoViewHolder(
-  private val master: Master,
+  private val kohii: Kohii,
   parent: ViewGroup
 ) : BaseViewHolder(
     parent, layout.holder_player_view
@@ -42,7 +42,7 @@ internal class NestedVideoViewHolder(
   override fun bind(item: Any?) {
     super.bind(item)
     container.setAspectRatio(16 / 9F)
-    master.setUp(assetVideoUri) {
+    kohii.setUp(assetVideoUri) {
       tag = "NESTED::VID::$adapterPosition"
     }
         .bind(playerView)

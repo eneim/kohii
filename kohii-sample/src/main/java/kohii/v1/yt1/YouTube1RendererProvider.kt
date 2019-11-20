@@ -16,10 +16,10 @@
 
 package kohii.v1.yt1
 
-import kohii.core.Playback
-import kohii.core.RecyclerRendererProvider
+import kohii.v1.core.Playback
+import kohii.v1.core.RecycledRendererProvider
 
-internal class YouTube1RendererProvider : RecyclerRendererProvider() {
+internal class YouTube1RendererProvider : RecycledRendererProvider() {
 
   override fun createRenderer(
     playback: Playback,

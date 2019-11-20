@@ -17,22 +17,26 @@
 package kohii.v1.sample.ui.grid
 
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ImageView
+import androidx.core.view.isVisible
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.Rebinder
-import kohii.v1.sample.R.id
-import kohii.v1.sample.R.layout
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 
 internal class VideoViewHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, layout.holder_player_view) {
-  internal val container = itemView.findViewById(
-      id.playerContainer
-  ) as AspectRatioFrameLayout
+) : BaseViewHolder(parent, R.layout.holder_player_container), Playback.StateListener {
+
+  private val root: AspectRatioFrameLayout = itemView.findViewById(R.id.playerContainer)
+  internal val container: FrameLayout = itemView.findViewById(R.id.container)
+  internal val thumbnail: ImageView = itemView.findViewById(R.id.thumbnail)
 
   init {
-    container.setAspectRatio(16 / 9F)
+    root.setAspectRatio(16 / 9F)
   }
 
   internal var videoUrl: String? = null
@@ -48,4 +52,16 @@ internal class VideoViewHolder(
       override fun getSelectionKey() = rebinder
       override fun getPosition() = adapterPosition
     }
+
+  override fun beforePlay(playback: Playback) {
+    thumbnail.isVisible = false
+  }
+
+  override fun afterPause(playback: Playback) {
+    thumbnail.isVisible = true
+  }
+
+  override fun onEnded(playback: Playback) {
+    thumbnail.isVisible = true
+  }
 }

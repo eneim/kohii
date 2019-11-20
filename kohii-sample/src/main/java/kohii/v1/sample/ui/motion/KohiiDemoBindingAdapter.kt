@@ -20,9 +20,9 @@ import androidx.core.view.ViewCompat
 import androidx.databinding.BindingAdapter
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Common
-import kohii.core.Master
-import kohii.media.MediaItem
+import kohii.v1.core.Common
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.MediaItem
 import kohii.v1.sample.R
 
 /**
@@ -35,7 +35,7 @@ import kohii.v1.sample.R
 fun setVideo(
   view: PlayerView,
   video: Video,
-  kohii: Master
+  kohii: Kohii
 ) {
   (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)
       ?.setAspectRatio(video.width / video.height)

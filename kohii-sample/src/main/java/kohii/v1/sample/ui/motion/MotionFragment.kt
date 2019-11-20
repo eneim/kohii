@@ -23,8 +23,8 @@ import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
-import kohii.core.Master
-import kohii.core.Rebinder
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
@@ -62,7 +62,7 @@ class MotionFragment : BaseFragment(), Presenter {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Master[this].register(this)
+    Kohii[this].register(this)
         .attach(scrollView)
     binding.motion = Motion()
     binding.lifecycleOwner = viewLifecycleOwner
@@ -98,7 +98,7 @@ class MotionFragment : BaseFragment(), Presenter {
     }
   }
 
-  override fun requireProvider(): Master {
-    return Master[this]
+  override fun requireProvider(): Kohii {
+    return Kohii[this]
   }
 }

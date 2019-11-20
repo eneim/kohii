@@ -17,20 +17,20 @@
 package kohii.v1.yt2
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Creator
-import kohii.core.Playable
-import kohii.core.Master
-import kohii.core.Playable.Config
-import kohii.media.Media
+import kohii.v1.core.Engine
+import kohii.v1.core.Playable
+import kohii.v1.core.Playable.Config
+import kohii.v1.core.PlayableCreator
+import kohii.v1.media.Media
 
-class YouTube2PlayableCreator : Creator(YouTubePlayerView::class.java) {
+class YouTube2PlayableCreator : PlayableCreator<YouTubePlayerView>(YouTubePlayerView::class.java) {
 
   override fun createPlayable(
-    master: Master,
+    engine: Engine<YouTubePlayerView>,
     config: Config,
     media: Media
   ): Playable {
-    return YouTube2Playable(master, media, config, YouTubeBridge(media))
+    return YouTube2Playable(engine, media, config, YouTubeBridge(media))
   }
 
   override fun cleanUp() {

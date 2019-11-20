@@ -25,7 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.commit
-import kohii.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.ui.pagers.GridContentFragment
@@ -50,14 +50,14 @@ class MasterDetailFragment : BaseFragment() {
     return inflater.inflate(R.layout.fragment_master_detail, container, false)
   }
 
-  lateinit var kohii: Master
+  lateinit var kohii: Kohii
 
   override fun onViewCreated(
     view: View,
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     kohii.register(this)
         .attach(container)
 

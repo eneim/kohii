@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.echo
 
 import android.util.SparseArray
 import androidx.lifecycle.ViewModel
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.common.getOrPut
 
 class VolumeStateViewModel : ViewModel(), VolumeStore {

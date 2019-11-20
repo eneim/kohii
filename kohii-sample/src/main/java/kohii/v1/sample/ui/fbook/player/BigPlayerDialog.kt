@@ -23,10 +23,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.core.DefaultController
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InfinityDialogFragment
 import kohii.v1.sample.common.isLandscape
@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class BigPlayerDialog : InfinityDialogFragment(),
     PlayerPanel,
     Playback.Callback,
-    Playback.PlaybackListener {
+    Playback.StateListener {
 
   companion object {
     private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
@@ -57,7 +57,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     }
   }
 
-  private lateinit var kohii: Master
+  private lateinit var kohii: Kohii
   private lateinit var rebinderFromArgs: Rebinder
 
   @Suppress("MemberVisibilityCanBePrivate")
@@ -109,7 +109,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    kohii = Master[this]
+    kohii = Kohii[this]
     val manager = kohii.register(this)
         .attach(playerContainer)
 
@@ -145,11 +145,11 @@ class BigPlayerDialog : InfinityDialogFragment(),
 
     rebinder
         .with {
-          controller = DefaultController(manager, playerView)
+          controller = DefaultControlDispatcher(manager, playerView)
           callbacks = arrayOf(this@BigPlayerDialog)
         }
         .bind(kohii, playerView) {
-          it.addPlaybackListener(this@BigPlayerDialog)
+          it.addStateListener(this@BigPlayerDialog)
         }
 
     minimizeButton.setOnClickListener {
@@ -171,7 +171,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
   }
 
   override fun onEnded(playback: Playback) {
-    playback.removePlaybackListener(this)
+    playback.removeStateListener(this)
     dismissAllowingStateLoss()
   }
 }

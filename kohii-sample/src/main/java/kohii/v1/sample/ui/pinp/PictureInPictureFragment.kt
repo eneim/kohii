@@ -25,9 +25,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -37,7 +37,7 @@ import kotlinx.android.synthetic.main.fragment_pip.playerView
 import kotlinx.android.synthetic.main.fragment_pip.scrollView
 
 @RequiresApi(VERSION_CODES.O)
-class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
+class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
 
   companion object {
     fun newInstance() = PictureInPictureFragment()
@@ -61,7 +61,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
     super.onViewCreated(view, savedInstanceState)
     pipButton.setOnClickListener { minimize() }
     playerContainer.setAspectRatio(16 / 9F)
-    val kohii = Master[this]
+    val kohii = Kohii[this]
     kohii.register(this)
         .attach(playerContainer)
 
@@ -70,7 +70,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
       repeatMode = Common.REPEAT_MODE_ONE
     }
         .bind(playerView) {
-          it.addPlaybackListener(this@PictureInPictureFragment)
+          it.addStateListener(this@PictureInPictureFragment)
           playback = it
         }
   }
@@ -88,7 +88,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
 
   override fun onDestroyView() {
     super.onDestroyView()
-    playback?.removePlaybackListener(this)
+    playback?.removeStateListener(this)
     playback = null
   }
 

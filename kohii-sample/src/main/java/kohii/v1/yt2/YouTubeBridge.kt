@@ -29,16 +29,17 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import kohii.core.Common
-import kohii.media.Media
-import kohii.media.PlaybackInfo
-import kohii.media.VolumeInfo
-import kohii.v1.BaseBridge
+import kohii.v1.core.AbstractBridge
+import kohii.v1.core.Common
+import kohii.v1.core.VideoSize
+import kohii.v1.media.Media
+import kohii.v1.media.PlaybackInfo
+import kohii.v1.media.VolumeInfo
 import kotlin.properties.Delegates
 
 class YouTubeBridge(
   private val media: Media
-) : BaseBridge<YouTubePlayerView>() {
+) : AbstractBridge<YouTubePlayerView>() {
 
   private var player: YouTubePlayer? by Delegates.observable<YouTubePlayer?>(
       initialValue = null,
@@ -86,7 +87,9 @@ class YouTubeBridge(
   }
 
   private var _playbackInfo: PlaybackInfo by Delegates.observable(
-      PlaybackInfo(0, 0, VolumeInfo()),
+      PlaybackInfo(
+          0, 0, VolumeInfo()
+      ),
       onChange = { _, _, _ ->
         // Note: we ignore volume setting here.
         // if (newVal.resumePosition != oldVal.resumePosition) {
@@ -94,6 +97,8 @@ class YouTubeBridge(
         // }
       }
   )
+
+  override var videoSize: VideoSize = VideoSize.ORIGINAL
 
   override var renderer: YouTubePlayerView? = null
     set(value) {
@@ -114,13 +119,16 @@ class YouTubeBridge(
 
   private fun updatePlaybackInfo(player: YouTubePlayer?) {
     if (player != null) {
-      _playbackInfo = PlaybackInfo(0, tracker.currentSecond.toLong(), _playbackInfo.volumeInfo)
+      _playbackInfo = PlaybackInfo(
+          0, tracker.currentSecond.toLong(), _playbackInfo.volumeInfo
+      )
     }
   }
 
   override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
-  override var repeatMode: Int by Delegates.observable(Common.REPEAT_MODE_OFF,
+  override var repeatMode: Int by Delegates.observable(
+      Common.REPEAT_MODE_OFF,
       onChange = { _, _, _ -> /* youtube library doesn't have looping support */ })
 
   override val playbackState: Int
@@ -130,7 +138,8 @@ class YouTubeBridge(
     return tracker.state === PLAYING
   }
 
-  override val volumeInfo: VolumeInfo = VolumeInfo()
+  override val volumeInfo: VolumeInfo =
+    VolumeInfo()
 
   override fun seekTo(positionMs: Long) {
     val playbackInfo = this.playbackInfo
@@ -156,6 +165,7 @@ class YouTubeBridge(
   }
 
   override fun play() {
+    if (videoSize == VideoSize.NONE) return
     if (tracker.state !== PLAYING || tracker.videoId != media.uri.toString()) {
       val player = this.player
       val playerView = requireNotNull(renderer)

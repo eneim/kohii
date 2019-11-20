@@ -16,20 +16,22 @@
 
 package kohii.v1.yt1
 
-import kohii.core.Creator
-import kohii.core.Playable
-import kohii.core.Master
-import kohii.core.Playable.Config
-import kohii.media.Media
+import kohii.v1.core.Engine
+import kohii.v1.core.Playable
+import kohii.v1.core.Playable.Config
+import kohii.v1.core.PlayableCreator
+import kohii.v1.media.Media
 
-class YouTube1PlayableCreator : Creator(YouTubePlayerFragment::class.java) {
+class YouTube1PlayableCreator : PlayableCreator<YouTubePlayerFragment>(
+    YouTubePlayerFragment::class.java
+) {
 
   override fun createPlayable(
-    master: Master,
+    engine: Engine<YouTubePlayerFragment>,
     config: Config,
     media: Media
   ): Playable {
-    return YouTube1Playable(master, media, config, YouTubeBridge(media))
+    return YouTube1Playable(engine, media, config, YouTubeBridge(media))
   }
 
   override fun cleanUp() {

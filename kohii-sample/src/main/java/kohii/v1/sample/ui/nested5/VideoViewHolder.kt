@@ -19,9 +19,9 @@ package kohii.v1.sample.ui.nested5
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
@@ -33,7 +33,7 @@ import kohii.v1.sample.data.Item
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoViewHolder(
   parent: ViewGroup,
-  val kohii: Master
+  val kohii: Kohii
 ) : BaseViewHolder(parent, R.layout.holder_player_view_horizontal), Playback.Callback {
 
   val mediaName: TextView = itemView.findViewById(R.id.videoTitle)

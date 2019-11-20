@@ -31,14 +31,14 @@ import android.view.WindowManager
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.FragmentActivity
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.core.Master
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 
 internal class FloatPlayerManager(val activity: FragmentActivity) {
 
-  internal val kohii = Master[activity]
+  internal val kohii = Kohii[activity]
   internal val windowManager = activity.getSystemService(WINDOW_SERVICE) as WindowManager
   @SuppressLint("InflateParams")
   internal val floatView: View = LayoutInflater.from(activity)

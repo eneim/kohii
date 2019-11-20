@@ -20,16 +20,16 @@ import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.core.Common
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.svg.GlideApp
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val kohii: Master,
+  private val kohii: Kohii,
   val shouldBindVideo: (Rebinder?) -> Boolean,
   val onVideoClick: (Int, Rebinder) -> Unit
 ) : Adapter<BaseViewHolder>(), BaseViewHolder.OnClickListener {
@@ -89,12 +89,12 @@ internal class VideoItemsAdapter(
               holder,
               object : Playback.Callback {
                 override fun onRemoved(playback: Playback) {
-                  playback.removePlaybackListener(holder)
+                  playback.removeStateListener(holder)
                 }
               })
         }
             .bind(holder.playerViewContainer) {
-              it.addPlaybackListener(holder)
+              it.addStateListener(holder)
             }
       }
     }

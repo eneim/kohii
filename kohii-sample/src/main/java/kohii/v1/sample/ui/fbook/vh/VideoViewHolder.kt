@@ -22,25 +22,22 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
-import kohii.core.Binder.Options
-import kohii.core.Common
-import kohii.core.Manager
-import kohii.core.Master
-import kohii.core.Playback
-import kohii.core.Rebinder
+import kohii.v1.core.Binder.Options
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
 
-@Suppress("MemberVisibilityCanBePrivate")
 internal class VideoViewHolder(
   parent: ViewGroup,
-  val kohii: Master,
-  val manager: Manager,
+  val kohii: Kohii,
   val shouldBind: (Rebinder?) -> Boolean
 ) : FbookItemHolder(parent),
-    Playback.PlaybackListener,
+    Playback.StateListener,
     Playback.Callback {
 
   init {
@@ -89,7 +86,7 @@ internal class VideoViewHolder(
         kohii.setUp(assetVideoUri, params)
             .bind(playerView) { pk ->
               volume.isSelected = !pk.volumeInfo.mute
-              pk.addPlaybackListener(this@VideoViewHolder)
+              pk.addStateListener(this@VideoViewHolder)
               playAgain.isVisible = pk.playerState == Common.STATE_ENDED
               playback = pk
             }
@@ -114,7 +111,7 @@ internal class VideoViewHolder(
   }
 
   override fun onRemoved(playback: Playback) {
-    playback.removePlaybackListener(this)
+    playback.removeStateListener(this)
   }
 
   override fun onRecycled(success: Boolean) {
