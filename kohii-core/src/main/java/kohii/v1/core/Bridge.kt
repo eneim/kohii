@@ -24,17 +24,14 @@ import kohii.v1.media.VolumeInfo
 
 interface Bridge<RENDERER : Any> {
 
-  var videoSize: VideoSize
-
   val playbackState: Int
 
-  //  set/get
   var renderer: RENDERER?
 
-  // set/get
+  var videoSize: VideoSize
+
   var playbackInfo: PlaybackInfo
 
-  // set/get
   var parameters: PlaybackParameters
 
   @RepeatMode var repeatMode: Int

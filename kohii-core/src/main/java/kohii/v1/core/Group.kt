@@ -89,9 +89,12 @@ class Group(
   internal val volumeInfo: VolumeInfo
     get() = volumeInfoUpdater
 
-  internal var lock: Boolean by Delegates.observable(false) { _, _, lock ->
-    managers.forEach { it.lock = lock }
-  }
+  internal var lock: Boolean = false
+    set(value) {
+      if (field == value) return
+      field = value
+      managers.forEach { it.lock = lock }
+    }
 
   internal var networkType by Delegates.observable(
       C.NETWORK_TYPE_UNKNOWN,
@@ -207,7 +210,7 @@ class Group(
     }
 
     val oldSelection = organizer.selection
-    val newSelection = organizer.selectFinal(toPlay)
+    val newSelection = if (lock) emptyList() else organizer.selectFinal(toPlay)
 
     // biggest Rect cover all selected Playbacks
     val cover = newSelection.fold(Rect()) { acc, playback ->
@@ -231,21 +234,20 @@ class Group(
       newSelection.forEach { it.distanceToPlay = 0 }
     }
 
-    val playables = master.playables.keys
-    (toPause + toPlay + oldSelection - newSelection)
-        .mapNotNull { playback -> playables.find { it.playback === playback } }
+    (toPause + toPlay + oldSelection - newSelection).mapNotNull { it.playable }
         .forEach { dispatcher.pause(it) }
 
-    newSelection
-        .mapNotNull { playback -> playables.find { it.playback === playback } }
-        .forEach { dispatcher.play(it) }
+    if (newSelection.isNotEmpty()) {
+      newSelection.mapNotNull { it.playable }
+          .forEach { dispatcher.play(it) }
 
-    val grouped = newSelection.groupBy { it.manager }
-    this.managers.asSequence()
-        .filter { it.host is OnSelectionListener }
-        .forEach {
-          (it.host as OnSelectionListener).onSelection(grouped.getOrElse(it) { emptyList() })
-        }
+      val grouped = newSelection.groupBy { it.manager }
+      this.managers.asSequence()
+          .filter { it.host is OnSelectionListener }
+          .forEach {
+            (it.host as OnSelectionListener).onSelection(grouped.getOrElse(it) { emptyList() })
+          }
+    }
   }
 
   internal fun onManagerDestroyed(manager: Manager) {

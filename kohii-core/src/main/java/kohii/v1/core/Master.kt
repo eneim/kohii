@@ -136,6 +136,23 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
+  private val screenStateReceiver = lazy(NONE) {
+    object : BroadcastReceiver() {
+      override fun onReceive(
+        context: Context?,
+        intent: Intent?
+      ) {
+        if (context != null && intent != null) {
+          if (intent.action == Intent.ACTION_SCREEN_OFF) {
+            Master[context].pause(Scope.GLOBAL)
+          } else if (intent.action == Intent.ACTION_USER_PRESENT) {
+            Master[context].resume(Scope.GLOBAL)
+          }
+        }
+      }
+    }
+  }
+
   private val networkActionReceiver = lazy(NONE) {
     object : BroadcastReceiver() {
       override fun onReceive(
@@ -143,7 +160,6 @@ class Master private constructor(context: Context) : PlayableManager {
         intent: Intent?
       ) {
         if (isInitialStickyBroadcast) return
-        val action = intent?.action
         if (context != null) {
           Master[context].onNetworkChanged()
         }
@@ -335,6 +351,11 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun onFirstManagerCreated(group: Group) {
     if (groups.flatMap { it.managers }.isEmpty()) {
       app.registerComponentCallbacks(componentCallbacks)
+      app.registerReceiver(screenStateReceiver.value, IntentFilter().apply {
+        addAction(Intent.ACTION_SCREEN_ON)
+        addAction(Intent.ACTION_SCREEN_OFF)
+        addAction(Intent.ACTION_USER_PRESENT)
+      })
       if (VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
         val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
         networkManager?.registerDefaultNetworkCallback(networkCallback.value)
@@ -355,6 +376,9 @@ class Master private constructor(context: Context) : PlayableManager {
         networkManager?.unregisterNetworkCallback(networkCallback.value)
       } else if (networkActionReceiver.isInitialized()) {
         app.unregisterReceiver(networkActionReceiver.value)
+      }
+      if (screenStateReceiver.isInitialized()) {
+        app.unregisterReceiver(screenStateReceiver.value)
       }
       app.unregisterComponentCallbacks(componentCallbacks)
     }
@@ -402,6 +426,125 @@ class Master private constructor(context: Context) : PlayableManager {
       playablesPendingStates[playable.tag] = Common.PENDING_PAUSE
       playablesStartedByClient.remove(playable.tag)
       requireNotNull(playable.playback).manager.refresh()
+    }
+  }
+
+  /**
+   * Manually pause an object in a specific scope. After Playbacks of a Scope is paused by this method,
+   * only another call to [resume(scope, receiver)] with same or higher priority Scope will resume it.
+   * For example:
+   * - Pausing a Playback with Scope.PLAYBACK --> a call to resume(Scope.PLAYBACK, playback) or
+   * resume(Scope.BUCKET, playback) will also resume it.
+   * - Pausing all Playback in a Manager by using Scope.MANAGER --> a call to resume(bucket, Scope.BUCKET)
+   * will not resume anything, including Playbacks of containers inside to that Bucket.
+   *
+   * To be able to change the scope of Playbacks need to be paused, client must:
+   * - Resume all Playbacks of the same or higher priority Scope.
+   * - Call this method to pause Playbacks of expected scope.
+   */
+  internal fun pause(
+    scope: Scope = Scope.GLOBAL,
+    receiver: Any? = null
+  ) {
+    when (scope) {
+      Scope.GLOBAL ->
+        this.groups.forEach {
+          this.pause(Scope.GROUP, it)
+        }
+      Scope.GROUP ->
+        when (receiver) {
+          is Group -> receiver.lock = true // will lock all managers
+          is Manager -> this.pause(Scope.GROUP, receiver.group)
+          else -> throw IllegalArgumentException(
+              "Receiver for scope $scope must be a Manager or a Group"
+          )
+        }
+      Scope.MANAGER -> {
+        require(receiver is Manager) { "Receiver for scope $scope must be a Manager" }
+        receiver.lock = true
+      }
+      Scope.BUCKET ->
+        when (receiver) {
+          is Bucket -> receiver.lock = true
+          is Playback -> this.pause(Scope.BUCKET, receiver.bucket)
+          else -> {
+            val bucket = groups.asSequence()
+                .flatMap { it.managers.asSequence() }
+                .flatMap { it.buckets.asSequence() }
+                .firstOrNull { it.root === receiver }
+            if (bucket != null) this.pause(Scope.BUCKET, bucket)
+          }
+        }
+      Scope.PLAYBACK -> {
+        require(receiver is Playback) { "Receiver for scope $scope must be a Playback" }
+        receiver.playable?.let { pause(it) }
+      }
+    }
+  }
+
+  /**
+   * Manually pause an object in a specific scope. After Playbacks of a Scope is paused by this method,
+   * only another call to [resume(scope, receiver)] with same or higher priority Scope will resume it.
+   * For example:
+   * - Pausing a Playback with Scope.PLAYBACK --> a call to resume(Scope.PLAYBACK, playback) or
+   * resume(Scope.BUCKET, playback) will also resume it.
+   * - Pausing all Playback in a Manager by using Scope.MANAGER --> a call to resume(bucket, Scope.BUCKET)
+   * will not resume anything, including Playbacks of containers inside to that Bucket.
+   *
+   * To be able to change the scope of Playbacks need to be paused, client must:
+   * - Resume all Playbacks of the same or higher priority Scope.
+   * - Call this method to pause Playbacks of expected scope.
+   */
+  internal fun resume(
+    scope: Scope = Scope.GLOBAL,
+    receiver: Any? = null
+  ) {
+    when {
+      scope === Scope.GLOBAL ->
+        this.groups.forEach {
+          this.resume(Scope.GROUP, it)
+        }
+      scope === Scope.GROUP ->
+        when (receiver) {
+          is Group -> {
+            receiver.lock = false
+            receiver.managers
+                .forEach { this.resume(Scope.MANAGER, it) }
+          }
+          is Manager -> this.resume(Scope.GROUP, receiver.group)
+          else -> throw IllegalArgumentException(
+              "Receiver for scope $scope must be a Manager or a Group"
+          )
+        }
+      scope === Scope.MANAGER ->
+        (receiver as? Manager)?.let {
+          it.lock = false
+          it.buckets.forEach { bucket -> this.resume(Scope.BUCKET, bucket) }
+        } ?: throw IllegalArgumentException("Receiver for scope $scope must be a Manager")
+      scope === Scope.BUCKET ->
+        when (receiver) {
+          is Bucket -> {
+            receiver.lock = false
+            receiver.manager.refresh()
+          }
+          is Playback -> this.resume(Scope.BUCKET, receiver.bucket)
+          else -> {
+            // Find the TargetHost whose host is this receiver
+            val bucket = groups.asSequence()
+                .flatMap { it.managers.asSequence() }
+                .flatMap { it.buckets.asSequence() }
+                .firstOrNull { it.root === receiver }
+
+            if (bucket != null) this.resume(Scope.BUCKET, bucket)
+          }
+        }
+      scope === Scope.PLAYBACK ->
+        (receiver as? Playback)?.let {
+          if (it.config.controller != null) { // has manual controller
+            playablesPendingStates.remove(it.playable) // TODO double check manual playback
+            it.manager.refresh()
+          }
+        } ?: throw IllegalArgumentException("Receiver for scope $scope must be a Playback")
     }
   }
 

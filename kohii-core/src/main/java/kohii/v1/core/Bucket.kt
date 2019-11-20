@@ -82,6 +82,13 @@ abstract class Bucket constructor(
     }
   }
 
+  internal var lock: Boolean = manager.lock
+    set(value) {
+      if (field == value) return
+      field = value
+      manager.refresh()
+    }
+
   private val containers = mutableSetOf<Any>()
 
   // The direct child of CoordinatorLayout that is an ancestor of this root if exist.
@@ -197,8 +204,9 @@ abstract class Bucket constructor(
     candidates: Collection<Playback>,
     orientation: Int
   ): Collection<Playback> {
-    val comparator = comparators.getValue(orientation)
+    if (lock) return emptyList()
 
+    val comparator = comparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
         .groupBy { it.config.controller != null }
         .withDefault { emptyList() }
@@ -207,10 +215,8 @@ abstract class Bucket constructor(
       val started = asSequence()
           .find {
             manager.master.playablesPendingStates[it.tag] == Common.PENDING_PLAY ||
-                // Started by client.
-                manager.master.playablesStartedByClient.contains(it.tag)
+                manager.master.playablesStartedByClient.contains(it.tag) // Started by client.
           }
-
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 

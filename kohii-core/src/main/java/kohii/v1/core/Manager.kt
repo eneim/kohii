@@ -66,13 +66,19 @@ class Manager(
     }
   }
 
-  internal var lock: Boolean by Delegates.observable(group.lock) { _, _, _ -> refresh() }
+  internal var lock: Boolean = group.lock
+    set(value) {
+      if (field == value) return
+      field = value
+      buckets.forEach { it.lock = value }
+      refresh()
+    }
 
   // Use as both Queue and Stack.
   // - When adding new Bucket, we add it to tail of the Queue.
   // - When promoting a Bucket as sticky, we push it to head of the Queue.
   // - When demoting a Bucket from sticky, we just poll the head.
-  private val buckets = ArrayDeque<Bucket>(4 /* less than default minimum of ArrayDeque */)
+  internal val buckets = ArrayDeque<Bucket>(4 /* less than default minimum of ArrayDeque */)
   // Up to one Bucket can be sticky at a time.
   private var stickyBucket by Delegates.observable<Bucket?>(
       initialValue = null,
@@ -154,8 +160,7 @@ class Manager(
 
   @RestrictTo(LIBRARY_GROUP)
   fun findPlayableForContainer(container: ViewGroup): Playable? {
-    val playback = playbacks[container]
-    return master.playables.keys.find { it.playback === playback }
+    return playbacks[container]?.playable
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
@@ -256,7 +261,7 @@ class Manager(
         }
 
     activePlaybacks.addAll(inactivePlaybacks)
-    return toPlay to activePlaybacks
+    return if (lock) emptySet<Playback>() to (toPlay + activePlaybacks) else toPlay to activePlaybacks
   }
 
   internal fun addPlayback(playback: Playback) {
