@@ -34,22 +34,24 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedT
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.util.ErrorMessageProvider
-import kohii.v1.core.PlayerEventListener
 import kohii.v1.R
-import kohii.v1.core.VolumeInfoController
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.Common
+import kohii.v1.core.PlayerEventListener
+import kohii.v1.core.VideoSize
+import kohii.v1.core.VolumeInfoController
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.PlaybackInfo.Companion.INDEX_UNSET
 import kohii.v1.media.PlaybackInfo.Companion.TIME_UNSET
 import kohii.v1.media.VolumeInfo
 import kotlin.math.max
+import kotlin.properties.Delegates
 
 /**
  * @author eneim (2018/06/24).
  */
-internal open class PlayerViewBridge(
+internal class PlayerViewBridge(
   context: Context,
   private val media: Media,
   private val playerProvider: ExoPlayerProvider,
@@ -88,6 +90,23 @@ internal open class PlayerViewBridge(
 
   override val playbackState: Int
     get() = player?.playbackState ?: -1
+
+  override var videoSize: VideoSize by Delegates.observable(
+      VideoSize.ORIGINAL,
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        if (to != VideoSize.NONE) {
+          val player = this.player
+          if (player is KohiiExoPlayer) {
+            val current = player.trackSelector.parameters
+            val next = current.buildUpon()
+                .setMaxVideoSize(to.maxWidth, to.maxHeight)
+                .build()
+            player.trackSelector.parameters = next
+          }
+        }
+      }
+  )
 
   override fun prepare(loadSource: Boolean) {
     super.addEventListener(this)
@@ -134,7 +153,9 @@ internal open class PlayerViewBridge(
   }
 
   override fun play() {
-    requireNotNull(player).playWhenReady = true
+    if (videoSize != VideoSize.NONE) {
+      requireNotNull(player).playWhenReady = true
+    }
   }
 
   override fun pause() {
@@ -284,7 +305,14 @@ internal open class PlayerViewBridge(
     if (player == null) {
       sourcePrepared = false
       listenerApplied = false
-      player = playerProvider.acquirePlayer(this.media)
+      val player = playerProvider.acquirePlayer(this.media)
+      if (player is KohiiExoPlayer) {
+        val next = player.trackSelector.parameters.buildUpon()
+            .setMaxVideoSize(videoSize.maxWidth, videoSize.maxHeight)
+            .build()
+        player.trackSelector.parameters = next
+      }
+      this.player = player
     }
 
     requireNotNull(player).also {
@@ -304,8 +332,7 @@ internal open class PlayerViewBridge(
     }
   }
 
-  @Suppress("MemberVisibilityCanBePrivate")
-  protected fun onErrorMessage(
+  private fun onErrorMessage(
     message: String,
     cause: Throwable?
   ) {

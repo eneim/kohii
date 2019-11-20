@@ -69,7 +69,7 @@ internal class ItemsAdapter(
         repeatMode = Common.REPEAT_MODE_ONE
       }
           .bind(holder.container) {
-            it.addPlaybackListener(holder)
+            it.addStateListener(holder)
           }
     } else holder.bind(position)
   }

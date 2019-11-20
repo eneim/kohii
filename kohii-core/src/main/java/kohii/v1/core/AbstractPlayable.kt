@@ -238,7 +238,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     from: VolumeInfo,
     to: VolumeInfo
   ) {
-    "Playable#onVolumeInfoChange $playback, $from --> $to, $this".logInfo()
+    "Playable#onVolumeInfoChanged $playback, $from --> $to, $this".logInfo()
     bridge.setVolumeInfo(to)
   }
 
@@ -254,5 +254,15 @@ abstract class AbstractPlayable<RENDERER : Any>(
     if (this.playback === playback) {
       playback.manager.removePlayback(playback)
     }
+  }
+
+  override fun onNetworkTypeChanged(
+    playback: Playback,
+    from: Int,
+    to: Int
+  ) {
+    "Playable#onNetworkTypeChanged $playback, $this".logInfo()
+    val resolution = config.videoSize(to)
+    bridge.videoSize = resolution
   }
 }

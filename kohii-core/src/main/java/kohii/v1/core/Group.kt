@@ -30,6 +30,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.google.android.exoplayer2.C
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
 import kohii.v1.internal.Organizer
@@ -91,6 +92,14 @@ class Group(
   internal var lock: Boolean by Delegates.observable(false) { _, _, lock ->
     managers.forEach { it.lock = lock }
   }
+
+  internal var networkType by Delegates.observable(
+      C.NETWORK_TYPE_UNKNOWN,
+      onChange = { _, from, to ->
+        if (from == to) return@observable
+        // TODO
+      }
+  )
 
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
@@ -245,6 +254,7 @@ class Group(
     if (managers.size == 0) {
       rendererProviders.onEach { it.value.clear() }
           .clear()
+      master.onLastManagerDestroyed(this)
     }
   }
 
@@ -252,6 +262,7 @@ class Group(
   // - Ensure the order of Manager by its Priority
   // - Ensure stickyManager is in the head.
   internal fun onManagerCreated(manager: Manager) {
+    if (managers.isEmpty()) master.onFirstManagerCreated(this)
     val updated: Boolean
     // 1. Pop out the sticky Manager if available.
     val sticky = if (managers.peek()?.sticky == true) managers.pop() else null
@@ -273,7 +284,6 @@ class Group(
 
     // 3. Push the sticky Manager back to head of the queue.
     if (sticky != null) managers.push(sticky)
-
     if (updated) master.onGroupUpdated(this)
   }
 

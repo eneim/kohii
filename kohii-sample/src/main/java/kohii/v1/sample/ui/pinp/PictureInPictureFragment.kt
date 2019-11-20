@@ -37,7 +37,7 @@ import kotlinx.android.synthetic.main.fragment_pip.playerView
 import kotlinx.android.synthetic.main.fragment_pip.scrollView
 
 @RequiresApi(VERSION_CODES.O)
-class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
+class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
 
   companion object {
     fun newInstance() = PictureInPictureFragment()
@@ -70,7 +70,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
       repeatMode = Common.REPEAT_MODE_ONE
     }
         .bind(playerView) {
-          it.addPlaybackListener(this@PictureInPictureFragment)
+          it.addStateListener(this@PictureInPictureFragment)
           playback = it
         }
   }
@@ -88,7 +88,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.PlaybackListener {
 
   override fun onDestroyView() {
     super.onDestroyView()
-    playback?.removePlaybackListener(this)
+    playback?.removeStateListener(this)
     playback = null
   }
 

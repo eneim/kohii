@@ -58,7 +58,7 @@ import kotlin.properties.Delegates
 class FbookFragment : BaseFragment(),
     BackPressConsumer,
     FloatPlayerController,
-    PlayerPanel.Callback, Manager.OnSelectionListener, Playback.PlaybackListener {
+    PlayerPanel.Callback, Manager.OnSelectionListener, Playback.StateListener {
 
   companion object {
     private const val STATE_KEY_REBINDER = "kohii::fbook::arg::rebinder"
@@ -76,9 +76,9 @@ class FbookFragment : BaseFragment(),
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
-        from?.removePlaybackListener(this@FbookFragment)
+        from?.removeStateListener(this@FbookFragment)
         if (to != null) {
-          to.addPlaybackListener(this@FbookFragment)
+          to.addStateListener(this@FbookFragment)
           currentSelectedRebinder = kohii.fetchRebinder(to.tag)
         }
       }
@@ -242,7 +242,7 @@ class FbookFragment : BaseFragment(),
   override fun onEnded(playback: Playback) {
     super.onEnded(playback)
     if (playback === currentSelectedPlayback) {
-      playback.removePlaybackListener(this)
+      playback.removeStateListener(this)
       currentSelectedPlayback = null
       currentSelectedRebinder = null
     }
@@ -290,10 +290,10 @@ class FbookFragment : BaseFragment(),
               ?.with { repeatMode = Common.REPEAT_MODE_OFF }
               ?.bind(kohii, playerView) { playback ->
                 dummyPlayer.isVisible = false // View.GONE
-                playback.addPlaybackListener(object : Playback.PlaybackListener {
+                playback.addStateListener(object : Playback.StateListener {
                   override fun onEnded(playback: Playback) {
                     kohii.unstick(playback)
-                    playback.removePlaybackListener(this)
+                    playback.removeStateListener(this)
                     viewModel.overlayPlayerInfo.value = null
                   }
                 })

@@ -32,7 +32,7 @@ class YouTube2Playable(
   override var renderer: Any?
     get() = bridge.renderer
     set(value) {
-      require(value is YouTubePlayerView)
+      require(value is YouTubePlayerView?)
       bridge.renderer = value
     }
 

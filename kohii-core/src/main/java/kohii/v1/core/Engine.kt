@@ -127,16 +127,6 @@ abstract class Engine<RENDERER : Any> constructor(
     }
   }
 
-  // target == null --> lock all
-  fun lock() {
-    master.groups.forEach { it.lock = true }
-  }
-
-  // target == null --> unlock all
-  fun unlock() {
-    master.groups.forEach { it.lock = false }
-  }
-
   @CallSuper
   open fun cleanUp() {
     playableCreator.cleanUp()

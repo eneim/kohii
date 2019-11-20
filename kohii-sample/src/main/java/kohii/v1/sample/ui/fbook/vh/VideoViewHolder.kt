@@ -37,7 +37,7 @@ internal class VideoViewHolder(
   val kohii: Kohii,
   val shouldBind: (Rebinder?) -> Boolean
 ) : FbookItemHolder(parent),
-    Playback.PlaybackListener,
+    Playback.StateListener,
     Playback.Callback {
 
   init {
@@ -86,7 +86,7 @@ internal class VideoViewHolder(
         kohii.setUp(assetVideoUri, params)
             .bind(playerView) { pk ->
               volume.isSelected = !pk.volumeInfo.mute
-              pk.addPlaybackListener(this@VideoViewHolder)
+              pk.addStateListener(this@VideoViewHolder)
               playAgain.isVisible = pk.playerState == Common.STATE_ENDED
               playback = pk
             }
@@ -111,7 +111,7 @@ internal class VideoViewHolder(
   }
 
   override fun onRemoved(playback: Playback) {
-    playback.removePlaybackListener(this)
+    playback.removeStateListener(this)
   }
 
   override fun onRecycled(success: Boolean) {

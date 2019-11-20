@@ -49,7 +49,7 @@ import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
-class Master private constructor(context: Context) : PlayableManager, ComponentCallbacks2 {
+class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
 
@@ -63,7 +63,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     @Volatile private var master: Master? = null
 
     @JvmStatic
-    internal operator fun get(context: Context) = master ?: synchronized(Master::javaClass) {
+    operator fun get(context: Context) = master ?: synchronized(Master::javaClass) {
       master ?: Master(context).also { master = it }
     }
   }
@@ -95,7 +95,7 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     }
   }
 
-  val app = context.applicationContext as Application
+  internal val app = context.applicationContext as Application
 
   internal val groups = mutableSetOf<Group>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
@@ -112,7 +112,23 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
 
-  private var trimMemoryLevel: Int by Delegates.observable(
+  private val componentCallbacks by lazy(NONE) {
+    object : ComponentCallbacks2 {
+      override fun onLowMemory() {
+        // do nothing
+      }
+
+      override fun onConfigurationChanged(newConfig: Configuration) {
+        // do nothing
+      }
+
+      override fun onTrimMemory(level: Int) {
+        trimMemoryLevel = level
+      }
+    }
+  }
+
+  internal var trimMemoryLevel: Int by Delegates.observable(
       initialValue = RunningAppProcessInfo().let {
         ActivityManager.getMyMemoryState(it)
         it.lastTrimLevel
@@ -253,7 +269,6 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   internal fun onGroupCreated(group: Group) {
     groups.add(group)
-    engines.forEach { it.value.inject(group) }
     dispatcher.sendEmptyMessage(MSG_CLEANUP)
   }
 
@@ -280,6 +295,15 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
     if (groups.map { it.managers }.isEmpty() && playables.isEmpty()) {
       cleanUp()
     }
+  }
+
+  internal fun onFirstManagerCreated(group: Group) {
+    if (groups.isEmpty()) app.registerComponentCallbacks(componentCallbacks)
+    engines.forEach { it.value.inject(group) }
+  }
+
+  internal fun onLastManagerDestroyed(group: Group) {
+    if (groups.map { it.managers }.isEmpty()) app.unregisterComponentCallbacks(componentCallbacks)
   }
 
   private fun cleanUp() {
@@ -329,24 +353,24 @@ class Master private constructor(context: Context) : PlayableManager, ComponentC
 
   // Public APIs
 
-  fun registerEngine(engine: Engine<*>) {
+  // target == null --> lock all
+  // TODO design 'lock' policy.
+  /**
+   * Will lock all
+   */
+  fun lock() {
+    groups.forEach { it.lock = true }
+  }
+
+  // target == null --> unlock all
+  fun unlock() {
+    groups.forEach { it.lock = false }
+  }
+
+  internal fun registerEngine(engine: Engine<*>) {
     engines.put(engine.playableCreator.rendererType, engine)
         ?.cleanUp()
     groups.forEach { engine.inject(it) }
-  }
-
-  // ComponentCallbacks2
-
-  override fun onLowMemory() {
-    // Do nothing
-  }
-
-  override fun onConfigurationChanged(newConfig: Configuration) {
-    // Do nothing
-  }
-
-  override fun onTrimMemory(level: Int) {
-    trimMemoryLevel = level
   }
 
   internal fun onBind(

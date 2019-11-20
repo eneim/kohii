@@ -31,7 +31,7 @@ import kohii.v1.sample.svg.GlideApp
 class YouTubeViewHolder(
   parent: ViewGroup,
   layoutId: Int
-) : BaseViewHolder(parent, layoutId), Playback.PlaybackListener {
+) : BaseViewHolder(parent, layoutId), Playback.StateListener {
 
   val container = itemView.findViewById(R.id.container) as FrameLayout
   val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView

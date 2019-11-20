@@ -67,13 +67,13 @@ class ExoVideosAdapter(
       repeatMode = Common.REPEAT_MODE_ONE
       callbacks += object : Callback {
         override fun onRemoved(playback: Playback) {
-          playback.removePlaybackListener(holder)
+          playback.removeStateListener(holder)
         }
       }
     }
         .bind(holder.container) {
           onLoad?.invoke(holder, position)
-          it.addPlaybackListener(holder)
+          it.addStateListener(holder)
         }
   }
 }

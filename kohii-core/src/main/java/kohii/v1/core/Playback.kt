@@ -28,7 +28,6 @@ import kohii.v1.core.Bucket.Companion.BOTH_AXIS
 import kohii.v1.core.Bucket.Companion.HORIZONTAL
 import kohii.v1.core.Bucket.Companion.NONE_AXIS
 import kohii.v1.core.Bucket.Companion.VERTICAL
-import kohii.v1.core.Switch.Callback
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -43,7 +42,7 @@ abstract class Playback(
   val config: Config = Config(),
   val container: ViewGroup
 ) : PlayerEventListener,
-    ErrorListener, Callback {
+    ErrorListener {
 
   companion object {
     @Suppress("unused")
@@ -164,7 +163,7 @@ abstract class Playback(
   }
 
   private val callbacks = ArrayDeque<Callback>()
-  private val listeners = ArrayDeque<PlaybackListener>()
+  private val listeners = ArrayDeque<StateListener>()
 
   // Return **true** to indicate that the Renderer is safely attached and
   // can be used by the Playable.
@@ -312,17 +311,6 @@ abstract class Playback(
     return result
   }
 
-  override fun onSwitch(
-    switch: Switch,
-    from: Boolean,
-    to: Boolean
-  ) {
-    "Playback#onSwitch $switch $from --> $to, $this".logDebug()
-    TODO(
-        "onSwitch not implemented"
-    ) // To change body of created functions use File | Settings | File Templates.
-  }
-
   // Public APIs
 
   val tag = config.tag
@@ -349,13 +337,13 @@ abstract class Playback(
     this.callbacks.remove(callback)
   }
 
-  fun addPlaybackListener(listener: PlaybackListener) {
-    "Playback#addPlaybackListener $listener, $this".logDebug()
+  fun addStateListener(listener: StateListener) {
+    "Playback#addStateListener $listener, $this".logDebug()
     this.listeners.add(listener)
   }
 
-  fun removePlaybackListener(listener: PlaybackListener?) {
-    "Playback#removePlaybackListener $listener, $this".logDebug()
+  fun removeStateListener(listener: StateListener?) {
+    "Playback#removeStateListener $listener, $this".logDebug()
     this.listeners.remove(listener)
   }
 
@@ -366,9 +354,9 @@ abstract class Playback(
     }
   }
 
-  fun rewind(alsoRefresh: Boolean = true) {
+  fun rewind(refresh: Boolean = true) {
     playable?.onReset()
-    if (alsoRefresh) manager.refresh()
+    if (refresh) manager.refresh()
   }
 
   // PlayerEventListener
@@ -420,7 +408,7 @@ abstract class Playback(
     if (BuildConfig.DEBUG) error.printStackTrace()
   }
 
-  interface PlaybackListener {
+  interface StateListener {
 
     /** Called when a Video is rendered on the Surface for the first time */
     @JvmDefault

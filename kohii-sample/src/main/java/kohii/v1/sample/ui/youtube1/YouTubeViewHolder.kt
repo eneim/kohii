@@ -31,7 +31,7 @@ import kohii.v1.sample.svg.GlideApp
 
 class YouTubeViewHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_youtube_container), Playback.PlaybackListener {
+) : BaseViewHolder(parent, R.layout.holder_youtube_container), Playback.StateListener {
 
   val content = itemView as ConstraintLayout
   val fragmentPlace: ViewGroup = itemView.findViewById(R.id.fragment)

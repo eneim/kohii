@@ -104,12 +104,12 @@ class YouTubeItemsAdapter(
         threshold = 0.99F
         callbacks += object : Callback {
           override fun onRemoved(playback: Playback) {
-            playback.removePlaybackListener(holder)
+            playback.removeStateListener(holder)
           }
         }
       }
           .bind(holder.container) {
-            it.addPlaybackListener(holder)
+            it.addStateListener(holder)
             holder.playback = it
           }
     }

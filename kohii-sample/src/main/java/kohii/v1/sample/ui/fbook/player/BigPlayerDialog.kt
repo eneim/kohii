@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class BigPlayerDialog : InfinityDialogFragment(),
     PlayerPanel,
     Playback.Callback,
-    Playback.PlaybackListener {
+    Playback.StateListener {
 
   companion object {
     private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
@@ -149,7 +149,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
           callbacks = arrayOf(this@BigPlayerDialog)
         }
         .bind(kohii, playerView) {
-          it.addPlaybackListener(this@BigPlayerDialog)
+          it.addStateListener(this@BigPlayerDialog)
         }
 
     minimizeButton.setOnClickListener {
@@ -171,7 +171,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
   }
 
   override fun onEnded(playback: Playback) {
-    playback.removePlaybackListener(this)
+    playback.removeStateListener(this)
     dismissAllowingStateLoss()
   }
 }

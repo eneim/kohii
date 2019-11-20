@@ -36,7 +36,7 @@ internal class VideoItemHolder(
   private val clickListener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_video_text_overlay, parent),
     Playback.Callback,
-    Playback.PlaybackListener,
+    Playback.StateListener,
     OnClickListener {
 
   override fun onClick(v: View?) {

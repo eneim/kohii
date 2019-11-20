@@ -73,7 +73,9 @@ internal class ItemsAdapter(
         kohii.setUp(assetVideoUri) {
           tag = requireNotNull(videoTag)
         }
-            .bind(holder.container)
+            .bind(holder.container) {
+              it.addStateListener(holder)
+            }
       }
     } else holder.bind(position)
   }

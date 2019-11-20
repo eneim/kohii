@@ -89,12 +89,12 @@ internal class VideoItemsAdapter(
               holder,
               object : Playback.Callback {
                 override fun onRemoved(playback: Playback) {
-                  playback.removePlaybackListener(holder)
+                  playback.removeStateListener(holder)
                 }
               })
         }
             .bind(holder.playerViewContainer) {
-              it.addPlaybackListener(holder)
+              it.addStateListener(holder)
             }
       }
     }
