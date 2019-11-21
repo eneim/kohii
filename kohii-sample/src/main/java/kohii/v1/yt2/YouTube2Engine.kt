@@ -35,7 +35,7 @@ class YouTube2Engine(
         object : RecycledRendererProvider() {
           override fun createRenderer(
             playback: Playback,
-            mediaType: Int
+            rendererType: Int
           ): Any {
             val iFramePlayerOptions = IFramePlayerOptions.Builder()
                 .controls(0)

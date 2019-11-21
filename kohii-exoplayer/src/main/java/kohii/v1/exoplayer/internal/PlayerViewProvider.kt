@@ -18,6 +18,7 @@ package kohii.v1.exoplayer.internal
 
 import android.os.Build
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Playback
 import kohii.v1.core.ViewRendererProvider
@@ -26,7 +27,10 @@ import kohii.v1.media.Media
 
 internal class PlayerViewProvider : ViewRendererProvider() {
 
-  override fun getMediaType(media: Media): Int {
+  override fun getRendererType(
+    container: ViewGroup,
+    media: Media
+  ): Int {
     return if (media.mediaDrm != null || Build.VERSION.SDK_INT >= 24 /* SurfaceView is better */) {
       R.layout.kohii_player_surface_view
     } else {
@@ -36,9 +40,9 @@ internal class PlayerViewProvider : ViewRendererProvider() {
 
   override fun createRenderer(
     playback: Playback,
-    mediaType: Int
+    rendererType: Int
   ): PlayerView {
     return LayoutInflater.from(playback.container.context)
-        .inflate(mediaType, playback.container, false) as PlayerView
+        .inflate(rendererType, playback.container, false) as PlayerView
   }
 }
