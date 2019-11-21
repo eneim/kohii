@@ -302,39 +302,7 @@ class Manager(
     playback.onInActive()
   }
 
-  internal fun requestRenderer(
-    playback: Playback,
-    playable: Playable
-  ): Any? {
-    val renderer = group.findRendererProvider(playable)
-        .acquireRenderer(playback, playable.media)
-    return if (playback.attachRenderer(renderer)) renderer else null
-  }
-
-  internal fun releaseRenderer(
-    playback: Playback,
-    playable: Playable
-  ) {
-    val renderer = playable.renderer
-    if (playback.detachRenderer(renderer)) {
-      group.findRendererProvider(playable)
-          .releaseRenderer(playback, playable.media, renderer)
-    }
-  }
-
   // Public APIs
-
-  fun registerRendererProvider(
-    type: Class<*>,
-    provider: RendererProvider
-  ) {
-    group.registerRendererProvider(type, provider)
-  }
-
-  @Suppress("MemberVisibilityCanBePrivate")
-  fun unregisterRendererProvider(provider: RendererProvider) {
-    group.unregisterRendererProvider(provider)
-  }
 
   fun attach(vararg views: View): Manager {
     views.forEach { this.addBucket(it) }

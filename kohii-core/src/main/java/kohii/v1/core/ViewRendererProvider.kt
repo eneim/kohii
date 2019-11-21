@@ -29,10 +29,10 @@ abstract class ViewRendererProvider(poolSize: Int) : RecycledRendererProvider(po
     media: Media,
     renderer: Any?
   ) {
-    if (renderer != null && renderer !== playback.container) {
-      require(
-          renderer is View && renderer.parent == null && !ViewCompat.isAttachedToWindow(renderer)
-      )
+    require(renderer is View?)
+    if (renderer != null) {
+      // View must be removed from its parent before this call.
+      require(renderer.parent == null && !ViewCompat.isAttachedToWindow(renderer))
     }
     super.releaseRenderer(playback, media, renderer)
   }

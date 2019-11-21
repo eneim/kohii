@@ -46,11 +46,6 @@ abstract class RecycledRendererProvider(private val poolSize: Int) : RendererPro
     playback: Playback,
     media: Media
   ): Any {
-    // The Container is also a Renderer, we return it right away.
-    val playable = requireNotNull(playback.playable)
-    if (playable.config.rendererType.isAssignableFrom(playback.container.javaClass)) {
-      return playback.container
-    }
     val rendererType = getRendererType(playback.container, media)
     val pool = pools.get(rendererType)
     return pool?.acquire() ?: createRenderer(playback, rendererType)
@@ -62,7 +57,7 @@ abstract class RecycledRendererProvider(private val poolSize: Int) : RendererPro
     media: Media,
     renderer: Any?
   ) {
-    if (renderer == null || playback.container === renderer) return
+    if (renderer == null) return
     val rendererType = getRendererType(playback.container, media)
     val pool = pools.get(rendererType) ?: run {
       val created = SimplePool<Any>(poolSize)

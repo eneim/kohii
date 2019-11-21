@@ -29,7 +29,6 @@ import kohii.v1.media.Media
 import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
 
-// TODO support manual Playback creation in Engine instance.
 abstract class Engine<RENDERER : Any> constructor(
   val context: Context,
   internal val playableCreator: PlayableCreator<RENDERER>
@@ -41,7 +40,7 @@ abstract class Engine<RENDERER : Any> constructor(
     @Suppress("LeakingThis")
     master.registerEngine(this)
   }
-  // TODO implement the method below.
+
   // abstract fun <T> supportRendererType(type: Class<T>): Boolean
 
   open fun inject(group: Group) {

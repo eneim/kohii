@@ -30,7 +30,6 @@ import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import com.google.android.exoplayer2.C
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
 import kohii.v1.internal.Organizer
@@ -96,14 +95,6 @@ class Group(
       managers.forEach { it.lock = lock }
     }
 
-  internal var networkType by Delegates.observable(
-      C.NETWORK_TYPE_UNKNOWN,
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        // TODO
-      }
-  )
-
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
   private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
@@ -166,20 +157,15 @@ class Group(
     type: Class<*>,
     provider: RendererProvider
   ) {
-    val existing = rendererProviders.asSequence()
-        .firstOrNull { it.value === provider }
-    if (existing == null) {
-      rendererProviders.put(type, provider)
-          ?.clear()
-    }
+    val prev = rendererProviders.put(type, provider)
+    if (prev !== provider) prev?.clear()
   }
 
   fun unregisterRendererProvider(provider: RendererProvider) {
     rendererProviders
-        .filterValues { it === provider }
-        .keys
+        .filterValues { it === provider } // result is new Map
         .forEach {
-          rendererProviders.remove(it)
+          rendererProviders.remove(it.key)
               ?.clear()
         }
   }

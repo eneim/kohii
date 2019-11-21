@@ -298,7 +298,7 @@ class Master private constructor(context: Context) : PlayableManager {
     if (playable.tag === NO_TAG) return
     val cache = playbackInfoStore.remove(playable.tag)
     // Only restoring playback state if there is cached state, and the player is not ready yet.
-    if (cache != null && playable.playerState <= Common.STATE_IDLE /* TODO change to internal const */) {
+    if (cache != null && playable.playerState <= Common.STATE_IDLE) {
       playable.playbackInfo = cache
     }
   }
@@ -688,13 +688,12 @@ class Master private constructor(context: Context) : PlayableManager {
   // Public APIs
 
   // target == null --> lock all
-  // TODO design 'lock' policy.
   fun lock() {
-    groups.forEach { it.lock = true }
+    this.pause(Scope.GLOBAL)
   }
 
   // target == null --> unlock all
   fun unlock() {
-    groups.forEach { it.lock = false }
+    this.resume(Scope.GLOBAL)
   }
 }
