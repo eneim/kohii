@@ -85,7 +85,7 @@ internal class VideoItemsAdapter(
         kohii.setUp(requireNotNull(holder.videoFile)) {
           tag = requireNotNull(holder.videoTag)
           repeatMode = Common.REPEAT_MODE_ONE
-          callbacks = arrayOf(
+          callbacks += arrayOf(
               holder,
               object : Playback.Callback {
                 override fun onRemoved(playback: Playback) {

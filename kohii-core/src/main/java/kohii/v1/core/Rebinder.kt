@@ -73,7 +73,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
       it.preload = options.preload
       it.repeatMode = options.repeatMode
       it.controller = options.controller
-      it.callbacks = options.callbacks
+      it.callbacks += options.callbacks
     }, callback)
     options = Options() // reset.
   }

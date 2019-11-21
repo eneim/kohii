@@ -62,7 +62,7 @@ class VideoViewHolder(
         tag = itemTag
         preload = true
         repeatMode = Common.REPEAT_MODE_ONE
-        callbacks = arrayOf(this@VideoViewHolder)
+        callbacks += this@VideoViewHolder
       }
           .bind(playerView) {
             playback = it

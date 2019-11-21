@@ -104,28 +104,8 @@ abstract class Playback(
     val preload: Boolean = false,
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val controller: Controller? = null,
-    val callbacks: Array<Callback> = emptyArray()
-  ) {
-
-    override fun equals(other: Any?): Boolean {
-      if (this === other) return true
-      if (javaClass != other?.javaClass) return false
-
-      other as Config
-
-      if (delay != other.delay) return false
-      if (controller != other.controller) return false
-      if (!callbacks.contentEquals(other.callbacks)) return false
-      return true
-    }
-
-    override fun hashCode(): Int {
-      var result = delay
-      result = 31 * result + (controller?.hashCode() ?: 0)
-      result = 31 * result + callbacks.contentHashCode()
-      return result
-    }
-  }
+    val callbacks: Set<Callback> = emptySet()
+  )
 
   override fun toString(): String {
     return "${super.toString()}, [$playable], [${token.areaOffset}, ${token.containerRect}]"

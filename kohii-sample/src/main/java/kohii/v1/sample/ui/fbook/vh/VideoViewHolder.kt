@@ -61,7 +61,7 @@ internal class VideoViewHolder(
   private val params: Options.() -> Unit
     get() = {
       tag = requireNotNull(videoTag)
-      callbacks = arrayOf(this@VideoViewHolder)
+      callbacks += this@VideoViewHolder
     }
 
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
