@@ -592,17 +592,17 @@ class Master private constructor(context: Context) : PlayableManager {
         // the container is an instance PlayerView or its subtype.
         playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
           StaticViewRendererPlayback(
-              bucket.manager, bucket, config, container
+              bucket.manager, bucket, container, config
           )
         }
         View::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicViewRendererPlayback(
-              bucket.manager, bucket, config, container
+              bucket.manager, bucket, container, config
           )
         }
         Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicFragmentRendererPlayback(
-              bucket.manager, bucket, config, container
+              bucket.manager, bucket, container, config
           )
         }
         else -> {

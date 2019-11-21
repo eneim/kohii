@@ -39,8 +39,8 @@ import kotlin.properties.Delegates
 abstract class Playback(
   internal val manager: Manager,
   internal val bucket: Bucket,
-  val config: Config = Config(),
-  val container: ViewGroup
+  val container: ViewGroup,
+  val config: Config = Config()
 ) : PlayerEventListener,
     ErrorListener {
 

@@ -27,9 +27,9 @@ import kohii.v1.core.Playback
 internal class StaticViewRendererPlayback(
   manager: Manager,
   bucket: Bucket,
-  config: Config,
-  container: ViewGroup
-) : Playback(manager, bucket, config, container) {
+  container: ViewGroup,
+  config: Config
+) : Playback(manager, bucket, container, config) {
 
   override fun onActive() {
     super.onActive()

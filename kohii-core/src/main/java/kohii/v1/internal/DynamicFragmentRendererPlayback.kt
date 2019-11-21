@@ -35,9 +35,9 @@ import kohii.v1.core.Playback
 internal class DynamicFragmentRendererPlayback(
   manager: Manager,
   bucket: Bucket,
-  config: Config,
-  container: ViewGroup
-) : Playback(manager, bucket, config, container) {
+  container: ViewGroup,
+  config: Config
+) : Playback(manager, bucket, container, config) {
 
   init {
     check(tag != Master.NO_TAG) {
