@@ -19,7 +19,6 @@ package kohii.v1.sample.ui.list
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.drawable.PictureDrawable
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
@@ -35,10 +34,9 @@ import kohii.v1.sample.ui.list.data.Item
  */
 @Suppress("MemberVisibilityCanBePrivate", "DEPRECATION")
 class TextViewHolder(
-  inflater: LayoutInflater,
   parent: ViewGroup,
   private val dp2Px: (Int) -> Int
-) : BaseViewHolder(inflater, R.layout.holder_text_view, parent) {
+) : BaseViewHolder(parent, R.layout.holder_text_view) {
 
   val textView = itemView.findViewById(R.id.contentView) as TextView
   val iconView = itemView.findViewById(R.id.iconView) as ImageView

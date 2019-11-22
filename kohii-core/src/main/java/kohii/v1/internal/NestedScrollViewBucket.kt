@@ -24,7 +24,7 @@ import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 
-class NestedScrollViewBucket(
+internal class NestedScrollViewBucket(
   manager: Manager,
   override val root: NestedScrollView
 ) : Bucket(manager, root), OnScrollChangeListener {

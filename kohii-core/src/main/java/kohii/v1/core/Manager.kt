@@ -137,6 +137,7 @@ class Manager(
   @OnLifecycleEvent(ON_DESTROY)
   internal fun onDestroy(owner: LifecycleOwner) {
     playbacks.values.toMutableList()
+        .also { group.organizer.selection -= it }
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
@@ -196,7 +197,7 @@ class Manager(
 
   private fun addBucket(view: View) {
     val existing = buckets.find { it.root === view }
-    require(existing == null) { "This bucket's root: ${existing?.root} is attached already." }
+    if (existing != null) return
     val bucket = Bucket[this@Manager, view]
     if (buckets.add(bucket)) {
       bucket.onAdded()
@@ -309,17 +310,6 @@ class Manager(
     return this
   }
 
-  fun attach(vararg buckets: Bucket): Manager {
-    buckets.forEach { bucket ->
-      require(bucket.manager === this)
-      val existing = this.buckets.find { it.root === bucket.root }
-      require(existing == null) { "This bucket root: ${existing?.root} is attached already." }
-      if (this.buckets.add(bucket)) bucket.onAdded()
-    }
-    return this
-  }
-
-  @Suppress("unused")
   fun detach(vararg views: View): Manager {
     views.forEach { this.removeBucket(it) }
     return this

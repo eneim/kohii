@@ -18,8 +18,10 @@ package kohii.v1.sample.ui.main
 
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.isVisible
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
+import kohii.v1.sample.common.splitCases
 
 class DemoItemViewHolder(
   parent: ViewGroup
@@ -31,8 +33,13 @@ class DemoItemViewHolder(
   override fun bind(item: Any?) {
     (item as? DemoItem)?.also {
       if (it.title != 0) demoTitle.setText(it.title) else demoTitle.text =
-        it.fragmentClass.simpleName
-      if (it.subTitle != 0) demoSubtitle.setText(it.subTitle) else demoSubtitle.text = "Debug"
+        it.fragmentClass.simpleName.splitCases()
+      if (it.subTitle != 0) {
+        demoSubtitle.isVisible = true
+        demoSubtitle.setText(it.subTitle)
+      } else {
+        demoSubtitle.isVisible = false
+      }
     }
   }
 }

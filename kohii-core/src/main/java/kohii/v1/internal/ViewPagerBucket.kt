@@ -24,7 +24,7 @@ import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 
-class ViewPagerBucket(
+internal class ViewPagerBucket(
   manager: Manager,
   override val root: ViewPager
 ) : Bucket(manager, root), OnPageChangeListener {

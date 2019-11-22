@@ -40,6 +40,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
     var callbacks: Array<Callback> = emptyArray()
   }
 
+  @JvmSynthetic
   @PublishedApi
   @IgnoredOnParcel
   internal var options = Options()

@@ -30,7 +30,7 @@ import kohii.v1.core.Playback
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
-class RecyclerViewBucket(
+internal class RecyclerViewBucket(
   manager: Manager,
   override val root: RecyclerView
 ) : Bucket(manager, root) {

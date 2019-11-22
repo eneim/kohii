@@ -24,7 +24,7 @@ import androidx.annotation.RequiresApi
 import kohii.v1.core.Manager
 
 @RequiresApi(VERSION_CODES.M)
-class ViewGroupV23Bucket(
+internal class ViewGroupV23Bucket(
   manager: Manager,
   root: ViewGroup
 ) : ViewGroupBucket(manager, root), OnScrollChangeListener {

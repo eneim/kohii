@@ -20,9 +20,9 @@ import kotlin.LazyThreadSafetyMode.NONE
 
 abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
 
-  protected val eventListeners by lazy(NONE) { PlayerEventListeners() }
+  protected val eventListeners = PlayerEventListeners()
+  protected val errorListeners = ErrorListeners()
   protected val volumeListeners by lazy(NONE) { VolumeChangedListeners() }
-  protected val errorListeners by lazy(NONE) { ErrorListeners() }
 
   override fun addEventListener(listener: PlayerEventListener) {
     this.eventListeners.add(listener)

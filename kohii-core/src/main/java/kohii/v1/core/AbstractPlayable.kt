@@ -142,11 +142,11 @@ abstract class AbstractPlayable<RENDERER : Any>(
           }
 
         if (to != null) {
+          to.playable = this
           to.addCallback(this)
           to.config.callbacks.forEach { cb -> to.addCallback(cb) }
           bridge.addEventListener(to)
           bridge.addErrorListener(to)
-          to.playable = this
         }
       }
   )

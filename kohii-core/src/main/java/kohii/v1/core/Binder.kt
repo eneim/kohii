@@ -38,6 +38,7 @@ class Binder<RENDERER : Any>(
     val callbacks = mutableSetOf<Callback>()
   }
 
+  @JvmSynthetic
   @PublishedApi
   internal val options = Options()
 

@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.list
 
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
@@ -34,11 +33,10 @@ import kohii.v1.sample.ui.list.data.Item
  * @author eneim (2018/07/06).
  */
 class VideoViewHolder(
-  inflater: LayoutInflater,
   parent: ViewGroup,
   private val kohii: Kohii,
   private val listener: OnClickListener
-) : BaseViewHolder(inflater, R.layout.holder_player_view, parent),
+) : BaseViewHolder(parent, R.layout.holder_player_view),
     View.OnClickListener, Playback.Callback {
 
   init {

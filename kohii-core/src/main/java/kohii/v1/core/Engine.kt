@@ -30,10 +30,11 @@ import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
 
 abstract class Engine<RENDERER : Any> constructor(
-  val context: Context,
+  context: Context,
   internal val playableCreator: PlayableCreator<RENDERER>
 ) {
 
+  val context: Context = context.applicationContext
   internal val master = Master[context]
 
   init {

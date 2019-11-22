@@ -16,22 +16,19 @@
 
 package kohii.v1.sample.ui.list
 
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import kohii.v1.sample.common.inflateView
 import kohii.v1.sample.ui.list.data.Item
 
 /**
  * @author eneim (2018/07/06).
  */
 abstract class BaseViewHolder(
-  inflater: LayoutInflater,
-  layoutRes: Int,
-  parent: ViewGroup
-) : ViewHolder(
-    inflater.inflate(layoutRes, parent, false)
-) {
+  parent: ViewGroup,
+  layoutRes: Int
+) : ViewHolder(parent.inflateView(layoutRes)) {
 
   abstract fun bind(item: Item?)
 
