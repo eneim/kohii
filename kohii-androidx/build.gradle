@@ -1,3 +1,6 @@
+import kohii.BuildConfig
+import kohii.Libs
+
 /*
  * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
@@ -14,9 +17,6 @@
  * limitations under the License.
  */
 
-import kohii.BuildConfig
-import kohii.Libs
-
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -30,7 +30,7 @@ android {
     versionCode BuildConfig.releaseVersionCode
     versionName BuildConfig.releaseVersionName
 
-    buildConfigField("String", "LIB_NAME", "\"" + "Kohii for ExoPlayer, v" + versionName + "\"")
+    buildConfigField("String", "LIB_NAME", "\"" + "Kohii for AndroidX, v" + versionName + "\"")
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles 'consumer-rules.pro'
@@ -58,9 +58,11 @@ android {
 dependencies {
   implementation project(':kohii-core')
 
-  implementation Libs.ExoPlayer.all
-  implementation Libs.ExoPlayer.cast
-  implementation Libs.ExoPlayer.ima
+  implementation Libs.AndroidX.Media.common
+  implementation Libs.AndroidX.Media.player
+  implementation Libs.AndroidX.Media.session
+  implementation Libs.AndroidX.Media.widget
+  implementation "com.google.guava:guava:28.1-android"
 
   implementation Libs.Kotlin.stdlibJdk7
   implementation Libs.AndroidX.appcompat
@@ -72,6 +74,6 @@ dependencies {
   androidTestImplementation Libs.AndroidX.Test.espressoCore
 }
 
-project.archivesBaseName = "kohii-exoplayer"
+project.archivesBaseName = "kohii-androidx"
 // apply from: rootProject.file('gradle/publish.gradle')
 apply from: rootProject.file('gradle/release_bintray_official.gradle')

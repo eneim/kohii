@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-include ':kohii-core'
-include ':kohii-exoplayer'
-include ':kohii-sample'
-include ':kohii-androidx'
-include ':kohii-ads'
+package im.ene.kohii.ads
+
+class Latte

@@ -23,6 +23,16 @@ object Versions {
   const val exoPlayerCode = 2010004
 }
 
+object ReleaseInfo {
+
+  const val repoName = "kohii"
+  const val groupId = "im.ene.kohii"
+  const val description = "Android Video Playback made easy."
+  const val websiteUrl = "https://github.com/eneim/kohii"
+  const val vcsUrl = "git@github.com:eneim/kohii.git"
+  val licenses = arrayOf("Apache-2.0")
+}
+
 @Suppress("MayBeConstant", "unused")
 object BuildConfig {
 
@@ -50,6 +60,7 @@ object Libs {
     const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-beta04"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
+    const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
 
     val junit = "junit:junit:4.12"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"

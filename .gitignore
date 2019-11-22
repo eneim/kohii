@@ -49,3 +49,13 @@
 /kohii-exoplayer/build/
 /kohii-exoplayer/libs/
 /github.properties
+/kohiix/.gitignore
+/kohiix/consumer-rules.pro
+/kohiix/kohiix.iml
+/kohiix/src/androidTest/
+/kohiix/src/test/
+/kohii-ads/src/androidTest/
+/kohii-ads/src/test/
+/kohii-ads/.gitignore
+/kohii-ads/consumer-rules.pro
+/kohii-ads/kohii-ads.iml

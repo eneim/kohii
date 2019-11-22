@@ -63,12 +63,6 @@ configurations {
 dependencies {
   implementation Libs.ExoPlayer.core
 
-  implementation Libs.AndroidX.Media.common
-  implementation Libs.AndroidX.Media.player
-  implementation Libs.AndroidX.Media.session
-  implementation Libs.AndroidX.Media.widget
-  implementation "com.google.guava:guava:28.1-android"
-
   implementation Libs.Kotlin.stdlibJdk7
   implementation Libs.AndroidX.appcompat
   implementation Libs.AndroidX.coreKtx
@@ -124,4 +118,5 @@ tasks.withType(Javadoc).all {
 }
 
 project.archivesBaseName = "kohii"
-apply from: rootProject.file('gradle/publish.gradle')
+// apply from: rootProject.file('gradle/publish.gradle')
+apply from: rootProject.file('gradle/release_bintray_official.gradle')
