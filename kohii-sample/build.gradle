@@ -130,6 +130,8 @@ dependencies {
   implementation Libs.AndroidX.Lifecycle.runtime
   implementation Libs.AndroidX.Lifecycle.viewModel
   implementation Libs.AndroidX.Lifecycle.liveData
+  implementation Libs.AndroidX.Lifecycle.java8
+  // kapt Libs.AndroidX.Lifecycle.compiler
 
   implementation Libs.AndroidX.Paging.common
   implementation Libs.AndroidX.Paging.runtime

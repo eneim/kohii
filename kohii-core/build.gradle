@@ -74,7 +74,8 @@ dependencies {
   implementation Libs.Google.material
   implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.service
-  kapt Libs.AndroidX.Lifecycle.compiler
+  implementation Libs.AndroidX.Lifecycle.java8
+  // kapt Libs.AndroidX.Lifecycle.compiler
 
   // Required -- JUnit 4 framework
   testImplementation Libs.Common.junit

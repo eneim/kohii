@@ -23,16 +23,14 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 
 class YouTubePlayerContainerView @JvmOverloads constructor(
   context: Context,
   attrs: AttributeSet? = null,
   defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), YouTubePlayer.Provider, LifecycleObserver {
+) : FrameLayout(context, attrs, defStyleAttr), YouTubePlayer.Provider, DefaultLifecycleObserver {
 
   internal var activity: Activity =
     context as? Activity ?: throw IllegalArgumentException("Need Activity")
@@ -72,28 +70,23 @@ class YouTubePlayerContainerView @JvmOverloads constructor(
     this.playerView?.initialize(apiKey, onInitializedListener)
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_START)
-  internal fun onStart() {
+  override fun onStart(owner: LifecycleOwner) {
     if (this.playerView != null) playerView!!.a()
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-  internal fun onResume() {
+  override fun onResume(owner: LifecycleOwner) {
     if (this.playerView != null) playerView!!.b()
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-  internal fun onPause() {
+  override fun onPause(owner: LifecycleOwner) {
     if (this.playerView != null) playerView!!.c()
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-  internal fun onStop() {
+  override fun onStop(owner: LifecycleOwner) {
     if (this.playerView != null) playerView!!.d()
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-  internal fun onDestroy(owner: LifecycleOwner) {
+  override fun onDestroy(owner: LifecycleOwner) {
     owner.lifecycle.removeObserver(this)
     this.playerView?.let {
       it.c(activity.isFinishing)

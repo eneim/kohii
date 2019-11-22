@@ -23,13 +23,8 @@ import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.core.app.ComponentActivity
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.Lifecycle.Event.ON_CREATE
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_START
-import androidx.lifecycle.Lifecycle.Event.ON_STOP
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
 import kohii.v1.internal.Organizer
@@ -42,7 +37,7 @@ import kotlin.properties.Delegates
 class Group(
   internal val master: Master,
   internal val activity: ComponentActivity
-) : LifecycleObserver, Handler.Callback {
+) : DefaultLifecycleObserver, Handler.Callback {
 
   companion object {
     const val DELAY = 2 * 1000L / 60 /* about 2 frames */
@@ -114,25 +109,21 @@ class Group(
   private val playbacks: Collection<Playback>
     get() = managers.flatMap { it.playbacks.values }
 
-  @OnLifecycleEvent(ON_CREATE)
-  internal fun onCreate() {
+  override fun onCreate(owner: LifecycleOwner) {
     master.onGroupCreated(this)
   }
 
-  @OnLifecycleEvent(ON_DESTROY)
-  internal fun onDestroy(owner: LifecycleOwner) {
+  override fun onDestroy(owner: LifecycleOwner) {
     handler.removeCallbacksAndMessages(null)
     owner.lifecycle.removeObserver(this)
     master.onGroupDestroyed(this)
   }
 
-  @OnLifecycleEvent(ON_START)
-  internal fun onStart() {
+  override fun onStart(owner: LifecycleOwner) {
     dispatcher.onStart()
   }
 
-  @OnLifecycleEvent(ON_STOP)
-  internal fun onStop() {
+  override fun onStop(owner: LifecycleOwner) {
     dispatcher.onStop()
     handler.removeMessages(MSG_REFRESH)
   }

@@ -143,10 +143,11 @@ object Libs {
     val coreKtx = "androidx.core:core-ktx:1.2.0-rc01"
 
     object Lifecycle {
-      private const val version = "2.2.0-rc01"
+      private const val version = "2.2.0-rc02"
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
+      val java8 = "androidx.lifecycle:lifecycle-common-java8:$version"
       val runtime = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
       val liveData = "androidx.lifecycle:lifecycle-livedata-ktx:$version"
       val viewModel = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"

@@ -24,14 +24,10 @@ import androidx.collection.ArraySet
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
-import androidx.lifecycle.Lifecycle.Event.ON_ANY
-import androidx.lifecycle.Lifecycle.Event.ON_CREATE
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_START
-import androidx.lifecycle.Lifecycle.Event.ON_STOP
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle.Event
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Scope.BUCKET
 import kohii.v1.core.Scope.GLOBAL
@@ -49,7 +45,7 @@ class Manager(
   internal val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
   internal val memoryMode: MemoryMode = LOW
-) : PlayableManager, LifecycleObserver, Comparable<Manager> {
+) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
 
   companion object {
     internal fun compareAndCheck(
@@ -125,17 +121,14 @@ class Manager(
     }
   }
 
-  @OnLifecycleEvent(ON_ANY)
-  internal fun onAnyEvent(owner: LifecycleOwner) {
-    playbacks.forEach { it.value.lifecycleState = owner.lifecycle.currentState }
+  override fun onStateChanged(
+    source: LifecycleOwner,
+    event: Event
+  ) {
+    playbacks.forEach { it.value.lifecycleState = source.lifecycle.currentState }
   }
 
-  @OnLifecycleEvent(ON_CREATE)
-  internal fun onCreate() {
-  }
-
-  @OnLifecycleEvent(ON_DESTROY)
-  internal fun onDestroy(owner: LifecycleOwner) {
+  override fun onDestroy(owner: LifecycleOwner) {
     playbacks.values.toMutableList()
         .also { group.organizer.selection -= it }
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
@@ -148,13 +141,11 @@ class Manager(
     group.onManagerDestroyed(this)
   }
 
-  @OnLifecycleEvent(ON_START)
-  internal fun onStart() {
+  override fun onStart(owner: LifecycleOwner) {
     refresh() // This will also update active/inactive Playbacks accordingly.
   }
 
-  @OnLifecycleEvent(ON_STOP)
-  internal fun onStop() {
+  override fun onStop(owner: LifecycleOwner) {
     playbacks.forEach { if (it.value.isActive) onPlaybackInActive(it.value) }
     refresh()
   }
