@@ -104,7 +104,7 @@ project.afterEvaluate {
       desc = ReleaseInfo.description
       websiteUrl = ReleaseInfo.websiteUrl
       vcsUrl = ReleaseInfo.vcsUrl
-      issueTrackerUrl = "${ReleaseInfo.vcsUrl}/issues"
+      issueTrackerUrl = "${ReleaseInfo.websiteUrl}/issues"
       licenses = ReleaseInfo.licenses
       labels = ['Android', 'Video Playback', 'MediaPlayer', 'ExoPlayer', 'AndroidX']
       publicDownloadNumbers = true

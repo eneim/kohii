@@ -60,7 +60,7 @@ dependencies {
   implementation project(':kohii-exoplayer')
   implementation project(':kohii-androidx')
 
-  implementation Libs.Kotlin.stdlibJdk7
+  implementation Libs.Kotlin.stdlibJdk8
   implementation Libs.AndroidX.appcompat
   implementation Libs.AndroidX.coreKtx
   implementation Libs.AndroidX.collectionKtx

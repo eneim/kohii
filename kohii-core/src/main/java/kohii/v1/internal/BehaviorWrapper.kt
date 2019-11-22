@@ -30,6 +30,7 @@ import kohii.v1.core.Manager
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Suppress("DEPRECATION")
 internal class BehaviorWrapper<V : View>(
   private val delegate: Behavior<in V>,
   manager: Manager

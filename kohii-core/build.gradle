@@ -63,7 +63,7 @@ configurations {
 dependencies {
   implementation Libs.ExoPlayer.core
 
-  implementation Libs.Kotlin.stdlibJdk7
+  implementation Libs.Kotlin.stdlibJdk8
   implementation Libs.AndroidX.appcompat
   implementation Libs.AndroidX.coreKtx
   implementation Libs.AndroidX.collectionKtx
@@ -74,7 +74,7 @@ dependencies {
   implementation Libs.Google.material
   implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.service
-  implementation Libs.AndroidX.Lifecycle.java8
+  api Libs.AndroidX.Lifecycle.java8
   // kapt Libs.AndroidX.Lifecycle.compiler
 
   // Required -- JUnit 4 framework

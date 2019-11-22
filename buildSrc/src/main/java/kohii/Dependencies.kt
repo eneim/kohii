@@ -29,7 +29,7 @@ object ReleaseInfo {
   const val groupId = "im.ene.kohii"
   const val description = "Android Video Playback made easy."
   const val websiteUrl = "https://github.com/eneim/kohii"
-  const val vcsUrl = "git@github.com:eneim/kohii.git"
+  const val vcsUrl = "https://github.com/eneim/kohii"
   val licenses = arrayOf("Apache-2.0")
 }
 
@@ -220,10 +220,12 @@ object Libs {
   }
 
   object Square {
-    val moshi = "com.squareup.moshi:moshi:1.8.0"
-    val moshiKotlin = "com.squareup.moshi:moshi-kotlin:1.8.0"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-3"
-    val okio = "com.squareup.okio:okio:2.2.2"
+    private const val moshiVersion = "1.9.2"
+    val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
+    val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
+    val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-4"
+    val okio = "com.squareup.okio:okio:2.4.1"
   }
 
   object Glide {

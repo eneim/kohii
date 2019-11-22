@@ -18,12 +18,14 @@ package kohii.v1.sample.data
 
 import android.os.Parcelable
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kohii.v1.media.MediaDrm
 import kotlinx.android.parcel.Parcelize
 
 /**
  * @author eneim (2018/10/30).
  */
+@JsonClass(generateAdapter = true)
 @Parcelize
 data class Item(
   val name: String,
@@ -33,6 +35,7 @@ data class Item(
   @Json(name = "drm_license_url") val drmLicenseUrl: String?
 ) : Parcelable
 
+@JsonClass(generateAdapter = true)
 @Parcelize
 data class DrmItem(
   val item: Item

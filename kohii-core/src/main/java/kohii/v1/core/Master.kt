@@ -105,6 +105,9 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal val app = context.applicationContext as Application
 
+  private val engines = mutableMapOf<Class<*>, Engine<*>>()
+  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
+
   internal val groups = mutableSetOf<Group>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
@@ -190,9 +193,6 @@ class Master private constructor(context: Context) : PlayableManager {
         if (from != to) groups.forEach { it.onRefresh() }
       }
   )
-
-  private val engines = mutableMapOf<Class<*>, Engine<*>>()
-  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
     if (actual !== AUTO) return actual
@@ -339,7 +339,7 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  // Called when Manager is added/removed to/from Group
+  // Called when Manager is added (created)/removed (destroyed) to/from Group
   @Suppress("UNUSED_PARAMETER")
   internal fun onGroupUpdated(group: Group) {
     // If no Manager is online, cleanup stuffs
@@ -369,6 +369,7 @@ class Master private constructor(context: Context) : PlayableManager {
     engines.forEach { it.value.inject(group) }
   }
 
+  @Suppress("UNUSED_PARAMETER")
   internal fun onLastManagerDestroyed(group: Group) {
     if (groups.flatMap { it.managers }.isEmpty()) {
       if (networkCallback.isInitialized() && VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {

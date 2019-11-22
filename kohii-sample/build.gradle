@@ -115,8 +115,8 @@ dependencies {
 
   implementation Libs.ExoPlayer.all
 
-  implementation Libs.Kotlin.stdlibJdk7
-  implementation Libs.Kotlin.reflect
+  implementation Libs.Kotlin.stdlibJdk8
+  // implementation Libs.Kotlin.reflect
 
   implementation Libs.AndroidX.coreKtx
   implementation Libs.AndroidX.Fragment.fragmentKtx
@@ -139,7 +139,8 @@ dependencies {
   implementation Libs.AndroidX.viewPager2
 
   implementation Libs.Square.moshi
-  implementation Libs.Square.moshiKotlin
+  // implementation Libs.Square.moshiKotlin
+  kapt Libs.Square.moshiCodegen
   implementation Libs.Square.okio
 
   implementation Libs.Glide.glide

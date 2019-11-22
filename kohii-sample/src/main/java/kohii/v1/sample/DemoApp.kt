@@ -20,7 +20,6 @@ import android.app.Application
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.combo.ExoPlayerVideosFragment
@@ -59,8 +58,7 @@ class DemoApp : Application() {
     const val assetVideoUri = "file:///android_asset/bbb_45s_hevc.mp4"
   }
 
-  private val moshi: Moshi = Moshi.Builder()
-      .add(KotlinJsonAdapterFactory())
+  internal val moshi: Moshi = Moshi.Builder()
       .build()
 
   val videos by lazy(NONE) {

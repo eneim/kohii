@@ -13,35 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package kohii.v1.sample.data
 
-package kohii.v1.core
+import android.os.Parcelable
+import com.squareup.moshi.JsonClass
+import kotlinx.android.parcel.Parcelize
 
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import kohii.v1.media.Media
-
-interface RendererProvider : DefaultLifecycleObserver {
-
-  @JvmDefault
-  fun acquireRenderer(
-    playback: Playback,
-    media: Media
-  ): Any? = null
-
-  @JvmDefault
-  fun releaseRenderer(
-    playback: Playback,
-    media: Media,
-    renderer: Any?
-  ) {
-  }
-
-  @JvmDefault
-  fun clear() {
-  }
-
-  @JvmDefault
-  override fun onDestroy(owner: LifecycleOwner) {
-    clear()
-  }
-}
+@Suppress("SpellCheckingInspection")
+@JsonClass(generateAdapter = true)
+@Parcelize
+data class Playlist(
+  val mediaid: String,
+  val description: String,
+  val pubdate: Int,
+  val tags: String,
+  val image: String,
+  val title: String,
+  val variations: Variations,
+  val sources: List<Sources>,
+  val tracks: List<Tracks>,
+  val link: String,
+  val duration: Int
+) : Parcelable
