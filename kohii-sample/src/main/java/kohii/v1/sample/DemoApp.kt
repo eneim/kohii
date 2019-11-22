@@ -34,7 +34,7 @@ import kohii.v1.sample.ui.mstdtl.MasterDetailFragment
 import kohii.v1.sample.ui.nested1.VerticalRecyclerViewInsideNestedScrollViewFragment
 import kohii.v1.sample.ui.nested2.HorizontalRecyclerViewInsideNestedScrollViewFragment
 import kohii.v1.sample.ui.nested3.NestedScrollViewInsideRecyclerViewFragment
-import kohii.v1.sample.ui.nested4.VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment
+import kohii.v1.sample.ui.nested4.VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment
 import kohii.v1.sample.ui.nested5.RecyclerViewInsideRecyclerViewFragment
 import kohii.v1.sample.ui.overlay.OverlayViewFragment
 import kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment
@@ -170,7 +170,7 @@ class DemoApp : Application() {
             0, 0, HorizontalRecyclerViewInsideNestedScrollViewFragment::class.java
         ),
         DemoItem(
-            0, 0, VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment::class.java
+            0, 0, VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment::class.java
         ),
         DemoItem(
             0, 0, RecyclerViewInsideRecyclerViewFragment::class.java

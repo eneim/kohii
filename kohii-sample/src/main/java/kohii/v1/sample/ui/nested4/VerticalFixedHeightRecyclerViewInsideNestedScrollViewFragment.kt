@@ -36,10 +36,10 @@ import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyc
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyclerViewTitle
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.scrollView
 
-class VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
+class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
 
   companion object {
-    fun newInstance() = VerticalFixHeightRecyclerViewInsideNestedScrollViewFragment()
+    fun newInstance() = VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment()
   }
 
   override fun onCreateView(
