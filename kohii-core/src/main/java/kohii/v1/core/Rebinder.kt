@@ -64,8 +64,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
     callback: ((Playback) -> Unit)? = null
   ) {
     val playable = master.playables.asSequence()
-        .filter { it.value == tag /* equals */ }
-        .firstOrNull()
+        .firstOrNull { it.value == tag /* equals */ }
         ?.key
     requireNotNull(playable)
     master.bind(playable, tag, container, Binder.Options().also {

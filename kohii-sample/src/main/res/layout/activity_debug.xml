@@ -14,20 +14,41 @@
   ~ limitations under the License.
   -->
 
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragmentContainer"
     android:name="kohii.v1.sample.ui.overlay.OverlayViewFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
 
-  <!--  <androidx.media2.widget.VideoView-->
-  <!--      android:id="@+id/videoView"-->
-  <!--      android:layout_width="match_parent"-->
-  <!--      android:layout_height="300dp"-->
-  <!--      android:layout_gravity="center"-->
-  <!--      app:enableControlView="true"-->
-  <!--      app:viewType="textureView"-->
-  <!--      />-->
+  <androidx.appcompat.widget.LinearLayoutCompat
+      android:id="@+id/content"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      >
 
-</fragment>
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/playerView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="240dp"
+        app:surface_type="texture_view"
+        />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        />
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/playerView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="240dp"
+        app:surface_type="texture_view"
+        />
+
+  </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.core.widget.NestedScrollView>

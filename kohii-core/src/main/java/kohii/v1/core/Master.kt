@@ -105,6 +105,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal val app = context.applicationContext as Application
 
+  @Suppress("MemberVisibilityCanBePrivate")
   internal val engines = mutableMapOf<Class<*>, Engine<*>>()
   internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val groups = mutableSetOf<Group>()
@@ -242,6 +243,10 @@ class Master private constructor(context: Context) : PlayableManager {
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
     // but then another Playable is registered to the same Container, we need to kick the previous Playable.
+    val sameTag = requests.asSequence()
+        .firstOrNull { it.value.tag == tag }
+        ?.key
+    if (sameTag != null) requests.remove(sameTag)
     requests[container] = BindRequest(
         this, playable, container, tag, options, callback
     )
