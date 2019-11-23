@@ -126,7 +126,7 @@ project.afterEvaluate {
         }
         //Optional configuration for Maven Central sync of the version
         mavenCentralSync {
-          sync = false // [Default: true] Determines whether to sync the version to Maven Central.
+          sync = true // [Default: true] Determines whether to sync the version to Maven Central.
           user = SONATYPE_NEXUS_USERNAME // OSS user token: mandatory
           password = SONATYPE_NEXUS_PASSWORD // OSS user password: mandatory
           close = '1'
