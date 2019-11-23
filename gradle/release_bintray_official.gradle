@@ -38,6 +38,19 @@ task androidSourcesJar(type: Jar) {
   from android.sourceSets.main.java.srcDirs
 }
 
+static def appendLicense(parentNode, name, url, distribution) {
+  def node = parentNode.appendNode("license")
+  node.appendNode("name", name)
+  node.appendNode("url", url)
+  node.appendNode("distribution", distribution)
+}
+
+static def appendScm(parentNode, connection, url) {
+  def node = parentNode.appendNode("scm")
+  node.appendNode("connection", connection)
+  node.appendNode("url", url)
+}
+
 project.afterEvaluate {
   publishing {
     publications {
@@ -51,13 +64,32 @@ project.afterEvaluate {
         artifact androidSourcesJar
 
         pom.withXml {
-          final dependenciesNode = asNode().appendNode('dependencies')
+          final node = asNode()
+
+          node.appendNode("name", POM_NAME)
+          node.appendNode("description", POM_DESCRIPTION)
+          node.appendNode("url", POM_URL)
+
+          def licenses = node.appendNode("licenses")
+          appendLicense(licenses, POM_LICENCE_NAME, POM_LICENCE_URL, POM_LICENCE_DIST)
+          appendScm(node, POM_SCM_CONNECTION, POM_SCM_URL)
+          def dependencies = node.appendNode("dependencies")
+
+          def developers = node.appendNode("developers")
+          def developer = developers.appendNode("developer")
+          developer.appendNode("id", POM_DEVELOPER_ID)
+          developer.appendNode("name", POM_DEVELOPER_NAME)
+          developer.appendNode("email", POM_DEVELOPER_MAIL)
 
           ext.addDependency = { Dependency dep, String scope ->
-            if (dep.group == null || dep.version == null || dep.name == null || dep.name == "unspecified")
-              return // ignore invalid dependencies
+            if (dep.group == null ||
+                dep.version == null ||
+                dep.name == null ||
+                dep.name == "unspecified") {
+              return
+            } // ignore invalid dependencies
 
-            final dependencyNode = dependenciesNode.appendNode('dependency')
+            final dependencyNode = dependencies.appendNode('dependency')
             dependencyNode.appendNode('groupId', dep.group)
             dependencyNode.appendNode('artifactId', dep.name)
             dependencyNode.appendNode('version', dep.version)
@@ -83,7 +115,9 @@ project.afterEvaluate {
           // List all "api" dependencies (for new Gradle) as "compile" dependencies
           configurations.api.getDependencies().each { dep -> addDependency(dep, "compile") }
           // List all "implementation" dependencies (for new Gradle) as "runtime" dependencies
-          configurations.implementation.getDependencies().each { dep -> addDependency(dep, "runtime") }
+          configurations.implementation.getDependencies().each {
+            dep -> addDependency(dep, "runtime")
+          }
         }
       }
     }
@@ -117,7 +151,7 @@ project.afterEvaluate {
       version {
         name = BuildConfig.releaseVersionName
         desc = ReleaseInfo.description
-        released  = new Date()
+        released = new Date()
         // vcsTag = '1.3.0'
         // Optional configuration for GPG signing
         gpg {
