@@ -16,7 +16,7 @@
 
 package kohii.v1.yt1
 
-import kohii.v1.core.Engine
+import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
@@ -27,11 +27,11 @@ class YouTube1PlayableCreator : PlayableCreator<YouTubePlayerFragment>(
 ) {
 
   override fun createPlayable(
-    engine: Engine<YouTubePlayerFragment>,
+    master: Master,
     config: Config,
     media: Media
   ): Playable {
-    return YouTube1Playable(engine, media, config, YouTubeBridge(media))
+    return YouTube1Playable(master, media, config, YouTubeBridge(media))
   }
 
   override fun cleanUp() {

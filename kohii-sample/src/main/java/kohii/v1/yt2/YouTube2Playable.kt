@@ -19,15 +19,15 @@ package kohii.v1.yt2
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
-import kohii.v1.core.Engine
+import kohii.v1.core.Master
 import kohii.v1.media.Media
 
 class YouTube2Playable(
-  engine: Engine<YouTubePlayerView>,
+  master: Master,
   media: Media,
   config: Config,
   bridge: Bridge<YouTubePlayerView>
-) : AbstractPlayable<YouTubePlayerView>(engine, media, config, bridge) {
+) : AbstractPlayable<YouTubePlayerView>(master, media, config, bridge) {
 
   override var renderer: Any?
     get() = bridge.renderer

@@ -35,8 +35,7 @@ abstract class Engine<RENDERER : Any> constructor(
   internal val playableCreator: PlayableCreator<RENDERER>
 ) {
 
-  val context: Context = context.applicationContext
-  internal val master = Master[context]
+  val master = Master[context]
 
   init {
     @Suppress("LeakingThis")
@@ -51,7 +50,7 @@ abstract class Engine<RENDERER : Any> constructor(
   inline fun setUp(
     media: Media,
     crossinline options: Options.() -> Unit = {}
-  ): Binder<RENDERER> = Binder(
+  ): Binder = Binder(
       this, media
   ).also { options(it.options) }
 

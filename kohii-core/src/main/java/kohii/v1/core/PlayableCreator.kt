@@ -22,7 +22,7 @@ import kohii.v1.media.Media
 abstract class PlayableCreator<RENDERER : Any>(internal val rendererType: Class<RENDERER>) {
 
   abstract fun createPlayable(
-    engine: Engine<RENDERER>,
+    master: Master,
     config: Config,
     media: Media
   ): Playable

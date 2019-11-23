@@ -23,8 +23,8 @@ import kohii.v1.core.Playback.Callback
 import kohii.v1.core.Playback.Controller
 import kohii.v1.media.Media
 
-class Binder<RENDERER : Any>(
-  private val engine: Engine<RENDERER>,
+class Binder(
+  private val engine: Engine<*>,
   val media: Media
 ) {
 
@@ -76,6 +76,6 @@ class Binder<RENDERER : Any>(
       }
     }
 
-    return cache ?: engine.playableCreator.createPlayable(engine, config, media)
+    return cache ?: engine.playableCreator.createPlayable(engine.master, config, media)
   }
 }

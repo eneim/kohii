@@ -26,7 +26,7 @@ import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvicto
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.v1.BuildConfig
 import kohii.v1.core.Common
-import kohii.v1.core.Engine
+import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
@@ -80,15 +80,15 @@ class PlayerViewPlayableCreator(
   }
 
   override fun createPlayable(
-    engine: Engine<PlayerView>,
+    master: Master,
     config: Config,
     media: Media
   ): Playable {
     return PlayerViewPlayable(
-        engine,
+        master,
         media,
         config,
-        defaultBridgeProvider.createBridge(engine.context, media)
+        defaultBridgeProvider.createBridge(app, media)
     )
   }
 

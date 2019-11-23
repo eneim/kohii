@@ -18,15 +18,15 @@ package kohii.v1.yt1
 
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
-import kohii.v1.core.Engine
+import kohii.v1.core.Master
 import kohii.v1.media.Media
 
 class YouTube1Playable(
-  engine: Engine<YouTubePlayerFragment>,
+  master: Master,
   media: Media,
   config: Config,
   bridge: Bridge<YouTubePlayerFragment>
-) : AbstractPlayable<YouTubePlayerFragment>(engine, media, config, bridge) {
+) : AbstractPlayable<YouTubePlayerFragment>(master, media, config, bridge) {
 
   override var renderer: Any?
     get() = bridge.renderer
