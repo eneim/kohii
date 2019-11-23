@@ -49,7 +49,7 @@ class ViewPager1WithFragmentsFragment : BaseFragment() {
       return PageFragment.newInstance(position, videos[position % videos.size])
     }
 
-    override fun getCount() = Int.MAX_VALUE
+    override fun getCount() = Int.MAX_VALUE / 2
   }
 
   override fun onCreateView(
@@ -71,7 +71,23 @@ class ViewPager1WithFragmentsFragment : BaseFragment() {
     viewPager.apply {
       adapter = VideoPagerAdapter(childFragmentManager, getApp().videos)
       pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
+    }
+  }
 
+  override fun onViewStateRestored(savedInstanceState: Bundle?) {
+    super.onViewStateRestored(savedInstanceState)
+    // TODO add this to README or somewhere useful.
+    // In ViewPager (1), adding a PageTransformer may also call 'ViewPager#populate()' method
+    // to init some pages (read setPageTransformer source code). This 'populate' method will call
+    // 'populate(mCurItem)' where `mCurItem` is the position of current item. This value will always
+    // be '0' before the ViewPager's saved state is restored.
+    // Therefore: if our ViewPager is scrolled to the middle, then a configuration change happens,
+    // setting a PageTransformer will ask the Adapter to create pages for position 0 and 1 without
+    // any benefit (after the config change, we expect to see the page before the recreation).
+    // Therefore, it is better to move the call to `setPageTransformer` to this callback because
+    // it will be called regardless of there is saved state or not, and in case there is saved state,
+    // it will be called after that state is restored.
+    viewPager.apply {
       val clientWidth = (requireActivity().getDisplayPoint().x - paddingStart - paddingEnd)
       val offset = paddingStart / clientWidth.toFloat()
       setPageTransformer(false) { page, position ->

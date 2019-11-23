@@ -27,9 +27,9 @@ import kohii.v1.core.Playback
 internal class StaticViewRendererPlayback(
   manager: Manager,
   bucket: Bucket,
-  config: Config,
-  container: ViewGroup
-) : Playback(manager, bucket, config, container) {
+  container: ViewGroup,
+  config: Config
+) : Playback(manager, bucket, container, config) {
 
   override fun onActive() {
     super.onActive()
@@ -41,6 +41,14 @@ internal class StaticViewRendererPlayback(
     playable?.considerReleaseRenderer(this)
   }
 
+  override fun acquireRenderer(): Any? {
+    return this.container
+  }
+
+  override fun releaseRenderer(renderer: Any?) {
+    // do nothing
+  }
+
   override fun onAttachRenderer(renderer: Any?): Boolean {
     require(renderer == null || renderer === container)
     return true // true because we can always use this renderer.
@@ -48,6 +56,6 @@ internal class StaticViewRendererPlayback(
 
   override fun onDetachRenderer(renderer: Any?): Boolean {
     require(renderer == null || renderer === container)
-    return false // false because we just never detach this renderer.
+    return true
   }
 }

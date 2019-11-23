@@ -23,6 +23,16 @@ object Versions {
   const val exoPlayerCode = 2010004
 }
 
+object ReleaseInfo {
+
+  const val repoName = "kohii"
+  const val groupId = "im.ene.kohii"
+  const val description = "Android Video Playback made easy."
+  const val websiteUrl = "https://github.com/eneim/kohii"
+  const val vcsUrl = "https://github.com/eneim/kohii"
+  val licenses = arrayOf("Apache-2.0")
+}
+
 @Suppress("MayBeConstant", "unused")
 object BuildConfig {
 
@@ -40,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B1"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B0"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -49,10 +59,11 @@ object Libs {
   object Common {
     const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-beta04"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.0"
-    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:8.2.0"
+    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
+    const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
 
     val junit = "junit:junit:4.12"
-    val junitExt = "androidx.test.ext:junit-ktx:1.1.2-alpha02"
+    val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
     val robolectric = "org.robolectric:robolectric:4.3"
     val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
@@ -68,19 +79,20 @@ object Libs {
   }
 
   object AndroidX {
+    val activityKtx = "androidx.activity:activity-ktx:1.1.0-rc02"
     val appcompat = "androidx.appcompat:appcompat:1.1.0"
     val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
-    val activityKtx = "androidx.activity:activity-ktx:1.1.0-rc02"
     val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
-    val browser = "androidx.browser:browser:1.0.0"
+    val benchmark = "androidx.benchmark:benchmark-junit4:1.0.0"
+    val browser = "androidx.browser:browser:1.2.0-beta01"
     val palette = "androidx.palette:palette-ktx:1.0.0"
     val emoji = "androidx.emoji:emoji:1.0.0"
 
-    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0-rc01"
+    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
     val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-alpha06"
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
-    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0-rc01"
+    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
 
     object Media {
       private const val version = "1.0.1"
@@ -127,14 +139,15 @@ object Libs {
 
     val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
 
-    val core = "androidx.core:core:1.2.0-beta02"
-    val coreKtx = "androidx.core:core-ktx:1.2.0-beta02"
+    val core = "androidx.core:core:1.2.0-rc01"
+    val coreKtx = "androidx.core:core-ktx:1.2.0-rc01"
 
     object Lifecycle {
-      private const val version = "2.2.0-rc01"
+      private const val version = "2.2.0-rc02"
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
+      val java8 = "androidx.lifecycle:lifecycle-common-java8:$version"
       val runtime = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
       val liveData = "androidx.lifecycle:lifecycle-livedata-ktx:$version"
       val viewModel = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
@@ -142,7 +155,7 @@ object Libs {
     }
 
     object Room {
-      private const val version = "2.2.1"
+      private const val version = "2.2.2"
       val common = "androidx.room:room-common:$version"
       val runtime = "androidx.room:room-runtime:$version"
       val compiler = "androidx.room:room-compiler:$version"
@@ -151,7 +164,7 @@ object Libs {
     }
 
     object Work {
-      private const val version = "2.2.0"
+      private const val version = "2.3.0-beta01"
       val runtimeKtx = "androidx.work:work-runtime-ktx:$version"
     }
   }
@@ -207,10 +220,12 @@ object Libs {
   }
 
   object Square {
-    val moshi = "com.squareup.moshi:moshi:1.8.0"
-    val moshiKotlin = "com.squareup.moshi:moshi-kotlin:1.8.0"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-3"
-    val okio = "com.squareup.okio:okio:2.2.2"
+    private const val moshiVersion = "1.9.2"
+    val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
+    val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
+    val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-4"
+    val okio = "com.squareup.okio:okio:2.4.1"
   }
 
   object Glide {

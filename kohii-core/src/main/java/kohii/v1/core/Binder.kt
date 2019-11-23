@@ -35,9 +35,10 @@ class Binder<RENDERER : Any>(
     var preload: Boolean = false
     var repeatMode: Int = Common.REPEAT_MODE_OFF
     var controller: Controller? = null
-    var callbacks: Array<Callback> = emptyArray()
+    val callbacks = mutableSetOf<Callback>()
   }
 
+  @JvmSynthetic
   @PublishedApi
   internal val options = Options()
 

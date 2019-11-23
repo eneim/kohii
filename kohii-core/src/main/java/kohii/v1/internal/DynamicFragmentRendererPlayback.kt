@@ -29,15 +29,15 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.Playback
 
-// TODO when using with YouTube Player SDK, we want to use its restoring mechanism (init with restore flag).
-//  In that case, we may need to skip the detaching of Fragment.
+// TODO when using with YouTube Player SDK, we want to use its restoring mechanism
+//  (init with restore flag).  In that case, we may need to skip the detaching of Fragment.
 @Experiment
 internal class DynamicFragmentRendererPlayback(
   manager: Manager,
   bucket: Bucket,
-  config: Config,
-  container: ViewGroup
-) : Playback(manager, bucket, config, container) {
+  container: ViewGroup,
+  config: Config
+) : Playback(manager, bucket, container, config) {
 
   init {
     check(tag != Master.NO_TAG) {

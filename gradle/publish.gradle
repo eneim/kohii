@@ -15,10 +15,12 @@
  */
 
 import kohii.BuildConfig
+import kohii.ReleaseInfo
 
 apply plugin: 'maven'
 apply plugin: 'signing'
 // apply from: "${rootDir.absolutePath}/gradle/deps.gradle"
+apply plugin: 'com.jfrog.bintray'
 
 version = BuildConfig.releaseVersionName
 group = GROUP
@@ -103,8 +105,8 @@ afterEvaluate { project ->
     sign configurations.archives
   }
 
-  if (project.getPlugins().hasPlugin('com.android.application') || project.getPlugins().
-      hasPlugin('com.android.library')) {
+  if (project.getPlugins().hasPlugin('com.android.application') ||
+      project.getPlugins().hasPlugin('com.android.library')) {
     task install(type: Upload, dependsOn: assemble) {
       repositories.mavenInstaller {
         configuration = configurations.archives

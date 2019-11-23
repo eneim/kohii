@@ -24,7 +24,7 @@ import kohii.v1.sample.common.BaseViewHolder
 
 internal class ItemsAdapter(
   private val kohii: Kohii,
-  private val preferItemCount: Int = Int.MAX_VALUE
+  private val preferItemCount: Int = Int.MAX_VALUE / 2
 ) : Adapter<BaseViewHolder>() {
 
   companion object {

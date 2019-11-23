@@ -18,11 +18,8 @@ package kohii.v1.yt1
 
 import android.os.DeadObjectException
 import android.util.Log
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
@@ -44,7 +41,7 @@ class YouTubeBridge(
   private val media: Media
 ) : AbstractBridge<YouTubePlayerFragment>(),
     PlaybackEventListener,
-    PlayerStateChangeListener, LifecycleObserver {
+    PlayerStateChangeListener, DefaultLifecycleObserver {
 
   private val initializedListener = object : OnInitializedListener {
     override fun onInitializationSuccess(
@@ -278,13 +275,11 @@ class YouTubeBridge(
 
   // [BEGIN] LifecycleObserver
 
-  @OnLifecycleEvent(ON_PAUSE)
-  internal fun onOwnerPause() {
+  override fun onPause(owner: LifecycleOwner) {
     updatePlaybackInfo()
   }
 
-  @OnLifecycleEvent(ON_DESTROY)
-  internal fun onOwnerDestroy(owner: LifecycleOwner) {
+  override fun onDestroy(owner: LifecycleOwner) {
     updatePlaybackInfo()
     player?.performRelease()
     _playbackState = Common.STATE_IDLE

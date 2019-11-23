@@ -24,7 +24,7 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kotlin.LazyThreadSafetyMode.NONE
 
-open class ViewGroupBucket(
+internal open class ViewGroupBucket(
   manager: Manager,
   override val root: ViewGroup
 ) : Bucket(manager, root) {

@@ -17,19 +17,17 @@
 package androidx.recyclerview.widget
 
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
-internal object RecycleViewUtils {
+internal object RecyclerViewUtils {
 
-  fun checkParams(
+  // Client must be careful when creating View for ViewHolder.
+  // It is suggested to use 'LayoutInflater.inflate(int, ViewGroup, boolean)' with notnull ViewGroup.
+  fun accepts(
     recyclerView: RecyclerView,
     params: RecyclerView.LayoutParams?
   ): Boolean {
-    // Client must be careful when creating View for ViewHolder.
-    // It is suggested to use 'LayoutInflater.inflate(int, ViewGroup, boolean)' with notnull ViewGroup.
     if (params == null) return false
-    // Must be one of the following:
-    // - Not yet bound by Adapter (its ViewHolder is null)
-    // - Or bound, and its owner RecyclerView is the same with the TargetHost
     return params.mViewHolder == null || params.mViewHolder.mOwnerRecyclerView === recyclerView
   }
 
@@ -41,5 +39,10 @@ internal object RecycleViewUtils {
       parent = parent.parent
     }
     return params as RecyclerView.LayoutParams?
+  }
+
+  fun fetchViewHolder(target: View): ViewHolder? {
+    val params = fetchItemViewParams(target)
+    return if (params is RecyclerView.LayoutParams) params.mViewHolder else null
   }
 }

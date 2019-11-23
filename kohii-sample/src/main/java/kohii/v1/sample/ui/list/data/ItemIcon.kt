@@ -17,8 +17,10 @@
 package kohii.v1.sample.ui.list.data
 
 import androidx.annotation.Keep
+import com.squareup.moshi.JsonClass
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class ItemIcon(
   val url: String = "",
   val width: Int = -1,

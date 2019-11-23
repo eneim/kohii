@@ -133,8 +133,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
 
             if (!configChange) null
             else if (!onConfigChange()) {
-              // on config change, if the Playable doesn't support, we need to pause the Video.
-              onPause() // TODO check why it doesn't work for YouTube demo.
+              // On config change, if the Playable doesn't support, we need to pause the Video.
+              onPause()
               null
             } else {
               master // to prevent the Playable from being destroyed when Manager is null.
@@ -142,11 +142,11 @@ abstract class AbstractPlayable<RENDERER : Any>(
           }
 
         if (to != null) {
+          to.playable = this
           to.addCallback(this)
           to.config.callbacks.forEach { cb -> to.addCallback(cb) }
           bridge.addEventListener(to)
           bridge.addErrorListener(to)
-          to.playable = this
         }
       }
   )
@@ -189,8 +189,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
     "Playable#considerRequestRenderer $playback, $this".logInfo()
     require(playback === this.playback)
     if (bridge.renderer == null || manager !== playback.manager) { // Only request for Renderer if we do not have one.
-      val renderer = playback.manager.requestRenderer(playback, this)
-      this.renderer = renderer
+      val renderer = playback.acquireRenderer()
+      if (playback.attachRenderer(renderer)) this.renderer = renderer
     }
   }
 
@@ -198,8 +198,11 @@ abstract class AbstractPlayable<RENDERER : Any>(
     "Playable#considerReleaseRenderer $playback, $this".logInfo()
     require(this.playback == null || this.playback === playback)
     if (bridge.renderer != null) { // Only release the Renderer if we do have one to release.
-      playback.manager.releaseRenderer(playback, this)
-      this.renderer = null
+      val renderer = bridge.renderer
+      if (playback.detachRenderer(renderer)) {
+        playback.releaseRenderer(renderer)
+        this.renderer = null
+      }
     }
   }
 

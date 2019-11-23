@@ -34,6 +34,7 @@ buildscript {
     classpath Libs.Google.fabricPlugin
     classpath Libs.Google.gmsGoogleServices
     classpath Libs.Common.ktLintPlugin
+    classpath Libs.Common.bintrayPlugin
   }
 }
 

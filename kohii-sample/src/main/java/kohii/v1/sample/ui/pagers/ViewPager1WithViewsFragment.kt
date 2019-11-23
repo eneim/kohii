@@ -53,9 +53,7 @@ class ViewPager1WithViewsFragment : BaseFragment() {
       return view === `object`
     }
 
-    override fun getCount(): Int {
-      return Int.MAX_VALUE
-    }
+    override fun getCount() = Int.MAX_VALUE / 2
 
     override fun instantiateItem(
       container: ViewGroup,
@@ -109,7 +107,12 @@ class ViewPager1WithViewsFragment : BaseFragment() {
     viewPager.apply {
       adapter = PagerPagesAdapter(kohii, getApp().videos)
       setPadding(0)
+    }
+  }
 
+  override fun onViewStateRestored(savedInstanceState: Bundle?) {
+    super.onViewStateRestored(savedInstanceState)
+    viewPager.apply {
       val clientWidth = (requireActivity().getDisplayPoint().x - paddingStart - paddingEnd)
       val offset = paddingStart / clientWidth.toFloat()
       setPageTransformer(false) { page, position ->

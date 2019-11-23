@@ -82,3 +82,7 @@ fun ViewGroup.inflateView(layoutId: Int): View {
   return LayoutInflater.from(context)
       .inflate(layoutId, this, false)
 }
+
+internal fun String.splitCases(): String {
+  return this.replace("(\\p{Ll})(\\p{Lu})".toRegex(), "$1 $2")
+}

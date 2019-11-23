@@ -17,3 +17,5 @@
 include ':kohii-core'
 include ':kohii-exoplayer'
 include ':kohii-sample'
+include ':kohii-androidx'
+include ':kohii-ads'

@@ -64,7 +64,7 @@ internal class VideoItemsAdapter(
   }
 
   override fun getItemCount(): Int {
-    return Int.MAX_VALUE
+    return Int.MAX_VALUE / 2
   }
 
   override fun onBindViewHolder(
@@ -85,7 +85,7 @@ internal class VideoItemsAdapter(
         kohii.setUp(requireNotNull(holder.videoFile)) {
           tag = requireNotNull(holder.videoTag)
           repeatMode = Common.REPEAT_MODE_ONE
-          callbacks = arrayOf(
+          callbacks += arrayOf(
               holder,
               object : Playback.Callback {
                 override fun onRemoved(playback: Playback) {
@@ -112,6 +112,9 @@ internal class VideoItemsAdapter(
 
   override fun onViewRecycled(holder: BaseViewHolder) {
     super.onViewRecycled(holder)
+    if (holder is VideoItemHolder) {
+      kohii.cancel(holder.playerViewContainer)
+    }
     holder.onRecycled(true)
   }
 

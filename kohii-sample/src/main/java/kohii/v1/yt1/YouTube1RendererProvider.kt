@@ -23,7 +23,7 @@ internal class YouTube1RendererProvider : RecycledRendererProvider() {
 
   override fun createRenderer(
     playback: Playback,
-    mediaType: Int
+    rendererType: Int
   ): YouTubePlayerFragment {
     return YouTubePlayerFragment.newInstance()
   }

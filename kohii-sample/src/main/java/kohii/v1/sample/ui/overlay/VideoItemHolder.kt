@@ -99,6 +99,10 @@ internal class VideoItemHolder(
     thumbnail.isVisible = true
   }
 
+  override fun toString(): String {
+    return "[${itemView}], ${this.playerViewContainer}"
+  }
+
   // Selection
 
   fun getItemDetails(): ItemDetails<Rebinder> {

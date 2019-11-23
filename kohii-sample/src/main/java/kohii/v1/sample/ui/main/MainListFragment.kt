@@ -25,6 +25,7 @@ import kohii.v1.sample.MainActivity
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.common.splitCases
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class MainListFragment : BaseFragment() {
@@ -47,9 +48,11 @@ class MainListFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     recyclerView.adapter = DemoItemsAdapter(getApp().demoItems) {
+      val title =
+        if (it.title == 0) it.fragmentClass.simpleName.splitCases() else getString(it.title)
       requireActivity().let { act ->
-        if (act is MainActivity) act.updateTitle(getString(it.title))
-        else act.title = getString(it.title)
+        if (act is MainActivity) act.updateTitle(title)
+        else act.title = title
       }
       parentFragmentManager.commit {
         setReorderingAllowed(true) // Optimize for shared element transition

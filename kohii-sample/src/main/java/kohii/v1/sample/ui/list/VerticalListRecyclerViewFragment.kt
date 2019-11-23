@@ -28,9 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionInflater
 import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.PlayerInfoHolder
@@ -57,9 +55,7 @@ class VerticalListRecyclerViewFragment : BaseFragment() {
   private val items: List<Item> by lazy {
     val asset = getApp().assets
     val type = Types.newParameterizedType(List::class.java, Item::class.java)
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
+    val moshi = getApp().moshi
     val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
     return@lazy adapter.fromJson(asset.open("theme.json").source().buffer())!!
   }

@@ -75,7 +75,7 @@ internal class FbookAdapter(
     }
   }
 
-  override fun getItemCount() = Int.MAX_VALUE
+  override fun getItemCount() = Int.MAX_VALUE / 2
 
   override fun onBindViewHolder(
     holder: FbookItemHolder,

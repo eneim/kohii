@@ -63,13 +63,7 @@ configurations {
 dependencies {
   implementation Libs.ExoPlayer.core
 
-  implementation Libs.AndroidX.Media.common
-  implementation Libs.AndroidX.Media.player
-  implementation Libs.AndroidX.Media.session
-  implementation Libs.AndroidX.Media.widget
-  implementation "com.google.guava:guava:28.1-android"
-
-  implementation Libs.Kotlin.stdlibJdk7
+  implementation Libs.Kotlin.stdlibJdk8
   implementation Libs.AndroidX.appcompat
   implementation Libs.AndroidX.coreKtx
   implementation Libs.AndroidX.collectionKtx
@@ -80,7 +74,8 @@ dependencies {
   implementation Libs.Google.material
   implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.service
-  kapt Libs.AndroidX.Lifecycle.compiler
+  api Libs.AndroidX.Lifecycle.java8
+  // kapt Libs.AndroidX.Lifecycle.compiler
 
   // Required -- JUnit 4 framework
   testImplementation Libs.Common.junit
@@ -124,4 +119,5 @@ tasks.withType(Javadoc).all {
 }
 
 project.archivesBaseName = "kohii"
-apply from: rootProject.file('gradle/publish.gradle')
+// apply from: rootProject.file('gradle/publish.gradle')
+apply from: rootProject.file('gradle/release_bintray_official.gradle')

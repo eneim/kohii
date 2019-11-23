@@ -16,13 +16,11 @@
 
 package kohii.v1.core
 
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import kohii.v1.media.Media
 
-interface RendererProvider : LifecycleObserver {
+interface RendererProvider : DefaultLifecycleObserver {
 
   @JvmDefault
   fun acquireRenderer(
@@ -43,8 +41,7 @@ interface RendererProvider : LifecycleObserver {
   }
 
   @JvmDefault
-  @OnLifecycleEvent(ON_DESTROY)
-  fun onDestroy(lifecycleOwner: LifecycleOwner) {
-    this.clear()
+  override fun onDestroy(owner: LifecycleOwner) {
+    clear()
   }
 }

@@ -28,9 +28,9 @@ import kohii.v1.core.Playback
 internal class DynamicViewRendererPlayback(
   manager: Manager,
   bucket: Bucket,
-  config: Config,
-  container: ViewGroup
-) : Playback(manager, bucket, config, container) {
+  container: ViewGroup,
+  config: Config
+) : Playback(manager, bucket, container, config) {
 
   override fun onPlay() {
     super.onPlay()

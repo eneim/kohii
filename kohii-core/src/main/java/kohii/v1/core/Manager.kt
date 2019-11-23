@@ -24,14 +24,10 @@ import androidx.collection.ArraySet
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
-import androidx.lifecycle.Lifecycle.Event.ON_ANY
-import androidx.lifecycle.Lifecycle.Event.ON_CREATE
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_START
-import androidx.lifecycle.Lifecycle.Event.ON_STOP
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle.Event
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Scope.BUCKET
 import kohii.v1.core.Scope.GLOBAL
@@ -49,7 +45,7 @@ class Manager(
   internal val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
   internal val memoryMode: MemoryMode = LOW
-) : PlayableManager, LifecycleObserver, Comparable<Manager> {
+) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
 
   companion object {
     internal fun compareAndCheck(
@@ -125,18 +121,16 @@ class Manager(
     }
   }
 
-  @OnLifecycleEvent(ON_ANY)
-  internal fun onAnyEvent(owner: LifecycleOwner) {
-    playbacks.forEach { it.value.lifecycleState = owner.lifecycle.currentState }
+  override fun onStateChanged(
+    source: LifecycleOwner,
+    event: Event
+  ) {
+    playbacks.forEach { it.value.lifecycleState = source.lifecycle.currentState }
   }
 
-  @OnLifecycleEvent(ON_CREATE)
-  internal fun onCreate() {
-  }
-
-  @OnLifecycleEvent(ON_DESTROY)
-  internal fun onDestroy(owner: LifecycleOwner) {
+  override fun onDestroy(owner: LifecycleOwner) {
     playbacks.values.toMutableList()
+        .also { group.organizer.selection -= it }
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
@@ -147,13 +141,11 @@ class Manager(
     group.onManagerDestroyed(this)
   }
 
-  @OnLifecycleEvent(ON_START)
-  internal fun onStart() {
+  override fun onStart(owner: LifecycleOwner) {
     refresh() // This will also update active/inactive Playbacks accordingly.
   }
 
-  @OnLifecycleEvent(ON_STOP)
-  internal fun onStop() {
+  override fun onStop(owner: LifecycleOwner) {
     playbacks.forEach { if (it.value.isActive) onPlaybackInActive(it.value) }
     refresh()
   }
@@ -196,7 +188,7 @@ class Manager(
 
   private fun addBucket(view: View) {
     val existing = buckets.find { it.root === view }
-    require(existing == null) { "This bucket's root: ${existing?.root} is attached already." }
+    if (existing != null) return
     val bucket = Bucket[this@Manager, view]
     if (buckets.add(bucket)) {
       bucket.onAdded()
@@ -302,56 +294,13 @@ class Manager(
     playback.onInActive()
   }
 
-  internal fun requestRenderer(
-    playback: Playback,
-    playable: Playable
-  ): Any? {
-    val renderer = group.findRendererProvider(playable)
-        .acquireRenderer(playback, playable.media)
-    return if (playback.attachRenderer(renderer)) renderer else null
-  }
-
-  internal fun releaseRenderer(
-    playback: Playback,
-    playable: Playable
-  ) {
-    val renderer = playable.renderer
-    if (playback.detachRenderer(renderer)) {
-      group.findRendererProvider(playable)
-          .releaseRenderer(playback, playable.media, renderer)
-    }
-  }
-
   // Public APIs
-
-  fun registerRendererProvider(
-    type: Class<*>,
-    provider: RendererProvider
-  ) {
-    group.registerRendererProvider(type, provider)
-  }
-
-  @Suppress("MemberVisibilityCanBePrivate")
-  fun unregisterRendererProvider(provider: RendererProvider) {
-    group.unregisterRendererProvider(provider)
-  }
 
   fun attach(vararg views: View): Manager {
     views.forEach { this.addBucket(it) }
     return this
   }
 
-  fun attach(vararg buckets: Bucket): Manager {
-    buckets.forEach { bucket ->
-      require(bucket.manager === this)
-      val existing = this.buckets.find { it.root === bucket.root }
-      require(existing == null) { "This bucket root: ${existing?.root} is attached already." }
-      if (this.buckets.add(bucket)) bucket.onAdded()
-    }
-    return this
-  }
-
-  @Suppress("unused")
   fun detach(vararg views: View): Manager {
     views.forEach { this.removeBucket(it) }
     return this

@@ -32,15 +32,4 @@ internal class Organizer {
     this.selection = listOfNotNull(candidates.firstOrNull())
     return this.selection
   }
-
-  internal fun deselect(vararg playbacks: Playback): Boolean {
-    val temp = ArrayList(this.selection)
-    val updated = temp.removeAll(playbacks)
-    this.selection = temp
-    return updated
-  }
-
-  internal fun deselect(playbacks: Collection<Playback>): Boolean {
-    return this.deselect(*playbacks.toTypedArray())
-  }
 }

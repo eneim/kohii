@@ -24,7 +24,7 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kotlin.LazyThreadSafetyMode.NONE
 
-class ViewPager2Bucket(
+internal class ViewPager2Bucket(
   manager: Manager,
   override val root: ViewPager2
 ) : Bucket(manager, root) {

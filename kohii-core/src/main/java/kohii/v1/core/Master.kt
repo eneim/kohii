@@ -105,6 +105,8 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal val app = context.applicationContext as Application
 
+  internal val engines = mutableMapOf<Class<*>, Engine<*>>()
+  internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val groups = mutableSetOf<Group>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
@@ -190,9 +192,6 @@ class Master private constructor(context: Context) : PlayableManager {
         if (from != to) groups.forEach { it.onRefresh() }
       }
   )
-
-  private val engines = mutableMapOf<Class<*>, Engine<*>>()
-  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
     if (actual !== AUTO) return actual
@@ -298,7 +297,7 @@ class Master private constructor(context: Context) : PlayableManager {
     if (playable.tag === NO_TAG) return
     val cache = playbackInfoStore.remove(playable.tag)
     // Only restoring playback state if there is cached state, and the player is not ready yet.
-    if (cache != null && playable.playerState <= Common.STATE_IDLE /* TODO change to internal const */) {
+    if (cache != null && playable.playerState <= Common.STATE_IDLE) {
       playable.playbackInfo = cache
     }
   }
@@ -339,9 +338,17 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  // Called when Manager is added/removed to/from Group
-  @Suppress("UNUSED_PARAMETER")
+  // Called when Manager is added (created)/removed (destroyed) to/from Group
   internal fun onGroupUpdated(group: Group) {
+    requests.values.filter {
+      val bucket = it.bucket
+      return@filter bucket != null && bucket.manager.group === group
+    }
+        .forEach {
+          it.playable.playback = null
+          requests.remove(it.container)
+        }
+
     // If no Manager is online, cleanup stuffs
     if (groups.flatMap { it.managers }.isEmpty() && playables.isEmpty()) {
       cleanUp()
@@ -369,6 +376,7 @@ class Master private constructor(context: Context) : PlayableManager {
     engines.forEach { it.value.inject(group) }
   }
 
+  @Suppress("UNUSED_PARAMETER")
   internal fun onLastManagerDestroyed(group: Group) {
     if (groups.flatMap { it.managers }.isEmpty()) {
       if (networkCallback.isInitialized() && VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
@@ -592,17 +600,17 @@ class Master private constructor(context: Context) : PlayableManager {
         // the container is an instance PlayerView or its subtype.
         playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
           StaticViewRendererPlayback(
-              bucket.manager, bucket, config, container
+              bucket.manager, bucket, container, config
           )
         }
         View::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicViewRendererPlayback(
-              bucket.manager, bucket, config, container
+              bucket.manager, bucket, container, config
           )
         }
         Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
           DynamicFragmentRendererPlayback(
-              bucket.manager, bucket, config, container
+              bucket.manager, bucket, container, config
           )
         }
         else -> {
@@ -680,6 +688,10 @@ class Master private constructor(context: Context) : PlayableManager {
     val callback: ((Playback) -> Unit)?
   ) {
 
+    // used by RecyclerViewBucket to 'assume' that it will hold this container
+    // It is recommended to use Engine#cancel to easily remove a queued request from cache.
+    var bucket: Bucket? = null
+
     internal fun onBind() {
       master.onBind(playable, tag, container, options, callback)
     }
@@ -688,13 +700,12 @@ class Master private constructor(context: Context) : PlayableManager {
   // Public APIs
 
   // target == null --> lock all
-  // TODO design 'lock' policy.
   fun lock() {
-    groups.forEach { it.lock = true }
+    this.pause(Scope.GLOBAL)
   }
 
   // target == null --> unlock all
   fun unlock() {
-    groups.forEach { it.lock = false }
+    this.resume(Scope.GLOBAL)
   }
 }

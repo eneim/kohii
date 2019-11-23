@@ -39,8 +39,8 @@ import kotlin.properties.Delegates
 abstract class Playback(
   internal val manager: Manager,
   internal val bucket: Bucket,
-  val config: Config = Config(),
-  val container: ViewGroup
+  val container: ViewGroup,
+  val config: Config = Config()
 ) : PlayerEventListener,
     ErrorListener {
 
@@ -104,28 +104,8 @@ abstract class Playback(
     val preload: Boolean = false,
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val controller: Controller? = null,
-    val callbacks: Array<Callback> = emptyArray()
-  ) {
-
-    override fun equals(other: Any?): Boolean {
-      if (this === other) return true
-      if (javaClass != other?.javaClass) return false
-
-      other as Config
-
-      if (delay != other.delay) return false
-      if (controller != other.controller) return false
-      if (!callbacks.contentEquals(other.callbacks)) return false
-      return true
-    }
-
-    override fun hashCode(): Int {
-      var result = delay
-      result = 31 * result + (controller?.hashCode() ?: 0)
-      result = 31 * result + callbacks.contentHashCode()
-      return result
-    }
-  }
+    val callbacks: Set<Callback> = emptySet()
+  )
 
   override fun toString(): String {
     return "${super.toString()}, [$playable], [${token.areaOffset}, ${token.containerRect}]"
@@ -165,14 +145,40 @@ abstract class Playback(
   private val callbacks = ArrayDeque<Callback>()
   private val listeners = ArrayDeque<StateListener>()
 
-  // Return **true** to indicate that the Renderer is safely attached and
-  // can be used by the Playable.
-  abstract fun onAttachRenderer(renderer: Any?): Boolean
+  internal open fun acquireRenderer(): Any? {
+    val playable = this.playable
+    requireNotNull(playable)
+    val provider: RendererProvider = manager.group.findRendererProvider(playable)
+    return provider.acquireRenderer(this, playable.media)
+  }
 
-  // Return **true** to indicate that the Renderer is safely detached and
+  internal open fun releaseRenderer(
+    renderer: Any?
+  ) {
+    val playable = this.playable
+    requireNotNull(playable)
+    val provider: RendererProvider = manager.group.findRendererProvider(playable)
+    return provider.releaseRenderer(this, playable.media, renderer)
+  }
+
+  internal fun attachRenderer(renderer: Any?): Boolean {
+    "Playback#attachRenderer $renderer $this".logDebug()
+    return onAttachRenderer(renderer)
+  }
+
+  internal fun detachRenderer(renderer: Any?): Boolean {
+    "Playback#detachRenderer $renderer $this".logDebug()
+    return onDetachRenderer(renderer)
+  }
+
+  // Return `true` to indicate that the Renderer is safely attached to container and
+  // can be used by the Playable.
+  protected abstract fun onAttachRenderer(renderer: Any?): Boolean
+
+  // Return `true` to indicate that the Renderer is safely detached from container and
   // Playable should not use it any further. RendererProvider will then release the Renderer with
   // proper mechanism (eg: put it back to Pool for reuse).
-  abstract fun onDetachRenderer(renderer: Any?): Boolean
+  protected abstract fun onDetachRenderer(renderer: Any?): Boolean
 
   internal fun onAdded() {
     "Playback#onAdded $this".logDebug()
@@ -199,16 +205,6 @@ abstract class Playback(
     "Playback#onDetached $this".logDebug()
     playbackState = STATE_DETACHED
     callbacks.forEach { it.onDetached(this) }
-  }
-
-  internal fun attachRenderer(renderer: Any?): Boolean {
-    "Playback#attachRenderer $renderer $this".logDebug()
-    return onAttachRenderer(renderer)
-  }
-
-  internal fun detachRenderer(renderer: Any?): Boolean {
-    "Playback#detachRenderer $renderer $this".logDebug()
-    return onDetachRenderer(renderer)
   }
 
   @CallSuper

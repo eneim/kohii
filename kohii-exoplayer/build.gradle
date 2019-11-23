@@ -62,7 +62,7 @@ dependencies {
   implementation Libs.ExoPlayer.cast
   implementation Libs.ExoPlayer.ima
 
-  implementation Libs.Kotlin.stdlibJdk7
+  implementation Libs.Kotlin.stdlibJdk8
   implementation Libs.AndroidX.appcompat
   implementation Libs.AndroidX.coreKtx
   implementation Libs.AndroidX.collectionKtx
@@ -71,3 +71,7 @@ dependencies {
   androidTestImplementation Libs.Common.junitExt
   androidTestImplementation Libs.AndroidX.Test.espressoCore
 }
+
+project.archivesBaseName = "kohii-exoplayer"
+// apply from: rootProject.file('gradle/publish.gradle')
+apply from: rootProject.file('gradle/release_bintray_official.gradle')

@@ -46,9 +46,7 @@ class ViewPager2WithFragmentsFragment : BaseFragment() {
     fragment: Fragment
   ) : FragmentStateAdapter(fragment) {
 
-    override fun getItemCount(): Int {
-      return Int.MAX_VALUE
-    }
+    override fun getItemCount() = Int.MAX_VALUE / 2
 
     override fun createFragment(position: Int): Fragment {
       return PageFragment.newInstance(position, videos[position % videos.size])

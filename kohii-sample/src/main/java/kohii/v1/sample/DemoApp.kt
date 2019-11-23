@@ -20,7 +20,6 @@ import android.app.Application
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.combo.ExoPlayerVideosFragment
@@ -31,10 +30,17 @@ import kohii.v1.sample.ui.list.VerticalListRecyclerViewFragment
 import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.sample.ui.motion.MotionFragment
 import kohii.v1.sample.ui.mstdtl.MasterDetailFragment
+import kohii.v1.sample.ui.nested1.VerticalRecyclerViewInsideNestedScrollViewFragment
+import kohii.v1.sample.ui.nested2.HorizontalRecyclerViewInsideNestedScrollViewFragment
+import kohii.v1.sample.ui.nested3.NestedScrollViewInsideRecyclerViewFragment
+import kohii.v1.sample.ui.nested4.VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment
+import kohii.v1.sample.ui.nested5.RecyclerViewInsideRecyclerViewFragment
 import kohii.v1.sample.ui.overlay.OverlayViewFragment
 import kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment
+import kohii.v1.sample.ui.pagers.ViewPager1WithRecyclerViewFragmentsFragment
 import kohii.v1.sample.ui.pagers.ViewPager1WithViewsFragment
 import kohii.v1.sample.ui.pagers.ViewPager2WithFragmentsFragment
+import kohii.v1.sample.ui.pagers.ViewPager2WithRecyclerViewFragmentsFragment
 import kohii.v1.sample.ui.pagers.ViewPager2WithViewsFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
 import kohii.v1.sample.ui.youtube1.YouTube1Fragment
@@ -54,8 +60,7 @@ class DemoApp : Application() {
     const val assetVideoUri = "file:///android_asset/bbb_45s_hevc.mp4"
   }
 
-  private val moshi: Moshi = Moshi.Builder()
-      .add(KotlinJsonAdapterFactory())
+  internal val moshi: Moshi = Moshi.Builder()
       .build()
 
   val videos by lazy(NONE) {
@@ -146,6 +151,11 @@ class DemoApp : Application() {
             ViewPager1WithViewsFragment::class.java
         ),
         DemoItem(
+            0,
+            0,
+            ViewPager1WithRecyclerViewFragmentsFragment::class.java
+        ),
+        DemoItem(
             R.string.demo_title_pager_3,
             R.string.demo_desc_pager_3,
             ViewPager2WithFragmentsFragment::class.java
@@ -154,6 +164,26 @@ class DemoApp : Application() {
             R.string.demo_title_pager_4,
             R.string.demo_desc_pager_4,
             ViewPager2WithViewsFragment::class.java
+        ),
+        DemoItem(
+            0,
+            0,
+            ViewPager2WithRecyclerViewFragmentsFragment::class.java
+        ),
+        DemoItem(
+            0, 0, NestedScrollViewInsideRecyclerViewFragment::class.java
+        ),
+        DemoItem(
+            0, 0, VerticalRecyclerViewInsideNestedScrollViewFragment::class.java
+        ),
+        DemoItem(
+            0, 0, HorizontalRecyclerViewInsideNestedScrollViewFragment::class.java
+        ),
+        DemoItem(
+            0, 0, VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment::class.java
+        ),
+        DemoItem(
+            0, 0, RecyclerViewInsideRecyclerViewFragment::class.java
         ),
         DemoItem(
             R.string.demo_title_master_detail,

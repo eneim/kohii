@@ -16,7 +16,6 @@
 
 package kohii.v1.sample.ui.list
 
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
@@ -50,11 +49,9 @@ class ItemsAdapter(
     viewType: Int
   ): BaseViewHolder {
     return when (viewType) {
-      R.layout.holder_text_view -> TextViewHolder(
-          LayoutInflater.from(parent.context), parent, this.dp2Px
-      )
+      R.layout.holder_text_view -> TextViewHolder(parent, this.dp2Px)
       R.layout.holder_player_view -> VideoViewHolder(
-          LayoutInflater.from(parent.context), parent, kohii, VideoClickImpl(fragment)
+          parent, kohii, VideoClickImpl(fragment)
       )
       else -> throw RuntimeException("Unknown type: $viewType")
     }

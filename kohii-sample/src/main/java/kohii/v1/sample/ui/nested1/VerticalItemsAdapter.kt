@@ -25,7 +25,7 @@ import kohii.v1.sample.common.inflateView
 
 internal class VerticalItemsAdapter(
   private val kohii: Kohii,
-  private val preferItemCount: Int = Int.MAX_VALUE
+  private val preferItemCount: Int = Int.MAX_VALUE / 2
 ) : Adapter<VerticalItemViewHolder>() {
   override fun onCreateViewHolder(
     parent: ViewGroup,
