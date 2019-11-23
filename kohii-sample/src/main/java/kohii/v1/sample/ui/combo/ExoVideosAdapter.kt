@@ -47,7 +47,7 @@ class ExoVideosAdapter(
     return holder
   }
 
-  override fun getItemCount() = Int.MAX_VALUE
+  override fun getItemCount() = Int.MAX_VALUE / 2
 
   override fun onBindViewHolder(
     holder: ExoVideoHolder,

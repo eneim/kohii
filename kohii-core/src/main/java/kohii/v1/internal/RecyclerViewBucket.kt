@@ -16,13 +16,14 @@
 
 package kohii.v1.internal
 
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecycleViewUtils
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
+import androidx.recyclerview.widget.RecyclerViewUtils
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
@@ -33,7 +34,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 internal class RecyclerViewBucket(
   manager: Manager,
   override val root: RecyclerView
-) : Bucket(manager, root) {
+) : Bucket(manager, root), RecyclerView.OnChildAttachStateChangeListener {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {
@@ -76,6 +77,7 @@ internal class RecyclerViewBucket(
   override fun onAdded() {
     super.onAdded()
     root.addOnScrollListener(scrollListener)
+    root.addOnChildAttachStateChangeListener(this)
   }
 
   override fun onAttached() {
@@ -88,12 +90,13 @@ internal class RecyclerViewBucket(
   override fun onRemoved() {
     super.onRemoved()
     root.removeOnScrollListener(scrollListener)
+    root.removeOnChildAttachStateChangeListener(this)
   }
 
   override fun accepts(container: ViewGroup): Boolean {
     if (!ViewCompat.isAttachedToWindow(container)) return false
-    val params = RecycleViewUtils.fetchItemViewParams(container)
-    return RecycleViewUtils.checkParams(root, params)
+    val params = RecyclerViewUtils.fetchItemViewParams(container)
+    return RecyclerViewUtils.accepts(root, params)
   }
 
   override fun allowToPlay(playback: Playback): Boolean {
@@ -103,5 +106,19 @@ internal class RecyclerViewBucket(
 
   override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {
     return selectByOrientation(candidates, orientation = root.fetchOrientation())
+  }
+
+  override fun onChildViewAttachedToWindow(view: View) {
+    val holder = root.findContainingViewHolder(view)
+    manager.master.requests.filter {
+      RecyclerViewUtils.fetchViewHolder(it.key) === holder
+    }
+        .forEach {
+          it.value.bucket = this
+        }
+  }
+
+  override fun onChildViewDetachedFromWindow(view: View) {
+    // do nothing
   }
 }

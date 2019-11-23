@@ -77,9 +77,7 @@ class ViewPager2WithViewsFragment : BaseFragment() {
       holder.bind(video)
     }
 
-    override fun getItemCount(): Int {
-      return Int.MAX_VALUE
-    }
+    override fun getItemCount() = Int.MAX_VALUE / 2
   }
 
   override fun onCreateView(

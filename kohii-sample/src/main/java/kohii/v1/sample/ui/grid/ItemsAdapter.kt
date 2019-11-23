@@ -51,7 +51,7 @@ internal class ItemsAdapter(
   }
 
   override fun getItemCount(): Int {
-    return Int.MAX_VALUE
+    return Int.MAX_VALUE / 2
   }
 
   override fun getItemId(position: Int): Long {
@@ -81,6 +81,10 @@ internal class ItemsAdapter(
   }
 
   override fun onViewRecycled(holder: BaseViewHolder) {
-    if (holder is VideoViewHolder) holder.videoUrl = null
+    if (holder is VideoViewHolder) {
+      kohii.cancel(holder.container)
+      holder.videoUrl = null
+      holder.itemView.setOnClickListener(null)
+    }
   }
 }

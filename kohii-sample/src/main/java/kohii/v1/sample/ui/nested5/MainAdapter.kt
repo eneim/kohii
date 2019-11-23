@@ -56,7 +56,7 @@ class MainAdapter(
   }
 
   override fun getItemCount(): Int {
-    return Int.MAX_VALUE
+    return Int.MAX_VALUE / 2
   }
 
   internal val holderStateCache = SparseArray<HolderStateEntry>()

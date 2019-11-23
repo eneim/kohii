@@ -18,6 +18,7 @@ package kohii.v1.core
 
 import android.content.Context
 import android.net.Uri
+import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -64,6 +65,22 @@ abstract class Engine<RENDERER : Any> constructor(
     crossinline options: Options.() -> Unit = {}
   ) = setUp(url.toUri(), options)
 
+  fun cancel(tag: Any) {
+    master.requests.filterValues { it.tag == tag }
+        .forEach {
+          it.value.playable.playback = null
+          master.requests.remove(it.key)
+        }
+  }
+
+  fun cancel(container: ViewGroup) {
+    master.requests.remove(container)
+        ?.also {
+          it.playable.playback = null
+        }
+  }
+
+  // TODO do not allow this anymore.
   fun fetchRebinder(tag: Any?): Rebinder? {
     return if (tag == null) null else Rebinder(tag)
   }

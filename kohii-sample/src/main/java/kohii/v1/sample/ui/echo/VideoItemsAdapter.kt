@@ -49,7 +49,7 @@ class VideoItemsAdapter(
   }
 
   override fun getItemCount(): Int {
-    return Int.MAX_VALUE
+    return Int.MAX_VALUE / 2
   }
 
   override fun onBindViewHolder(

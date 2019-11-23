@@ -105,9 +105,8 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal val app = context.applicationContext as Application
 
-  private val engines = mutableMapOf<Class<*>, Engine<*>>()
-  private val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
-
+  internal val engines = mutableMapOf<Class<*>, Engine<*>>()
+  internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val groups = mutableSetOf<Group>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
@@ -340,8 +339,16 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   // Called when Manager is added (created)/removed (destroyed) to/from Group
-  @Suppress("UNUSED_PARAMETER")
   internal fun onGroupUpdated(group: Group) {
+    requests.values.filter {
+      val bucket = it.bucket
+      return@filter bucket != null && bucket.manager.group === group
+    }
+        .forEach {
+          it.playable.playback = null
+          requests.remove(it.container)
+        }
+
     // If no Manager is online, cleanup stuffs
     if (groups.flatMap { it.managers }.isEmpty() && playables.isEmpty()) {
       cleanUp()
@@ -680,6 +687,10 @@ class Master private constructor(context: Context) : PlayableManager {
     val options: Options,
     val callback: ((Playback) -> Unit)?
   ) {
+
+    // used by RecyclerViewBucket to 'assume' that it will hold this container
+    // It is recommended to use Engine#cancel to easily remove a queued request from cache.
+    var bucket: Bucket? = null
 
     internal fun onBind() {
       master.onBind(playable, tag, container, options, callback)

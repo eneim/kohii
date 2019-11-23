@@ -45,7 +45,7 @@ class ViewPager1WithRecyclerViewFragmentsFragment : BaseFragment() {
       return GridContentFragment.newInstance(position)
     }
 
-    override fun getCount() = Int.MAX_VALUE
+    override fun getCount() = Int.MAX_VALUE / 2
   }
 
   override fun onCreateView(
@@ -63,11 +63,15 @@ class ViewPager1WithRecyclerViewFragmentsFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this)
         .attach(viewPager)
-
-    viewPager.setPadding(0)
     viewPager.apply {
       adapter = VideoPagerAdapter(childFragmentManager)
+      setPadding(0)
+    }
+  }
 
+  override fun onViewStateRestored(savedInstanceState: Bundle?) {
+    super.onViewStateRestored(savedInstanceState)
+    viewPager.apply {
       val clientWidth = (requireActivity().getDisplayPoint().x - paddingStart - paddingEnd)
       val offset = paddingStart / clientWidth.toFloat()
       setPageTransformer(false) { page, position ->

@@ -37,8 +37,10 @@ import kohii.v1.sample.ui.nested4.VerticalFixedHeightRecyclerViewInsideNestedScr
 import kohii.v1.sample.ui.nested5.RecyclerViewInsideRecyclerViewFragment
 import kohii.v1.sample.ui.overlay.OverlayViewFragment
 import kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment
+import kohii.v1.sample.ui.pagers.ViewPager1WithRecyclerViewFragmentsFragment
 import kohii.v1.sample.ui.pagers.ViewPager1WithViewsFragment
 import kohii.v1.sample.ui.pagers.ViewPager2WithFragmentsFragment
+import kohii.v1.sample.ui.pagers.ViewPager2WithRecyclerViewFragmentsFragment
 import kohii.v1.sample.ui.pagers.ViewPager2WithViewsFragment
 import kohii.v1.sample.ui.sview.ScrollViewFragment
 import kohii.v1.sample.ui.youtube1.YouTube1Fragment
@@ -149,6 +151,11 @@ class DemoApp : Application() {
             ViewPager1WithViewsFragment::class.java
         ),
         DemoItem(
+            0,
+            0,
+            ViewPager1WithRecyclerViewFragmentsFragment::class.java
+        ),
+        DemoItem(
             R.string.demo_title_pager_3,
             R.string.demo_desc_pager_3,
             ViewPager2WithFragmentsFragment::class.java
@@ -157,6 +164,11 @@ class DemoApp : Application() {
             R.string.demo_title_pager_4,
             R.string.demo_desc_pager_4,
             ViewPager2WithViewsFragment::class.java
+        ),
+        DemoItem(
+            0,
+            0,
+            ViewPager2WithRecyclerViewFragmentsFragment::class.java
         ),
         DemoItem(
             0, 0, NestedScrollViewInsideRecyclerViewFragment::class.java
