@@ -16,12 +16,17 @@
 
 package im.ene.kohii.x
 
-import android.content.Context
-import androidx.media2.widget.VideoView
-import kohii.v1.core.Engine
-import kohii.v1.core.PlayableCreator
+import androidx.media2.player.MediaPlayer
+import kohii.v1.media.Media
 
-class Manilo(
-  context: Context,
-  playableCreator: PlayableCreator<VideoView>
-) : Engine<VideoView>(context, playableCreator)
+interface MediaPlayerProvider {
+
+  fun acquirePlayer(media: Media): MediaPlayer
+
+  fun releasePlayer(
+    media: Media,
+    player: MediaPlayer
+  )
+
+  fun cleanUp()
+}

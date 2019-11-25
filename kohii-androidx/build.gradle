@@ -55,6 +55,20 @@ android {
   }
 }
 
+afterEvaluate {
+  dokka {
+    outputDirectory = "$rootDir/docs/api"
+    outputFormat = "gfm"
+
+    configuration {
+      externalDocumentationLink {
+        url = new URL("file://$rootDir/docs/api/kohii-core/")
+        packageListUrl = new URL("file://$rootDir/docs/api/kohii-core/package-list")
+      }
+    }
+  }
+}
+
 dependencies {
   implementation project(':kohii-core')
 
@@ -63,6 +77,8 @@ dependencies {
   implementation Libs.AndroidX.Media.session
   implementation Libs.AndroidX.Media.widget
   implementation "com.google.guava:guava:28.1-android"
+
+  implementation Libs.ExoPlayer.core
 
   implementation Libs.Kotlin.stdlibJdk8
   implementation Libs.AndroidX.appcompat

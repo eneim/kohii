@@ -55,6 +55,20 @@ android {
   }
 }
 
+afterEvaluate {
+  dokka {
+    outputDirectory = "$rootDir/docs/api"
+    outputFormat = "gfm"
+
+    configuration {
+      externalDocumentationLink {
+        url = new URL("file://$rootDir/docs/api/kohii-core/")
+        packageListUrl = new URL("file://$rootDir/docs/api/kohii-core/package-list")
+      }
+    }
+  }
+}
+
 dependencies {
   implementation project(':kohii-core')
   implementation project(':kohii-exoplayer')

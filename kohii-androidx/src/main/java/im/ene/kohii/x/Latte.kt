@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
-package im.ene.kohii.ads
+package im.ene.kohii.x
 
-class Latte
+import android.content.Context
+import androidx.media2.widget.VideoView
+import kohii.v1.core.Engine
+import kohii.v1.core.Group
+import kohii.v1.core.Master
+import kohii.v1.core.PlayableCreator
+
+// Not production ready!
+class Latte(
+  context: Context,
+  playableCreator: PlayableCreator<VideoView> = VideoViewPlayableCreator(Master[context])
+) : Engine<VideoView>(context, playableCreator) {
+  override fun inject(group: Group) {
+    group.registerRendererProvider(VideoView::class.java, VideoViewProvider())
+  }
+}
