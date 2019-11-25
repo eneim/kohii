@@ -76,6 +76,6 @@ class Binder(
       }
     }
 
-    return cache ?: engine.playableCreator.createPlayable(engine.master, config, media)
+    return cache ?: engine.playableCreator.createPlayable(config, media)
   }
 }

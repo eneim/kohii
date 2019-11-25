@@ -195,15 +195,11 @@ class Manager(
       view.doOnAttach { v ->
         bucket.onAttached()
         v.doOnDetach {
-          detachBucket(v)
-        } // In case the View is detached immediately ...
+          buckets.firstOrNull { bucket -> bucket.root === it }
+              ?.onDetached()
+        }
       }
     }
-  }
-
-  private fun detachBucket(view: View) {
-    buckets.firstOrNull { it.root === view }
-        ?.onDetached()
   }
 
   private fun removeBucket(view: View) {

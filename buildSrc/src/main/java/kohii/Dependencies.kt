@@ -61,7 +61,8 @@ object Libs {
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
-    const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:0.10.0"
+    // 0.10.0 render method signature after the doc, which looks pretty bad.
+    const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:0.9.18"
 
     val junit = "junit:junit:4.12"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"

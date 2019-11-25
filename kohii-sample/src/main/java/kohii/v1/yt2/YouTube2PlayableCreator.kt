@@ -23,14 +23,15 @@ import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
 import kohii.v1.media.Media
 
-class YouTube2PlayableCreator : PlayableCreator<YouTubePlayerView>(YouTubePlayerView::class.java) {
+class YouTube2PlayableCreator(private val master: Master) : PlayableCreator<YouTubePlayerView>(
+    YouTubePlayerView::class.java
+) {
 
   override fun createPlayable(
-    master: Master,
     config: Config,
     media: Media
   ): Playable {
-    return YouTube2Playable(master, media, config, YouTubeBridge(media))
+    return YouTube2Playable(master, media, config, YouTube2Bridge(media))
   }
 
   override fun cleanUp() {

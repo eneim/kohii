@@ -16,7 +16,6 @@
 
 package kohii.v1.exoplayer.internal
 
-import android.content.Context
 import com.google.android.exoplayer2.database.ExoDatabaseProvider
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
@@ -35,7 +34,7 @@ import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
 class PlayerViewPlayableCreator(
-  context: Context
+  internal val master: Master
 ) : PlayableCreator<PlayerView>(PlayerView::class.java) {
 
   companion object {
@@ -43,7 +42,7 @@ class PlayerViewPlayableCreator(
     private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
   }
 
-  private val app = context.applicationContext
+  private val app = master.app
 
   private val defaultBridgeProvider by lazy(NONE) {
     val userAgent = Common.getUserAgent(this.app, BuildConfig.LIB_NAME)
@@ -80,7 +79,6 @@ class PlayerViewPlayableCreator(
   }
 
   override fun createPlayable(
-    master: Master,
     config: Config,
     media: Media
   ): Playable {

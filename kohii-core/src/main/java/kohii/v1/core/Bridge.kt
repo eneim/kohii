@@ -32,7 +32,7 @@ interface Bridge<RENDERER : Any> {
 
   var playbackInfo: PlaybackInfo
 
-  var parameters: PlaybackParameters
+  // var parameters: PlaybackParameters
 
   @RepeatMode var repeatMode: Int
 

@@ -23,6 +23,27 @@ import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 
+/**
+ * A [Playable] contains necessary information about a [Media] item, and the config provided by
+ * client for it to start the media with expected result. Instance of [Playable] is provided by
+ * [PlayableCreator].
+ *
+ * An implementation of [Playable] must take into account about the following points:
+ *
+ * - A [Playable] is managed at application scope. So it must not retain any reference to narrower
+ * scope like [androidx.fragment.app.Fragment] or [android.app.Activity].
+ * - A [Playable] must acknowledge about configuration changes. It must return a correct value
+ * from [onConfigChange] so that the system can provide proper resource management. For example if
+ * any of its resource needs to be reset at configuration change, its [onConfigChange] method must
+ * return `false`.
+ *
+ * [AbstractPlayable] is a base implementation that leverage actual playback logic to a [Bridge].
+ *
+ * @see [AbstractPlayable]
+ * @see [AbstractBridge]
+ * @see [PlayableCreator]
+ * @see [Engine]
+ */
 abstract class Playable(
   val media: Media,
   internal val config: Config

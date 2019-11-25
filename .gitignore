@@ -59,3 +59,9 @@
 /kohii-ads/.gitignore
 /kohii-ads/consumer-rules.pro
 /kohii-ads/kohii-ads.iml
+/docs/api/
+/docs/changelog.md
+/docs/code_of_conduct.md
+/docs/index.md
+/site/
+/docs/art/

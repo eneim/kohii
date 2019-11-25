@@ -60,6 +60,13 @@ configurations {
   all*.exclude group: 'com.google.guava', module: 'listenablefuture'
 }
 
+afterEvaluate { project ->
+  project.tasks.dokka {
+    outputDirectory = "$rootDir/docs/api"
+    outputFormat = "gfm"
+  }
+}
+
 dependencies {
   implementation Libs.ExoPlayer.core
 

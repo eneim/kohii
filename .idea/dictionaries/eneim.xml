@@ -11,6 +11,7 @@
       <w>constraintlayout</w>
       <w>crashlytics</w>
       <w>dexcount</w>
+      <w>dokka</w>
       <w>emoji</w>
       <w>eneim</w>
       <w>everytime</w>
@@ -20,12 +21,14 @@
       <w>getkeepsafe</w>
       <w>gson</w>
       <w>jetify</w>
+      <w>jfrog</w>
       <w>jlleitschuh</w>
       <w>kaigi</w>
       <w>kohii</w>
       <w>ktlint</w>
       <w>leakcanary</w>
       <w>livedata</w>
+      <w>manilo</w>
       <w>mediasession</w>
       <w>mockitokotlin</w>
       <w>moshi</w>

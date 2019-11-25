@@ -103,7 +103,7 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  internal val app = context.applicationContext as Application
+  val app = context.applicationContext as Application
 
   @Suppress("MemberVisibilityCanBePrivate")
   internal val engines = mutableMapOf<Class<*>, Engine<*>>()

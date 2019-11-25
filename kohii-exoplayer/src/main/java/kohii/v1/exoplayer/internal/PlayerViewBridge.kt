@@ -131,7 +131,7 @@ internal class PlayerViewBridge(
       this.lastSeenTrackGroupArray = null
       this.inErrorState = false
       if (value == null) {
-        field!!.also {
+        requireNotNull(field).also {
           // 'field' must be not null here
           it.player = null
           it.setErrorMessageProvider(null)
@@ -224,12 +224,13 @@ internal class PlayerViewBridge(
     this.playbackInfo = playbackInfo
   }
 
-  override var parameters: PlaybackParameters
+  /* override var parameters: PlaybackParameters
     get() = _playbackParams
     set(value) {
       _playbackParams = value
       player?.playbackParameters = value
     }
+   */
 
   override var playbackInfo: PlaybackInfo
     get() {

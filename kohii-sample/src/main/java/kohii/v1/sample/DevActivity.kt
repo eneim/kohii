@@ -18,32 +18,17 @@ package kohii.v1.sample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import kohii.v1.exoplayer.Kohii
-import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BackPressConsumer
-import kotlinx.android.synthetic.main.activity_debug.fragmentContainer
-import kotlinx.android.synthetic.main.activity_debug.playerView1
-import kotlinx.android.synthetic.main.activity_debug.playerView2
 
 class DevActivity : AppCompatActivity() {
+
+  companion object {
+    const val videoUrl = "https://content.jwplatform.com/videos/Cl6EVHgQ-oQOe5Prq.mp4"
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_debug)
-    val kohii = Kohii[this]
-    kohii.register(this)
-        .attach(fragmentContainer)
-
-    val tag = assetVideoUri
-    kohii.setUp(assetVideoUri) {
-      this.tag = tag
-    }
-        .bind(playerView1)
-    kohii.setUp(assetVideoUri) {
-      this.tag = tag
-    }
-        .bind(playerView2)
-    kohii.cancel(playerView2)
   }
 
   override fun onBackPressed() {

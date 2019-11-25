@@ -112,8 +112,10 @@ dependencies {
   implementation fileTree(include: ['*.jar'], dir: 'libs')
   implementation project(':kohii-core')
   implementation project(':kohii-exoplayer')
+  implementation project(':kohii-androidx')
 
   implementation Libs.ExoPlayer.all
+  implementation Libs.AndroidX.Media.widget
 
   implementation Libs.Kotlin.stdlibJdk8
   // implementation Libs.Kotlin.reflect

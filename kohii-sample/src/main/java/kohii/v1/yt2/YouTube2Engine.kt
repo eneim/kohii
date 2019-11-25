@@ -22,12 +22,15 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFram
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.Engine
 import kohii.v1.core.Group
+import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.core.RecycledRendererProvider
 
 class YouTube2Engine(
-  context: Context
-) : Engine<YouTubePlayerView>(context, YouTube2PlayableCreator()) {
+  master: Master
+) : Engine<YouTubePlayerView>(master, YouTube2PlayableCreator(master)) {
+
+  constructor(context: Context) : this(Master[context])
 
   override fun inject(group: Group) {
     group.registerRendererProvider(

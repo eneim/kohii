@@ -18,7 +18,8 @@ package kohii.v1.core
 
 enum class MemoryMode {
   /**
-   * In AUTO mode, Kohii will judge the preferred memory situation using [preferredMemoryMode] method.
+   * In AUTO mode, Kohii will judge the preferred memory situation using [Master.preferredMemoryMode]
+   * method.
    */
   AUTO,
 
@@ -35,22 +36,8 @@ enum class MemoryMode {
   NORMAL,
 
   /**
-
-  ▒▒▒▒▒▒▒▒▄▄▄▄▄▄▄▄▒▒▒▒▒▒▒▒
-  ▒▒▒▒▒▄█▀▀░░░░░░▀▀█▄▒▒▒▒▒
-  ▒▒▒▄█▀▄██▄░░░░░░░░▀█▄▒▒▒
-  ▒▒█▀░▀░░▄▀░░░░▄▀▀▀▀░▀█▒▒
-  ▒█▀░░░░███░░░░▄█▄░░░░▀█▒
-  ▒█░░░░░░▀░░░░░▀█▀░░░░░█▒
-  ▒█░░░░░░░░░░░░░░░░░░░░█▒
-  ▒█░░██▄░░▀▀▀▀▄▄░░░░░░░█▒
-  ▒▀█░█░█░░░▄▄▄▄▄░░░░░░█▀▒
-  ▒▒▀█▀░▀▀▀▀░▄▄▄▀░░░░▄█▀▒▒
-  ▒▒▒█░░░░░░▀█░░░░░▄█▀▒▒▒▒
-  ▒▒▒█▄░░░░░▀█▄▄▄█▀▀▒▒▒▒▒▒
-  ▒▒▒▒▀▀▀▀▀▀▀▒▒▒▒▒▒▒▒▒▒▒▒▒
-
-  In BALANCED mode, the release behavior is the same with 'NORMAL' mode, but unselected Playables/Playbacks will not be reset.
+   * In BALANCED mode, the release behavior is the same with 'NORMAL' mode, but unselected
+   * Playables/Playbacks will not be reset.
    */
   BALANCED,
 

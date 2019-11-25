@@ -16,7 +16,6 @@
 
 package kohii.v1.yt2
 
-import com.google.android.exoplayer2.PlaybackParameters
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState
@@ -37,7 +36,7 @@ import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 import kotlin.properties.Delegates
 
-class YouTubeBridge(
+class YouTube2Bridge(
   private val media: Media
 ) : AbstractBridge<YouTubePlayerView>() {
 
@@ -125,7 +124,7 @@ class YouTubeBridge(
     }
   }
 
-  override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
+  // override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
   override var repeatMode: Int by Delegates.observable(
       Common.REPEAT_MODE_OFF,

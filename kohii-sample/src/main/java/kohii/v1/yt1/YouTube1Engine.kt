@@ -19,10 +19,13 @@ package kohii.v1.yt1
 import android.content.Context
 import kohii.v1.core.Engine
 import kohii.v1.core.Group
+import kohii.v1.core.Master
 
 class YouTube1Engine(
-  context: Context
-) : Engine<YouTubePlayerFragment>(context, YouTube1PlayableCreator()) {
+  master: Master
+) : Engine<YouTubePlayerFragment>(master, YouTube1PlayableCreator(master)) {
+
+  constructor(context: Context) : this(Master[context])
 
   override fun inject(group: Group) {
     group.registerRendererProvider(

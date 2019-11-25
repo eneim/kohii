@@ -55,16 +55,14 @@ android {
   }
 }
 
-afterEvaluate {
-  dokka {
+afterEvaluate { project ->
+  project.tasks.dokka {
     outputDirectory = "$rootDir/docs/api"
     outputFormat = "gfm"
 
-    configuration {
-      externalDocumentationLink {
-        url = new URL("file://$rootDir/docs/api/kohii-core/")
-        packageListUrl = new URL("file://$rootDir/docs/api/kohii-core/package-list")
-      }
+    externalDocumentationLink {
+      url = new URL("file://$rootDir/docs/api/kohii-core/")
+      packageListUrl = new URL("file://$rootDir/docs/api/kohii-core/package-list")
     }
   }
 }

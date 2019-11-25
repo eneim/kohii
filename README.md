@@ -1,4 +1,6 @@
-# kohii (コーヒー、[[ko̞ːçiː]](https://en.wiktionary.org/wiki/%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC))
+# Kohii
+
+## kohii (コーヒー、[[ko̞ːçiː]](https://en.wiktionary.org/wiki/%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC))
 
 <img src="art/kohii.png?raw=true" alt="Kohii" width="384">
 
@@ -17,9 +19,9 @@ Kohii is a high level Video playback library, built from the experience creating
 
 ## Demo
 
-|Automatic playback|Background playback|Playback continuity (Seamless fullscreen)|
-| :--- | :--- | :--- |
-|<img src="./art/kohii_demo_2.gif" width="180" height="390"/>|<img src="./art/kohii_demo_1.gif" width="180" height="390"/>|<img src="./art/kohii_demo_3.gif" width="390" height="390"/>|
+|Automatic playback|Playback continuity (Seamless fullscreen)|
+| :--- | :--- |
+|<img src="./art/kohii_demo_2.gif" width="216" height="468"/>|<img src="./art/kohii_demo_3.gif" width="468" height="468"/>|
 
 ## Setup
 

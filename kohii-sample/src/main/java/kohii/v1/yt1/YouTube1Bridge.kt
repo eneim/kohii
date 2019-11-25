@@ -20,7 +20,6 @@ import android.os.DeadObjectException
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
 import com.google.android.youtube.player.YouTubePlayer.ErrorReason
@@ -37,7 +36,7 @@ import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 import kotlin.properties.Delegates
 
-class YouTubeBridge(
+internal class YouTube1Bridge(
   private val media: Media
 ) : AbstractBridge<YouTubePlayerFragment>(),
     PlaybackEventListener,
@@ -49,7 +48,7 @@ class YouTubeBridge(
       player: YouTubePlayer?,
       restored: Boolean
     ) {
-      this@YouTubeBridge.player = player
+      this@YouTube1Bridge.player = player
       // Start playback
       if (_playWhenReady && allowedToPlay()) {
         if (restored) {
@@ -178,7 +177,7 @@ class YouTubeBridge(
     return this.player != null && this._playWhenReady
   }
 
-  override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
+  // override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
   override fun reset(resetPlayer: Boolean) {
     this.pause()

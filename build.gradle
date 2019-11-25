@@ -77,14 +77,32 @@ allprojects {
     }
   }
 
-  dokka {
-    outputFormat = "gfm"
-    outputDirectory = "$buildDir/dokka"
+  afterEvaluate { p ->
+    p.tasks.dokka {
+      jdkVersion = 8
+      reportUndocumented = false
+      skipDeprecated = true
+      skipEmptyPackages = true
+
+      externalDocumentationLink {
+        url = new URL("https://developer.android.com/reference/")
+        packageListUrl = new URL("https://developer.android.com/reference/androidx/package-list")
+      }
+
+      externalDocumentationLink {
+        url = new URL("https://exoplayer.dev/doc/reference/")
+        packageListUrl = new URL("https://exoplayer.dev/doc/reference/package-list")
+      }
+    }
   }
 }
 
 task clean(type: Delete) {
   delete rootProject.buildDir
+}
+
+tasks.wrapper {
+  distributionType = Wrapper.DistributionType.ALL
 }
 
 ext {
