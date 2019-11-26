@@ -62,7 +62,7 @@ class ViewPager2WithRecyclerViewFragmentsFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this)
-        .attach(viewPager)
+        .addBucket(viewPager)
 
     viewPager.apply {
       adapter = VideoPagerAdapter(this@ViewPager2WithRecyclerViewFragmentsFragment)

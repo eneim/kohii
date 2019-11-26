@@ -154,7 +154,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   )
 
   override val playerState: Int
-    get() = bridge.playbackState
+    get() = bridge.playerState
 
   // Playback.Callback
 

@@ -53,7 +53,7 @@ class MixMediaFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this].also {
       it.register(this)
-          .attach(recyclerView)
+          .addBucket(recyclerView)
     }
 
     recyclerView.also {

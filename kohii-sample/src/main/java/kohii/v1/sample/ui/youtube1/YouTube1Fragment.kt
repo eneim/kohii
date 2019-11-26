@@ -50,7 +50,7 @@ class YouTube1Fragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val engine = YouTube1Engine(requireContext())
     engine.register(this)
-        .attach(recyclerView)
+        .addBucket(recyclerView)
 
     val adapter = YouTubeItemsAdapter(engine)
     recyclerView.adapter = adapter

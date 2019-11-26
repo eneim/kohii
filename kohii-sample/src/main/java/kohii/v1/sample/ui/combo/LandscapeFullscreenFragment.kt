@@ -112,7 +112,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
 
     val kohii = Kohii[this]
     val manager = kohii.register(this)
-        .attach(playerContainer)
+        .addBucket(playerContainer)
     rebinder.with {
       controller = DefaultControlDispatcher(manager, playerView)
     }

@@ -88,7 +88,7 @@ internal class PlayerViewBridge(
 
   internal var player: Player? = null
 
-  override val playbackState: Int
+  override val playerState: Int
     get() = player?.playbackState ?: Common.STATE_IDLE
 
   override var videoSize: VideoSize by Delegates.observable(

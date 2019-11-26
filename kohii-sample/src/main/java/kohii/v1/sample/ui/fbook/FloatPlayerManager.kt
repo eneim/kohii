@@ -132,7 +132,7 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
           floatView.setOnTouchListener(floatViewOnTouchListener)
           windowManager.addView(floatView, floatParams)
           kohii.register(activity)
-              .attach(container)
+              .addBucket(container)
           callback(playerView)
         }
       }

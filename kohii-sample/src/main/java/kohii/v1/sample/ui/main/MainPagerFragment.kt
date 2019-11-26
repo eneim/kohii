@@ -65,7 +65,7 @@ class MainPagerFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this, LOW)
-        .attach(viewPager)
+        .addBucket(viewPager)
 
     this.viewPager.also {
       it.adapter = PagerAdapter(childFragmentManager, getApp().demoItems)

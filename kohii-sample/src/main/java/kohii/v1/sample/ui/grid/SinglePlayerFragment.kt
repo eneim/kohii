@@ -77,7 +77,7 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     playerContainer.setAspectRatio(16 / 9F)
     kohii = Kohii[this]
     kohii.register(this)
-        .attach(playerContainer)
+        .addBucket(playerContainer)
   }
 
   override fun onStart() {

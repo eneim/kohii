@@ -11,30 +11,14 @@ Kohii provides following features by default:
 - [x] Full automatic playback control using ExoPlayer as playback framework.
 - [x] Semi manual playback control using ExoPlayer as playback framework. User can play/pause specific player on demand, Kohii will smartly pause the Video if it is not visible anymore, and restore the previous state later if needed.
 - [x] Full manual playback control using ExoPlayer as playback framework. User can play/pause specific player on demand, Kohii does not touch anything, but take care of cleaning resource if needed (eg: release Player instances after user closes the Application).
-- [x] Preserving *playback continuity* across configuration changes, lifecycle changes (eg: from Activity to Activity) using ExoPlayer as playback framework. This means: rotating the device, switching to multi-windows mode or openning full-screen player doesn't trigger pausing/resuming the playback. While the visual part will be rerendered (due to View recreation), the audio part is kept smoothly, provide continouous playback experience.
-- [x] Reusing PlayerView instances for many players. Thinking that playing thousands of videos in sequence just using ***one PlayerView instance***.
+- [x] Preserve *playback continuity* across configuration changes, lifecycle changes (eg: from Activity to Activity) using ExoPlayer as playback framework. This means: rotating the device, switching to multi-windows mode or openning full-screen player doesn\'t trigger pausing/resuming the playback. While the visual part will be rerendered (due to View recreation), the audio part is kept smoothly, provide continouous playback experience.
+- [x] Reuse PlayerView instances for many players. Thinking that playing thousands of videos in sequence just using ***one PlayerView instance***.
 - [x] Scoped volume configuration. This means: you can set volume value of one Video, and apply the same for others, depending on the scope you want. The scope can be just that Video, or all Videos *in the same RecyclerView/ScrollView*, or all Videos *in the same Activity*.
 - [x] Rich features demo app: demo and guidelines for creating various UX/UI patterns, from simple to complicated, including Picture-In-Picture playback or Scroll-To-Mini-Player UX just like YouTube app.
 
 For advance developers
 
 - **Kohii** API is highly abstracted. You can easily extend it to support non-ExoPlayer API, or more complicated playback API. There is demo on how to use [this YouTube player library](https://github.com/PierfrancescoSoffritti/android-youtube-player) in Kohii.
-
-## What?
-
-Lately, I'm spending a lot of time on my latest library: [Kohii](https://github.com/eneim/kohii). In this post, I would like to expose more about it.
-
-Kohii is a library that:
-
-- Is built for Android whose version is 4.4 (SDK 19) and up.
-- Is built on top of ExoPlayer, support RecyclerView, NestedScrollView, ViewPager etc out of the box.
-- Provides easy to use Video playback functionalities, including automatic playback, playback continuity across config change, lifecycle change and more.
-
-Many libraries addresses the same problem, including my other library [toro](https://github.com/eneim/toro), but none of them suffices my requirement.
-
-In older posts: [this one](/2019/02/10/droidkaigi-2019-part-1/), [this one](/2019/02/10/droidkaigi-2019-part-2/) and [this one](/2019/02/10/droidkaigi-2019-part-3/), I have discussed about the need for something that combines *ExoPlayer* and *RecyclerView*, the challenge to keep the **playback continuity** and propose a design that could do the job.
-
-**Kohii** is my implementation of that design. In the remaining of this series, I will cover the idea behind **Kohii**, its main features and how to extend it.
 
 ## The idea of Playback Continuity
 
@@ -51,14 +35,14 @@ All of these scenarios must share some common behaviors:
 
 #### 0. Rich feature demo application
 
-As always, I try to cover as much of the cappabilities of the library as possible in the demo app. By that, you can have the recommended ways to implement many patterns using **Kohii**, including:
+As always, I try to cover as much of the capabilities of the library as possible in the demo app. By that, you can have the recommended ways to implement many patterns using **Kohii**, including:
 
 - Using Kohii in RecyclerView only (the simplest pattern).
 - Using Kohii in *NestedScrollView* only (yes, **Kohii** does not just support RecyclerView, it works with any *ViewGroup* you can imagine of, or, most of them).
 - Using Kohii in *ViewPager* only, where each page is a *Fragment* (this is one of the thing that **toro** could not support well, so Kohii is here for the rescue).
-- Using Kohii in Master/Detail UI composition (this is a new pattern I'm experimenting with, and it needs time to be battle proof, and it needs your feedbacks to be mature <3).
+- Using Kohii in Master/Detail UI composition (this is a new pattern I\'m experimenting with, and it needs time to be battle proof, and it needs your feedback to be mature <3).
 - Using Kohii in RecyclerView, with 'click-to-fullscreen' feature like YouTube UI. This is the game changer, my **selling point for Kohii** <3. Implementation of it is also discussed in [this post](/2019/02/10/droidkaigi-2019-part-4/).
-- Using Kohii in RecyclerView, with 'click-to-fullscreen' feature that open the fullscreen playback in new **Activity**, *without pausing/resuming the playback*. So starting new Activity for fullscreen player will not interupt your playback UX, sounds good huh?
+- Using Kohii in RecyclerView, with 'click-to-fullscreen' feature that open the fullscreen playback in new **Activity**, *without pausing/resuming the playback*. So starting new Activity for fullscreen player will not interrupt your playback UX, sounds good huh?
 - Using Kohii in RecyclerView, with 'click-to-fullscreen' feature that open the fullscreen playback in new **Fragment**, because *single Activity* is the new trend. To make it more fun, I also add the *fragment transition learnt from [here](https://github.com/google/android-transition-examples/tree/master/GridToPager)*.
 - And more to come, depending on the feedback I got, request I receive and time I have to spend.
 
@@ -111,7 +95,7 @@ kohii.register(this, arrayOf(recyclerView)) // register the RecyclerView to be a
 kohii.setUp(videoUrl).bind(playerViewContainer) // playerViewContainer is a ViewGroup to put PlayerView instance on demand.
 ```
 
-Just changing from using a **PlayerView** instance directly to using a *container*, you are done. To help you understand this feature, let's talk about the *why* real quick: *why reusing PlayerView instance is that cool?*.
+Just changing from using a **PlayerView** instance directly to using a *container*, you are done. To help you understand this feature, let\'s talk about the *why* real quick: *why reusing PlayerView instance is that cool?*.
 
 If you take a look on [the issue I mention above]((https://github.com/google/ExoPlayer/issues/867)), go from bottom-up because it is a long issue to read through, you can see the discussion about reusing stuff in the *ExoPlayer & RecyclerView combination*. Yes, it is important to reuse as much as possible, to keep a smooth user experience, as well as to save memory.
 

@@ -63,7 +63,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
     playerContainer.setAspectRatio(16 / 9F)
     val kohii = Kohii[this]
     kohii.register(this)
-        .attach(playerContainer)
+        .addBucket(playerContainer)
 
     kohii.setUp(assetVideoUri) {
       tag = "${javaClass.name}::$videoUrl"

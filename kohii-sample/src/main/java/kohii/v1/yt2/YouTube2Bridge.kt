@@ -132,7 +132,7 @@ internal class YouTube2Bridge(
       Common.REPEAT_MODE_OFF,
       onChange = { _, _, _ -> /* youtube library doesn't have looping support */ })
 
-  override val playbackState: Int
+  override val playerState: Int
     get() = mapState(tracker.state)
 
   override fun isPlaying(): Boolean {

@@ -50,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B0"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B1"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -226,7 +226,7 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-4"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-5"
     val okio = "com.squareup.okio:okio:2.4.1"
   }
 

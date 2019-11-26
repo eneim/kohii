@@ -9,7 +9,7 @@
     - [x] Callbacks for **Kohii** components status.
     - [x] Callbacks for playback status.
     - [x] (Nice to have) *Opinionated callbacks* that tell client when it *should show/hide thumbnail*.
-        - ``beforePlay()`` and ``afterPause()``
+        - Introduce ``Playback.ArtworkHintListener``
 
 - [x] Handle configuration change
     - [x] Retain playback on configuration changes.

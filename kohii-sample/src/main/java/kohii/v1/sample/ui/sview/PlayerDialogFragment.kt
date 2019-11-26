@@ -88,7 +88,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
     kohii = Kohii[this].also {
       it.register(this)
-          .attach(playerContainer)
+          .addBucket(playerContainer)
     }
   }
 

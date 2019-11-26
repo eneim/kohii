@@ -21,7 +21,7 @@ import kohii.v1.media.VolumeInfo
 
 interface Bridge<RENDERER : Any> {
 
-  val playbackState: Int
+  val playerState: Int
 
   var renderer: RENDERER?
 

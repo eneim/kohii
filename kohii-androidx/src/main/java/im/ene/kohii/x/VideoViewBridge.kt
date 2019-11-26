@@ -51,7 +51,7 @@ internal class VideoViewBridge(
       if (player != null) field?.setPlayer(player)
     }
 
-  override val playbackState: Int
+  override val playerState: Int
     get() = this.player?.playerState ?: SessionPlayer.PLAYER_STATE_IDLE
 
   override fun isPlaying(): Boolean {

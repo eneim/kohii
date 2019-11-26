@@ -59,7 +59,7 @@ class MasterDetailFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     kohii.register(this)
-        .attach(container)
+        .addBucket(container)
 
     if (savedInstanceState == null) {
       childFragmentManager.commit {

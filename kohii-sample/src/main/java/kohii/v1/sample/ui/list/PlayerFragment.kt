@@ -91,7 +91,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
 
     val kohii = Kohii[this].also {
       it.register(this)
-          .attach(playerContainer)
+          .addBucket(playerContainer)
     }
 
     rebinder.bind(kohii, playerView) {

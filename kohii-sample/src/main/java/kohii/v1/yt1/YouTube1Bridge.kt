@@ -133,7 +133,7 @@ internal class YouTube1Bridge(
 
   override var volumeInfo: VolumeInfo = VolumeInfo()
 
-  override val playbackState: Int
+  override val playerState: Int
     get() = _playbackState
 
   override var videoSize: VideoSize = VideoSize.ORIGINAL

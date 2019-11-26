@@ -65,7 +65,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     kohii.register(this)
-        .attach(scrollView)
+        .addBucket(scrollView)
   }
 
   override fun onActivityCreated(savedInstanceState: Bundle?) {

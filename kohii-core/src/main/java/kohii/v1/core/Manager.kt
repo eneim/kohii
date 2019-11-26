@@ -135,7 +135,7 @@ class Manager(
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
     buckets.toMutableList()
-        .onEach { removeBucket(it.root) }
+        .onEach { onRemoveBucket(it.root) }
         .clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
@@ -186,7 +186,7 @@ class Manager(
     if (playback != null) refresh()
   }
 
-  private fun addBucket(view: View) {
+  private fun onAddBucket(view: View) {
     val existing = buckets.find { it.root === view }
     if (existing != null) return
     val bucket = Bucket[this@Manager, view]
@@ -202,7 +202,7 @@ class Manager(
     }
   }
 
-  private fun removeBucket(view: View) {
+  private fun onRemoveBucket(view: View) {
     buckets.firstOrNull { it.root === view && buckets.remove(it) }
         ?.onRemoved()
   }
@@ -292,13 +292,13 @@ class Manager(
 
   // Public APIs
 
-  fun attach(vararg views: View): Manager {
-    views.forEach { this.addBucket(it) }
+  fun addBucket(vararg views: View): Manager {
+    views.forEach { this.onAddBucket(it) }
     return this
   }
 
-  fun detach(vararg views: View): Manager {
-    views.forEach { this.removeBucket(it) }
+  fun removeBucket(vararg views: View): Manager {
+    views.forEach { this.onRemoveBucket(it) }
     return this
   }
 
