@@ -195,9 +195,7 @@ internal class YouTube1Bridge(
 
   override fun seekTo(positionMs: Long) {
     val temp = this.playbackInfo
-    _playbackInfo = PlaybackInfo(
-        temp.resumeWindow, temp.resumePosition, this.volumeInfo
-    )
+    _playbackInfo = PlaybackInfo(temp.resumeWindow, temp.resumePosition)
   }
 
   override var repeatMode = Common.REPEAT_MODE_OFF

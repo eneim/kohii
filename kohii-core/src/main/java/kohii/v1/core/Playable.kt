@@ -65,7 +65,6 @@ abstract class Playable(
 
   internal abstract val playerState: Int
 
-  // TODO optimize this with VolumeInfo. Consider to split the 2.
   internal abstract var playbackInfo: PlaybackInfo
 
   abstract fun onPrepare(loadSource: Boolean)

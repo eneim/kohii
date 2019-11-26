@@ -25,14 +25,12 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class PlaybackInfo(
   var resumeWindow: Int,
-  var resumePosition: Long,
-  var volumeInfo: VolumeInfo
+  var resumePosition: Long
 ) : Parcelable {
 
   constructor() : this(
       INDEX_UNSET,
-      TIME_UNSET,
-      VolumeInfo.SCRAP
+      TIME_UNSET
   )
 
   companion object {

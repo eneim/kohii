@@ -92,7 +92,7 @@ internal class YouTube2Bridge(
   }
 
   private var _playbackInfo: PlaybackInfo by Delegates.observable(
-      PlaybackInfo(0, 0, VolumeInfo()),
+      PlaybackInfo(0, 0),
       onChange = { _, oldVal, newVal ->
         // Note: we ignore volume setting here.
         if (newVal.resumePosition != oldVal.resumePosition) {
@@ -122,9 +122,7 @@ internal class YouTube2Bridge(
 
   private fun updatePlaybackInfo(player: YouTubePlayer?) {
     if (player != null) {
-      _playbackInfo = PlaybackInfo(
-          0, tracker.currentSecond.toLong(), _playbackInfo.volumeInfo
-      )
+      _playbackInfo = PlaybackInfo(0, tracker.currentSecond.toLong())
     }
   }
 
