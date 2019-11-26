@@ -88,6 +88,10 @@ abstract class AbstractPlayable<RENDERER : Any>(
     bridge.release()
   }
 
+  override fun isPlaying(): Boolean {
+    return bridge.isPlaying()
+  }
+
   private val memoryMode: MemoryMode
     get() = (manager as? Manager)?.memoryMode ?: LOW
 
@@ -174,7 +178,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun onAdded(playback: Playback) {
     "Playable#onAdded $playback, $this".logInfo()
     bridge.repeatMode = playback.config.repeatMode
-    bridge.setVolumeInfo(playback.volumeInfo)
+    bridge.volumeInfo = playback.volumeInfo
   }
 
   override fun onRemoved(playback: Playback) {
@@ -240,7 +244,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     to: VolumeInfo
   ) {
     "Playable#onVolumeInfoChanged $playback, $from --> $to, $this".logInfo()
-    bridge.setVolumeInfo(to)
+    if (from != to) bridge.volumeInfo = to
   }
 
   override var playbackInfo: PlaybackInfo

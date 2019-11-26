@@ -37,7 +37,7 @@ import kotlin.properties.Delegates
 class VideoItemHolder(
   parent: ViewGroup,
   private val kohii: Kohii
-) : BaseViewHolder(parent, R.layout.holder_video_text_overlay), Playback.StateListener {
+) : BaseViewHolder(parent, R.layout.holder_video_text_overlay) {
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
@@ -79,16 +79,10 @@ class VideoItemHolder(
 
           kohii.setUp(newVal.file) {
             tag = requireNotNull(tagKey)
-            callbacks += object : Playback.Callback {
-              override fun onRemoved(playback: Playback) {
-                playback.removeStateListener(this@VideoItemHolder)
-              }
-            }
           }
               .bind(playerViewContainer) { playback ->
                 this@VideoItemHolder.playback = playback
                 volumeInfo?.let { kohii.applyVolumeInfo(it, playback, Scope.PLAYBACK) }
-                playback.addStateListener(this)
               }
         } else {
           this.playback = null
@@ -119,17 +113,5 @@ class VideoItemHolder(
   override fun onRecycled(success: Boolean) {
     this.rawData = null
     this.volumeInfo = null
-  }
-
-  override fun beforePlay(playback: Playback) {
-    videoImage.isVisible = false
-  }
-
-  override fun afterPause(playback: Playback) {
-    videoImage.isVisible = true
-  }
-
-  override fun onEnded(playback: Playback) {
-    videoImage.isVisible = true
   }
 }

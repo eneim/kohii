@@ -81,6 +81,8 @@ abstract class Playable(
 
   abstract fun onRelease()
 
+  abstract fun isPlaying(): Boolean
+
   abstract fun onUnbind(playback: Playback)
 
   /**

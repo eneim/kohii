@@ -23,8 +23,6 @@ import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.Engine
-import kohii.v1.core.Playback
-import kohii.v1.core.Playback.Callback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
@@ -101,15 +99,10 @@ class YouTubeItemsAdapter(
       val videoId = item?.id ?: "EOjq4OIWKqM"
       engine.setUp(videoId) {
         tag = videoId
-        threshold = 0.99F
-        callbacks += object : Callback {
-          override fun onRemoved(playback: Playback) {
-            playback.removeStateListener(holder)
-          }
-        }
+        threshold = 0.999F
+        artworkHintListener = holder
       }
           .bind(holder.container) {
-            it.addStateListener(holder)
             holder.playback = it
           }
     }

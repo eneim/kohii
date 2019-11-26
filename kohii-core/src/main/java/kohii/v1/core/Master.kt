@@ -424,7 +424,7 @@ class Master private constructor(context: Context) : PlayableManager {
     val controller = playable.playback?.config?.controller
     if (playable.tag !== NO_TAG && controller != null) {
       requireNotNull(playable.playback).also {
-        if (it.token.shouldPrepare()) playable.onReady()
+        if (it.token.shouldPrepare()) playable.onReady() // TODO (2019/11) why we need this line?
         playablesPendingStates[playable.tag] = Common.PENDING_PLAY
         if (!controller.kohiiCanPause()) playablesStartedByClient.add(playable.tag)
         it.manager.refresh()
@@ -597,6 +597,7 @@ class Master private constructor(context: Context) : PlayableManager {
           repeatMode = options.repeatMode,
           // TODO 2019/11/18 temporarily disable manual playback. Will revise the logic.
           // controller = options.controller,
+          artworkHintListener = options.artworkHintListener,
           callbacks = options.callbacks
       )
 

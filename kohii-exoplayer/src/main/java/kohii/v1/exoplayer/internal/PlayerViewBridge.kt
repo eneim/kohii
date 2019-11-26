@@ -89,7 +89,7 @@ internal class PlayerViewBridge(
   internal var player: Player? = null
 
   override val playbackState: Int
-    get() = player?.playbackState ?: -1
+    get() = player?.playbackState ?: Common.STATE_IDLE
 
   override var videoSize: VideoSize by Delegates.observable(
       VideoSize.ORIGINAL,
@@ -204,18 +204,14 @@ internal class PlayerViewBridge(
     } ?: false
   }
 
-  override val volumeInfo: VolumeInfo
-    get() = this.playbackInfo.volumeInfo // this will first update the PlaybackInfo via getter.
-
-  override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    val current = this.playbackInfo
-    val changed = current.volumeInfo != volumeInfo // Compare value.
-    if (changed) {
-      current.volumeInfo = volumeInfo
-      this.setPlaybackInfo(current, true)
+  override var volumeInfo: VolumeInfo = this.playbackInfo.volumeInfo
+    set(value) {
+      if (field == value) return
+      val info = this.playbackInfo
+      info.volumeInfo = value
+      this.setPlaybackInfo(info, true)
+      field = value
     }
-    return changed
-  }
 
   override fun seekTo(positionMs: Long) {
     val playbackInfo = this.playbackInfo
@@ -223,14 +219,6 @@ internal class PlayerViewBridge(
     playbackInfo.resumeWindow = player?.currentWindowIndex ?: playbackInfo.resumeWindow
     this.playbackInfo = playbackInfo
   }
-
-  /* override var parameters: PlaybackParameters
-    get() = _playbackParams
-    set(value) {
-      _playbackParams = value
-      player?.playbackParameters = value
-    }
-   */
 
   override var playbackInfo: PlaybackInfo
     get() {

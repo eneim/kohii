@@ -146,7 +146,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     rebinder
         .with {
           controller = DefaultControlDispatcher(manager, playerView)
-          callbacks = arrayOf(this@BigPlayerDialog)
+          callbacks += this@BigPlayerDialog
         }
         .bind(kohii, playerView) {
           it.addStateListener(this@BigPlayerDialog)

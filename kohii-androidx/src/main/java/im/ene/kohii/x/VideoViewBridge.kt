@@ -73,7 +73,7 @@ internal class VideoViewBridge(
 
   override var playbackInfo: PlaybackInfo = PlaybackInfo()
 
-  override val volumeInfo: VolumeInfo = VolumeInfo()
+  override var volumeInfo: VolumeInfo = VolumeInfo()
 
   override fun prepare(loadSource: Boolean) {
     if (loadSource) ready()
@@ -105,11 +105,6 @@ internal class VideoViewBridge(
   override fun release() {
     player?.close()
     player = null
-  }
-
-  override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    this.volumeInfo.setTo(volumeInfo)
-    return true
   }
 
   override var videoSize: VideoSize

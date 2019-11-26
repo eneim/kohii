@@ -82,7 +82,7 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
 
   override fun onStart() {
     super.onStart()
-    rebinder.with { callbacks = arrayOf(this@SinglePlayerFragment) }
+    rebinder.with { callbacks += this@SinglePlayerFragment }
         .bind(kohii, playerView) {
           callback?.onShown(rebinder)
           kohii.stick(it)

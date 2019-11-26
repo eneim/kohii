@@ -77,6 +77,9 @@ internal class YouTube1Bridge(
           to.setManageAudioFocus(true)
           to.setPlayerStyle(MINIMAL)
           to.setShowFullscreenButton(false)
+        } else {
+          _playWhenReady = false
+          _playbackState = Common.STATE_IDLE
         }
       }
   )
@@ -86,7 +89,7 @@ internal class YouTube1Bridge(
       onChange = { _, oldVal, newVal ->
         if (oldVal == newVal) return@observable
         Log.i("Kohii::YT1", "state change: $newVal")
-        // this.eventListeners.onPlayerStateChanged(this._playWhenReady, newVal)
+        this.eventListeners.onPlayerStateChanged(this._playWhenReady, newVal)
       })
 
   private var _playWhenReady: Boolean = false
@@ -128,8 +131,7 @@ internal class YouTube1Bridge(
       _playbackInfo = value
     }
 
-  override val volumeInfo: VolumeInfo =
-    VolumeInfo()
+  override var volumeInfo: VolumeInfo = VolumeInfo()
 
   override val playbackState: Int
     get() = _playbackState
@@ -174,13 +176,14 @@ internal class YouTube1Bridge(
   }
 
   override fun isPlaying(): Boolean {
-    return this.player != null && this._playWhenReady
+    return this.player != null && this._playWhenReady && this._playbackState > 1
   }
 
   // override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
   override fun reset(resetPlayer: Boolean) {
     this.pause()
+    _playWhenReady = false
     _playbackState = Common.STATE_IDLE
     _playbackInfo = PlaybackInfo()
   }
@@ -207,10 +210,6 @@ internal class YouTube1Bridge(
     // no-ops
   }
 
-  override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    return false
-  }
-
   // [BEGIN] PlaybackEventListener
 
   override fun onSeekTo(newPositionMillis: Int) {
@@ -234,7 +233,6 @@ internal class YouTube1Bridge(
 
   override fun onStopped() {
     Log.i("Kohii::YT1", "Event: onStopped")
-    _playbackState = Common.STATE_ENDED
   }
 
   // [END] PlaybackEventListener
@@ -266,6 +264,7 @@ internal class YouTube1Bridge(
 
   override fun onError(reason: ErrorReason?) {
     Log.w("Kohii::YT1", "State: onError $reason")
+    _playbackState = Common.STATE_IDLE
     val error = RuntimeException(reason?.name ?: "Unknown error.")
     this.errorListeners.onError(error)
   }
@@ -281,6 +280,7 @@ internal class YouTube1Bridge(
   override fun onDestroy(owner: LifecycleOwner) {
     updatePlaybackInfo()
     player?.performRelease()
+    _playWhenReady = false
     _playbackState = Common.STATE_IDLE
     owner.lifecycle.removeObserver(this)
   }

@@ -67,10 +67,9 @@ internal class ItemsAdapter(
       kohii.setUp(assetVideoUri) {
         tag = requireNotNull(videoTag)
         repeatMode = Common.REPEAT_MODE_ONE
+        artworkHintListener = holder
       }
-          .bind(holder.container) {
-            it.addStateListener(holder)
-          }
+          .bind(holder.container)
     } else holder.bind(position)
   }
 

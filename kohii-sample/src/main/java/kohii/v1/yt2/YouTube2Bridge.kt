@@ -16,7 +16,7 @@
 
 package kohii.v1.yt2
 
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import android.util.Log
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState.BUFFERING
@@ -36,9 +36,19 @@ import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 import kotlin.properties.Delegates
 
-class YouTube2Bridge(
+internal class YouTube2Bridge(
   private val media: Media
 ) : AbstractBridge<YouTubePlayerView>() {
+
+  internal fun mapState(original: PlayerState): Int {
+    return when (original) {
+      PLAYING -> Common.STATE_READY
+      BUFFERING -> Common.STATE_BUFFERING
+      ENDED -> Common.STATE_ENDED
+      PAUSED -> Common.STATE_READY
+      else -> Common.STATE_IDLE
+    }
+  }
 
   private var player: YouTubePlayer? by Delegates.observable<YouTubePlayer?>(
       initialValue = null,
@@ -58,23 +68,19 @@ class YouTube2Bridge(
       }
   )
 
-  fun mapState(original: PlayerState): Int {
-    return when (original) {
-      PLAYING -> Common.STATE_READY
-      BUFFERING -> Common.STATE_BUFFERING
-      ENDED -> Common.STATE_ENDED
-      PAUSED -> Common.STATE_READY
-      else -> Common.STATE_IDLE
-    }
-  }
-
-  private val tracker = PlayerTracker()
+  private val tracker = LocalPlayerTracker()
   private val playerListener = object : AbstractYouTubePlayerListener() {
     override fun onStateChange(
       youTubePlayer: YouTubePlayer,
       state: PlayerState
     ) {
-      eventListeners.onPlayerStateChanged(state === PLAYING, mapState(state))
+      tracker.state = state
+      val kohiiState = mapState(state)
+      Log.i(
+          "Kohii::Art",
+          "${tracker.videoId}, state: $state ($kohiiState), tracker state: ${tracker.state}"
+      )
+      eventListeners.onPlayerStateChanged(state == PLAYING, kohiiState)
     }
 
     override fun onError(
@@ -86,14 +92,12 @@ class YouTube2Bridge(
   }
 
   private var _playbackInfo: PlaybackInfo by Delegates.observable(
-      PlaybackInfo(
-          0, 0, VolumeInfo()
-      ),
-      onChange = { _, _, _ ->
+      PlaybackInfo(0, 0, VolumeInfo()),
+      onChange = { _, oldVal, newVal ->
         // Note: we ignore volume setting here.
-        // if (newVal.resumePosition != oldVal.resumePosition) {
-        //   player?.seekTo(newVal.resumePosition.toFloat())
-        // }
+        if (newVal.resumePosition != oldVal.resumePosition) {
+          player?.seekTo(newVal.resumePosition.toFloat())
+        }
       }
   )
 
@@ -134,11 +138,10 @@ class YouTube2Bridge(
     get() = mapState(tracker.state)
 
   override fun isPlaying(): Boolean {
-    return tracker.state === PLAYING
+    return tracker.state == PLAYING
   }
 
-  override val volumeInfo: VolumeInfo =
-    VolumeInfo()
+  override var volumeInfo: VolumeInfo = VolumeInfo()
 
   override fun seekTo(positionMs: Long) {
     val playbackInfo = this.playbackInfo
@@ -153,7 +156,7 @@ class YouTube2Bridge(
   }
 
   override fun ready() {
-    // no-ops
+    player?.cueVideo(media.uri.toString(), _playbackInfo.resumePosition.toFloat())
   }
 
   private val startCallback = object : YouTubePlayerCallback {
@@ -195,15 +198,8 @@ class YouTube2Bridge(
     }
   }
 
-  override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    return false
-  }
-
   // Same as YouTubePlayerTracker, but fields are editable
-  internal class PlayerTracker : AbstractYouTubePlayerListener() {
-    /**
-     * @return the player state. A value from [PlayerConstants.PlayerState]
-     */
+  internal class LocalPlayerTracker : AbstractYouTubePlayerListener() {
     var state: PlayerState = UNKNOWN
     var currentSecond: Float = 0f
     var videoDuration: Float = 0f

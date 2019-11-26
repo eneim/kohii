@@ -28,6 +28,10 @@ import kohii.v1.core.Bucket.Companion.BOTH_AXIS
 import kohii.v1.core.Bucket.Companion.HORIZONTAL
 import kohii.v1.core.Bucket.Companion.NONE_AXIS
 import kohii.v1.core.Bucket.Companion.VERTICAL
+import kohii.v1.core.Common.STATE_BUFFERING
+import kohii.v1.core.Common.STATE_ENDED
+import kohii.v1.core.Common.STATE_IDLE
+import kohii.v1.core.Common.STATE_READY
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -104,6 +108,7 @@ abstract class Playback(
     val preload: Boolean = false,
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val controller: Controller? = null,
+    val artworkHintListener: ArtworkHintListener? = null,
     val callbacks: Set<Callback> = emptySet()
   )
 
@@ -144,6 +149,7 @@ abstract class Playback(
 
   private val callbacks = ArrayDeque<Callback>()
   private val listeners = ArrayDeque<StateListener>()
+  private var artworkHintListener: ArtworkHintListener? = null
 
   internal open fun acquireRenderer(): Any? {
     val playable = this.playable
@@ -184,6 +190,7 @@ abstract class Playback(
     "Playback#onAdded $this".logDebug()
     playbackState = STATE_ADDED
     callbacks.forEach { it.onAdded(this) }
+    artworkHintListener = config.artworkHintListener
     bucket.addContainer(this.container)
   }
 
@@ -191,8 +198,10 @@ abstract class Playback(
     "Playback#onRemoved $this".logDebug()
     playbackState = STATE_REMOVED
     bucket.removeContainer(this.container)
+    artworkHintListener = null
     callbacks.onEach { it.onRemoved(this) }
         .clear()
+    listeners.clear()
   }
 
   internal fun onAttached() {
@@ -212,12 +221,18 @@ abstract class Playback(
     "Playback#onActive $this".logDebug()
     playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
+    artworkHintListener?.onArtworkHint(
+        playable?.isPlaying() == false,
+        playbackInfo.resumePosition,
+        playerState
+    )
   }
 
   @CallSuper
   internal open fun onInActive() {
     "Playback#onInActive $this".logDebug()
     playbackState = STATE_INACTIVE
+    artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
     playable?.considerReleaseRenderer(this)
     callbacks.forEach { it.onInActive(this) }
   }
@@ -226,14 +241,18 @@ abstract class Playback(
   internal open fun onPlay() {
     "Playback#onPlay $this".logDebug()
     container.keepScreenOn = true
-    listeners.forEach { it.beforePlay(this) }
+    // listeners.forEach { it.beforePlay(this) }
+    artworkHintListener?.onArtworkHint(
+        playerState == STATE_ENDED, playbackInfo.resumePosition, playerState
+    )
   }
 
   @CallSuper
   internal open fun onPause() {
     container.keepScreenOn = false
     "Playback#onPause $this".logDebug()
-    listeners.forEach { it.afterPause(this) }
+    artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
+    // listeners.forEach { it.afterPause(this) }
   }
 
   // Will be updated everytime 'onRefresh' is called.
@@ -311,13 +330,13 @@ abstract class Playback(
 
   val tag = config.tag
 
-  val playerState: Int
-    get() = playable?.playerState ?: Common.STATE_IDLE
+  private val playerState: Int
+    get() = playable?.playerState ?: STATE_IDLE
 
   val volumeInfo: VolumeInfo
     get() = volumeInfoUpdater
 
-  val playbackInfo: PlaybackInfo
+  private val playbackInfo: PlaybackInfo
     get() = playable?.playbackInfo ?: PlaybackInfo()
 
   val containerRect: Rect
@@ -363,20 +382,24 @@ abstract class Playback(
   ) {
     "Playback#onPlayerStateChanged $playWhenReady - $playbackState, $this".logDebug()
     when (playbackState) {
-      Common.STATE_IDLE -> {
+      STATE_IDLE -> {
       }
-      Common.STATE_BUFFERING -> {
+      STATE_BUFFERING -> {
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       }
-      Common.STATE_READY -> {
+      STATE_READY -> {
         listeners.forEach {
           if (playWhenReady) it.onPlaying(this@Playback) else it.onPaused(this@Playback)
         }
       }
-      Common.STATE_ENDED -> {
+      STATE_ENDED -> {
         listeners.forEach { it.onEnded(this@Playback) }
       }
     }
+    artworkHintListener?.onArtworkHint(
+        playerState == STATE_ENDED || playerState == STATE_IDLE,
+        playbackInfo.resumePosition, playerState
+    )
   }
 
   override fun onVideoSizeChanged(
@@ -437,16 +460,6 @@ abstract class Playback(
     @JvmDefault
     fun onEnded(playback: Playback) {
     } // ExoPlayer state: 4
-
-    /** Called when the Playback receives [onPlay]. It can be called many times */
-    @JvmDefault
-    fun beforePlay(playback: Playback) {
-    }
-
-    /** Called when the Playback receives [onPause]. It can be called many times */
-    @JvmDefault
-    fun afterPause(playback: Playback) {
-    }
 
     @JvmDefault
     fun onVideoSizeChanged(
@@ -512,5 +525,14 @@ abstract class Playback(
     // Kohii should never start/resume the Playback.
     @JvmDefault
     fun kohiiCanStart(): Boolean = false
+  }
+
+  interface ArtworkHintListener {
+
+    fun onArtworkHint(
+      shouldShow: Boolean,
+      position: Long,
+      state: Int
+    )
   }
 }
