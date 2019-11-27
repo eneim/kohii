@@ -29,12 +29,13 @@
       android:orientation="vertical"
       >
 
-    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+    <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/playerView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="240dp"
         app:resize_mode="fixed_width"
+        app:surface_type="texture_view"
         />
 
     <androidx.appcompat.widget.AppCompatTextView
@@ -43,12 +44,13 @@
         android:text="@string/small_text"
         />
 
-    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+    <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/playerView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="240dp"
         app:resize_mode="fixed_width"
+        app:surface_type="texture_view"
         />
 
     <androidx.appcompat.widget.AppCompatTextView

@@ -149,6 +149,10 @@ abstract class AbstractPlayable<RENDERER : Any>(
           to.config.callbacks.forEach { cb -> to.addCallback(cb) }
           bridge.addEventListener(to)
           bridge.addErrorListener(to)
+          if (to.tag != Master.NO_TAG) {
+            if (to.config.controller != null) master.plannedManualPlayables.add(to.tag)
+            else master.plannedManualPlayables.remove(to.tag)
+          }
         }
       }
   )

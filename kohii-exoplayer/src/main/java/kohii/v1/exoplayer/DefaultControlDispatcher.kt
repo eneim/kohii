@@ -74,7 +74,9 @@ class DefaultControlDispatcher(
     player: Player?,
     reset: Boolean
   ): Boolean {
-    player?.stop()
+    val playable = manager.findPlayableForContainer(container)
+    if (playable != null) manager.pause(playable)
+    player?.stop(reset)
     return true
   }
 }

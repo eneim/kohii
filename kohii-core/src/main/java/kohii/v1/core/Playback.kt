@@ -522,7 +522,7 @@ abstract class Playback(
     // - Allow System to start a Playback.
     // When true:
     // - Kohii can start a Playback automatically. But once user pause it manually, Only user can resume it,
-    // Kohii should never start/resume the Playback.
+    // Kohii should never start/resume the Playback automatically.
     @JvmDefault
     fun kohiiCanStart(): Boolean = false
   }

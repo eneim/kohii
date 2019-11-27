@@ -47,9 +47,9 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
 
   internal fun play(playable: Playable) {
     playable.onReady()
-
+    val tag = playable.tag
     val controller = playable.playback?.config?.controller
-    if (playable.tag === Master.NO_TAG || controller == null) {
+    if (!master.plannedManualPlayables.contains(tag)) {
       justPlay(playable)
     } else {
       // Has manual controller.
@@ -61,15 +61,15 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
         return
       }
 
-      val nextState = master.playablesPendingStates[playable.tag]
-      if (nextState != null) { // We set a flag somewhere by User/Client reaction.
-        if (nextState == Common.PENDING_PLAY) justPlay(playable)
+      val pendingState = master.playablesPendingStates[playable.tag]
+      if (pendingState != null) { // We set a flag somewhere by User/Client reaction.
+        if (pendingState == Common.PENDING_PLAY) justPlay(playable)
         else justPause(playable)
       } else {
         // no history of User action, let's determine next action by System
-        if (controller.kohiiCanStart()) {
-          master.playablesPendingStates[playable.tag] =
-            Common.PENDING_PLAY
+        if (controller?.kohiiCanStart() == true) {
+          // master.playablesPendingStates[playable.tag] = Common.PENDING_PLAY
+
           // If we come here from a manual start, master.playableStartedByClient must
           // contains the playable tag already.
           // if (!controller.kohiiCanPause()) {
@@ -88,10 +88,11 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
       return
     }
 
-    val controller = playable.playback?.config?.controller
-    if (playable.tag === Master.NO_TAG || controller == null) {
+    val tag = playable.tag
+    if (!master.plannedManualPlayables.contains(tag)) {
       justPause(playable)
     } else {
+      val controller = requireNotNull(playable.playback?.config?.controller)
       // Has manual controller
       if (master.playablesStartedByClient.isNotEmpty() /* has Playable started by client */ &&
           !master.playablesStartedByClient.contains(playable.tag) /* but not this one */
@@ -100,11 +101,15 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
         return
       }
 
-      val nextState = master.playablesPendingStates[playable.tag]
-      if (nextState != null && nextState == Common.PENDING_PAUSE) {
+      val pendingState = master.playablesPendingStates[playable.tag]
+      if (pendingState != null && pendingState == Common.PENDING_PAUSE) {
         justPause(playable)
-      } else if (controller.kohiiCanPause()) {
-        justPause(playable)
+      } else {
+        if (controller.kohiiCanPause()) {
+          justPause(playable)
+        } else {
+          // what to do?
+        }
       }
     }
   }

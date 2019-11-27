@@ -18,7 +18,12 @@ package kohii.v1.sample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.common.BackPressConsumer
+import kotlinx.android.synthetic.main.activity_debug.fragmentContainer
+import kotlinx.android.synthetic.main.activity_debug.playerView1
+import kotlinx.android.synthetic.main.activity_debug.playerView2
 
 class DevActivity : AppCompatActivity() {
 
@@ -29,6 +34,29 @@ class DevActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_debug)
+    val kohii = Kohii[this]
+    val manager = kohii.register(this)
+        .addBucket(fragmentContainer)
+
+    kohii.setUp(DemoApp.assetVideoUri) {
+      tag = "player::1"
+      // NestedScrollView
+      // true, true --> (1) OK, (2) OK
+      // false, true --> (1) OK, (2) OK
+      // true, false --> (1) Failed, (2) OK
+      // false, false --> (1) OK
+      controller = DefaultControlDispatcher(
+          manager, playerView1,
+          kohiiCanStart = false,
+          kohiiCanPause = false
+      )
+    }
+        .bind(playerView1)
+
+    kohii.setUp(DemoApp.assetVideoUri) {
+      tag = "player::2"
+    }
+        .bind(playerView2)
   }
 
   override fun onBackPressed() {

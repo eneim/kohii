@@ -235,8 +235,13 @@ class Manager(
     buckets.asSequence()
         .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
         .map {
-          val all = bucketToPlaybacks.getValue(it)
-          val candidates = all.filter { playback -> it.allowToPlay(playback) }
+          val candidates = bucketToPlaybacks.getValue(it)
+              .filter { playback ->
+                val kohiiCannotPause = master.plannedManualPlayables.contains(playback.tag) &&
+                    master.playablesStartedByClient.contains(playback.tag) &&
+                    (!requireNotNull(playback.config.controller).kohiiCanPause())
+                kohiiCannotPause || it.allowToPlay(playback)
+              }
           it to candidates
         }
         .map { (bucket, candidates) ->

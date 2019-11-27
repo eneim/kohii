@@ -214,7 +214,7 @@ abstract class Bucket constructor(
     val manualCandidates = with(grouped.getValue(true)) {
       val started = asSequence()
           .find {
-            manager.master.playablesPendingStates[it.tag] == Common.PENDING_PLAY ||
+            manager.master.plannedManualPlayables.contains(it.tag) &&
                 manager.master.playablesStartedByClient.contains(it.tag) // Started by client.
           }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
