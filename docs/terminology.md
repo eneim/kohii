@@ -1,4 +1,4 @@
-This document introduces and explain some core concepts in **Kohii**. This doc will explain those concepts by taking a Video playback scenario for demonstration.
+This document introduces and explain some core concepts in **Kohii**. This doc will explain those concepts by taking a Video playback scenario as demonstration.
 
 # The scenario
 
@@ -10,20 +10,30 @@ In practice: a PlayerView is playing a Video stored on Cloud. The PlayerView is 
 
 # The concepts
 
-## Bridge
-
-## Playable
-
-## Output
+## Master
 
 ## Container
 
-## Target
-
-## TargetHost/Host
+## Renderer
 
 ## Playback
 
-## Playback Manager
+## Manager
 
-## Playback Manager Group
+## Group
+
+## Engine
+
+## MemoryMode
+
+## Scope
+
+## Playable
+
+## Bridge
+
+## Binder/Rebinder
+
+## RendererProvider
+
+## PlayableCreator

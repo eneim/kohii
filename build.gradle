@@ -49,7 +49,7 @@ allprojects {
   }
 
   apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
-  apply plugin: 'org.jetbrains.dokka'
+  apply plugin: 'org.jetbrains.dokka-android'
 
   tasks.withType(JavaCompile).configureEach { task ->
     task.sourceCompatibility = JavaVersion.VERSION_1_8

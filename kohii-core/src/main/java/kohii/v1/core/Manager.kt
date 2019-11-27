@@ -20,7 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
-import androidx.collection.ArraySet
+import androidx.collection.arraySetOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
@@ -229,7 +229,7 @@ class Manager(
 
   internal fun splitPlaybacks(): Pair<Set<Playback> /* toPlay */, Set<Playback> /* toPause */> {
     val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
-    val toPlay = ArraySet<Playback>()
+    val toPlay = arraySetOf<Playback>()
 
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()

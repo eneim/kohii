@@ -20,7 +20,7 @@ import android.graphics.Rect
 import android.os.Handler
 import android.os.Message
 import android.view.ViewGroup
-import androidx.collection.ArraySet
+import androidx.collection.arraySetOf
 import androidx.core.app.ComponentActivity
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -174,7 +174,7 @@ class Group(
     playbacks.forEach { it.onRefresh() }
 
     val toPlay = linkedSetOf<Playback>() // Need the order.
-    val toPause = ArraySet<Playback>()
+    val toPause = arraySetOf<Playback>()
 
     stickyManager?.let {
       val (canPlay, canPause) = it.splitPlaybacks()

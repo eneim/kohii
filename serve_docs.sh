@@ -18,7 +18,6 @@ cp CODE_OF_CONDUCT.md docs/code_of_conduct.md
 # cp coil-gif/README.md docs/gifs.md
 # cp coil-svg/README.md docs/svgs.md
 # cp logo.svg docs/logo.svg
-# cp README-ko.md docs/README-ko.md
 
 # Deploy to Github pages.
 mkdocs serve

@@ -34,12 +34,16 @@ extra:
 # Navigation
 nav:
   - 'Overview': index.md
+  - 'Changelog': changelog.md
+  - 'Introduction': intro.md
+  - 'Terminology': terminology.md
   - 'Design': design.md
   - 'API':
       - 'kohii-core': api/kohii-core/index.md
       - 'kohii-exoplayer': api/kohii-exoplayer/index.md
       - 'kohii-androidx': api/kohii-androidx/index.md
       - 'kohii-ads': api/kohii-ads/index.md
+  - 'Code of Conduct': code_of_conduct.md
 
 # CSS
 extra_css:

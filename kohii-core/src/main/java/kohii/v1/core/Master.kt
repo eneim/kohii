@@ -34,8 +34,8 @@ import android.os.Looper
 import android.os.Message
 import android.view.View
 import android.view.ViewGroup
-import androidx.collection.ArrayMap
-import androidx.collection.ArraySet
+import androidx.collection.arrayMapOf
+import androidx.collection.arraySetOf
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
@@ -113,12 +113,12 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // We want to keep the map of manual Playables even if the Activity is destroyed and recreated.
   // TODO when to remove entries of this map?
-  internal val playablesStartedByClient by lazy(NONE) { ArraySet<Any /* Playable tag */>() }
+  internal val playablesStartedByClient by lazy(NONE) { arraySetOf<Any /* Playable tag */>() }
   // TODO when to remove entries of this map?
   internal val playablesPendingStates by lazy(NONE) {
-    ArrayMap<Any /* Playable tag */, PendingState>()
+    arrayMapOf<Any /* Playable tag */, PendingState>()
   }
-  // TODO design a dedicated mechanism for it, considering paging to save in-memory space.
+  // TODO design a dedicated mechanism for this store, considering paging to save in-memory space.
   // TODO when to remove entries of this map?
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
