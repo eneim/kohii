@@ -65,10 +65,6 @@ internal class ViewPager2Bucket(
     return parent === this.root
   }
 
-  override fun allowToPlay(playback: Playback): Boolean {
-    return playback.token.shouldPlay()
-  }
-
   override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {
     return selectByOrientation(candidates, orientation = root.orientation)
   }

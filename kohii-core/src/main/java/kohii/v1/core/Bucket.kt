@@ -101,7 +101,10 @@ abstract class Bucket constructor(
 
   abstract fun accepts(container: ViewGroup): Boolean
 
-  abstract fun allowToPlay(playback: Playback): Boolean
+  open fun allowToPlay(playback: Playback): Boolean {
+    // Default judgement.
+    return playback.token.shouldPlay()
+  }
 
   abstract fun selectToPlay(candidates: Collection<Playback>): Collection<Playback>
 
