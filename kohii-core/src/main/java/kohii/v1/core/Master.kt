@@ -57,6 +57,18 @@ import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
+// Problem with manual playback controller on RecyclerView
+// - Expected behavior: if a Playable tag is bound to a Playback whose Controller is not null,
+// the Playable should be manually controllable. Once User/Client manually start a Playback/Playable,
+// and Controller doesn't allow Kohii to pause it, this Playable should be kept playing until it stops
+// due to the Video ends, or other error.
+// - Problem: Once a Playback container is recycled/detached, it is not managed by Manager anymore,
+// and it should be. But then the manually started Playable is not bound anymore so when Group
+// refresh the Playbacks, currently it doesn't take into account the not-bound-manually-started Playables.
+// - Possible solution: we don't want to keep Playable alive more than it should be. A possible solution
+// is to create a Callback that is triggered once a manually started Playback/Playable is
+// detached/removed. The callback must return a boolean value indicating that it will handle the
+// Playback by some mechanism to keep it playing, or else Kohii will do the rest (= ignore it).
 class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
@@ -209,13 +221,14 @@ class Master private constructor(context: Context) : PlayableManager {
     val group = groups.find { it.activity === activity } ?: Group(
         this, activity
     ).also {
+      onGroupCreated(it)
       activity.lifecycle.addObserver(it)
     }
 
     return group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
         ?: Manager(
             this, group, host, managerLifecycleOwner, memoryMode
-        )
+        ).also { group.onManagerCreated(it) }
   }
 
   /**
@@ -553,13 +566,10 @@ class Master private constructor(context: Context) : PlayableManager {
             if (bucket != null) this.resume(Scope.BUCKET, bucket)
           }
         }
-      scope === Scope.PLAYBACK ->
-        (receiver as? Playback)?.let {
-          if (it.config.controller != null) { // has manual controller
-            playablesPendingStates.remove(it.playable) // TODO double check manual playback
-            it.manager.refresh()
-          }
-        } ?: throw IllegalArgumentException("Receiver for scope $scope must be a Playback")
+      scope === Scope.PLAYBACK -> {
+        require(receiver is Playback) { "Receiver for scope $scope must be a Playback" }
+        receiver.manager.refresh()
+      }
     }
   }
 

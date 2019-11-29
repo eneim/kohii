@@ -211,14 +211,16 @@ abstract class Bucket constructor(
 
     val comparator = comparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
-        .groupBy { it.config.controller != null }
+        .groupBy {
+          it.tag != Master.NO_TAG && it.config.controller != null
+          // equals => manager.master.plannedManualPlayables.contains(it.tag)
+        }
         .withDefault { emptyList() }
 
     val manualCandidates = with(grouped.getValue(true)) {
       val started = asSequence()
           .find {
-            manager.master.plannedManualPlayables.contains(it.tag) &&
-                manager.master.playablesStartedByClient.contains(it.tag) // Started by client.
+            manager.master.playablesStartedByClient.contains(it.tag) // Started by client.
           }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }

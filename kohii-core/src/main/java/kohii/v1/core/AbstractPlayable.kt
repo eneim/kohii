@@ -102,7 +102,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
         "Playable#manager $from --> $to, $this".logInfo()
         if (to == null) {
           master.trySavePlaybackInfo(this)
-          master.tearDown(this, false)
+          master.tearDown(this, if (from is Manager) !from.isChangingConfigurations() else true)
         } else if (from === null) {
           master.tryRestorePlaybackInfo(this)
         }
@@ -126,13 +126,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
           if (to != null) {
             to.manager
           } else {
-            val configChange =
-              if (from != null) {
-                from.manager.group.activity.isChangingConfigurations
-              } else {
-                false
-              }
-
+            val configChange = if (from != null) from.manager.isChangingConfigurations() else false
             if (!configChange) null
             else if (!onConfigChange()) {
               // On config change, if the Playable doesn't support, we need to pause the Video.
@@ -172,7 +166,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun onInActive(playback: Playback) {
     "Playable#onInActive $playback, $this".logInfo()
     require(playback === this.playback)
-    val configChange = playback.manager.group.activity.isChangingConfigurations
+    val configChange = playback.manager.isChangingConfigurations()
     if (!configChange) {
       master.trySavePlaybackInfo(this)
       master.releasePlayable(this)

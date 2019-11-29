@@ -44,14 +44,14 @@
         android:label="@string/demo_title_youtube_1"
         android:theme="@style/AppTheme.Dark" />
     <activity
-        android:name=".DevActivity"
+        android:name="kohii.v1.dev.DevActivity"
         android:label="@string/app_name"
         android:supportsPictureInPicture="true"
         android:theme="@style/AppTheme.Light" />
 
     <activity-alias
         android:name="Home"
-        android:targetActivity=".DevActivity">
+        android:targetActivity="kohii.v1.dev.DevActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
 

@@ -150,6 +150,10 @@ class Manager(
     refresh()
   }
 
+  internal fun isChangingConfigurations(): Boolean {
+    return group.activity.isChangingConfigurations
+  }
+
   @RestrictTo(LIBRARY_GROUP)
   fun findPlayableForContainer(container: ViewGroup): Playable? {
     return playbacks[container]?.playable
