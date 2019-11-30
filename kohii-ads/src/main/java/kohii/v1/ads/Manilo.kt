@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package im.ene.kohii.ads
+package kohii.v1.ads
 
 class Manilo
