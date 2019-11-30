@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package im.ene.kohii.x
+package kohii.v1.x
 
-import androidx.media2.player.MediaPlayer
-import kohii.v1.media.Media
+import android.view.LayoutInflater
+import kohii.v1.core.Playback
+import kohii.v1.core.ViewRendererProvider
 
-interface MediaPlayerProvider {
+internal class VideoViewProvider : ViewRendererProvider() {
 
-  fun acquirePlayer(media: Media): MediaPlayer
-
-  fun releasePlayer(
-    media: Media,
-    player: MediaPlayer
-  )
-
-  fun cleanUp()
+  override fun createRenderer(
+    playback: Playback,
+    rendererType: Int
+  ): Any {
+    val container = playback.container
+    return LayoutInflater.from(container.context)
+        .inflate(R.layout.kohii_video_view, container, false)
+  }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package im.ene.kohii.x
+package kohii.v1.x
 
 import androidx.media2.widget.VideoView
 import kohii.v1.core.Master
