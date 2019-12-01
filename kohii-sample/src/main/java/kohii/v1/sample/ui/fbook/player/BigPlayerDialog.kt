@@ -111,7 +111,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     val manager = kohii.register(this)
-        .attach(playerContainer)
+        .addBucket(playerContainer)
 
     requireArguments().apply {
       rebinderFromArgs = requireNotNull(getParcelable(KEY_REBINDER))
@@ -146,7 +146,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     rebinder
         .with {
           controller = DefaultControlDispatcher(manager, playerView)
-          callbacks = arrayOf(this@BigPlayerDialog)
+          callbacks += this@BigPlayerDialog
         }
         .bind(kohii, playerView) {
           it.addStateListener(this@BigPlayerDialog)

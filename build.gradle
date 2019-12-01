@@ -35,6 +35,7 @@ buildscript {
     classpath Libs.Google.gmsGoogleServices
     classpath Libs.Common.ktLintPlugin
     classpath Libs.Common.bintrayPlugin
+    classpath Libs.Common.dokkaPlugin
   }
 }
 
@@ -48,6 +49,7 @@ allprojects {
   }
 
   apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
+  apply plugin: 'org.jetbrains.dokka-android'
 
   tasks.withType(JavaCompile).configureEach { task ->
     task.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -74,10 +76,33 @@ allprojects {
       events "skipped", "failed", "passed"
     }
   }
+
+  afterEvaluate { p ->
+    p.tasks.dokka {
+      jdkVersion = 8
+      reportUndocumented = false
+      skipDeprecated = true
+      skipEmptyPackages = true
+
+      externalDocumentationLink {
+        url = new URL("https://developer.android.com/reference/")
+        packageListUrl = new URL("https://developer.android.com/reference/androidx/package-list")
+      }
+
+      externalDocumentationLink {
+        url = new URL("https://exoplayer.dev/doc/reference/")
+        packageListUrl = new URL("https://exoplayer.dev/doc/reference/package-list")
+      }
+    }
+  }
 }
 
 task clean(type: Delete) {
   delete rootProject.buildDir
+}
+
+tasks.wrapper {
+  distributionType = Wrapper.DistributionType.ALL
 }
 
 ext {

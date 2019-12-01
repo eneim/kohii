@@ -31,27 +31,25 @@ import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
 
 abstract class Engine<RENDERER : Any> constructor(
-  context: Context,
+  val master: Master,
   internal val playableCreator: PlayableCreator<RENDERER>
 ) {
 
-  val context: Context = context.applicationContext
-  internal val master = Master[context]
+  constructor(
+    context: Context,
+    playableCreator: PlayableCreator<RENDERER>
+  ) : this(Master[context], playableCreator)
 
-  init {
-    @Suppress("LeakingThis")
-    master.registerEngine(this)
+  internal fun inject(group: Group) {
+    group.managers.forEach { prepare(it) }
   }
 
-  // abstract fun <T> supportRendererType(type: Class<T>): Boolean
-
-  open fun inject(group: Group) {
-  }
+  abstract fun prepare(manager: Manager)
 
   inline fun setUp(
     media: Media,
     crossinline options: Options.() -> Unit = {}
-  ): Binder<RENDERER> = Binder(
+  ): Binder = Binder(
       this, media
   ).also { options(it.options) }
 

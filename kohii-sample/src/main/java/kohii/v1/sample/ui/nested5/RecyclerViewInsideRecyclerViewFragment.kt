@@ -57,7 +57,7 @@ class RecyclerViewInsideRecyclerViewFragment : BaseFragment() {
 
     val kohii = Kohii[this]
     val manager = kohii.register(this)
-        .attach(recyclerView)
+        .addBucket(recyclerView)
 
     adapter = MainAdapter(kohii, manager, getApp().exoItems)
     if (savedInstanceState != null) adapter.onRestoreState(savedInstanceState)

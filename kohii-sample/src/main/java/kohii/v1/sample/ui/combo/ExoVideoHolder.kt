@@ -19,7 +19,6 @@ package kohii.v1.sample.ui.combo
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
-import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.material.snackbar.Snackbar
 import kohii.v1.core.Playback
@@ -43,18 +42,6 @@ class ExoVideoHolder(
   var aspectRatio: Float = 1F
 
   // Playback.PlaybackListener
-
-  override fun beforePlay(playback: Playback) {
-    thumbnail.isVisible = false
-  }
-
-  override fun afterPause(playback: Playback) {
-    thumbnail.isVisible = true
-  }
-
-  override fun onEnded(playback: Playback) {
-    thumbnail.isVisible = true
-  }
 
   override fun onVideoSizeChanged(
     playback: Playback,

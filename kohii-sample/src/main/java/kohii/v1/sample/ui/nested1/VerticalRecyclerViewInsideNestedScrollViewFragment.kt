@@ -45,7 +45,7 @@ class VerticalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     kohii.register(this)
-        .attach(scrollView, recyclerView)
+        .addBucket(scrollView, recyclerView)
 
     libIntro.text = getString(R.string.lib_intro).parseAsHtml()
     recyclerView.adapter = VerticalItemsAdapter(kohii)

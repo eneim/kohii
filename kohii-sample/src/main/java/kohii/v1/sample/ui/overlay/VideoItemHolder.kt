@@ -35,8 +35,7 @@ internal class VideoItemHolder(
   parent: ViewGroup,
   private val clickListener: OnClickListener
 ) : BaseViewHolder(inflater, R.layout.holder_video_text_overlay, parent),
-    Playback.Callback,
-    Playback.StateListener,
+    Playback.ArtworkHintListener,
     OnClickListener {
 
   override fun onClick(v: View?) {
@@ -83,24 +82,16 @@ internal class VideoItemHolder(
     thumbnail.isVisible = true
   }
 
-  override fun beforePlay(playback: Playback) {
-    thumbnail.isVisible = false
-  }
-
-  override fun afterPause(playback: Playback) {
-    thumbnail.isVisible = true
-  }
-
-  override fun onEnded(playback: Playback) {
-    thumbnail.isVisible = true
-  }
-
-  override fun onInActive(playback: Playback) {
-    thumbnail.isVisible = true
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    thumbnail.isVisible = shouldShow
   }
 
   override fun toString(): String {
-    return "[${itemView}], ${this.playerViewContainer}"
+    return "[$itemView], $playerViewContainer"
   }
 
   // Selection

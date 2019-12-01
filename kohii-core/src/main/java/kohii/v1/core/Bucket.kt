@@ -101,7 +101,10 @@ abstract class Bucket constructor(
 
   abstract fun accepts(container: ViewGroup): Boolean
 
-  abstract fun allowToPlay(playback: Playback): Boolean
+  open fun allowToPlay(playback: Playback): Boolean {
+    // Default judgement.
+    return playback.token.shouldPlay()
+  }
 
   abstract fun selectToPlay(candidates: Collection<Playback>): Collection<Playback>
 
@@ -208,14 +211,16 @@ abstract class Bucket constructor(
 
     val comparator = comparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
-        .groupBy { it.config.controller != null }
+        .groupBy {
+          it.tag != Master.NO_TAG && it.config.controller != null
+          // equals => manager.master.plannedManualPlayables.contains(it.tag)
+        }
         .withDefault { emptyList() }
 
     val manualCandidates = with(grouped.getValue(true)) {
       val started = asSequence()
           .find {
-            manager.master.playablesPendingStates[it.tag] == Common.PENDING_PLAY ||
-                manager.master.playablesStartedByClient.contains(it.tag) // Started by client.
+            manager.master.playablesStartedByClient.contains(it.tag) // Started by client.
           }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }

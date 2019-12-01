@@ -38,7 +38,7 @@ internal class VideoViewHolder(
   val shouldBind: (Rebinder?) -> Boolean
 ) : FbookItemHolder(parent),
     Playback.StateListener,
-    Playback.Callback {
+    Playback.ArtworkHintListener {
 
   init {
     videoContainer.isVisible = true
@@ -61,7 +61,7 @@ internal class VideoViewHolder(
   private val params: Options.() -> Unit
     get() = {
       tag = requireNotNull(videoTag)
-      callbacks += this@VideoViewHolder
+      artworkHintListener = this@VideoViewHolder
     }
 
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
@@ -87,31 +87,19 @@ internal class VideoViewHolder(
             .bind(playerView) { pk ->
               volume.isSelected = !pk.volumeInfo.mute
               pk.addStateListener(this@VideoViewHolder)
-              playAgain.isVisible = pk.playerState == Common.STATE_ENDED
               playback = pk
             }
       }
     }
   }
 
-  override fun beforePlay(playback: Playback) {
-    if (playback.playerState != Common.STATE_ENDED) {
-      thumbnail.isVisible = false
-      playAgain.isVisible = false
-    }
-  }
-
-  override fun afterPause(playback: Playback) {
-    thumbnail.isVisible = true
-  }
-
-  override fun onEnded(playback: Playback) {
-    thumbnail.isVisible = true
-    playAgain.isVisible = true
-  }
-
-  override fun onRemoved(playback: Playback) {
-    playback.removeStateListener(this)
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    thumbnail.isVisible = shouldShow
+    playAgain.isVisible = shouldShow && state == Common.STATE_ENDED
   }
 
   override fun onRecycled(success: Boolean) {

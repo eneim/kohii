@@ -42,12 +42,7 @@ internal class ItemsAdapter(
     parent: ViewGroup,
     viewType: Int
   ): BaseViewHolder {
-    return if (viewType == TYPE_VIDEO)
-      VideoViewHolder(parent).also { holder ->
-        holder.itemView.setOnClickListener {
-          holder.rebinder?.let(onVideoClick)
-        }
-      } else TextViewHolder(parent)
+    return if (viewType == TYPE_VIDEO) VideoViewHolder(parent) else TextViewHolder(parent)
   }
 
   override fun getItemCount(): Int {
@@ -72,19 +67,31 @@ internal class ItemsAdapter(
       if (shouldBindVideo(holder.rebinder)) {
         kohii.setUp(assetVideoUri) {
           tag = requireNotNull(videoTag)
+          artworkHintListener = holder
         }
-            .bind(holder.container) {
-              it.addStateListener(holder)
-            }
+            .bind(holder.container)
       }
     } else holder.bind(position)
+  }
+
+  override fun onViewAttachedToWindow(holder: BaseViewHolder) {
+    super.onViewAttachedToWindow(holder)
+    if (holder is VideoViewHolder) {
+      holder.itemView.setOnClickListener {
+        holder.rebinder?.let(onVideoClick)
+      }
+    }
+  }
+
+  override fun onViewDetachedFromWindow(holder: BaseViewHolder) {
+    super.onViewDetachedFromWindow(holder)
+    holder.itemView.setOnClickListener(null)
   }
 
   override fun onViewRecycled(holder: BaseViewHolder) {
     if (holder is VideoViewHolder) {
       kohii.cancel(holder.container)
       holder.videoUrl = null
-      holder.itemView.setOnClickListener(null)
     }
   }
 }

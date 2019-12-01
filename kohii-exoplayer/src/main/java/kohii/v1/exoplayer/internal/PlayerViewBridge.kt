@@ -88,8 +88,8 @@ internal class PlayerViewBridge(
 
   internal var player: Player? = null
 
-  override val playbackState: Int
-    get() = player?.playbackState ?: -1
+  override val playerState: Int
+    get() = player?.playbackState ?: Common.STATE_IDLE
 
   override var videoSize: VideoSize by Delegates.observable(
       VideoSize.ORIGINAL,
@@ -131,7 +131,7 @@ internal class PlayerViewBridge(
       this.lastSeenTrackGroupArray = null
       this.inErrorState = false
       if (value == null) {
-        field!!.also {
+        requireNotNull(field).also {
           // 'field' must be not null here
           it.player = null
           it.setErrorMessageProvider(null)
@@ -204,18 +204,12 @@ internal class PlayerViewBridge(
     } ?: false
   }
 
-  override val volumeInfo: VolumeInfo
-    get() = this.playbackInfo.volumeInfo // this will first update the PlaybackInfo via getter.
-
-  override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    val current = this.playbackInfo
-    val changed = current.volumeInfo != volumeInfo // Compare value.
-    if (changed) {
-      current.volumeInfo = volumeInfo
-      this.setPlaybackInfo(current, true)
+  override var volumeInfo: VolumeInfo = player?.getVolumeInfo() ?: VolumeInfo()
+    set(value) {
+      if (field == value) return
+      field = value
+      player?.setVolumeInfo(value)
     }
-    return changed
-  }
 
   override fun seekTo(positionMs: Long) {
     val playbackInfo = this.playbackInfo
@@ -223,13 +217,6 @@ internal class PlayerViewBridge(
     playbackInfo.resumeWindow = player?.currentWindowIndex ?: playbackInfo.resumeWindow
     this.playbackInfo = playbackInfo
   }
-
-  override var parameters: PlaybackParameters
-    get() = _playbackParams
-    set(value) {
-      _playbackParams = value
-      player?.playbackParameters = value
-    }
 
   override var playbackInfo: PlaybackInfo
     get() {
@@ -247,7 +234,6 @@ internal class PlayerViewBridge(
     _playbackInfo = playbackInfo
 
     player?.also {
-      it.setVolumeInfo(_playbackInfo.volumeInfo)
       if (!volumeOnly) {
         val haveResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
         if (haveResumePosition) {
@@ -269,8 +255,7 @@ internal class PlayerViewBridge(
       if (it.playbackState == Common.STATE_IDLE) return
       _playbackInfo = PlaybackInfo(
           it.currentWindowIndex,
-          if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET,
-          it.getVolumeInfo()
+          if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET
       )
     }
   }
@@ -327,7 +312,7 @@ internal class PlayerViewBridge(
       if (hasResumePosition) {
         it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
       }
-      it.setVolumeInfo(_playbackInfo.volumeInfo)
+      it.setVolumeInfo(volumeInfo)
       it.repeatMode = _repeatMode
     }
   }

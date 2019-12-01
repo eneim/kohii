@@ -36,7 +36,9 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_gravity="center"
-      android:scaleType="center"
+      android:background="@color/card_light_background"
+      android:padding="48dp"
+      android:scaleType="fitCenter"
       app:srcCompat="@drawable/ic_kohii"
       />
 </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>

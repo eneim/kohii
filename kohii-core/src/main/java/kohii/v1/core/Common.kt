@@ -21,19 +21,19 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo
-import com.google.android.exoplayer2.Player
 import kohii.v1.PendingState
 
 object Common {
 
-  const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
-  const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
-  const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
+  const val REPEAT_MODE_OFF = 0 // Player.REPEAT_MODE_OFF
+  const val REPEAT_MODE_ONE = 1 // Player.REPEAT_MODE_ONE
+  const val REPEAT_MODE_ALL = 2 // Player.REPEAT_MODE_ALL
+  const val REPEAT_MODE_GROUP = 3
 
-  const val STATE_IDLE = Player.STATE_IDLE
-  const val STATE_BUFFERING = Player.STATE_BUFFERING
-  const val STATE_READY = Player.STATE_READY
-  const val STATE_ENDED = Player.STATE_ENDED
+  const val STATE_IDLE = 1 // Player.STATE_IDLE
+  const val STATE_BUFFERING = 2 // Player.STATE_BUFFERING
+  const val STATE_READY = 3 // Player.STATE_READY
+  const val STATE_ENDED = 4 // Player.STATE_ENDED
 
   internal val PENDING_PLAY = PendingState(true)
   internal val PENDING_PAUSE = PendingState(false)

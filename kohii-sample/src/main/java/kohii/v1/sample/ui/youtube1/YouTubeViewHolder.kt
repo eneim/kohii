@@ -16,6 +16,7 @@
 
 package kohii.v1.sample.ui.youtube1
 
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
@@ -31,7 +32,7 @@ import kohii.v1.sample.svg.GlideApp
 
 class YouTubeViewHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_youtube_container), Playback.StateListener {
+) : BaseViewHolder(parent, R.layout.holder_youtube_container), Playback.ArtworkHintListener {
 
   val content = itemView as ConstraintLayout
   val fragmentPlace: ViewGroup = itemView.findViewById(R.id.fragment)
@@ -57,20 +58,17 @@ class YouTubeViewHolder(
           .fitCenter()
           .into(thumbnail)
 
-      videoTitle.text = this.snippet.title
+      videoTitle.text = "${this.snippet.title}, id: $id"
     }
   }
 
-  override fun onEnded(playback: Playback) {
-    thumbnail.isVisible = true
-  }
-
-  override fun beforePlay(playback: Playback) {
-    thumbnail.isVisible = false
-  }
-
-  override fun afterPause(playback: Playback) {
-    thumbnail.isVisible = true
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    Log.i("Kohii::Art", "${videoTitle.text}, art: $shouldShow, $position, $state")
+    thumbnail.isVisible = shouldShow
   }
 
   override fun onRecycled(success: Boolean) {

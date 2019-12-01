@@ -34,8 +34,8 @@ import android.os.Looper
 import android.os.Message
 import android.view.View
 import android.view.ViewGroup
-import androidx.collection.ArrayMap
-import androidx.collection.ArraySet
+import androidx.collection.arrayMapOf
+import androidx.collection.arraySetOf
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
@@ -57,6 +57,21 @@ import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
+// Problem 1: problem with manual playback controller on RecyclerView
+// - Expected behavior: if a Playable tag is bound to a Playback whose Controller is not null,
+// the Playable should be manually controllable. Once User/Client manually start a Playback/Playable,
+// and Controller doesn't allow Kohii to pause it, this Playable should be kept playing until it stops
+// due to the Video ends, or other error.
+// - Problem: Once a Playback container is recycled/detached, it is not managed by Manager anymore,
+// and it should be. But then the manually started Playable is not bound anymore so when Group
+// refresh the Playbacks, currently it doesn't take into account the not-bound-manually-started Playables.
+// - Possible solution: we don't want to keep Playable alive more than it should be. A possible solution
+// is to create a Callback that is triggered once a manually started Playback/Playable is
+// detached/removed. The callback must return a boolean value indicating that it will handle the
+// Playback by some mechanism to keep it playing, or else Kohii will do the rest (= ignore it).
+
+// Problem 2: how to easily, yet effectively register an Engine once it is created?
+// - We do not want to do the registration in `init` block. As it will leak `this`.
 class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
@@ -71,7 +86,7 @@ class Master private constructor(context: Context) : PlayableManager {
     @Volatile private var master: Master? = null
 
     @JvmStatic
-    operator fun get(context: Context) = master ?: synchronized(Master::javaClass) {
+    operator fun get(context: Context) = master ?: synchronized(this) {
       master ?: Master(context).also { master = it }
     }
   }
@@ -103,21 +118,23 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  internal val app = context.applicationContext as Application
+  val app = context.applicationContext as Application
 
+  @Suppress("MemberVisibilityCanBePrivate")
   internal val engines = mutableMapOf<Class<*>, Engine<*>>()
-  internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val groups = mutableSetOf<Group>()
+  internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
   // We want to keep the map of manual Playables even if the Activity is destroyed and recreated.
+  internal val plannedManualPlayables by lazy(NONE) { arraySetOf<Any /* Playable tag */>() }
   // TODO when to remove entries of this map?
-  internal val playablesStartedByClient by lazy(NONE) { ArraySet<Any /* Playable tag */>() }
+  internal val playablesStartedByClient by lazy(NONE) { arraySetOf<Any /* Playable tag */>() }
   // TODO when to remove entries of this map?
   internal val playablesPendingStates by lazy(NONE) {
-    ArrayMap<Any /* Playable tag */, PendingState>()
+    arrayMapOf<Any /* Playable tag */, PendingState>()
   }
-  // TODO design a dedicated mechanism for it, considering paging to save in-memory space.
+  // TODO design a dedicated mechanism for this store, considering paging to save in-memory space.
   // TODO when to remove entries of this map?
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
@@ -174,13 +191,13 @@ class Master private constructor(context: Context) : PlayableManager {
     MasterNetworkCallback(this)
   }
 
-  internal fun onNetworkChanged() {
-    this.networkType = Util.getNetworkType(app)
-  }
-
   private var networkType: Int by Delegates.observable(Util.getNetworkType(app)) { _, from, to ->
     if (from == to) return@observable
     playables.forEach { it.key.onNetworkTypeChanged(from, to) }
+  }
+
+  internal fun onNetworkChanged() {
+    this.networkType = Util.getNetworkType(app)
   }
 
   internal var trimMemoryLevel: Int by Delegates.observable(
@@ -207,13 +224,14 @@ class Master private constructor(context: Context) : PlayableManager {
     val group = groups.find { it.activity === activity } ?: Group(
         this, activity
     ).also {
+      onGroupCreated(it)
       activity.lifecycle.addObserver(it)
     }
 
     return group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
         ?: Manager(
             this, group, host, managerLifecycleOwner, memoryMode
-        )
+        ).also { group.onManagerCreated(it) }
   }
 
   /**
@@ -242,6 +260,10 @@ class Master private constructor(context: Context) : PlayableManager {
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
     // but then another Playable is registered to the same Container, we need to kick the previous Playable.
+    val sameTag = requests.asSequence()
+        .firstOrNull { it.value.tag == tag }
+        ?.key
+    if (sameTag != null) requests.remove(sameTag)
     requests[container] = BindRequest(
         this, playable, container, tag, options, callback
     )
@@ -416,12 +438,12 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
   internal fun play(playable: Playable) {
-    val controller = playable.playback?.config?.controller
-    if (playable.tag !== NO_TAG && controller != null) {
+    // val controller = playable.playback?.config?.controller
+    val tag = playable.tag
+    if (/* controller != null && */ plannedManualPlayables.contains(tag)) {
       requireNotNull(playable.playback).also {
-        if (it.token.shouldPrepare()) playable.onReady()
-        playablesPendingStates[playable.tag] = Common.PENDING_PLAY
-        if (!controller.kohiiCanPause()) playablesStartedByClient.add(playable.tag)
+        /* if (!controller.kohiiCanPause()) */ playablesStartedByClient.add(tag)
+        playablesPendingStates[tag] = Common.PENDING_PLAY
         it.manager.refresh()
       }
     }
@@ -429,10 +451,11 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // Must be a request to pause from Client. This method will set necessary flags and refresh all.
   internal fun pause(playable: Playable) {
-    val controller = playable.playback?.config?.controller
-    if (playable.tag !== NO_TAG && controller != null) {
-      playablesPendingStates[playable.tag] = Common.PENDING_PAUSE
-      playablesStartedByClient.remove(playable.tag)
+    // val controller = playable.playback?.config?.controller
+    val tag = playable.tag
+    if (/* controller != null */ plannedManualPlayables.contains(tag)) {
+      playablesPendingStates[tag] = Common.PENDING_PAUSE
+      playablesStartedByClient.remove(tag)
       requireNotNull(playable.playback).manager.refresh()
     }
   }
@@ -546,17 +569,14 @@ class Master private constructor(context: Context) : PlayableManager {
             if (bucket != null) this.resume(Scope.BUCKET, bucket)
           }
         }
-      scope === Scope.PLAYBACK ->
-        (receiver as? Playback)?.let {
-          if (it.config.controller != null) { // has manual controller
-            playablesPendingStates.remove(it.playable) // TODO double check manual playback
-            it.manager.refresh()
-          }
-        } ?: throw IllegalArgumentException("Receiver for scope $scope must be a Playback")
+      scope === Scope.PLAYBACK -> {
+        require(receiver is Playback) { "Receiver for scope $scope must be a Playback" }
+        receiver.manager.refresh()
+      }
     }
   }
 
-  internal fun registerEngine(engine: Engine<*>) {
+  fun registerEngine(engine: Engine<*>) {
     engines.put(engine.playableCreator.rendererType, engine)
         ?.cleanUp()
     groups.forEach { engine.inject(it) }
@@ -591,7 +611,8 @@ class Master private constructor(context: Context) : PlayableManager {
           preload = options.preload,
           repeatMode = options.repeatMode,
           // TODO 2019/11/18 temporarily disable manual playback. Will revise the logic.
-          // controller = options.controller,
+          controller = options.controller,
+          artworkHintListener = options.artworkHintListener,
           callbacks = options.callbacks
       )
 
@@ -699,12 +720,10 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // Public APIs
 
-  // target == null --> lock all
   fun lock() {
     this.pause(Scope.GLOBAL)
   }
 
-  // target == null --> unlock all
   fun unlock() {
     this.resume(Scope.GLOBAL)
   }

@@ -53,7 +53,7 @@ class EchoFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     kohii.register(this)
-        .attach(recyclerView)
+        .addBucket(recyclerView)
 
     val adapter = VideoItemsAdapter(getApp().videos, kohii, viewModel) {
       val playback = it.playback

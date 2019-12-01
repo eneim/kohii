@@ -16,21 +16,24 @@
 
 package kohii.v1.internal
 
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.contains
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle.Event
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import kohii.v1.Experiment
 import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.Playback
 
-// TODO when using with YouTube Player SDK, we want to use its restoring mechanism
-//  (init with restore flag).  In that case, we may need to skip the detaching of Fragment.
 @Experiment
 internal class DynamicFragmentRendererPlayback(
   manager: Manager,
@@ -65,33 +68,98 @@ internal class DynamicFragmentRendererPlayback(
   override fun onAttachRenderer(renderer: Any?): Boolean {
     if (renderer == null) return false
     require(renderer is Fragment)
-    check(container.id != View.NO_ID)
-    val existing = fragmentManager.findFragmentById(container.id)
-    if (existing !== renderer) {
-      fragmentManager.commitNow(allowStateLoss = true) {
-        replace(container.id, renderer, tag.toString())
+    // Learn from ViewPager2 FragmentPagerAdapter implementation.
+    val view = renderer.view
+    if (!renderer.isAdded && view != null) throw IllegalStateException("Bad state of Fragment.")
+    if (renderer.isAdded) {
+      return if (view == null) {
+        scheduleAttachFragment(container, renderer)
+        true
+      } else {
+        if (view.parent != null && view.parent !== container) {
+          addViewToContainer(view, container)
+          true
+        } else {
+          addViewToContainer(view, container)
+          true
+        }
       }
     } else {
-      val view = renderer.view
-      if (view != null && !container.contains(view)) {
-        val parent = view.parent
-        if (parent is ViewGroup) parent.removeView(view)
-        container.removeAllViews()
-        container.addView(view)
+      if (!fragmentManager.isStateSaved) {
+        scheduleAttachFragment(container, renderer)
+        fragmentManager.commitNow { add(renderer, tag.toString()) }
+        return true
+      } else {
+        if (fragmentManager.isDestroyed) return false
+        manager.lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
+          override fun onStateChanged(
+            source: LifecycleOwner,
+            event: Event
+          ) {
+            source.lifecycle.removeObserver(this)
+            if (fragmentManager.isStateSaved) return
+            if (ViewCompat.isAttachedToWindow(container)) {
+              onAttachRenderer(renderer)
+            }
+          }
+        })
+        return true
       }
     }
-    return true
   }
 
   override fun onDetachRenderer(renderer: Any?): Boolean {
     if (renderer == null) return false
     require(renderer is Fragment)
-    check(container.id != View.NO_ID)
-    if (renderer.tag == tag.toString()) {
-      fragmentManager.commitNow(allowStateLoss = true) {
-        remove(renderer)
+    val view = renderer.view
+    if (view != null) {
+      val parent = view.parent
+      if (parent != null && parent is ViewGroup) {
+        parent.removeAllViews()
       }
     }
+
+    if (!renderer.isAdded) return true
+    if (fragmentManager.isStateSaved) return true
+    fragmentManager.commitNow { remove(renderer) }
     return true
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  internal fun scheduleAttachFragment(
+    container: ViewGroup,
+    fragment: Fragment
+  ) {
+    fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
+      override fun onFragmentViewCreated(
+        fm: FragmentManager,
+        f: Fragment,
+        v: View,
+        savedInstanceState: Bundle?
+      ) {
+        if (f === fragment) {
+          fm.unregisterFragmentLifecycleCallbacks(this)
+          addViewToContainer(v, container)
+        }
+      }
+    }, false)
+  }
+
+  internal fun addViewToContainer(
+    view: View,
+    container: ViewGroup
+  ) {
+    if (container.childCount > 1) {
+      throw IllegalStateException("Container must not have more than one children.")
+    }
+
+    if (view.parent === container) return
+    if (container.childCount > 0) container.removeAllViews()
+
+    view.parent?.let {
+      if (it is ViewGroup) it.removeView(view)
+    }
+
+    container.addView(view)
   }
 }

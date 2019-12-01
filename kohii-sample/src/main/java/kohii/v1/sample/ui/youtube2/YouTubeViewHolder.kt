@@ -16,6 +16,8 @@
 
 package kohii.v1.sample.ui.youtube2
 
+import android.annotation.SuppressLint
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -31,7 +33,7 @@ import kohii.v1.sample.svg.GlideApp
 class YouTubeViewHolder(
   parent: ViewGroup,
   layoutId: Int
-) : BaseViewHolder(parent, layoutId), Playback.StateListener {
+) : BaseViewHolder(parent, layoutId), Playback.ArtworkHintListener {
 
   val container = itemView.findViewById(R.id.container) as FrameLayout
   val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
@@ -39,6 +41,11 @@ class YouTubeViewHolder(
 
   var playback: Playback? = null
 
+  init {
+    // thumbnail.isVisible = false
+  }
+
+  @SuppressLint("SetTextI18n")
   override fun bind(item: Any?) {
     super.bind(item)
     (item as? Video)?.apply {
@@ -52,20 +59,17 @@ class YouTubeViewHolder(
           .fitCenter()
           .into(thumbnail)
 
-      videoTitle.text = this.snippet.title
+      videoTitle.text = "${this.snippet.title} - id: $id"
     }
   }
 
-  override fun onEnded(playback: Playback) {
-    thumbnail.isVisible = true
-  }
-
-  override fun beforePlay(playback: Playback) {
-    thumbnail.isVisible = false
-  }
-
-  override fun afterPause(playback: Playback) {
-    thumbnail.isVisible = true
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    thumbnail.isVisible = shouldShow
+    Log.d("Kohii::Art", "${playback?.tag} art: $shouldShow, $position, $state")
   }
 
   override fun onRecycled(success: Boolean) {

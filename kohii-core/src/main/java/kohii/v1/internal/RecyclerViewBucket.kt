@@ -101,7 +101,7 @@ internal class RecyclerViewBucket(
 
   override fun allowToPlay(playback: Playback): Boolean {
     val container = playback.container
-    return root.findContainingViewHolder(container) != null && playback.token.shouldPlay()
+    return root.findContainingViewHolder(container) != null && super.allowToPlay(playback)
   }
 
   override fun selectToPlay(candidates: Collection<Playback>): Collection<Playback> {

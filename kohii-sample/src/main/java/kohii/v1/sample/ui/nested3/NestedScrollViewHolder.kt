@@ -65,7 +65,7 @@ internal class NestedScrollViewHolder(
 
   override fun onAttached() {
     super.onAttached()
-    manager.attach(scrollView)
+    manager.addBucket(scrollView)
     kohii.setUp(assetVideoUri) {
       tag = "NESTED::NSV::$adapterPosition"
     }
@@ -74,6 +74,6 @@ internal class NestedScrollViewHolder(
 
   override fun onDetached() {
     super.onDetached()
-    manager.detach(scrollView)
+    manager.removeBucket(scrollView)
   }
 }

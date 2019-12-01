@@ -16,15 +16,12 @@
 
 package kohii.v1.core
 
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.Player.RepeatMode
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 
 interface Bridge<RENDERER : Any> {
 
-  val playbackState: Int
+  val playerState: Int
 
   var renderer: RENDERER?
 
@@ -32,20 +29,20 @@ interface Bridge<RENDERER : Any> {
 
   var playbackInfo: PlaybackInfo
 
-  var parameters: PlaybackParameters
+  // var parameters: PlaybackParameters
 
-  @RepeatMode var repeatMode: Int
+  var repeatMode: Int
 
-  val volumeInfo: VolumeInfo
+  var volumeInfo: VolumeInfo
 
   fun isPlaying(): Boolean
 
   fun seekTo(positionMs: Long)
 
   /**
-   * Prepare the resource for a [ExoPlayer]. This method should:
-   * - Request for new [ExoPlayer] instance if there is not a usable one.
-   * - Configure [PlayerEventListener] for it.
+   * Prepare the resource for a media. This method should:
+   * - Request for new Player instance if there is not a usable one.
+   * - Configure callbacks for the player implementation.
    * - If there is non-trivial PlaybackInfo, update it to the SimpleExoPlayer.
    * - If client request to prepare MediaSource, then prepare it.
    *
@@ -59,10 +56,8 @@ interface Bridge<RENDERER : Any> {
   // Ensure resource is ready to play. PlaybackDispatcher will require this for manual playback.
   fun ready()
 
-  /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to true */
   fun play()
 
-  /** [com.google.android.exoplayer2.Player.setPlayWhenReady] to false */
   fun pause()
 
   /**
@@ -100,12 +95,4 @@ interface Bridge<RENDERER : Any> {
   fun addErrorListener(errorListener: ErrorListener)
 
   fun removeErrorListener(errorListener: ErrorListener?)
-
-  /**
-   * Update playback's volume.
-   *
-   * @param volumeInfo the [VolumeInfo] to update to.
-   * @return `true` if current Volume info is updated, `false` otherwise.
-   */
-  fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean
 }

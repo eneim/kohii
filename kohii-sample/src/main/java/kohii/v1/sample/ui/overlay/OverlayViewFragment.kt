@@ -129,7 +129,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     val manager = kohii.register(this)
-        .attach(recyclerView, video_player_container)
+        .addBucket(recyclerView, video_player_container)
 
     motionLayout = videoOverlay as MotionLayout
 

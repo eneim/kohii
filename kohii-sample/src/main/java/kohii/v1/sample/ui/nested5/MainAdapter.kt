@@ -73,7 +73,7 @@ class MainAdapter(
   ) {
     holder.bind(position)
     if (holder is NestedRecyclerViewViewHolder) {
-      manager.attach(holder.container)
+      manager.addBucket(holder.container)
       val adapter = NestedRecyclerViewAdapter(position, items, kohii)
       holder.container.adapter = adapter
 

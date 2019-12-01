@@ -88,7 +88,7 @@ class VerticalListRecyclerViewFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this].also {
       it.register(this)
-          .attach(recyclerView)
+          .addBucket(recyclerView)
     }
 
     val data = ArrayList(items).apply { this.addAll(items) } // To double the list.

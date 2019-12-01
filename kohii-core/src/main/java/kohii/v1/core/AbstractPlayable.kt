@@ -31,13 +31,11 @@ import kohii.v1.media.VolumeInfo
 import kotlin.properties.Delegates
 
 abstract class AbstractPlayable<RENDERER : Any>(
-  engine: Engine<RENDERER>,
+  protected val master: Master,
   media: Media,
   config: Config,
   protected val bridge: Bridge<RENDERER>
 ) : Playable(media, config), Callback {
-
-  protected val master = engine.master
 
   override val tag: Any = config.tag
 
@@ -90,6 +88,10 @@ abstract class AbstractPlayable<RENDERER : Any>(
     bridge.release()
   }
 
+  override fun isPlaying(): Boolean {
+    return bridge.isPlaying()
+  }
+
   private val memoryMode: MemoryMode
     get() = (manager as? Manager)?.memoryMode ?: LOW
 
@@ -100,7 +102,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
         "Playable#manager $from --> $to, $this".logInfo()
         if (to == null) {
           master.trySavePlaybackInfo(this)
-          master.tearDown(this, false)
+          master.tearDown(this, if (from is Manager) !from.isChangingConfigurations() else true)
         } else if (from === null) {
           master.tryRestorePlaybackInfo(this)
         }
@@ -124,13 +126,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
           if (to != null) {
             to.manager
           } else {
-            val configChange =
-              if (from != null) {
-                from.manager.group.activity.isChangingConfigurations
-              } else {
-                false
-              }
-
+            val configChange = if (from != null) from.manager.isChangingConfigurations() else false
             if (!configChange) null
             else if (!onConfigChange()) {
               // On config change, if the Playable doesn't support, we need to pause the Video.
@@ -147,12 +143,16 @@ abstract class AbstractPlayable<RENDERER : Any>(
           to.config.callbacks.forEach { cb -> to.addCallback(cb) }
           bridge.addEventListener(to)
           bridge.addErrorListener(to)
+          if (to.tag != Master.NO_TAG) {
+            if (to.config.controller != null) master.plannedManualPlayables.add(to.tag)
+            else master.plannedManualPlayables.remove(to.tag)
+          }
         }
       }
   )
 
   override val playerState: Int
-    get() = bridge.playbackState
+    get() = bridge.playerState
 
   // Playback.Callback
 
@@ -166,7 +166,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun onInActive(playback: Playback) {
     "Playable#onInActive $playback, $this".logInfo()
     require(playback === this.playback)
-    val configChange = playback.manager.group.activity.isChangingConfigurations
+    val configChange = playback.manager.isChangingConfigurations()
     if (!configChange) {
       master.trySavePlaybackInfo(this)
       master.releasePlayable(this)
@@ -176,7 +176,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun onAdded(playback: Playback) {
     "Playable#onAdded $playback, $this".logInfo()
     bridge.repeatMode = playback.config.repeatMode
-    bridge.setVolumeInfo(playback.volumeInfo)
+    bridge.volumeInfo = playback.volumeInfo
   }
 
   override fun onRemoved(playback: Playback) {
@@ -242,7 +242,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     to: VolumeInfo
   ) {
     "Playable#onVolumeInfoChanged $playback, $from --> $to, $this".logInfo()
-    bridge.setVolumeInfo(to)
+    if (from != to) bridge.volumeInfo = to
   }
 
   override var playbackInfo: PlaybackInfo

@@ -20,7 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
-import androidx.collection.ArraySet
+import androidx.collection.arraySetOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
@@ -42,7 +42,7 @@ import kotlin.properties.Delegates
 class Manager(
   internal val master: Master,
   internal val group: Group,
-  internal val host: Any,
+  val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
   internal val memoryMode: MemoryMode = LOW
 ) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
@@ -69,6 +69,8 @@ class Manager(
       buckets.forEach { it.lock = value }
       refresh()
     }
+
+  private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
 
   // Use as both Queue and Stack.
   // - When adding new Bucket, we add it to tail of the Queue.
@@ -135,7 +137,9 @@ class Manager(
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
     buckets.toMutableList()
-        .onEach { removeBucket(it.root) }
+        .onEach { onRemoveBucket(it.root) }
+        .clear()
+    rendererProviders.onEach { it.value.clear() }
         .clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
@@ -148,6 +152,27 @@ class Manager(
   override fun onStop(owner: LifecycleOwner) {
     playbacks.forEach { if (it.value.isActive) onPlaybackInActive(it.value) }
     refresh()
+  }
+
+  internal fun findRendererProvider(playable: Playable): RendererProvider {
+    val cache = rendererProviders[playable.config.rendererType]
+        ?: rendererProviders.asSequence().firstOrNull {
+          // If there is a RendererProvider of subclass, we can use it.
+          playable.config.rendererType.isAssignableFrom(it.key)
+        }?.value
+    return requireNotNull(cache)
+  }
+
+  fun registerRendererProvider(
+    type: Class<*>,
+    provider: RendererProvider
+  ) {
+    val prev = rendererProviders.put(type, provider)
+    if (prev !== provider) prev?.clear()
+  }
+
+  internal fun isChangingConfigurations(): Boolean {
+    return group.activity.isChangingConfigurations
   }
 
   @RestrictTo(LIBRARY_GROUP)
@@ -186,7 +211,7 @@ class Manager(
     if (playback != null) refresh()
   }
 
-  private fun addBucket(view: View) {
+  private fun onAddBucket(view: View) {
     val existing = buckets.find { it.root === view }
     if (existing != null) return
     val bucket = Bucket[this@Manager, view]
@@ -195,18 +220,14 @@ class Manager(
       view.doOnAttach { v ->
         bucket.onAttached()
         v.doOnDetach {
-          detachBucket(v)
-        } // In case the View is detached immediately ...
+          buckets.firstOrNull { bucket -> bucket.root === it }
+              ?.onDetached()
+        }
       }
     }
   }
 
-  private fun detachBucket(view: View) {
-    buckets.firstOrNull { it.root === view }
-        ?.onDetached()
-  }
-
-  private fun removeBucket(view: View) {
+  private fun onRemoveBucket(view: View) {
     buckets.firstOrNull { it.root === view && buckets.remove(it) }
         ?.onRemoved()
   }
@@ -233,14 +254,19 @@ class Manager(
 
   internal fun splitPlaybacks(): Pair<Set<Playback> /* toPlay */, Set<Playback> /* toPause */> {
     val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
-    val toPlay = ArraySet<Playback>()
+    val toPlay = arraySetOf<Playback>()
 
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
         .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
         .map {
-          val all = bucketToPlaybacks.getValue(it)
-          val candidates = all.filter { playback -> it.allowToPlay(playback) }
+          val candidates = bucketToPlaybacks.getValue(it)
+              .filter { playback ->
+                val kohiiCannotPause = master.plannedManualPlayables.contains(playback.tag) &&
+                    master.playablesStartedByClient.contains(playback.tag) &&
+                    (!requireNotNull(playback.config.controller).kohiiCanPause())
+                kohiiCannotPause || it.allowToPlay(playback)
+              }
           it to candidates
         }
         .map { (bucket, candidates) ->
@@ -296,13 +322,13 @@ class Manager(
 
   // Public APIs
 
-  fun attach(vararg views: View): Manager {
-    views.forEach { this.addBucket(it) }
+  fun addBucket(vararg views: View): Manager {
+    views.forEach { this.onAddBucket(it) }
     return this
   }
 
-  fun detach(vararg views: View): Manager {
-    views.forEach { this.removeBucket(it) }
+  fun removeBucket(vararg views: View): Manager {
+    views.forEach { this.onRemoveBucket(it) }
     return this
   }
 

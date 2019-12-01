@@ -50,7 +50,7 @@ class NestedScrollViewInsideRecyclerViewFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     val manager = kohii.register(this, MemoryMode.BALANCED)
-        .attach(recyclerView)
+        .addBucket(recyclerView)
 
     recyclerView.adapter = NestedItemsAdapter(kohii, manager)
 

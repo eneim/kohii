@@ -14,20 +14,34 @@
   ~ limitations under the License.
   -->
 
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fragmentContainer"
-    android:name="kohii.v1.sample.ui.overlay.OverlayViewFragment"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:viewBindingIgnore="true"
     >
 
-  <!--  <androidx.media2.widget.VideoView-->
-  <!--      android:id="@+id/videoView"-->
-  <!--      android:layout_width="match_parent"-->
-  <!--      android:layout_height="300dp"-->
-  <!--      android:layout_gravity="center"-->
-  <!--      app:enableControlView="true"-->
-  <!--      app:viewType="textureView"-->
-  <!--      />-->
+  <fragment
+      android:id="@+id/fragmentContainer"
+      android:name="kohii.v1.dev.DevScrollViewFragment"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      tools:ignore="FragmentTagUsage"
+      tools:viewBindingIgnore="true"
+      />
 
-</fragment>
+  <!-- not using right now -->
+  <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+      android:id="@+id/floatPlayer"
+      android:layout_width="288dp"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|end"
+      android:background="?attr/colorAccent"
+      android:elevation="2dp"
+      android:minHeight="180dp"
+      android:visibility="gone"
+      app:resize_mode="fixed_width"
+      />
+</FrameLayout>

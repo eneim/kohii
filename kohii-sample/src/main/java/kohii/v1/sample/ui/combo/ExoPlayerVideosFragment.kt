@@ -57,7 +57,7 @@ class ExoPlayerVideosFragment : BaseFragment() {
 
     val kohii = Kohii[this]
     kohii.register(this)
-        .attach(recyclerView)
+        .addBucket(recyclerView)
 
     recyclerView.adapter = ExoVideosAdapter(kohii, getApp().exoItems,
         onClick = { holder, _ ->

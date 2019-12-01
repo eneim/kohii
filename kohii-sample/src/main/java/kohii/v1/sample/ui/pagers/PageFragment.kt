@@ -83,7 +83,7 @@ class PageFragment : BaseFragment(), Prioritized {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     kohii.register(this)
-        .attach(content)
+        .addBucket(content)
 
     landscape = requireActivity().isLandscape()
     val pagePos = requireArguments().getInt(

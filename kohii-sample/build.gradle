@@ -89,6 +89,11 @@ android {
   }
 
   dataBinding.enabled = true
+
+  viewBinding {
+    enabled = true
+  }
+
   productFlavors {}
 
   compileOptions {
@@ -112,8 +117,11 @@ dependencies {
   implementation fileTree(include: ['*.jar'], dir: 'libs')
   implementation project(':kohii-core')
   implementation project(':kohii-exoplayer')
+  implementation project(':kohii-androidx')
+  implementation project(':kohii-experiments')
 
   implementation Libs.ExoPlayer.all
+  implementation Libs.AndroidX.Media.widget
 
   implementation Libs.Kotlin.stdlibJdk8
   // implementation Libs.Kotlin.reflect
@@ -131,7 +139,6 @@ dependencies {
   implementation Libs.AndroidX.Lifecycle.viewModel
   implementation Libs.AndroidX.Lifecycle.liveData
   implementation Libs.AndroidX.Lifecycle.java8
-  // kapt Libs.AndroidX.Lifecycle.compiler
 
   implementation Libs.AndroidX.Paging.common
   implementation Libs.AndroidX.Paging.runtime
@@ -139,7 +146,6 @@ dependencies {
   implementation Libs.AndroidX.viewPager2
 
   implementation Libs.Square.moshi
-  // implementation Libs.Square.moshiKotlin
   kapt Libs.Square.moshiCodegen
   implementation Libs.Square.okio
 

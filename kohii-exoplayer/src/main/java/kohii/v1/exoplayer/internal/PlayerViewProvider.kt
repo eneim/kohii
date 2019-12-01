@@ -16,7 +16,6 @@
 
 package kohii.v1.exoplayer.internal
 
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ui.PlayerView
@@ -31,7 +30,9 @@ internal class PlayerViewProvider : ViewRendererProvider() {
     container: ViewGroup,
     media: Media
   ): Int {
-    return if (media.mediaDrm != null || Build.VERSION.SDK_INT >= 24 /* SurfaceView is better */) {
+    // Note: we want to use SurfaceView on API 24 and above. But reusing SurfaceView doesn't seem to
+    // be straight forward, as it is not trivial to clean the cache of old video ...
+    return if (media.mediaDrm != null /* || Build.VERSION.SDK_INT >= 24 */) {
       R.layout.kohii_player_surface_view
     } else {
       R.layout.kohii_player_textureview

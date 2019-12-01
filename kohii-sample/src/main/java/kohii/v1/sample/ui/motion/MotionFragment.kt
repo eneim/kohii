@@ -63,7 +63,7 @@ class MotionFragment : BaseFragment(), Presenter {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this)
-        .attach(scrollView)
+        .addBucket(scrollView)
     binding.motion = Motion()
     binding.lifecycleOwner = viewLifecycleOwner
   }

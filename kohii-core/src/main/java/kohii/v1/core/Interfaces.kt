@@ -45,9 +45,12 @@ interface PlayerEventListener : EventListener,
     AudioListener,
     TextOutput,
     MetadataOutput {
+
+  @JvmDefault
   override fun onCues(cues: MutableList<Cue>?) {
   }
 
+  @JvmDefault
   override fun onMetadata(metadata: Metadata?) {
   }
 }

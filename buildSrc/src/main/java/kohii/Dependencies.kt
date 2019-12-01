@@ -50,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B0"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B1"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -61,6 +61,8 @@ object Libs {
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+    // 0.10.0 render method signature after the doc, which looks pretty bad.
+    const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
 
     val junit = "junit:junit:4.12"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
@@ -69,7 +71,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.3.60"
+    private const val version = "1.3.61"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
@@ -224,7 +226,7 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-4"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-5"
     val okio = "com.squareup.okio:okio:2.4.1"
   }
 

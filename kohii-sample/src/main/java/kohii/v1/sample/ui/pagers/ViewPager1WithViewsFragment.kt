@@ -102,7 +102,7 @@ class ViewPager1WithViewsFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     kohii.register(this)
-        .attach(viewPager)
+        .addBucket(viewPager)
 
     viewPager.apply {
       adapter = PagerPagesAdapter(kohii, getApp().videos)

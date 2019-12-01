@@ -88,7 +88,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
     kohii = Kohii[this].also {
       it.register(this)
-          .attach(playerContainer)
+          .addBucket(playerContainer)
     }
   }
 
@@ -97,7 +97,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     val rebinder =
       requireNotNull(requireArguments().getParcelable<Rebinder>(KEY_REBINDER))
     rebinder.with {
-      callbacks = arrayOf(this@PlayerDialogFragment)
+      callbacks += this@PlayerDialogFragment
     }
         .bind(kohii, playerView) { playback = it }
     this.rebinder = rebinder

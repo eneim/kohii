@@ -77,12 +77,12 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     playerContainer.setAspectRatio(16 / 9F)
     kohii = Kohii[this]
     kohii.register(this)
-        .attach(playerContainer)
+        .addBucket(playerContainer)
   }
 
   override fun onStart() {
     super.onStart()
-    rebinder.with { callbacks = arrayOf(this@SinglePlayerFragment) }
+    rebinder.with { callbacks += this@SinglePlayerFragment }
         .bind(kohii, playerView) {
           callback?.onShown(rebinder)
           kohii.stick(it)

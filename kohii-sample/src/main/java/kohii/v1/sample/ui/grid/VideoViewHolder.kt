@@ -29,7 +29,7 @@ import kohii.v1.sample.common.BaseViewHolder
 
 internal class VideoViewHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_player_container), Playback.StateListener {
+) : BaseViewHolder(parent, R.layout.holder_player_container), Playback.ArtworkHintListener {
 
   private val root: AspectRatioFrameLayout = itemView.findViewById(R.id.playerContainer)
   internal val container: FrameLayout = itemView.findViewById(R.id.container)
@@ -53,15 +53,11 @@ internal class VideoViewHolder(
       override fun getPosition() = adapterPosition
     }
 
-  override fun beforePlay(playback: Playback) {
-    thumbnail.isVisible = false
-  }
-
-  override fun afterPause(playback: Playback) {
-    thumbnail.isVisible = true
-  }
-
-  override fun onEnded(playback: Playback) {
-    thumbnail.isVisible = true
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    thumbnail.isVisible = shouldShow
   }
 }

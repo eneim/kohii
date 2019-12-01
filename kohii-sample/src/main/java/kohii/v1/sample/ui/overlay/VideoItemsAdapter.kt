@@ -21,7 +21,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kohii.v1.core.Common
-import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.data.Video
@@ -85,17 +84,9 @@ internal class VideoItemsAdapter(
         kohii.setUp(requireNotNull(holder.videoFile)) {
           tag = requireNotNull(holder.videoTag)
           repeatMode = Common.REPEAT_MODE_ONE
-          callbacks += arrayOf(
-              holder,
-              object : Playback.Callback {
-                override fun onRemoved(playback: Playback) {
-                  playback.removeStateListener(holder)
-                }
-              })
+          artworkHintListener = holder
         }
-            .bind(holder.playerViewContainer) {
-              it.addStateListener(holder)
-            }
+            .bind(holder.playerViewContainer)
       }
     }
   }

@@ -1,0 +1,77 @@
+# Project information
+site_name: 'Kohii'
+site_description: 'Android Video Playback made easy.'
+site_author: '2019 Nam Nguyen, nam@ene.im'
+site_url: 'https://eneim.github.io/kohii'
+remote_branch: gh-pages
+
+# Repository
+repo_name: 'Kohii'
+repo_url: 'https://github.com/eneim/kohii'
+
+# Copyright
+copyright: 'Copyright &copy; 2019 Nam Nguyen, nam@ene.im'
+
+# Configuration
+theme:
+  name: 'material'
+  language: 'en'
+  favicon: 'art/kohii.ico'
+  logo: 'art/ic_launcher-web.png'
+  palette:
+    primary: 'black'
+    accent: 'white'
+  font:
+    text: 'Open Sans'
+    code: 'Roboto Mono'
+
+# Customization
+extra:
+  social:
+    - type: 'github'
+      link: 'https://github.com/eneim/kohii'
+
+# Navigation
+nav:
+  - 'Overview': index.md
+  - 'Changelog': changelog.md
+  - 'Introduction': intro.md
+  - 'Terminology': terminology.md
+  - 'Design': design.md
+  - 'API':
+      - 'kohii-core': api/kohii-core/index.md
+      - 'kohii-exoplayer': api/kohii-exoplayer/index.md
+      - 'kohii-androidx': api/kohii-androidx/index.md
+      - 'kohii-ads': api/kohii-ads/index.md
+  - 'Code of Conduct': code_of_conduct.md
+
+# CSS
+extra_css:
+  - 'css/main.css'
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - tables
+
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
