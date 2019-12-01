@@ -154,7 +154,7 @@ abstract class Playback(
   internal open fun acquireRenderer(): Any? {
     val playable = this.playable
     requireNotNull(playable)
-    val provider: RendererProvider = manager.group.findRendererProvider(playable)
+    val provider: RendererProvider = manager.findRendererProvider(playable)
     return provider.acquireRenderer(this, playable.media)
   }
 
@@ -163,7 +163,7 @@ abstract class Playback(
   ) {
     val playable = this.playable
     requireNotNull(playable)
-    val provider: RendererProvider = manager.group.findRendererProvider(playable)
+    val provider: RendererProvider = manager.findRendererProvider(playable)
     return provider.releaseRenderer(this, playable.media, renderer)
   }
 

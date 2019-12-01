@@ -42,7 +42,7 @@ import kotlin.properties.Delegates
 class Manager(
   internal val master: Master,
   internal val group: Group,
-  internal val host: Any,
+  val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
   internal val memoryMode: MemoryMode = LOW
 ) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
@@ -69,6 +69,8 @@ class Manager(
       buckets.forEach { it.lock = value }
       refresh()
     }
+
+  private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
 
   // Use as both Queue and Stack.
   // - When adding new Bucket, we add it to tail of the Queue.
@@ -137,6 +139,8 @@ class Manager(
     buckets.toMutableList()
         .onEach { onRemoveBucket(it.root) }
         .clear()
+    rendererProviders.onEach { it.value.clear() }
+        .clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
   }
@@ -148,6 +152,23 @@ class Manager(
   override fun onStop(owner: LifecycleOwner) {
     playbacks.forEach { if (it.value.isActive) onPlaybackInActive(it.value) }
     refresh()
+  }
+
+  internal fun findRendererProvider(playable: Playable): RendererProvider {
+    val cache = rendererProviders[playable.config.rendererType]
+        ?: rendererProviders.asSequence().firstOrNull {
+          // If there is a RendererProvider of subclass, we can use it.
+          playable.config.rendererType.isAssignableFrom(it.key)
+        }?.value
+    return requireNotNull(cache)
+  }
+
+  fun registerRendererProvider(
+    type: Class<*>,
+    provider: RendererProvider
+  ) {
+    val prev = rendererProviders.put(type, provider)
+    if (prev !== provider) prev?.clear()
   }
 
   internal fun isChangingConfigurations(): Boolean {

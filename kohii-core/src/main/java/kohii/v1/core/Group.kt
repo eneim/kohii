@@ -92,7 +92,6 @@ class Group(
 
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
-  private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -133,32 +132,6 @@ class Group(
     return managers.asSequence()
         .mapNotNull { it.findBucketForContainer(container) }
         .firstOrNull()
-  }
-
-  internal fun findRendererProvider(playable: Playable): RendererProvider {
-    val cache = rendererProviders[playable.config.rendererType]
-        ?: rendererProviders.asSequence().firstOrNull {
-          // If there is a RendererProvider of subclass, we can use it.
-          playable.config.rendererType.isAssignableFrom(it.key)
-        }?.value
-    return requireNotNull(cache)
-  }
-
-  fun registerRendererProvider(
-    type: Class<*>,
-    provider: RendererProvider
-  ) {
-    val prev = rendererProviders.put(type, provider)
-    if (prev !== provider) prev?.clear()
-  }
-
-  fun unregisterRendererProvider(provider: RendererProvider) {
-    rendererProviders
-        .filterValues { it === provider } // result is new Map
-        .forEach {
-          rendererProviders.remove(it.key)
-              ?.clear()
-        }
   }
 
   internal fun onRefresh() {
@@ -230,11 +203,7 @@ class Group(
   internal fun onManagerDestroyed(manager: Manager) {
     if (stickyManager === manager) stickyManager = null
     if (managers.remove(manager)) master.onGroupUpdated(this)
-    if (managers.size == 0) {
-      rendererProviders.onEach { it.value.clear() }
-          .clear()
-      master.onLastManagerDestroyed(this)
-    }
+    if (managers.size == 0) master.onLastManagerDestroyed(this)
   }
 
   // This operation should:
@@ -258,12 +227,15 @@ class Group(
       } else
         updated = false
     } else {
-      updated = managers.add(manager)
+      updated = !managers.contains(manager) && managers.add(manager)
     }
 
     // 3. Push the sticky Manager back to head of the queue.
     if (sticky != null) managers.push(sticky)
-    if (updated) master.onGroupUpdated(this)
+    if (updated) {
+      master.engines.forEach { it.value.prepare(manager) }
+      master.onGroupUpdated(this)
+    }
   }
 
   // Expected result:

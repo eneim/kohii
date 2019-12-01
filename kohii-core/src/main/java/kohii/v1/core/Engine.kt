@@ -40,17 +40,11 @@ abstract class Engine<RENDERER : Any> constructor(
     playableCreator: PlayableCreator<RENDERER>
   ) : this(Master[context], playableCreator)
 
-  init {
-    onCreated()
+  internal fun inject(group: Group) {
+    group.managers.forEach { prepare(it) }
   }
 
-  private fun onCreated() {
-    master.registerEngine(this)
-  }
-
-  // abstract fun <T> supportRendererType(type: Class<T>): Boolean
-
-  abstract fun inject(group: Group)
+  abstract fun prepare(manager: Manager)
 
   inline fun setUp(
     media: Media,

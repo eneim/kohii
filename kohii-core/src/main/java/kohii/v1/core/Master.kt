@@ -57,7 +57,7 @@ import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
-// Problem with manual playback controller on RecyclerView
+// Problem 1: problem with manual playback controller on RecyclerView
 // - Expected behavior: if a Playable tag is bound to a Playback whose Controller is not null,
 // the Playable should be manually controllable. Once User/Client manually start a Playback/Playable,
 // and Controller doesn't allow Kohii to pause it, this Playable should be kept playing until it stops
@@ -69,6 +69,9 @@ import kotlin.properties.Delegates
 // is to create a Callback that is triggered once a manually started Playback/Playable is
 // detached/removed. The callback must return a boolean value indicating that it will handle the
 // Playback by some mechanism to keep it playing, or else Kohii will do the rest (= ignore it).
+
+// Problem 2: how to easily, yet effectively register an Engine once it is created?
+// - We do not want to do the registration in `init` block. As it will leak `this`.
 class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
@@ -83,7 +86,7 @@ class Master private constructor(context: Context) : PlayableManager {
     @Volatile private var master: Master? = null
 
     @JvmStatic
-    operator fun get(context: Context) = master ?: synchronized(Master::javaClass) {
+    operator fun get(context: Context) = master ?: synchronized(this) {
       master ?: Master(context).also { master = it }
     }
   }
@@ -119,8 +122,8 @@ class Master private constructor(context: Context) : PlayableManager {
 
   @Suppress("MemberVisibilityCanBePrivate")
   internal val engines = mutableMapOf<Class<*>, Engine<*>>()
-  internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val groups = mutableSetOf<Group>()
+  internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
   // We want to keep the map of manual Playables even if the Activity is destroyed and recreated.
@@ -188,13 +191,13 @@ class Master private constructor(context: Context) : PlayableManager {
     MasterNetworkCallback(this)
   }
 
-  internal fun onNetworkChanged() {
-    this.networkType = Util.getNetworkType(app)
-  }
-
   private var networkType: Int by Delegates.observable(Util.getNetworkType(app)) { _, from, to ->
     if (from == to) return@observable
     playables.forEach { it.key.onNetworkTypeChanged(from, to) }
+  }
+
+  internal fun onNetworkChanged() {
+    this.networkType = Util.getNetworkType(app)
   }
 
   internal var trimMemoryLevel: Int by Delegates.observable(
@@ -573,7 +576,7 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  internal fun registerEngine(engine: Engine<*>) {
+  fun registerEngine(engine: Engine<*>) {
     engines.put(engine.playableCreator.rendererType, engine)
         ?.cleanUp()
     groups.forEach { engine.inject(it) }
@@ -717,12 +720,10 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // Public APIs
 
-  // target == null --> lock all
   fun lock() {
     this.pause(Scope.GLOBAL)
   }
 
-  // target == null --> unlock all
   fun unlock() {
     this.resume(Scope.GLOBAL)
   }
