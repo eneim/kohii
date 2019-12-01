@@ -33,8 +33,8 @@ import kohii.v1.media.Media
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
-class PlayerViewPlayableCreator(
-  internal val master: Master
+internal class PlayerViewPlayableCreator(
+  private val master: Master
 ) : PlayableCreator<PlayerView>(PlayerView::class.java) {
 
   companion object {

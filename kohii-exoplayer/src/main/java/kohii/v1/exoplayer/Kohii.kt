@@ -19,37 +19,31 @@ package kohii.v1.exoplayer
 import android.content.Context
 import androidx.fragment.app.Fragment
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.ExoPlayer
 import kohii.v1.core.Engine
-import kohii.v1.core.Group
+import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
 import kohii.v1.exoplayer.internal.PlayerViewPlayableCreator
 import kohii.v1.exoplayer.internal.PlayerViewProvider
+import kohii.v1.utils.SingletonHolder
 
-@ExoPlayer
 class Kohii private constructor(
   master: Master,
-  playableCreator: PlayableCreator<PlayerView>
+  playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master)
 ) : Engine<PlayerView>(master, playableCreator) {
 
-  companion object {
+  private constructor(context: Context) : this(Master[context])
 
-    @Volatile private var kohii: Kohii? = null
+  companion object : SingletonHolder<Kohii, Context>(::Kohii) {
 
-    @JvmStatic
-    operator fun get(context: Context): Kohii = kohii ?: synchronized(Kohii::javaClass) {
-      kohii ?: with(Master[context]) {
-        Kohii(this, PlayerViewPlayableCreator(this))
-            .also { kohii = it }
-      }
-    }
+    @JvmStatic // convenient static call for Java
+    operator fun get(context: Context) = super.getInstance(context)
 
-    @JvmStatic
+    @JvmStatic // convenient static call for Java
     operator fun get(fragment: Fragment) = get(fragment.requireContext())
   }
 
-  override fun inject(group: Group) {
-    group.registerRendererProvider(PlayerView::class.java, PlayerViewProvider())
+  override fun prepare(manager: Manager) {
+    manager.registerRendererProvider(PlayerView::class.java, PlayerViewProvider())
   }
 }
