@@ -17,7 +17,6 @@
 package kohii.v1.sample.ui.youtube2
 
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
@@ -28,8 +27,7 @@ import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
 
 class YouTubeItemsAdapter(
-  private val engine: Engine<YouTubePlayerView>,
-  private val fragmentManager: FragmentManager
+  private val engine: Engine<YouTubePlayerView>
 ) : PagedListAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
   override fun areItemsTheSame(
     oldItem: Video,

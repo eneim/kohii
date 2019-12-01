@@ -65,3 +65,9 @@
 /docs/index.md
 /site/
 /docs/art/
+/kohii-experiments/.gitignore
+/kohii-experiments/consumer-rules.pro
+/kohii-experiments/kohii-experiments.iml
+/kohii-experiments/proguard-rules.pro
+/kohii-experiments/src/androidTest/
+/kohii-experiments/src/test/

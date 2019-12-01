@@ -21,10 +21,10 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
 import kohii.v1.core.Engine
+import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
-import kohii.v1.yt1.YouTubePlayerFragment
 
 class YouTubeItemsAdapter(
   private val engine: Engine<YouTubePlayerFragment>

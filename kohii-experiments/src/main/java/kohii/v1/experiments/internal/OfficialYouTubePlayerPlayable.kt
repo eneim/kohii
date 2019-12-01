@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt1
+package kohii.v1.experiments.internal
 
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
 import kohii.v1.core.Master
+import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.media.Media
 
-class YouTube1Playable(
+internal class OfficialYouTubePlayerPlayable(
   master: Master,
   media: Media,
   config: Config,

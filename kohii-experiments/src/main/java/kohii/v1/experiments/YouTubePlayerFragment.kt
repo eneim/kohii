@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt1
+package kohii.v1.experiments
 
 import android.graphics.Point
 import android.graphics.Rect
@@ -22,17 +22,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.arrayMapOf
 import androidx.core.view.doOnLayout
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleObserver
 import com.google.android.youtube.player.YouTubePlayer.OnInitializedListener
 import com.google.android.youtube.player.YouTubePlayerContainerView
-import kohii.v1.sample.R
-import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.common.getApp
 
-class YouTubePlayerFragment : BaseFragment() {
+class YouTubePlayerFragment : Fragment() {
 
   companion object {
-    const val STATE_KEY = "kohii.v1.yt1.YouTubePlayerFragment.KEY_PLAYER_VIEW_STATE"
+    const val STATE_KEY = "kohii.v1.experiments.YouTubePlayerFragment.KEY_PLAYER_VIEW_STATE"
 
     fun newInstance() = YouTubePlayerFragment()
 
@@ -72,6 +72,7 @@ class YouTubePlayerFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    observers.forEach { if (it.value) viewLifecycleOwner.lifecycle.addObserver(it.key) }
     val playerState = savedInstanceState?.getBundle(STATE_KEY)
     containerView.initPlayer(viewLifecycleOwner, playerState)
     containerView.doOnLayout {
@@ -82,30 +83,61 @@ class YouTubePlayerFragment : BaseFragment() {
     }
   }
 
+  override fun onDestroyView() {
+    this.initializedListener = null
+    observers.forEach { viewLifecycleOwner.lifecycle.removeObserver(it.key) }
+    observers.clear()
+    super.onDestroyView()
+  }
+
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
-    containerView.playerState?.also {
-      outState.putBundle(STATE_KEY, it)
-    }
+    val saveState = containerView.playerState
+    if (saveState != null) outState.putBundle(STATE_KEY, saveState)
   }
 
   private var initializedListener: OnInitializedListener? = null
 
-  fun initialize(initializedListener: OnInitializedListener) {
+  internal fun initialize(initializedListener: OnInitializedListener) {
+    val keyId = resources.getIdentifier("google_api_key", "string", requireContext().packageName)
+    require(keyId > 0) { "No valid API Key found." }
+    this.initialize(getString(keyId), initializedListener)
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate")
+  internal fun initialize(
+    apiKey: String,
+    initializedListener: OnInitializedListener
+  ) {
+    require(apiKey.isNotBlank()) { "No valid API Key found." }
     if (::containerView.isInitialized) {
-      containerView.initialize(getApp().youtubeApiKey, initializedListener)
+      containerView.initialize(apiKey, initializedListener)
       this.initializedListener = null
     } else {
       this.initializedListener = initializedListener
     }
   }
 
-  fun allowedToPlay(): Boolean {
-    return this.isVisible && visibleAreaOffset(this.view) >= 0.99F
+  internal fun allowedToPlay(): Boolean {
+    return this.isVisible && visibleAreaOffset(this.view) >= 0.999F
   }
 
-  override fun onDestroyView() {
-    this.initializedListener = null
-    super.onDestroyView()
+  // false --> added when view is available
+  // true --> added when view is not available.
+  private val observers = arrayMapOf<LifecycleObserver, Boolean>()
+
+  internal fun addLifecycleObserver(observer: LifecycleObserver) {
+    if (view != null) {
+      observers[observer] = false
+      viewLifecycleOwner.lifecycle.addObserver(observer)
+    } else observers[observer] = true
+  }
+
+  internal fun removeLifecycleObserver(observer: LifecycleObserver) {
+    if (observers[observer] == false) {
+      viewLifecycleOwner.lifecycle.removeObserver(observer)
+    }
+
+    observers.remove(observer)
   }
 }

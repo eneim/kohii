@@ -20,6 +20,8 @@ import kohii.ReleaseInfo
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
+group = "kohii.v1"
+
 task androidJavadocs(type: Javadoc) {
   failOnError = false
   source = android.sourceSets.main.java.srcDirs

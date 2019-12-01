@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt2
+package kohii.v1.experiments.internal
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.AbstractPlayable
@@ -22,7 +22,7 @@ import kohii.v1.core.Bridge
 import kohii.v1.core.Master
 import kohii.v1.media.Media
 
-class YouTube2Playable(
+internal class UnofficialYouTubePlayerPlayable(
   master: Master,
   media: Media,
   config: Config,

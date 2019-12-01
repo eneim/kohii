@@ -14,27 +14,31 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt2
+package kohii.v1.experiments.internal
 
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
+import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.media.Media
 
-class YouTube2PlayableCreator(private val master: Master) : PlayableCreator<YouTubePlayerView>(
-    YouTubePlayerView::class.java
-) {
+internal class OfficialYouTubePlayerPlayableCreator(private val master: Master) :
+    PlayableCreator<YouTubePlayerFragment>(
+        YouTubePlayerFragment::class.java
+    ) {
 
   override fun createPlayable(
     config: Config,
     media: Media
   ): Playable {
-    return YouTube2Playable(master, media, config, YouTube2Bridge(media))
+    return OfficialYouTubePlayerPlayable(
+        master, media, config,
+        OfficialYouTubePlayerBridge(media)
+    )
   }
 
   override fun cleanUp() {
-    // nothing to do
+    // nothing to doo
   }
 }

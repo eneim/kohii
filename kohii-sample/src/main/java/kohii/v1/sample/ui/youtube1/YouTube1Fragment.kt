@@ -22,9 +22,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
+import kohii.v1.experiments.OfficialYouTubePlayerEngine
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.yt1.YouTube1Engine
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class YouTube1Fragment : BaseFragment() {
@@ -48,7 +48,7 @@ class YouTube1Fragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val engine = YouTube1Engine(requireContext())
+    val engine = OfficialYouTubePlayerEngine[this]
     engine.register(this)
         .addBucket(recyclerView)
 

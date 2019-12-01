@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt2
+package kohii.v1.experiments.internal
 
 import android.util.Log
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError
@@ -36,7 +36,7 @@ import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 import kotlin.properties.Delegates
 
-internal class YouTube2Bridge(
+internal class UnofficialYouTubePlayerBridge(
   private val media: Media
 ) : AbstractBridge<YouTubePlayerView>() {
 
@@ -69,6 +69,7 @@ internal class YouTube2Bridge(
   )
 
   private val tracker = LocalPlayerTracker()
+
   private val playerListener = object : AbstractYouTubePlayerListener() {
     override fun onStateChange(
       youTubePlayer: YouTubePlayer,
@@ -150,30 +151,33 @@ internal class YouTube2Bridge(
   }
 
   override fun prepare(loadSource: Boolean) {
-    // no-ops
+    // do nothing
   }
 
   override fun ready() {
-    player?.cueVideo(media.uri.toString(), _playbackInfo.resumePosition.toFloat())
-  }
-
-  private val startCallback = object : YouTubePlayerCallback {
-    override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
-      player = youTubePlayer
-      youTubePlayer.loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toFloat())
-    }
+    // do nothing
   }
 
   override fun play() {
     if (videoSize == VideoSize.NONE) return
-    if (tracker.state !== PLAYING || tracker.videoId != media.uri.toString()) {
+    val videoId = media.uri.toString()
+    if (tracker.state != PLAYING || tracker.videoId != videoId) {
       val player = this.player
-      val playerView = requireNotNull(renderer)
-      if (tracker.videoId == media.uri.toString() && player != null) {
+      if (tracker.videoId == videoId && player != null) {
         player.play()
       } else {
-        player?.loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toFloat())
-            ?: playerView.getYouTubePlayerWhenReady(startCallback)
+        val startPos = _playbackInfo.resumePosition.toFloat()
+        player?.loadVideo(videoId, startPos)
+            ?: run {
+              val playerView = requireNotNull(renderer)
+              val callback = object : DelayedYouTubePlayerCallback(videoId, startPos) {
+                override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                  this@UnofficialYouTubePlayerBridge.player = youTubePlayer
+                  super.onYouTubePlayer(youTubePlayer)
+                }
+              }
+              playerView.getYouTubePlayerWhenReady(callback)
+            }
       }
     }
   }
@@ -229,6 +233,15 @@ internal class YouTube2Bridge(
       videoId: String
     ) {
       this.videoId = videoId
+    }
+  }
+
+  internal open class DelayedYouTubePlayerCallback(
+    private val videoId: String,
+    private val startPos: Float
+  ) : YouTubePlayerCallback {
+    override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+      youTubePlayer.loadVideo(videoId, startPos)
     }
   }
 }

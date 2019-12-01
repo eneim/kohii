@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package kohii.v1.yt1
+package kohii.v1.experiments
 
-import kohii.v1.core.Playback
-import kohii.v1.core.RecycledRendererProvider
+import com.google.android.youtube.player.YouTubePlayer
 
-internal class YouTube1RendererProvider : RecycledRendererProvider() {
-
-  override fun createRenderer(
-    playback: Playback,
-    rendererType: Int
-  ): YouTubePlayerFragment {
-    return YouTubePlayerFragment.newInstance()
+internal fun YouTubePlayer.performRelease() {
+  try {
+    setPlayerStateChangeListener(null)
+    setPlaybackEventListener(null)
+    setPlaylistEventListener(null)
+    setOnFullscreenListener(null)
+    setManageAudioFocus(false)
+    setShowFullscreenButton(false)
+    release()
+  } catch (error: Exception) {
+    error.printStackTrace()
   }
 }

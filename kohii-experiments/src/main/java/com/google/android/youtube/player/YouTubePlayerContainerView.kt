@@ -26,7 +26,7 @@ import android.widget.FrameLayout
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 
-class YouTubePlayerContainerView @JvmOverloads constructor(
+internal class YouTubePlayerContainerView @JvmOverloads constructor(
   context: Context,
   attrs: AttributeSet? = null,
   defStyleAttr: Int = 0
@@ -34,13 +34,11 @@ class YouTubePlayerContainerView @JvmOverloads constructor(
 
   internal var activity: Activity =
     context as? Activity ?: throw IllegalArgumentException("Need Activity")
-
   internal var playerView: YouTubePlayerView? = null
-
-  val playerState: Bundle?
+  internal val playerState: Bundle?
     get() = playerView?.e()
 
-  fun initPlayer(
+  internal fun initPlayer(
     lifecycleOwner: LifecycleOwner,
     playerState: Bundle?
   ) {
@@ -54,7 +52,9 @@ class YouTubePlayerContainerView @JvmOverloads constructor(
             view.a(activity, view, apiKey, onInitializedListener, playerState)
           }
 
-          override fun a(youTubePlayerView: YouTubePlayerView) {}
+          override fun a(view: YouTubePlayerView) {
+            view.a()
+          }
         })
     val params = LayoutParams(MATCH_PARENT, MATCH_PARENT)
     params.gravity = Gravity.CENTER
@@ -67,30 +67,31 @@ class YouTubePlayerContainerView @JvmOverloads constructor(
     apiKey: String,
     onInitializedListener: YouTubePlayer.OnInitializedListener?
   ) {
-    this.playerView?.initialize(apiKey, onInitializedListener)
+    playerView?.initialize(apiKey, onInitializedListener)
   }
 
   override fun onStart(owner: LifecycleOwner) {
-    if (this.playerView != null) playerView!!.a()
+    playerView?.a()
   }
 
   override fun onResume(owner: LifecycleOwner) {
-    if (this.playerView != null) playerView!!.b()
+    playerView?.b()
   }
 
   override fun onPause(owner: LifecycleOwner) {
-    if (this.playerView != null) playerView!!.c()
+    playerView?.c()
   }
 
   override fun onStop(owner: LifecycleOwner) {
-    if (this.playerView != null) playerView!!.d()
+    playerView?.d()
   }
 
   override fun onDestroy(owner: LifecycleOwner) {
     owner.lifecycle.removeObserver(this)
-    this.playerView?.let {
+    playerView?.let {
       it.c(activity.isFinishing)
       it.removeAllViews()
     }
+    playerView = null
   }
 }
