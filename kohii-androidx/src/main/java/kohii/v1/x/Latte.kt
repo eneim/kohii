@@ -17,18 +17,33 @@
 package kohii.v1.x
 
 import android.content.Context
+import androidx.fragment.app.Fragment
 import androidx.media2.widget.VideoView
+import kohii.v1.Experiment
 import kohii.v1.core.Engine
-import kohii.v1.core.Group
+import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
+import kohii.v1.utils.SingletonHolder
 
-// Not production ready!
-class Latte(
-  context: Context,
-  playableCreator: PlayableCreator<VideoView> = VideoViewPlayableCreator(Master[context])
-) : Engine<VideoView>(context, playableCreator) {
-  override fun inject(group: Group) {
-    group.registerRendererProvider(VideoView::class.java, VideoViewProvider())
+@Experiment
+class Latte private constructor(
+  master: Master,
+  playableCreator: PlayableCreator<VideoView> = VideoViewPlayableCreator(master)
+) : Engine<VideoView>(master, playableCreator) {
+
+  private constructor(context: Context) : this(Master[context])
+
+  companion object : SingletonHolder<Latte, Context>(::Latte) {
+
+    @JvmStatic
+    operator fun get(context: Context) = super.getInstance(context)
+
+    @JvmStatic
+    operator fun get(fragment: Fragment) = get(fragment.requireContext())
+  }
+
+  override fun prepare(manager: Manager) {
+    manager.registerRendererProvider(VideoView::class.java, VideoViewProvider())
   }
 }
