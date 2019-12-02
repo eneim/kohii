@@ -96,6 +96,8 @@ object Libs {
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
     val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
 
+    val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.1.0-rc01"
+
     object Media {
       private const val version = "1.0.1"
       val widget = "androidx.media2:media2-widget:$version"
