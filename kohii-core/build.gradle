@@ -125,6 +125,6 @@ tasks.withType(Javadoc).all {
   enabled = false
 }
 
-project.archivesBaseName = "kohii"
+project.archivesBaseName = "kohii-core"
 // apply from: rootProject.file('gradle/publish.gradle')
 apply from: rootProject.file('gradle/release_bintray_official.gradle')

@@ -68,7 +68,7 @@ afterEvaluate { project ->
 }
 
 dependencies {
-  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  api fileTree(dir: 'libs', include: ['YouTubeAndroidPlayerApi.jar'])
   implementation project(':kohii-core')
 
   implementation Libs.ExoPlayer.core
