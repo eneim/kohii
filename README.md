@@ -6,8 +6,8 @@
 
 Video playback for Android made easy.
 
-![Bintray](https://img.shields.io/bintray/v/eneimlabs/kohii/kohii)
-![Maven Central](https://img.shields.io/maven-central/v/im.ene.kohii/kohii)
+![Bintray](https://img.shields.io/bintray/v/eneimlabs/kohii/kohii-core)
+![Maven Central](https://img.shields.io/maven-central/v/im.ene.kohii/kohii-core)
 [![](https://yourdonation.rocks/images/badge.svg)](https://github.com/sponsors/eneim)
 
 **Kohii** is a high level Video playback library, built from the experience creating [toro](https://github.com/eneim/toro) and contributing to [ExoPlayer](https://github.com/google/ExoPlayer). **Kohii** focuses on the Video playback on Android, giving developer powerful playback control, including 
@@ -37,8 +37,8 @@ allprojects {
 
 ```groovy
 // Add these to app level build.gradle (or to module that will use Kohii)
-implementation "im.ene.kohii:kohii:1.0.0.2010004-B1" // core library
-implementation "im.ene.kohii:kohii-exoplayer:1.0.0.2010004-B1" // default support for ExoPlayer
+implementation "im.ene.kohii:kohii-core:1.0.0.2010004-B2" // core library
+implementation "im.ene.kohii:kohii-exoplayer:1.0.0.2010004-B2" // default support for ExoPlayer
 implementation "com.google.android.exoplayer:exoplayer:2.10.4" // required ExoPlayer implementation.
 ```
 
