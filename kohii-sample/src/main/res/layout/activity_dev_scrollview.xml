@@ -14,50 +14,63 @@
   ~ limitations under the License.
   -->
 
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/scrollView"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-
-  <androidx.appcompat.widget.LinearLayoutCompat
-      android:id="@+id/content"
+  <androidx.core.widget.NestedScrollView
+      android:id="@+id/scrollView"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="vertical"
+      android:layout_height="match_parent"
       >
 
-    <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/playerView1"
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="240dp"
-        app:resize_mode="fixed_width"
-        app:surface_type="texture_view"
-        />
+        android:orientation="vertical"
+        >
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/small_text"
-        />
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:id="@+id/playerView1"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="240dp"
+          app:resize_mode="fixed_width"
+          app:surface_type="texture_view"
+          />
 
-    <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/playerView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="240dp"
-        android:visibility="gone"
-        app:resize_mode="fixed_width"
-        app:surface_type="texture_view"
-        />
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="@string/small_text"
+          />
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/large_text"
-        />
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:id="@+id/playerView2"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="240dp"
+          app:resize_mode="fixed_width"
+          app:surface_type="texture_view"
+          />
 
-  </androidx.appcompat.widget.LinearLayoutCompat>
-</androidx.core.widget.NestedScrollView>
+      <androidx.appcompat.widget.AppCompatTextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="@string/large_text"
+          />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+  </androidx.core.widget.NestedScrollView>
+
+  <com.google.android.exoplayer2.ui.PlayerControlView
+      android:id="@+id/controlView"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom"
+      android:minHeight="160dp"
+      />
+</FrameLayout>
