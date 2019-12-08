@@ -74,7 +74,6 @@ dependencies {
   implementation Libs.AndroidX.Media.player
   implementation Libs.AndroidX.Media.session
   implementation Libs.AndroidX.Media.widget
-  implementation "com.google.guava:guava:28.1-android"
 
   implementation Libs.ExoPlayer.core
 

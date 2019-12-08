@@ -20,14 +20,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.exoplayer2.ControlDispatcher
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Manager
+import kohii.v1.core.Manager.OnSelectionListener
+import kohii.v1.core.Playback
 import kohii.v1.exoplayer.DefaultControlDispatcher
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.databinding.ActivityDevScrollviewBinding
 
-class DevScrollViewFragment : BaseFragment() {
+class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
 
   lateinit var binding: ActivityDevScrollviewBinding
 
@@ -51,14 +55,46 @@ class DevScrollViewFragment : BaseFragment() {
     kohii = Kohii[this]
     manager = kohii.register(this)
         .addBucket(binding.scrollView)
+
     kohii.setUp(DemoApp.assetVideoUri) {
       tag = "player::0"
       controller = DefaultControlDispatcher(
           manager, binding.playerView1,
-          kohiiCanStart = false,
-          kohiiCanPause = false
+          kohiiCanStart = true,
+          kohiiCanPause = true
       )
     }
         .bind(binding.playerView1)
+
+    kohii.setUp("https://content.jwplatform.com/manifests/Cl6EVHgQ.m3u8") {
+      tag = "player::1"
+      controller = DefaultControlDispatcher(
+          manager, binding.playerView2,
+          kohiiCanStart = true,
+          kohiiCanPause = true
+      )
+    }
+        .bind(binding.playerView2)
+  }
+
+  override fun onSelection(selection: Collection<Playback>) {
+    val playback = selection.firstOrNull()
+    if (playback != null) {
+      binding.controlView.showTimeoutMs = -1 // non-positive so it will never hide
+      binding.controlView.show()
+      val container = playback.container
+      if (container is PlayerView) {
+        container.useController = false // if you want to only use the global controller.
+        binding.controlView.player = container.player
+      }
+      val controller = playback.config.controller
+      if (controller is ControlDispatcher) {
+        binding.controlView.setControlDispatcher(controller)
+      }
+    } else {
+      binding.controlView.setControlDispatcher(null)
+      binding.controlView.player = null
+      binding.controlView.hide()
+    }
   }
 }

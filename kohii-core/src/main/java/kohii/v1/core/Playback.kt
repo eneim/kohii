@@ -241,7 +241,6 @@ abstract class Playback(
   internal open fun onPlay() {
     "Playback#onPlay $this".logDebug()
     container.keepScreenOn = true
-    // listeners.forEach { it.beforePlay(this) }
     artworkHintListener?.onArtworkHint(
         playerState == STATE_ENDED, playbackInfo.resumePosition, playerState
     )
@@ -252,7 +251,6 @@ abstract class Playback(
     container.keepScreenOn = false
     "Playback#onPause $this".logDebug()
     artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
-    // listeners.forEach { it.afterPause(this) }
   }
 
   // Will be updated everytime 'onRefresh' is called.
