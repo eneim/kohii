@@ -42,7 +42,7 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
 
 // Return a View that is ancestor of container, and has direct parent is a CoordinatorLayout
 internal fun findCoordinatorLayoutDirectChildContainer(
-  root: View,
+  root: View?,
   target: View?
 ): View? {
   var view = target

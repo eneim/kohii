@@ -25,6 +25,7 @@ import kohii.v1.core.Common
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
+import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
@@ -37,8 +38,9 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   companion object {
     const val videoUrl =
-      // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
-      "https://content.jwplatform.com/manifests/146UwF4L.m3u8" // Big Buck Bunny
+    // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
+      // "https://content.jwplatform.com/manifests/146UwF4L.m3u8" // Big Buck Bunny
+      assetVideoUri
 
     fun newInstance() = ScrollViewFragment().also {
       it.arguments = Bundle()

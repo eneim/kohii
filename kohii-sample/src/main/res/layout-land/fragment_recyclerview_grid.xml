@@ -14,21 +14,24 @@
   ~ limitations under the License.
   -->
 
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/container"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     >
 
-  <androidx.fragment.app.FragmentContainerView
-      android:id="@+id/mainPanel"
-      android:name="kohii.v1.sample.ui.grid.GridContentFragment"
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/container"
       android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="1"
+      android:layout_height="match_parent"
+      android:clipToPadding="false"
+      android:orientation="vertical"
+      android:layout_marginStart="16dp"
+      android:layout_marginEnd="16dp"
+      android:padding="4dp"
+      app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+      app:spanCount="@integer/grid_span"
       />
 
-</androidx.appcompat.widget.LinearLayoutCompat>
+</FrameLayout>
