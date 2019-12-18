@@ -26,12 +26,9 @@ import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
-import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
-import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
-import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
-import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView
+import kohii.v1.sample.databinding.FragmentScrollViewBinding
 
 @Keep
 class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
@@ -50,6 +47,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
   private lateinit var kohii: Kohii
+  private lateinit var binding: FragmentScrollViewBinding
   private var playback: Playback? = null
 
   override fun onCreateView(
@@ -57,7 +55,8 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    return inflater.inflate(R.layout.fragment_scroll_view, container, false)
+    binding = FragmentScrollViewBinding.inflate(inflater, container, false)
+    return binding.root
   }
 
   override fun onViewCreated(
@@ -67,18 +66,15 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(scrollView)
-  }
+        .addBucket(binding.scrollView)
 
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
     val rebinder = kohii.setUp(videoUrl) {
       tag = videoTag
       repeatMode = Common.REPEAT_MODE_ONE
     }
-        .bind(playerView) { playback = it }
+        .bind(binding.playerView) { playback = it }
 
-    playerContainer.setOnClickListener {
+    binding.playerContainer.setOnClickListener {
       rebinder?.also {
         PlayerDialogFragment.newInstance(rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f))
             .show(childFragmentManager, videoTag)
@@ -88,7 +84,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   override fun onDestroyView() {
     super.onDestroyView()
-    playerContainer.setOnClickListener(null)
+    binding.playerContainer.setOnClickListener(null)
   }
 
   // BEGIN: PlayerDialogFragment.Callback
@@ -97,7 +93,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   }
 
   override fun onDialogInActive(rebinder: Rebinder) {
-    rebinder.bind(kohii, playerView) {
+    rebinder.bind(kohii, binding.playerView) {
       playback = it
     }
   }
