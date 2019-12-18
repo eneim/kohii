@@ -23,7 +23,9 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
 import androidx.core.util.Pools.Pool
+import kohii.v1.internal.BehaviorWrapper
 import kotlin.math.abs
 
 /**
@@ -39,8 +41,8 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
 }
 
 // Return a View that is ancestor of container, and has direct parent is a CoordinatorLayout
-fun findCoordinatorLayoutDirectChildContainer(
-  root: View,
+internal fun findCoordinatorLayoutDirectChildContainer(
+  root: View?,
   target: View?
 ): View? {
   var view = target
@@ -85,8 +87,15 @@ internal infix fun Rect.distanceTo(target: Pair<Pair<Int, Int>, Pair<Int, Int>>)
 }
 
 // Learn from Glide: com/bumptech/glide/manager/RequestManagerRetriever.java#L304
-fun Context.findActivity(): Activity? {
+internal fun Context.findActivity(): Activity? {
   return if (this is Activity) this else if (this is ContextWrapper) baseContext.findActivity() else null
+}
+
+/** Utility to help client to quickly fetch the original [Behavior] of a View if available */
+fun View.viewBehavior(): Behavior<*>? {
+  val params = layoutParams
+  val behavior = if (params is CoordinatorLayout.LayoutParams) params.behavior else null
+  return if (behavior is BehaviorWrapper) behavior.delegate else behavior
 }
 
 // Because I want to compose the message first, then log it.

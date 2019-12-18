@@ -30,6 +30,7 @@ import kohii.v1.sample.R
 import kohii.v1.sample.data.Video
 import kotlin.properties.Delegates
 
+@Suppress("MemberVisibilityCanBePrivate")
 internal class VideoItemHolder(
   inflater: LayoutInflater,
   parent: ViewGroup,
@@ -46,13 +47,9 @@ internal class VideoItemHolder(
   internal val thumbnail = itemView.findViewById(R.id.videoImage) as ImageView
   internal val playerViewContainer = itemView.findViewById(R.id.playerViewContainer) as ViewGroup
   internal val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
+  internal val container = itemView.findViewById(R.id.playerContainer) as View
 
-  init {
-    itemView.findViewById<View>(R.id.playerContainer)
-        .setOnClickListener(this)
-  }
-
-  internal var videoData: Video? by Delegates.observable<Video?>(
+  internal var videoData by Delegates.observable<Video?>(
       initialValue = null,
       onChange = { _, _, value ->
         if (value != null) {
@@ -82,12 +79,39 @@ internal class VideoItemHolder(
     thumbnail.isVisible = true
   }
 
+  override fun onAttached() {
+    super.onAttached()
+    container.setOnClickListener(this)
+  }
+
+  override fun onDetached() {
+    super.onDetached()
+    container.setOnClickListener(null)
+  }
+
   override fun onArtworkHint(
     shouldShow: Boolean,
     position: Long,
     state: Int
   ) {
-    thumbnail.isVisible = shouldShow
+    if (!shouldShow) {
+      thumbnail.animate()
+          .alpha(0F)
+          .setDuration(200)
+          .withEndAction {
+            thumbnail.isVisible = false
+          }
+          .start()
+    } else {
+      thumbnail.alpha = 1F
+      thumbnail.animate()
+          .alpha(1F)
+          .setDuration(0)
+          .withEndAction {
+            thumbnail.isVisible = true
+          }
+          .start()
+    }
   }
 
   override fun toString(): String {

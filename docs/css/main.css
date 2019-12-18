@@ -1,4 +1,23 @@
-.md-typeset h1, .md-typeset h2, .md-typeset h3, .md-typeset h4 {
+@font-face {
+    font-family: Lora;
+    src: url('../fonts/lora/Lora-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: Lora;
+    src: url('../fonts/lora/Lora-Bold.ttf') format('truetype');
+    font-weight: 700;
     font-weight: bold;
-    color: #353535;
+    font-style: normal;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-family: 'Lora', serif;
+  font-weight: bold;
+  color: #353535;
 }

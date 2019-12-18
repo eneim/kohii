@@ -221,6 +221,9 @@ class Master private constructor(context: Context) : PlayableManager {
     managerLifecycleOwner: LifecycleOwner,
     memoryMode: MemoryMode = AUTO
   ): Manager {
+    require(!activity.isDestroyed) {
+      "Cannot register a destroyed Activity: $activity"
+    }
     val group = groups.find { it.activity === activity } ?: Group(
         this, activity
     ).also {

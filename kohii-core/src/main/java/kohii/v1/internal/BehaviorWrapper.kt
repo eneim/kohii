@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("DEPRECATION")
 internal class BehaviorWrapper<V : View>(
-  private val delegate: Behavior<in V>,
+  internal val delegate: Behavior<in V>,
   manager: Manager
 ) : Behavior<V>(null, null), Handler.Callback {
 
@@ -59,9 +59,10 @@ internal class BehaviorWrapper<V : View>(
             EVENT_DELAY
         )
       }
-      EVENT_IDLE ->
+      EVENT_IDLE -> {
         // idle --> consume it.
         if (!scrollConsumed.getAndSet(true)) weakManager.get()?.refresh()
+      }
     }
     return true
   }

@@ -23,7 +23,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     >
 
-  <fragment
+  <androidx.fragment.app.FragmentContainerView
       android:id="@+id/mainPanel"
       android:name="kohii.v1.sample.ui.grid.GridContentFragment"
       android:layout_width="match_parent"

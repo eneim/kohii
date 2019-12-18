@@ -62,7 +62,6 @@
 /docs/api/
 /docs/changelog.md
 /docs/code_of_conduct.md
-/docs/index.md
 /site/
 /docs/art/
 /kohii-experiments/.gitignore
@@ -71,3 +70,6 @@
 /kohii-experiments/proguard-rules.pro
 /kohii-experiments/src/androidTest/
 /kohii-experiments/src/test/
+.settings/
+.classpath
+.project

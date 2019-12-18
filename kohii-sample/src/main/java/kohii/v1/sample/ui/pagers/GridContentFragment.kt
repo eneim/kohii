@@ -26,7 +26,7 @@ import kohii.v1.core.Prioritized
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kotlinx.android.synthetic.main.fragment_debug_child.container
+import kohii.v1.sample.databinding.FragmentRecyclerviewGridBinding
 
 class GridContentFragment : BaseFragment(), Prioritized {
 
@@ -41,6 +41,7 @@ class GridContentFragment : BaseFragment(), Prioritized {
   }
 
   private lateinit var kohii: Kohii
+  private lateinit var binding: FragmentRecyclerviewGridBinding
   private val pagePos: Int
     get() = arguments?.getInt(EXTRA_PAGE_POS) ?: -1
 
@@ -49,7 +50,8 @@ class GridContentFragment : BaseFragment(), Prioritized {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    return inflater.inflate(R.layout.fragment_debug_child, container, false)
+    binding = FragmentRecyclerviewGridBinding.inflate(inflater, container, false)
+    return binding.root
   }
 
   override fun onViewCreated(
@@ -59,7 +61,7 @@ class GridContentFragment : BaseFragment(), Prioritized {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     kohii.register(this, MemoryMode.LOW)
-        .addBucket(container)
+        .addBucket(binding.container)
 
     val spanCount = resources.getInteger(R.integer.grid_span)
     val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -68,7 +70,7 @@ class GridContentFragment : BaseFragment(), Prioritized {
       }
     }
 
-    (container.layoutManager as? GridLayoutManager)?.spanSizeLookup = spanSizeLookup
-    container.adapter = ItemsAdapter(kohii, pagePos)
+    (binding.container.layoutManager as? GridLayoutManager)?.spanSizeLookup = spanSizeLookup
+    binding.container.adapter = ItemsAdapter(kohii, pagePos)
   }
 }

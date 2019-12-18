@@ -94,8 +94,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
   override fun onStart() {
     super.onStart()
-    val rebinder =
-      requireNotNull(requireArguments().getParcelable<Rebinder>(KEY_REBINDER))
+    val rebinder: Rebinder = requireNotNull(requireArguments().getParcelable(KEY_REBINDER))
     rebinder.with {
       callbacks += this@PlayerDialogFragment
     }

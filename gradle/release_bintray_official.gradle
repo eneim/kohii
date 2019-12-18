@@ -20,7 +20,8 @@ import kohii.ReleaseInfo
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-group = "kohii.v1"
+group = "im.ene.kohii"
+version = BuildConfig.releaseVersionName
 
 task androidJavadocs(type: Javadoc) {
   failOnError = false
@@ -86,6 +87,7 @@ project.afterEvaluate {
           ext.addDependency = { Dependency dep, String scope ->
             if (dep.group == null ||
                 dep.version == null ||
+                dep.version == "unspecified" ||
                 dep.name == null ||
                 dep.name == "unspecified") {
               return

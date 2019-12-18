@@ -28,7 +28,6 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.appbar.AppBarLayout.ScrollingViewBehavior
 import kohii.v1.findCoordinatorLayoutDirectChildContainer
 import kohii.v1.internal.BehaviorWrapper
 import kohii.v1.internal.NestedScrollViewBucket
@@ -91,12 +90,12 @@ abstract class Bucket constructor(
 
   private val containers = mutableSetOf<Any>()
 
-  // The direct child of CoordinatorLayout that is an ancestor of this root if exist.
-  private val rootContainer: CoordinatorLayout? by lazy(NONE) {
-    val found = findCoordinatorLayoutDirectChildContainer(
+  private val behaviorHolder by lazy(NONE) {
+    val container = findCoordinatorLayoutDirectChildContainer(
         manager.group.activity.window.peekDecorView(), root
     )
-    return@lazy if (found is CoordinatorLayout) found else null
+    val params = container?.layoutParams
+    return@lazy if (params is CoordinatorLayout.LayoutParams) params else null
   }
 
   abstract fun accepts(container: ViewGroup): Boolean
@@ -159,22 +158,22 @@ abstract class Bucket constructor(
 
   @CallSuper
   open fun onAttached() {
-    val containerParam = rootContainer?.layoutParams
-    if (containerParam is CoordinatorLayout.LayoutParams) {
-      if (containerParam.behavior is ScrollingViewBehavior) {
-        val behaviorWrapper =
-          BehaviorWrapper(containerParam.behavior!!, manager)
-        containerParam.behavior = behaviorWrapper
+    behaviorHolder?.let {
+      val behavior = it.behavior
+      if (behavior != null) {
+        val behaviorWrapper = BehaviorWrapper(behavior, manager)
+        it.behavior = behaviorWrapper
       }
     }
   }
 
   @CallSuper
   open fun onDetached() {
-    val containerParam = rootContainer?.layoutParams
-    if (containerParam is CoordinatorLayout.LayoutParams) {
-      if (containerParam.behavior is BehaviorWrapper) {
-        (containerParam.behavior as BehaviorWrapper).onDetach()
+    behaviorHolder?.let {
+      val behavior = it.behavior
+      if (behavior is BehaviorWrapper) {
+        behavior.onDetach()
+        it.behavior = behavior.delegate
       }
     }
   }

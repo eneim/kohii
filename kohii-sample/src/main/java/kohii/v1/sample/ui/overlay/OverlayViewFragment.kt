@@ -31,6 +31,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCa
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.core.Scope
@@ -41,17 +42,14 @@ import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.TransitionListenerAdapter
 import kohii.v1.sample.common.getApp
-import kotlinx.android.synthetic.main.fragment_recycler_view_motion.actionButton
-import kotlinx.android.synthetic.main.fragment_recycler_view_motion.bottomSheet
-import kotlinx.android.synthetic.main.fragment_recycler_view_motion.recyclerView
-import kotlinx.android.synthetic.main.fragment_recycler_view_motion.videoOverlay
-import kotlinx.android.synthetic.main.video_overlay_fullscreen.overlayPlayerView
-import kotlinx.android.synthetic.main.video_overlay_fullscreen.video_player_container
+import kohii.v1.sample.databinding.FragmentRecyclerViewMotionBinding
+import kohii.v1.viewBehavior
 import kotlin.properties.Delegates
 
 /**
  * @author eneim (2018/07/06).
  */
+@Suppress("MemberVisibilityCanBePrivate")
 @Keep
 class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPressConsumer {
 
@@ -61,9 +59,24 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
   private val overlayViewModel: OverlayViewModel by viewModels()
 
-  private var playback: Playback? = null
+  private val sheetCallback = object : BottomSheetCallback() {
+    override fun onSlide(
+      bottomSheet: View,
+      slideOffset: Float
+    ) {
+      binding.motionLayout.progress = 1F - slideOffset.coerceIn(0F, 1F)
+    }
 
-  private var selection: Pair<Int, Rebinder?> by Delegates.observable<Pair<Int, Rebinder?>>(
+    override fun onStateChanged(
+      bottomSheet: View,
+      state: Int
+    ) {
+      if (state == STATE_HIDDEN) deselectRebinder()
+    }
+  }
+
+  private var playback: Playback? = null
+  private var selection by Delegates.observable<Pair<Int, Rebinder?>>(
       initialValue = -1 to null,
       onChange = { _, from, to ->
         if (from == to) return@observable
@@ -71,17 +84,17 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         val (newPos, newRebinder) = to
         if (newRebinder != null) {
           if (overlaySheet.state == STATE_HIDDEN) overlaySheet.state = STATE_EXPANDED
-          newRebinder.bind(kohii, overlayPlayerView) {
+          newRebinder.bind(kohii, binding.overlayPlayerView) {
             kohii.stick(it)
             playback = it
           }
-          recyclerView.adapter?.notifyItemChanged(newPos)
+          binding.recyclerView.adapter?.notifyItemChanged(newPos)
         } else {
           if (oldRebinder != null) {
             playback?.also {
-              val vh = recyclerView.findViewHolderForAdapterPosition(oldPos)
+              val vh = binding.recyclerView.findViewHolderForAdapterPosition(oldPos)
               if (vh == null) it.unbind() // the VH is out of viewport.
-              else recyclerView.adapter?.notifyItemChanged(vh.adapterPosition)
+              else binding.recyclerView.adapter?.notifyItemChanged(vh.adapterPosition)
             }
             playback = null
           }
@@ -89,37 +102,20 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       }
   )
 
-  private lateinit var motionLayout: MotionLayout
-  private lateinit var overlaySheet: BottomSheetBehavior<*>
   private lateinit var kohii: Kohii
-
-  private val sheetCallback = object : BottomSheetCallback() {
-    override fun onSlide(
-      bottomSheet: View,
-      slideOffset: Float
-    ) {
-      motionLayout.progress = 1 - slideOffset.coerceIn(0F, 1F)
-    }
-
-    override fun onStateChanged(
-      bottomSheet: View,
-      state: Int
-    ) {
-      if (state == STATE_HIDDEN) {
-        deselectRebinder()
-      }
-    }
-  }
+  private lateinit var manager: Manager
+  private lateinit var binding: FragmentRecyclerViewMotionBinding
+  private lateinit var overlaySheet: BottomSheetBehavior<*>
+  private lateinit var adapter: VideoItemsAdapter
 
   override fun onCreateView(
     inflater: LayoutInflater,
     parent: ViewGroup?,
     state: Bundle?
   ): View? {
-    return inflater.inflate(R.layout.fragment_recycler_view_motion, parent, false)
+    binding = FragmentRecyclerViewMotionBinding.inflate(inflater, parent, false)
+    return binding.root
   }
-
-  internal lateinit var adapter: VideoItemsAdapter
 
   @SuppressLint("SetTextI18n")
   override fun onViewCreated(
@@ -128,47 +124,52 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   ) {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
-    val manager = kohii.register(this)
-        .addBucket(recyclerView, video_player_container)
-
-    motionLayout = videoOverlay as MotionLayout
+    manager = kohii.register(this)
+        .addBucket(binding.recyclerView, binding.videoPlayerContainer)
 
     adapter = VideoItemsAdapter(getApp().videos, kohii,
-        onVideoClick = { pos, rebinder -> selectRebinder(pos, rebinder) },
-        shouldBindVideo = { /* the Rebinder is not selected */ it != this.selection.second }
+        shouldBindVideo = { /* the Rebinder is not selected */ it != selection.second },
+        onVideoClick = { pos, rebinder -> selectRebinder(pos, rebinder) }
     )
 
-    recyclerView.let {
+    binding.recyclerView.let {
       it.setHasFixedSize(true)
       it.adapter = adapter
       it.layoutManager = LinearLayoutManager(context)
     }
 
-    actionButton.setOnClickListener {
+    binding.actionButton.setOnClickListener {
       val current = overlayViewModel.recyclerViewVolume.value!!
       overlayViewModel.recyclerViewVolume.value =
         VolumeInfo(!current.mute, current.volume)
     }
 
-    overlaySheet = BottomSheetBehavior.from(bottomSheet)
+    // We will fetch the behavior manually ...
+    // overlaySheet = BottomSheetBehavior.from(binding.motionLayout) // don't do this :(
+    overlaySheet = run {
+      val behavior = binding.motionLayout.viewBehavior()
+      check(behavior is BottomSheetBehavior)
+      behavior
+    }
+
     if (savedInstanceState == null) overlaySheet.state = STATE_HIDDEN
     overlaySheet.addBottomSheetCallback(sheetCallback)
 
     // Update overlay view's max width on collapse mode/landscape mode.
-    val constraintSet = motionLayout.getConstraintSet(R.id.end)
+    val constraintSet = binding.motionLayout.getConstraintSet(R.id.end)
     val collapseWidth = resources.getDimensionPixelSize(R.dimen.overlay_collapse_max_width)
     constraintSet.constrainMaxWidth(R.id.dummy_frame, collapseWidth)
-    constraintSet.applyTo(motionLayout)
-    motionLayout.setTransitionListener(this)
+    constraintSet.applyTo(binding.motionLayout)
+    binding.motionLayout.setTransitionListener(this)
 
     overlayViewModel.apply {
       overlayVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, video_player_container, Scope.BUCKET)
+        manager.applyVolumeInfo(it, binding.videoPlayerContainer, Scope.BUCKET)
       }
 
       recyclerViewVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, recyclerView, Scope.BUCKET)
-        actionButton.text = "Mute RV: ${it.mute}"
+        manager.applyVolumeInfo(it, binding.recyclerView, Scope.BUCKET)
+        binding.actionButton.text = "Mute RV: ${it.mute}"
       }
 
       selectedRebinder.observe(viewLifecycleOwner) {
@@ -185,17 +186,17 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   override fun onDestroyView() {
     super.onDestroyView()
     overlaySheet.removeBottomSheetCallback(sheetCallback)
-    recyclerView.adapter = null
+    binding.recyclerView.adapter = null
   }
 
   private fun restoreState() {
     if (overlaySheet.state == STATE_COLLAPSED) {
-      motionLayout.progress = 1F
+      binding.motionLayout.progress = 1F
     } else if (overlaySheet.state == STATE_EXPANDED) {
-      motionLayout.progress = 0F
+      binding.motionLayout.progress = 0F
     }
 
-    selection.second?.bind(kohii, overlayPlayerView) {
+    selection.second?.bind(kohii, binding.overlayPlayerView) {
       kohii.stick(it)
       playback = it
     }
@@ -209,7 +210,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     endId: Int,
     progress: Float
   ) {
-    overlayPlayerView.useController = progress < 0.2
+    binding.overlayPlayerView.useController = progress < 0.2
   }
 
   override fun consumeBackPress(): Boolean {
@@ -226,7 +227,6 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     }
   }
 
-  @Suppress("MemberVisibilityCanBePrivate")
   internal fun selectRebinder(
     position: Int,
     rebinder: Rebinder

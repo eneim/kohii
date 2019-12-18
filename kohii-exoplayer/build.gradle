@@ -71,8 +71,6 @@ dependencies {
   implementation project(':kohii-core')
 
   implementation Libs.ExoPlayer.all
-  implementation Libs.ExoPlayer.cast
-  implementation Libs.ExoPlayer.ima
 
   implementation Libs.Kotlin.stdlibJdk8
   implementation Libs.AndroidX.appcompat

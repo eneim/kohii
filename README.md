@@ -16,7 +16,7 @@ Video playback for Android made easy.
 2. Automatic playback experience on RecyclerView, NestedScrollView, ViewPager2, etc.
 3. Configuration change handling works out of the box, including the transition from local playback to fullscreen playback and vice versa. 
 4. Feature-rich sample app that covers either simple or advance use cases.
-5. Extension-based structure, including default implemenations that support ExoPlayer, AndroidX Media2, YouTube Player SDK. 
+5. Extension-based structure, including default implementations that support ExoPlayer, AndroidX Media2, YouTube Player SDK. 
 
 ## Demo
 
@@ -48,7 +48,7 @@ implementation "com.google.android.exoplayer:exoplayer:2.10.4" // required ExoPl
 ## Start a playback
 
 ```Kotlin tab=
-// TODO: Have a videoUrl first.
+// Kotlin
 // 1. Initialization in Fragment or Activity
 val kohii = Kohii[this@Fragment]
 kohii.register(this /* Fragment or Activity */).addBucket(this.recyclerView)
@@ -58,7 +58,7 @@ kohii.setUp(videoUrl).bind(playerView)
 ```
 
 ```Java tab=
-// TODO: Have a videoUrl first.
+// Java
 // 1. Initialization in Fragment or Activity
 Kohii kohii = Kohii.get(this);
 kohii.register(this).addBucket(this.recyclerView);

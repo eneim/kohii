@@ -78,7 +78,8 @@ dependencies {
   implementation Libs.AndroidX.recyclerView
   implementation Libs.AndroidX.viewPager
   implementation Libs.AndroidX.viewPager2
-  implementation Libs.Google.material
+  implementation Libs.AndroidX.coordinatorLayout
+  // implementation Libs.Google.material
   implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.service
   api Libs.AndroidX.Lifecycle.java8
@@ -125,6 +126,6 @@ tasks.withType(Javadoc).all {
   enabled = false
 }
 
-project.archivesBaseName = "kohii"
+project.archivesBaseName = "kohii-core"
 // apply from: rootProject.file('gradle/publish.gradle')
 apply from: rootProject.file('gradle/release_bintray_official.gradle')

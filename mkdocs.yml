@@ -16,14 +16,15 @@ copyright: 'Copyright &copy; 2019 Nam Nguyen, nam@ene.im'
 theme:
   name: 'material'
   language: 'en'
-  favicon: 'art/kohii.ico'
+  favicon: 'art/favicon.ico'
   logo: 'art/ic_launcher-web.png'
   palette:
-    primary: 'black'
-    accent: 'white'
+    primary: 'blue grey'
+    accent: 'cyan'
   font:
-    text: 'Open Sans'
-    code: 'Roboto Mono'
+    # text: 'Open Sans'
+    text: 'Karla' # 'Karla', 'Noto Sans JP', 'Montserrat', 'Open Sans'
+    code: 'Roboto Mono' # 'Oxygen Mono', 'Fira Code', 'Roboto Mono'
 
 # Customization
 extra:
@@ -34,10 +35,15 @@ extra:
 # Navigation
 nav:
   - 'Overview': index.md
+  - 'Using Kohii':
+      - 'Getting start': usage/start.md
+      - 'Basic usages': usage/basic.md
+      - 'Advance usages': usage/advance.md
+      - 'Demo app': usage/demos.md
+  - 'Extending Kohii':
+      - 'Components': customize/terms.md
+      - 'Custom Engine': customize/custom_engine.md
   - 'Changelog': changelog.md
-  - 'Introduction': intro.md
-  - 'Terminology': terminology.md
-  - 'Design': design.md
   - 'API':
       - 'kohii-core': api/kohii-core/index.md
       - 'kohii-exoplayer': api/kohii-exoplayer/index.md
@@ -54,6 +60,9 @@ markdown_extensions:
   - admonition
   - codehilite:
       guess_lang: false
+      use_pygments: True
+      noclasses: True
+      pygments_style: perldoc
   - footnotes
   - toc:
       permalink: true
@@ -68,6 +77,7 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
   - tables
+  - footnotes
 
 
 # Plugins

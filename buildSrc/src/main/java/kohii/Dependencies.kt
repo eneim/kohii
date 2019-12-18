@@ -50,15 +50,15 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-B1"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.3"
 }
 
 @Suppress("MayBeConstant", "unused")
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-beta04"
-    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.0"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-rc01"
+    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.2"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
@@ -81,20 +81,22 @@ object Libs {
   }
 
   object AndroidX {
-    val activityKtx = "androidx.activity:activity-ktx:1.1.0-rc02"
+    val activityKtx = "androidx.activity:activity-ktx:1.1.0-rc03"
     val appcompat = "androidx.appcompat:appcompat:1.1.0"
     val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
     val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
     val benchmark = "androidx.benchmark:benchmark-junit4:1.0.0"
-    val browser = "androidx.browser:browser:1.2.0-beta01"
+    val browser = "androidx.browser:browser:1.2.0-rc01"
     val palette = "androidx.palette:palette-ktx:1.0.0"
     val emoji = "androidx.emoji:emoji:1.0.0"
 
     val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
-    val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-alpha06"
+    val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-beta01"
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
     val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
+
+    val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     object Media {
       private const val version = "1.0.1"
@@ -105,7 +107,7 @@ object Libs {
     }
 
     object Navigation {
-      private const val version = "2.2.0-rc02"
+      private const val version = "2.2.0-rc03"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
@@ -115,7 +117,7 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.0-rc02"
+      private const val version = "1.2.0-rc03"
       val fragment = "androidx.fragment:fragment:$version"
       val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
@@ -145,7 +147,7 @@ object Libs {
     val coreKtx = "androidx.core:core-ktx:1.2.0-rc01"
 
     object Lifecycle {
-      private const val version = "2.2.0-rc02"
+      private const val version = "2.2.0-rc03"
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
@@ -226,7 +228,7 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0-beta-5"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0"
     val okio = "com.squareup.okio:okio:2.4.1"
   }
 

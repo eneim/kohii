@@ -109,7 +109,6 @@ android {
 configurations {
   all {
     exclude module: 'httpclient'
-    exclude group: 'com.google.guava', module: 'listenablefuture'
   }
 }
 
@@ -161,9 +160,7 @@ dependencies {
   implementation Libs.Google.httpClientAndroid
   implementation Libs.Google.apiClientAndroid
   implementation Libs.Google.apiClientGson
-
   implementation Libs.Google.firebaseAnalytics
-  implementation Libs.Other.youtubePlayer
 
   debugImplementation Libs.Square.leakCanary
 

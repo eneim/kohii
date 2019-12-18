@@ -24,8 +24,8 @@ import kotlinx.android.parcel.Parcelize
  */
 @Parcelize
 data class PlaybackInfo(
-  var resumeWindow: Int,
-  var resumePosition: Long
+  var resumeWindow: Int, // TODO rename to windowIndex
+  var resumePosition: Long // TODO rename to position
 ) : Parcelable {
 
   constructor() : this(
