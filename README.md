@@ -48,7 +48,7 @@ implementation "com.google.android.exoplayer:exoplayer:2.10.4" // required ExoPl
 ## Start a playback
 
 ```Kotlin tab=
-// TODO: Have a videoUrl first.
+// Kotlin
 // 1. Initialization in Fragment or Activity
 val kohii = Kohii[this@Fragment]
 kohii.register(this /* Fragment or Activity */).addBucket(this.recyclerView)
@@ -58,7 +58,7 @@ kohii.setUp(videoUrl).bind(playerView)
 ```
 
 ```Java tab=
-// TODO: Have a videoUrl first.
+// Java
 // 1. Initialization in Fragment or Activity
 Kohii kohii = Kohii.get(this);
 kohii.register(this).addBucket(this.recyclerView);
