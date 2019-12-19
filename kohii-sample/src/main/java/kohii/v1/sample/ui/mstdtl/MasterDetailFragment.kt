@@ -21,21 +21,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import kohii.v1.Kohii
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
+import androidx.fragment.app.commit
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.ui.pagers.GridContentFragment
+import kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment
 import kotlinx.android.synthetic.main.fragment_master_detail.container
 
 /**
  * @author eneim (2018/07/13).
  */
-@Suppress("unused")
 @Keep
 class MasterDetailFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = MasterDetailFragment()
-    const val videoUrl = "https://storage.googleapis.com/wvmedia/clear/h264/tears/tears_hd.mpd"
   }
 
   override fun onCreateView(
@@ -46,8 +50,44 @@ class MasterDetailFragment : BaseFragment() {
     return inflater.inflate(R.layout.fragment_master_detail, container, false)
   }
 
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
-    Kohii[this].register(this, container)
+  lateinit var kohii: Kohii
+
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    kohii = Kohii[this]
+    kohii.register(this)
+        .addBucket(container)
+
+    if (savedInstanceState == null) {
+      childFragmentManager.commit {
+        replace(R.id.topContainer, ViewPager1WithFragmentsFragment.newInstance())
+        replace(R.id.bottomContainer, GridContentFragment.newInstance())
+      }
+    }
+
+    childFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
+      override fun onFragmentViewCreated(
+        fm: FragmentManager,
+        f: Fragment,
+        v: View,
+        savedInstanceState: Bundle?
+      ) {
+        if (f.id == R.id.topContainer) {
+          kohii.stick(f.viewLifecycleOwner)
+        }
+      }
+
+      override fun onFragmentViewDestroyed(
+        fm: FragmentManager,
+        f: Fragment
+      ) {
+        if (f.id == R.id.topContainer) {
+          kohii.unstick(f.viewLifecycleOwner)
+        }
+      }
+    }, false)
   }
 }

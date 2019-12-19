@@ -16,7 +16,7 @@
 
 package kohii.v1.sample.ui.fbook.player
 
-import kohii.v1.Rebinder
+import kohii.v1.core.Rebinder
 
 interface FloatPlayerController {
 

@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
-include ':kohii-sample', ':kohii'
+include ':kohii-core'
+include ':kohii-exoplayer'
+include ':kohii-sample'
+include ':kohii-androidx'
+include ':kohii-ads'
+include ':kohii-experiments'

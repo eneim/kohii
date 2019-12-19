@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,7 @@
   ~ limitations under the License.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
@@ -227,31 +225,25 @@
       tools:visibility="visible"
       >
 
-    <com.google.android.exoplayer2.ui.PlayerView
+    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
         android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        app:keep_content_on_player_reset="true"
         app:resize_mode="fixed_width"
-        app:show_buffering="when_playing"
-        app:surface_type="surface_view"
-        app:use_controller="false"
-        >
+        />
 
-      <androidx.appcompat.widget.AppCompatImageButton
-          android:id="@+id/volumeSwitch"
-          android:layout_width="48dp"
-          android:layout_height="48dp"
-          android:layout_gravity="bottom|end"
-          android:layout_margin="@dimen/activity_horizontal_margin"
-          android:background="?attr/selectableItemBackgroundBorderless"
-          android:padding="4dp"
-          android:scaleType="fitCenter"
-          app:srcCompat="@drawable/fb_volume_switch"
-          />
-
-    </com.google.android.exoplayer2.ui.PlayerView>
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/volumeSwitch"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/fb_volume_switch"
+        />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/thumbnail"
@@ -268,6 +260,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Play Again"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
         android:visibility="gone"
         />
 

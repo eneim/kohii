@@ -20,8 +20,11 @@ import android.app.Activity
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Point
+import android.util.SparseArray
 import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
 
@@ -68,4 +71,18 @@ fun Activity.isLandscape(): Boolean {
 
 fun DialogFragment.requireWindow(): Window = checkNotNull(requireDialog().window) {
   "Window of Dialog is null"
+}
+
+inline fun <T> SparseArray<T>.getOrPut(
+  key: Int,
+  defaultValue: () -> T
+) = get(key) ?: defaultValue().also { put(key, it) }
+
+fun ViewGroup.inflateView(layoutId: Int): View {
+  return LayoutInflater.from(context)
+      .inflate(layoutId, this, false)
+}
+
+internal fun String.splitCases(): String {
+  return this.replace("(\\p{Ll})(\\p{Lu})".toRegex(), "$1 $2")
 }

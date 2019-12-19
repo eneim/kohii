@@ -1,0 +1,87 @@
+/*
+ * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *  
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *        
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import kohii.BuildConfig
+import kohii.Libs
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+  compileSdkVersion BuildConfig.compileSdkVersion
+
+  defaultConfig {
+    minSdkVersion BuildConfig.minSdkVersion
+    targetSdkVersion BuildConfig.targetSdkVersion
+    versionCode BuildConfig.releaseVersionCode
+    versionName BuildConfig.releaseVersionName
+
+    buildConfigField("String", "LIB_NAME", "\"" + "Kohii for ExoPlayer, v" + versionName + "\"")
+
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    consumerProguardFiles 'consumer-rules.pro'
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+}
+
+afterEvaluate { project ->
+  project.tasks.dokka {
+    outputDirectory = "$rootDir/docs/api"
+    outputFormat = "gfm"
+
+    externalDocumentationLink {
+      url = new URL("file://$rootDir/docs/api/kohii-core/")
+      packageListUrl = new URL("file://$rootDir/docs/api/kohii-core/package-list")
+    }
+  }
+}
+
+dependencies {
+  implementation project(':kohii-core')
+
+  implementation Libs.ExoPlayer.all
+
+  implementation Libs.Kotlin.stdlibJdk8
+  implementation Libs.AndroidX.appcompat
+  implementation Libs.AndroidX.coreKtx
+  implementation Libs.AndroidX.collectionKtx
+
+  testImplementation Libs.Common.junit
+  androidTestImplementation Libs.Common.junitExt
+  androidTestImplementation Libs.AndroidX.Test.espressoCore
+}
+
+project.archivesBaseName = "kohii-exoplayer"
+// apply from: rootProject.file('gradle/publish.gradle')
+apply from: rootProject.file('gradle/release_bintray_official.gradle')

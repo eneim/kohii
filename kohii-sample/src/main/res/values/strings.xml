@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,13 @@
 <resources>
   <string name="app_name">Kohii in Action</string>
 
-  <item name="motion_view_tag" format="integer" type="id"/>
+  <item name="motion_view_tag" format="integer" type="id" />
+
+  <string name="small_text">
+    "All material objects, regardless of size, have a resting elevation, or default elevation "
+    "that does not change. If an object changes elevation, it should return to its resting "
+    "elevation as soon as possible."
+  </string>
 
   <string name="large_text">
     "A material metaphor is the unifying theory of a rationalized space and a system of motion."
@@ -126,8 +131,17 @@
     ]]>
   </string>
 
+  <string name="demo_title_recycler_view_0">
+    Kohii + RecyclerView (Grid)
+  </string>
+
+  <string name="demo_desc_recycler_view_0">
+    RecyclerView (Grid) shows a grid with both text and Videos. Video item will have span of 2 and when click to it, it will
+    show a dialog and keep playing the Video there.
+  </string>
+
   <string name="demo_title_recycler_view_1">
-    Kohii + RecyclerView (1)
+    Kohii + RecyclerView (List)
   </string>
 
   <string name="demo_desc_recycler_view_1">
@@ -175,30 +189,39 @@
   </string>
 
   <string name="demo_title_pager_1">
-    Kohii + Pager (1)
+    Kohii + ViewPager (1)
   </string>
 
   <string name="demo_desc_pager_1">
-    Pager (1) shows how Kohii could work in ViewPager. Each page will start the Playback with 500ms
+    Pager (1) shows how Kohii could work in ViewPager where pages are Fragments. Each page will start the Playback with 500ms
     delay.\n\nThis demo also shows different layout in landscape and portrait orientation,
     while the Playback keeps playing smoothly.\n\nVideos are from Caminandes (CC 3.0 open movie).
   </string>
 
   <string name="demo_title_pager_2">
-    Kohii + Pager (2)
+    Kohii + ViewPager (2)
   </string>
 
   <string name="demo_desc_pager_2">
-    Pager (2) is the same with Pager (1), but uses the new ViewPager2 instead. Each page is a Fragment.
+    Pager (2) is the same with \'Kohii + Pager (1)\', but each page is a View instead of a Fragment.
     \n\nVideos are from Caminandes (CC 3.0 open movie).
   </string>
 
   <string name="demo_title_pager_3">
-    Kohii + Pager (3)
+    Kohii + ViewPager2 (1)
   </string>
 
   <string name="demo_desc_pager_3">
-    Pager (2) is the same with Pager (1), but each page is a View instead of a Fragment.
+    Pager (2) is the same with \'Kohii + Pager (1)\', but uses the new ViewPager2 instead. Each page is a Fragment.
+    \n\nVideos are from Caminandes (CC 3.0 open movie).
+  </string>
+
+  <string name="demo_title_pager_4">
+    Kohii + ViewPager2 (2)
+  </string>
+
+  <string name="demo_desc_pager_4">
+    Pager (2) is the same with \'Kohii + Pager (1)\', but uses the new ViewPager2 instead. Each page is a View.
     \n\nVideos are from Caminandes (CC 3.0 open movie).
   </string>
 
@@ -253,5 +276,13 @@
 
   <string name="demo_desc_youtube_2">
     Kohii with YouTube videos using https://github.com/PierfrancescoSoffritti/android-youtube-player library.
+  </string>
+
+  <string name="demo_title_debug">
+    Kohii + Debug
+  </string>
+
+  <string name="demo_desc_debug">
+    Debug Kohii
   </string>
 </resources>

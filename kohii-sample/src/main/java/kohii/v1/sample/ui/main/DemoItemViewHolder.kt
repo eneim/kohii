@@ -18,20 +18,28 @@ package kohii.v1.sample.ui.main
 
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.isVisible
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
+import kohii.v1.sample.common.splitCases
 
-class DemoItemViewHolder(parent: ViewGroup) : BaseViewHolder(
-    parent, R.layout.holder_main_demo_item
-) {
+class DemoItemViewHolder(
+  parent: ViewGroup
+) : BaseViewHolder(parent, R.layout.holder_main_demo_item) {
 
   private val demoTitle: TextView = itemView.findViewById(R.id.demoTitle)
   private val demoSubtitle: TextView = itemView.findViewById(R.id.demoSubtitle)
 
   override fun bind(item: Any?) {
     (item as? DemoItem)?.also {
-      demoTitle.setText(it.title)
-      demoSubtitle.setText(it.subTitle)
+      if (it.title != 0) demoTitle.setText(it.title) else demoTitle.text =
+        it.fragmentClass.simpleName.splitCases()
+      if (it.subTitle != 0) {
+        demoSubtitle.isVisible = true
+        demoSubtitle.setText(it.subTitle)
+      } else {
+        demoSubtitle.isVisible = false
+      }
     }
   }
 }

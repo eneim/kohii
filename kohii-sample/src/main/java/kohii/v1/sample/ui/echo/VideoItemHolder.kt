@@ -20,39 +20,30 @@ import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.util.contains
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.material.button.MaterialButton
-import kohii.media.VolumeInfo
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
-import kohii.v1.ViewTarget
-import kohii.v1.VolumeChangedListener
+import kohii.v1.core.Playback
+import kohii.v1.core.Playback.ArtworkHintListener
+import kohii.v1.core.Scope
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
-import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.svg.GlideApp
+import kotlin.properties.Delegates
 
+@SuppressLint("SetTextI18n")
 @Suppress("MemberVisibilityCanBePrivate")
 class VideoItemHolder(
   parent: ViewGroup,
-  private val kohii: Kohii,
-  private val viewModel: VolumeStateVideoModel
-) : BaseViewHolder(parent, R.layout.holder_video_text_overlay), VolumeChangedListener {
-
-  @SuppressLint("SetTextI18n")
-  override fun onVolumeChanged(volumeInfo: VolumeInfo) {
-    volumeButton.text = "Mute: ${volumeInfo.mute}"
-    viewModel.saveVolumeInfo(this.adapterPosition, volumeInfo)
-  }
+  private val kohii: Kohii
+) : BaseViewHolder(parent, R.layout.holder_video_text_overlay), ArtworkHintListener {
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
   val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
   val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
-  val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
+  val playerViewContainer = itemView.findViewById(R.id.playerViewContainer) as ViewGroup
   val playerContainer = itemView.findViewById(R.id.playerContainer) as ViewGroup
   val volumeButton = itemView.findViewById(R.id.volumeButton) as MaterialButton
 
@@ -60,45 +51,74 @@ class VideoItemHolder(
     volumeButton.isVisible = true
   }
 
-  var videoSources: Sources? = null
-  var playback: Playback<PlayerView>? = null
+  internal var playback: Playback? = null
 
-  val tagKey: String?
-    get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
-
-  @SuppressLint("SetTextI18n")
-  override fun bind(item: Any?) {
-    (item as? Video)?.also {
-      videoTitle.text = it.title
-      videoInfo.text = it.description
-      this.videoSources = it.playlist.first()
-          .also { pl ->
-            GlideApp.with(itemView)
-                .load(pl.image)
-                .into(videoImage)
-          }
-          .sources.first()
-
-      kohii.setUp(videoSources!!.file)
-          .with {
-            tag = tagKey
-            repeatMode = Playable.REPEAT_MODE_ONE
-          }
-          .bind(ViewTarget(playerContainer)) { playback ->
-            playback.addVolumeChangeListener(this@VideoItemHolder)
-            if (viewModel.volumeInfoStore.contains(this.adapterPosition)) {
-              playback.volumeInfo = viewModel.volumeInfoStore.get(this.adapterPosition)
-            } else {
-              viewModel.saveVolumeInfo(this.adapterPosition, playback.volumeInfo) // save first.
-            }
-            volumeButton.text = "Mute: ${playback.volumeInfo.mute}"
-            this@VideoItemHolder.playback = playback
-          }
+  private var videoData by Delegates.observable<Video?>(null) { _, _, newVal ->
+    if (newVal != null) {
+      val playlist = newVal.playlist.first()
+      this.videoItem = VideoItem(
+          newVal.title,
+          newVal.description,
+          playlist.image,
+          playlist.sources.first().file
+      )
+    } else {
+      this.videoItem = null
     }
   }
 
+  private var videoItem by Delegates.observable<VideoItem?>(null) { _, oldVal, newVal ->
+    if (newVal == oldVal) return@observable
+    if (newVal != null) {
+      videoTitle.text = newVal.title
+      videoInfo.text = newVal.description
+      GlideApp.with(itemView)
+          .load(newVal.imageUrl)
+          .into(videoImage)
+
+      kohii.setUp(newVal.file) {
+        tag = requireNotNull(videoTag)
+        artworkHintListener = this@VideoItemHolder
+      }
+          .bind(playerViewContainer) { playback ->
+            this@VideoItemHolder.playback = playback
+            volumeInfo?.let { kohii.applyVolumeInfo(it, playback, Scope.PLAYBACK) }
+          }
+    } else {
+      this.playback = null
+    }
+  }
+
+  private var volumeInfo by Delegates.observable<VolumeInfo?>(null) { _, _, to ->
+    if (to != null) {
+      playback?.let {
+        kohii.applyVolumeInfo(to, it, Scope.PLAYBACK)
+      }
+      volumeButton.text = "Mute: ${to.mute}"
+    }
+  }
+
+  private val videoTag: String?
+    get() = this.videoItem?.let { "${it.file}::$adapterPosition" }
+
+  internal fun applyVideoData(video: Video?) {
+    this.videoData = video
+  }
+
+  internal fun applyVolumeInfo(volumeInfo: VolumeInfo) {
+    this.volumeInfo = volumeInfo
+  }
+
   override fun onRecycled(success: Boolean) {
-    playback?.removeVolumeChangeListener(this)
-    playback = null
+    this.videoData = null
+    this.volumeInfo = null
+  }
+
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    videoImage.isVisible = shouldShow
   }
 }

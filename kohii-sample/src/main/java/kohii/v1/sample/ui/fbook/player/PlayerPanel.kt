@@ -16,8 +16,8 @@
 
 package kohii.v1.sample.ui.fbook.player
 
-import kohii.v1.Playback
-import kohii.v1.Rebinder
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 
 interface PlayerPanel {
 
@@ -27,13 +27,13 @@ interface PlayerPanel {
 
     fun onPlayerActive(
       player: PlayerPanel,
-      playback: Playback<*>
+      playback: Playback
     ) {
     }
 
     fun onPlayerInActive(
       player: PlayerPanel,
-      playback: Playback<*>
+      playback: Playback
     ) {
     }
 

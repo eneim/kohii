@@ -18,11 +18,13 @@ package kohii.v1.sample.ui.fbook
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kohii.media.VolumeInfo
+import kohii.v1.media.VolumeInfo
 
 class FbookViewModel : ViewModel() {
 
-  val timelineVolume = MutableLiveData<VolumeInfo>(VolumeInfo())
+  val timelineVolume = MutableLiveData<VolumeInfo>(
+      VolumeInfo()
+  )
 
   val overlayPlayerInfo = MutableLiveData<OverlayPlayerInfo>()
 }

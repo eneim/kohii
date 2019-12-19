@@ -24,30 +24,19 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Binder
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
-import kohii.v1.Rebinder
-import kohii.v1.ViewTarget
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
-import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
-import kohii.v1.sample.svg.GlideApp
+import kotlin.properties.Delegates
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class VideoItemHolder(
   inflater: LayoutInflater,
-  layoutRes: Int,
   parent: ViewGroup,
-  private val clickListener: OnClickListener,
-  private val kohii: Kohii,
-  private val host: VideoItemsAdapter
-) : BaseViewHolder(inflater, layoutRes, parent),
-    Playback.Callback,
-    PlaybackEventListener,
+  private val clickListener: OnClickListener
+) : BaseViewHolder(inflater, R.layout.holder_video_text_overlay, parent),
+    Playback.ArtworkHintListener,
     OnClickListener {
 
   override fun onClick(v: View?) {
@@ -55,80 +44,78 @@ internal class VideoItemHolder(
   }
 
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
-  val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
-  val videoImage = itemView.findViewById(R.id.videoImage) as ImageView
-  val playerView = itemView.findViewById(R.id.playerView) as ViewGroup
-  // val playerContainer = itemView.findViewById(R.id.playerContainer) as View
+  internal val thumbnail = itemView.findViewById(R.id.videoImage) as ImageView
+  internal val playerViewContainer = itemView.findViewById(R.id.playerViewContainer) as ViewGroup
+  internal val videoInfo = itemView.findViewById(R.id.videoInfo) as TextView
+  internal val container = itemView.findViewById(R.id.playerContainer) as View
 
-  var playback: Playback<PlayerView>? = null
-  var binder: Binder<PlayerView>? = null
-  var videoSources: Sources? = null
-
-  init {
-    itemView.findViewById<View>(R.id.playerContainer)
-        .setOnClickListener(this)
-  }
-
-  val tagKey: String?
-    get() = this.videoSources?.let { "${javaClass.canonicalName}::${it.file}::$adapterPosition" }
-
-  // Trick
-  val rebinder: Rebinder?
-    get() = this.tagKey?.let { Rebinder(it, PlayerView::class.java) }
-
-  override fun bind(item: Any?) {
-    (item as? Video)?.also {
-      videoTitle.text = it.title
-      videoInfo.text = it.description
-      this.videoSources = it.playlist.first()
-          .also { pl ->
-            GlideApp.with(itemView)
-                .load(pl.image)
-                .into(videoImage)
-          }
-          .sources.first()
-
-      val binder = kohii.setUp(videoSources!!.file)
-          .with {
-            tag = tagKey
-            repeatMode = Playable.REPEAT_MODE_ONE
-            callback = this@VideoItemHolder
-          }
-
-      this.binder = binder
-
-      if (host.selectionTracker?.isSelected(rebinder) == true) {
-        this.playback = null
-      } else {
-        binder.bind(ViewTarget(playerView)) { pk ->
-          pk.addPlaybackEventListener(this@VideoItemHolder)
-          this@VideoItemHolder.playback = pk
+  internal var videoData by Delegates.observable<Video?>(
+      initialValue = null,
+      onChange = { _, _, value ->
+        if (value != null) {
+          val firstItem = value.playlist.first()
+          videoImage = firstItem.image
+          videoFile = firstItem.sources.first()
+              .file
+        } else {
+          videoImage = null
+          videoFile = null
         }
       }
-    }
-  }
+  )
+
+  internal var videoFile: String? = null
+  internal var videoImage: String? = null
+  internal val videoTag: String?
+    get() = this.videoFile?.let { "$it::$adapterPosition" }
+
+  // Trick
+  internal val rebinder: Rebinder?
+    get() = this.videoTag?.let { Rebinder(it) }
 
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
-    this.videoSources = null
-    videoImage.isVisible = true
-    playback?.removePlaybackEventListener(this@VideoItemHolder)
+    this.videoData = null
+    thumbnail.isVisible = true
   }
 
-  override fun beforePlay(playback: Playback<*>) {
-    videoImage.isVisible = false
+  override fun onAttached() {
+    super.onAttached()
+    container.setOnClickListener(this)
   }
 
-  override fun afterPause(playback: Playback<*>) {
-    videoImage.isVisible = true
+  override fun onDetached() {
+    super.onDetached()
+    container.setOnClickListener(null)
   }
 
-  override fun onEnd(playback: Playback<*>) {
-    videoImage.isVisible = true
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    if (!shouldShow) {
+      thumbnail.animate()
+          .alpha(0F)
+          .setDuration(200)
+          .withEndAction {
+            thumbnail.isVisible = false
+          }
+          .start()
+    } else {
+      thumbnail.alpha = 1F
+      thumbnail.animate()
+          .alpha(1F)
+          .setDuration(0)
+          .withEndAction {
+            thumbnail.isVisible = true
+          }
+          .start()
+    }
   }
 
-  override fun onInActive(playback: Playback<*>) {
-    videoImage.isVisible = true
+  override fun toString(): String {
+    return "[$itemView], $playerViewContainer"
   }
 
   // Selection

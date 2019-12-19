@@ -17,13 +17,11 @@
 package kohii.v1.sample.ui.fbook
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -31,20 +29,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.FragmentActivity
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
 
-class FloatPlayerManager(val activity: Activity) {
+internal class FloatPlayerManager(val activity: FragmentActivity) {
 
-  val kohii = Kohii[activity]
-  val windowManager = activity.getSystemService(WINDOW_SERVICE) as WindowManager
+  internal val kohii = Kohii[activity]
+  internal val windowManager = activity.getSystemService(WINDOW_SERVICE) as WindowManager
   @SuppressLint("InflateParams")
-  val floatView: View = LayoutInflater.from(activity)
+  internal val floatView: View = LayoutInflater.from(activity)
       .inflate(R.layout.widget_float_player, null)
 
-  val floatParams by lazy {
+  internal val floatParams by lazy {
     val params = WindowManager.LayoutParams()
     @Suppress("DEPRECATION")
     params.type = if (VERSION.SDK_INT >= VERSION_CODES.O)
@@ -76,7 +76,6 @@ class FloatPlayerManager(val activity: Activity) {
 
   val floatViewOnTouchListener = View.OnTouchListener { _, event ->
     val params = floatParams
-    Log.i("Kohii::Fb", "float params: ${params.x}, ${params.y}")
     val totalDeltaX = floatViewLastX - floatViewFirstX
     val totalDeltaY = floatViewLastY - floatViewFirstY
 
@@ -88,7 +87,7 @@ class FloatPlayerManager(val activity: Activity) {
         floatViewFirstY = floatViewLastY
       }
       MotionEvent.ACTION_UP -> {
-        // Snap to one corner
+        // Snap to one side
         val display = floatView.display
         if (display != null) {
           display.getRectSize(displayRect)
@@ -96,14 +95,13 @@ class FloatPlayerManager(val activity: Activity) {
               params.gravity, displayRect, windowRect, floatView.layoutDirection
           )
         }
-        Log.w("Kohii::Fb", "window rect: $windowRect")
       }
       MotionEvent.ACTION_MOVE -> {
         val deltaX = event.rawX.toInt() - floatViewLastX
         val deltaY = event.rawY.toInt() - floatViewLastY
         floatViewLastX = event.rawX.toInt()
         floatViewLastY = event.rawY.toInt()
-        if (Math.abs(totalDeltaX) >= 5 || Math.abs(totalDeltaY) >= 5) {
+        if (abs(totalDeltaX) >= 5 || abs(totalDeltaY) >= 5) {
           if (event.pointerCount == 1) {
             params.x -= deltaX
             params.y -= deltaY
@@ -125,22 +123,23 @@ class FloatPlayerManager(val activity: Activity) {
   val container by lazy { floatView.findViewById(R.id.playerContainer) as ViewGroup }
   val playerView by lazy { floatView.findViewById(R.id.playerView) as PlayerView }
 
-  val floating = AtomicBoolean(false)
+  internal val floating = AtomicBoolean(false)
 
-  inline fun openFloatPlayer(crossinline callback: (PlayerView) -> Unit) {
+  internal inline fun openFloatPlayer(crossinline callback: (PlayerView) -> Unit) {
     if (floating.compareAndSet(false, true)) {
       activity.runOnUiThread {
         if (!activity.isFinishing) {
           floatView.setOnTouchListener(floatViewOnTouchListener)
           windowManager.addView(floatView, floatParams)
-          kohii.register(activity, container)
-          callback(this.playerView)
+          kohii.register(activity)
+              .addBucket(container)
+          callback(playerView)
         }
       }
     }
   }
 
-  inline fun closeFloatPlayer(crossinline callback: () -> Unit) {
+  internal inline fun closeFloatPlayer(crossinline callback: () -> Unit) {
     if (floating.compareAndSet(true, false)) {
       activity.runOnUiThread {
         floatView.setOnTouchListener(null)

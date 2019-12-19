@@ -16,33 +16,20 @@
 
 package kohii.v1.sample.ui.motion
 
-import android.net.Uri
-import android.widget.ImageView
 import androidx.core.view.ViewCompat
 import androidx.databinding.BindingAdapter
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.media.MediaItem
-import kohii.v1.Kohii
-import kohii.v1.Playable
+import kohii.v1.core.Common
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.MediaItem
 import kohii.v1.sample.R
-import kohii.v1.sample.svg.GlideApp
 
 /**
  * For DataBinding
  *
  * @author eneim (2018/07/15).
  */
-@Suppress("unused")
-@BindingAdapter("backdrop")
-fun setBackdrop(
-  view: ImageView,
-  url: String
-) {
-  GlideApp.with(view)
-      .load(Uri.parse(url))
-      .into(view)
-}
 
 @BindingAdapter("video", "provider")
 fun setVideo(
@@ -53,12 +40,11 @@ fun setVideo(
   (view.findViewById(R.id.exo_content_frame) as? AspectRatioFrameLayout)
       ?.setAspectRatio(video.width / video.height)
 
-  val rebinder = kohii.setUp(MediaItem(video.url, "mp4"))
-      .with {
-        tag = "${video.javaClass.canonicalName}::${video.url}"
-        preLoad = true
-        repeatMode = Playable.REPEAT_MODE_ONE
-      }
+  val rebinder = kohii.setUp(MediaItem(video.url, "mp4")) {
+    tag = "${video.javaClass.canonicalName}::${video.url}"
+    preload = true
+    repeatMode = Common.REPEAT_MODE_ONE
+  }
       .bind(view)
   view.setTag(R.id.motion_view_tag, rebinder)
   ViewCompat.setTransitionName(view, video.url)

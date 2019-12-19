@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.NO_ID
 import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
-import kohii.v1.Rebinder
+import kohii.v1.core.Rebinder
 import java.util.HashMap
 
 // This KeyProvider allow a detached View still in key/position map.
@@ -54,7 +54,7 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
       val id = holder.getItemId()
       if (id != NO_ID) {
         val key = holder.rebinder
-        if (position != NO_POSITION && id != NO_ID && key != null) {
+        if (position != NO_POSITION && key != null) {
           positionToKey.put(position, key)
           keyToPosition[key] = position
         }

@@ -16,42 +16,34 @@
 
 package kohii.v1.sample.ui.youtube1
 
+import android.util.Log
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.view.contains
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.commitNow
 import com.bumptech.glide.Glide
 import com.google.api.services.youtube.model.Video
-import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
-import kohii.v1.Target
+import kohii.v1.core.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.svg.GlideApp
-import kohii.v1.ytb.YouTubePlayerFragment
 
-@Suppress("MemberVisibilityCanBePrivate")
 class YouTubeViewHolder(
-  parent: ViewGroup,
-  layoutId: Int,
-  val fragmentManager: FragmentManager
-) : BaseViewHolder(parent, layoutId),
-    PlaybackEventListener,
-    Target<FrameLayout, YouTubePlayerFragment> {
+  parent: ViewGroup
+) : BaseViewHolder(parent, R.layout.holder_youtube_container), Playback.ArtworkHintListener {
 
-  override val container = itemView.findViewById(R.id.container) as FrameLayout
-  val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
+  val content = itemView as ConstraintLayout
+  val fragmentPlace: ViewGroup = itemView.findViewById(R.id.fragment)
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
-
-  var playback: Playback<*>? = null
+  private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
 
   init {
-    // container.id = ViewCompat.generateViewId()
+    fragmentPlace.id = ViewCompat.generateViewId()
   }
+
+  var playback: Playback? = null
 
   override fun bind(item: Any?) {
     super.bind(item)
@@ -66,55 +58,21 @@ class YouTubeViewHolder(
           .fitCenter()
           .into(thumbnail)
 
-      videoTitle.text = this.snippet.title
+      videoTitle.text = "${this.snippet.title}, id: $id"
     }
   }
 
-  override fun onEnd(playback: Playback<*>) {
-    thumbnail.isVisible = true
-  }
-
-  override fun beforePlay(playback: Playback<*>) {
-    thumbnail.isVisible = false
-  }
-
-  override fun afterPause(playback: Playback<*>) {
-    thumbnail.isVisible = true
+  override fun onArtworkHint(
+    shouldShow: Boolean,
+    position: Long,
+    state: Int
+  ) {
+    Log.i("Kohii::Art", "${videoTitle.text}, art: $shouldShow, $position, $state")
+    thumbnail.isVisible = shouldShow
   }
 
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
     playback = null
-  }
-
-  // Target
-
-  override fun attachRenderer(renderer: YouTubePlayerFragment) {
-    container.id = adapterPosition + 1
-    val old = fragmentManager.findFragmentById(container.id)
-    if (old !== renderer) {
-      fragmentManager.commitNow {
-        replace(container.id, renderer, playback?.tag.toString())
-      }
-    } else {
-      renderer.view?.let {
-        if (!container.contains(it)) {
-          val parent = it.parent
-          if (parent is ViewGroup) parent.removeView(it)
-          container.removeAllViews()
-          container.addView(it)
-        }
-      }
-    }
-  }
-
-  override fun detachRenderer(renderer: YouTubePlayerFragment): Boolean {
-    /* if (!renderer.isDetached) {
-      fragmentManager.commitNow(allowStateLoss = true) {
-        detach(renderer)
-        Log.i("Kohii::YTX", "detach: $renderer")
-      }
-    } */
-    return true
   }
 }

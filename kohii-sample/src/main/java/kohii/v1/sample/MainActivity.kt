@@ -19,12 +19,16 @@ package kohii.v1.sample
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseActivity
-import kohii.v1.sample.ui.main.MainFragment
+import kohii.v1.sample.ui.combo.LandscapeFullscreenFragment
+import kohii.v1.sample.ui.main.MainListFragment
+import kotlinx.android.synthetic.main.main_activity.appBarLayout
 import kotlinx.android.synthetic.main.main_activity.toolbar
+import kotlinx.android.synthetic.main.main_activity.toolbarLayout
 
-class MainActivity : BaseActivity(), PlayerInfoHolder {
+class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragment.Callback {
 
   private var playerInfo: PlayerInfo? = null
 
@@ -42,7 +46,8 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
       supportFragmentManager.beginTransaction()
           .replace(
               R.id.fragmentContainer,
-              MainFragment.newInstance(), MainFragment::class.java.simpleName
+              MainListFragment.newInstance(),
+              MainListFragment::class.java.simpleName
           )
           .commit()
     }
@@ -68,6 +73,20 @@ class MainActivity : BaseActivity(), PlayerInfoHolder {
     } else {
       decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }
+  }
+
+  internal fun updateTitle(title: String) {
+    toolbarLayout.title = title
+  }
+
+  // LandscapeFullscreenFragment.Callback
+
+  override fun hideToolbar() {
+    appBarLayout.isVisible = false
+  }
+
+  override fun showToolbar() {
+    appBarLayout.isVisible = true
   }
 }
 

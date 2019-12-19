@@ -40,7 +40,7 @@
         />
 
     <include
-        layout="@layout/holder_nested_recyclereview"
+        layout="@layout/holder_nested_recyclerview"
         />
 
     <androidx.appcompat.widget.AppCompatTextView

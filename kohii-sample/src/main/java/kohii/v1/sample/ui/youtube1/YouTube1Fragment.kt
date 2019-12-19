@@ -22,7 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import kohii.v1.Kohii
+import kohii.v1.experiments.OfficialYouTubePlayerEngine
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
@@ -48,11 +48,11 @@ class YouTube1Fragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kh = Kohii[this].also { it.register(this, recyclerView) }
-    // val creator = (requireActivity().application as DemoApp).youTubePlayableCreator
-    val creator = kohii.v1.ytb.YouTubePlayableCreator(kh)
-    // val creator = YouTubePlayableCreator(kohii)
-    val adapter = YouTubeItemsAdapter(creator, childFragmentManager)
+    val engine = OfficialYouTubePlayerEngine[this]
+    engine.register(this)
+        .addBucket(recyclerView)
+
+    val adapter = YouTubeItemsAdapter(engine)
     recyclerView.adapter = adapter
 
     viewModel.posts.observe(viewLifecycleOwner) {

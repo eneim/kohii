@@ -18,42 +18,62 @@ package kohii.v1.sample.ui.echo
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.Kohii
-import kohii.v1.Playback
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.data.Video
 
 class VideoItemsAdapter(
   private val videos: List<Video>,
   private val kohii: Kohii,
-  private val viewModel: VolumeStateVideoModel,
-  private val volumeControl: (Playback<PlayerView>) -> Unit
+  private val volumeStore: VolumeStore,
+  internal val volumeInfoUpdater: (VideoItemHolder) -> VolumeInfo?
 ) : Adapter<BaseViewHolder>() {
+
+  companion object {
+    internal val PAYLOAD_VOLUME = Any()
+  }
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
   ): BaseViewHolder {
-    val holder = VideoItemHolder(parent, kohii, viewModel)
+    val holder = VideoItemHolder(parent, kohii)
+
     holder.volumeButton.setOnClickListener {
-      if (holder.playback != null) {
-        volumeControl(holder.playback!!)
-      }
+      val updated = volumeInfoUpdater(holder)
+      if (updated != null) notifyItemChanged(holder.adapterPosition, PAYLOAD_VOLUME)
     }
 
     return holder
   }
 
   override fun getItemCount(): Int {
-    return Int.MAX_VALUE
+    return Int.MAX_VALUE / 2
   }
 
   override fun onBindViewHolder(
     holder: BaseViewHolder,
     position: Int
   ) {
-    holder.bind(videos[position % videos.size])
+    holder.bind(position) // this action is ignored in this demo
+    if (holder is VideoItemHolder) {
+      holder.applyVideoData(videos[position % videos.size])
+      holder.applyVolumeInfo(volumeStore.get(position))
+    }
+  }
+
+  override fun onBindViewHolder(
+    holder: BaseViewHolder,
+    position: Int,
+    payloads: MutableList<Any>
+  ) {
+    val payload = payloads.find { it === PAYLOAD_VOLUME }
+    if (payload != null && holder is VideoItemHolder) {
+      holder.applyVolumeInfo(volumeStore.get(position))
+    } else {
+      super.onBindViewHolder(holder, position, payloads)
+    }
   }
 
   override fun onViewRecycled(holder: BaseViewHolder) {

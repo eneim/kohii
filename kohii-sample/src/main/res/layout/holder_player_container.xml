@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,53 +14,31 @@
   ~ limitations under the License.
   -->
 
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.exoplayer2.ui.AspectRatioFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/holderCard"
+    android:id="@+id/playerContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/activity_vertical_margin"
-    app:cardCornerRadius="1dp"
-    app:cardElevation="1dp"
-    app:cardPreventCornerOverlap="true"
+    android:layout_margin="4dp"
+    android:minHeight="240dp"
+    app:resize_mode="fixed_width"
     >
 
-  <androidx.appcompat.widget.LinearLayoutCompat
-      android:id="@+id/holderContent"
+  <FrameLayout
+      android:id="@+id/container"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="vertical"
-      >
+      android:layout_height="match_parent"
+      android:layout_gravity="center"
+      />
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/videoTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/pager_horizontal_space_base"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        />
-
-    <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-        android:id="@id/playerContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:layout_marginTop="4dp"
-        android:minHeight="1dp"
-        app:resize_mode="fixed_width"
-        >
-
-      <androidx.appcompat.widget.AppCompatImageView
-          android:id="@+id/thumbnail"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:adjustViewBounds="false"
-          android:padding="@dimen/activity_horizontal_margin"
-          android:scaleType="fitCenter"
-          app:srcCompat="@drawable/ic_kohii"
-          />
-    </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
-  </androidx.appcompat.widget.LinearLayoutCompat>
-
-</androidx.cardview.widget.CardView>
+  <androidx.appcompat.widget.AppCompatImageView
+      android:id="@+id/thumbnail"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_gravity="center"
+      android:background="@color/card_light_background"
+      android:padding="48dp"
+      android:scaleType="fitCenter"
+      app:srcCompat="@drawable/ic_kohii"
+      />
+</com.google.android.exoplayer2.ui.AspectRatioFrameLayout>

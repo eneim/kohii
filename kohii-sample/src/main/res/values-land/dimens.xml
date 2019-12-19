@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,4 +19,7 @@
 
   <dimen name="pager_horizontal_space_x2">96dp</dimen>
   <dimen name="pager_horizontal_space_x3">36dp</dimen>
+
+  <dimen name="float_window_margin">24dp</dimen>
+  <integer name="grid_span">2</integer>
 </resources>

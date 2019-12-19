@@ -19,19 +19,19 @@ package kohii.v1.sample.ui.overlay
 import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.Kohii
-import kohii.v1.Rebinder
-import kohii.v1.sample.R
+import kohii.v1.core.Common
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.data.Video
+import kohii.v1.sample.svg.GlideApp
 
 internal class VideoItemsAdapter(
   private val videos: List<Video>,
-  private val kohii: Kohii
+  private val kohii: Kohii,
+  val shouldBindVideo: (Rebinder?) -> Boolean,
+  val onVideoClick: (Int, Rebinder) -> Unit
 ) : Adapter<BaseViewHolder>(), BaseViewHolder.OnClickListener {
-
-  var selectionTracker: SelectionTracker<Rebinder>? = null
 
   init {
     setHasStableIds(true)
@@ -44,10 +44,7 @@ internal class VideoItemsAdapter(
     itemId: Long,
     payload: Any?
   ) {
-    (payload as Rebinder).also {
-      if (selectionTracker?.isSelected(it) == true) return
-      selectionTracker?.select(it)
-    }
+    onVideoClick(adapterPos, payload as Rebinder)
   }
 
   override fun onCreateViewHolder(
@@ -56,10 +53,7 @@ internal class VideoItemsAdapter(
   ): BaseViewHolder {
     return VideoItemHolder(
         from(parent.context),
-        R.layout.holder_video_text_overlay,
         parent,
-        this,
-        kohii,
         this
     )
   }
@@ -69,14 +63,32 @@ internal class VideoItemsAdapter(
   }
 
   override fun getItemCount(): Int {
-    return Int.MAX_VALUE
+    return Int.MAX_VALUE / 2
   }
 
   override fun onBindViewHolder(
     holder: BaseViewHolder,
     position: Int
   ) {
-    holder.bind(videos[position % videos.size])
+    val item = videos[position % videos.size]
+    if (holder is VideoItemHolder) {
+      holder.videoData = item
+      holder.videoTitle.text = item.title
+      holder.videoInfo.text = item.description
+
+      GlideApp.with(holder.itemView)
+          .load(requireNotNull(holder.videoImage))
+          .into(holder.thumbnail)
+
+      if (shouldBindVideo(holder.rebinder)) {
+        kohii.setUp(requireNotNull(holder.videoFile)) {
+          tag = requireNotNull(holder.videoTag)
+          repeatMode = Common.REPEAT_MODE_ONE
+          artworkHintListener = holder
+        }
+            .bind(holder.playerViewContainer)
+      }
+    }
   }
 
   override fun onViewAttachedToWindow(holder: BaseViewHolder) {
@@ -91,6 +103,9 @@ internal class VideoItemsAdapter(
 
   override fun onViewRecycled(holder: BaseViewHolder) {
     super.onViewRecycled(holder)
+    if (holder is VideoItemHolder) {
+      kohii.cancel(holder.playerViewContainer)
+    }
     holder.onRecycled(true)
   }
 

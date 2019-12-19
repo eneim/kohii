@@ -17,23 +17,23 @@
 package kohii.v1.sample.ui.fbook
 
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.media.VolumeInfo
-import kohii.v1.Kohii
-import kohii.v1.PlaybackManager
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.ui.fbook.vh.FbookItemHolder
-import kohii.v1.sample.ui.fbook.vh.FbookItemHolder.OnClick
 import kohii.v1.sample.ui.fbook.vh.PhotoViewHolder
 import kohii.v1.sample.ui.fbook.vh.TextViewHolder
 import kohii.v1.sample.ui.fbook.vh.VideoViewHolder
 
 internal class FbookAdapter(
   val kohii: Kohii,
-  val manager: PlaybackManager,
   val videos: List<Video>,
   val fragment: FbookFragment,
-  val onClick: OnClick
+  val shouldBindVideo: (Rebinder?) -> Boolean,
+  val volumeClick: (VideoViewHolder) -> Unit
 ) : Adapter<FbookItemHolder>() {
 
   companion object {
@@ -61,31 +61,27 @@ internal class FbookAdapter(
     parent: ViewGroup,
     viewType: Int
   ): FbookItemHolder {
-    val result = when (viewType) {
+    return when (viewType) {
       TYPE_TEXT -> TextViewHolder(parent)
       TYPE_PHOTO -> PhotoViewHolder(parent)
-      TYPE_VIDEO -> VideoViewHolder(parent, kohii, manager) {
-        fragment.currentPlayerInfo?.rebinder != it
+      TYPE_VIDEO -> VideoViewHolder(parent, kohii, shouldBindVideo).also { vh ->
+        vh.volume.setOnClickListener { volumeClick(vh) }
+        vh.playAgain.setOnClickListener {
+          // Once completed, a Playback needs to be reset to starting position.
+          if (vh.playAgain.isVisible) vh.playback?.rewind()
+        }
       }
       else -> throw IllegalArgumentException("Unknown type: $viewType")
     }
-
-    result.setupOnClick(onClick)
-    return result
   }
 
-  override fun getItemCount() = Int.MAX_VALUE
+  override fun getItemCount() = Int.MAX_VALUE / 2
 
   override fun onBindViewHolder(
     holder: FbookItemHolder,
     position: Int
   ) {
-    if (getItemViewType(position) == TYPE_VIDEO) {
-      val video = videos[((position + 1) / 5) % videos.size]
-      holder.bind(video)
-    } else {
-      holder.bind(position)
-    }
+    holder.bind(videos[position % videos.size])
   }
 
   override fun onBindViewHolder(
@@ -93,17 +89,12 @@ internal class FbookAdapter(
     position: Int,
     payloads: MutableList<Any>
   ) {
-    val payload = payloads.firstOrNull { it is VolumeInfo }
+    val payload = payloads.firstOrNull { it is VolumeInfo } as VolumeInfo?
     if (payload != null && holder is VideoViewHolder) {
-      holder.volume.isSelected = !(payload as VolumeInfo).mute
+      holder.volume.isSelected = !payload.mute
     } else {
       super.onBindViewHolder(holder, position, payloads)
     }
-  }
-
-  override fun onViewAttachedToWindow(holder: FbookItemHolder) {
-    super.onViewAttachedToWindow(holder)
-    (holder as? VideoViewHolder)?.dispatchBindVideo()
   }
 
   override fun onViewRecycled(holder: FbookItemHolder) {

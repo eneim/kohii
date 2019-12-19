@@ -35,8 +35,10 @@
   <dimen name="pager_horizontal_space_x3">72dp</dimen>
   <dimen name="pager_horizontal_space_x4">96dp</dimen>
 
+  <dimen name="float_window_margin">8dp</dimen>
+
   <dimen name="overlay_collapse_max_width">420dp</dimen>
 
   <integer name="column_number">1</integer>
-
+  <integer name="grid_span">3</integer>
 </resources>

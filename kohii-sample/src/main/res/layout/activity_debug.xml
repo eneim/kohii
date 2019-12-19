@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:viewBindingIgnore="true"
+    >
+
+  <fragment
+      android:id="@+id/fragmentContainer"
+      android:name="kohii.v1.dev.DevScrollViewFragment"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      tools:ignore="FragmentTagUsage"
+      tools:viewBindingIgnore="true"
+      />
+
+  <!-- not using right now -->
+  <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+      android:id="@+id/floatPlayer"
+      android:layout_width="288dp"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|end"
+      android:background="?attr/colorAccent"
+      android:elevation="2dp"
+      android:minHeight="180dp"
+      android:visibility="gone"
+      app:resize_mode="fixed_width"
+      />
+</FrameLayout>

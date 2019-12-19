@@ -17,19 +17,17 @@
 package kohii.v1.sample.ui.youtube1
 
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
-import kohii.v1.PlayableCreator
+import kohii.v1.core.Engine
+import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
-import kohii.v1.ytb.YouTubePlayerFragment
 
 class YouTubeItemsAdapter(
-  private val creator: PlayableCreator<YouTubePlayerFragment>,
-  private val fragmentManager: FragmentManager
+  private val engine: Engine<YouTubePlayerFragment>
 ) : PagedListAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
   override fun areItemsTheSame(
     oldItem: Video,
@@ -83,7 +81,7 @@ class YouTubeItemsAdapter(
     viewType: Int
   ): BaseViewHolder {
     return when (viewType) {
-      R.layout.holder_youtube_container -> YouTubeViewHolder(parent, viewType, fragmentManager)
+      R.layout.holder_youtube_container -> YouTubeViewHolder(parent)
       R.layout.holder_loading -> BaseViewHolder(parent, viewType)
       else -> throw IllegalArgumentException("unknown view type $viewType")
     }
@@ -97,13 +95,12 @@ class YouTubeItemsAdapter(
       val item = getItem(position)
       holder.bind(item)
       val videoId = item?.id ?: "EOjq4OIWKqM"
-      creator.setUp(videoId)
-          .with {
-            tag = videoId
-            threshold = 0.99F
-          }
-          .bind(holder) {
-            it.addPlaybackEventListener(holder)
+      engine.setUp(videoId) {
+        tag = videoId
+        threshold = 0.999F
+        artworkHintListener = holder
+      }
+          .bind(holder.fragmentPlace) {
             holder.playback = it
           }
     }

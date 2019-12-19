@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +18,13 @@
     android:id="@+id/pagerContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/cardview_dark_background"
+    android:background="@color/card_dark_background"
     >
 
   <androidx.viewpager2.widget.ViewPager2
       android:id="@+id/viewPager"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:clipToPadding="false"
       android:orientation="horizontal"
-      android:padding="@dimen/pager_padding"
       />
 </RelativeLayout>

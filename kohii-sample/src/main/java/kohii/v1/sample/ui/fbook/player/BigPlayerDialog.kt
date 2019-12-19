@@ -23,21 +23,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import kohii.v1.Kohii
-import kohii.v1.Playback
-import kohii.v1.PlaybackEventListener
-import kohii.v1.Rebinder
-import kohii.v1.exo.DefaultControlDispatcher
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.InfinityDialogFragment
 import kohii.v1.sample.common.isLandscape
 import kohii.v1.sample.common.requireWindow
+import kohii.v1.sample.ui.fbook.player.PlayerPanel.Callback
 import kotlinx.android.synthetic.main.fragment_fbook_player.minimizeButton
 import kotlinx.android.synthetic.main.fragment_fbook_player.playerContainer
 import kotlinx.android.synthetic.main.fragment_fbook_player.playerView
 import java.util.concurrent.atomic.AtomicInteger
 
-class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback {
+class BigPlayerDialog : InfinityDialogFragment(),
+    PlayerPanel,
+    Playback.Callback,
+    Playback.StateListener {
 
   companion object {
     private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
@@ -54,11 +57,13 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     }
   }
 
-  lateinit var kohii: Kohii
+  private lateinit var kohii: Kohii
   private lateinit var rebinderFromArgs: Rebinder
 
+  @Suppress("MemberVisibilityCanBePrivate")
   var floatPlayerController: FloatPlayerController? = null
-  var playerCallback: PlayerPanel.Callback? = null
+  @Suppress("MemberVisibilityCanBePrivate")
+  var playerCallback: Callback? = null
 
   private val systemUiOptions by lazy {
     AtomicInteger(
@@ -71,10 +76,8 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
-    parentFragment?.let {
-      if (it is PlayerPanel.Callback) this.playerCallback = it
-      if (it is FloatPlayerController) this.floatPlayerController = it
-    }
+    this.playerCallback = parentFragment as? Callback
+    this.floatPlayerController = parentFragment as? FloatPlayerController
   }
 
   override fun onDetach() {
@@ -86,7 +89,7 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     // Orientation change will cause this fragment to be recreated, we don't want that to happen.
-    retainInstance = true
+    // retainInstance = true
     (requireActivity() as AppCompatActivity).also {
       val decorView = it.window.decorView
       systemUiOptions.set(decorView.systemUiVisibility)
@@ -107,11 +110,12 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
   ) {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
-    val manager = kohii.register(this, playerContainer)
+    val manager = kohii.register(this)
+        .addBucket(playerContainer)
 
     requireArguments().apply {
-      rebinderFromArgs = getParcelable(KEY_REBINDER) as Rebinder
-      val ratio = getFloat(KEY_RATIO, 16 / 9.toFloat())
+      rebinderFromArgs = requireNotNull(getParcelable(KEY_REBINDER))
+      val ratio = getFloat(KEY_RATIO, 16 / 9F)
       val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
       container.setAspectRatio(ratio)
     }
@@ -142,15 +146,10 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     rebinder
         .with {
           controller = DefaultControlDispatcher(manager, playerView)
-          callback = this@BigPlayerDialog
+          callbacks += this@BigPlayerDialog
         }
-        .rebind(kohii, playerView) {
-          it.addPlaybackEventListener(object : PlaybackEventListener {
-            override fun onEnd(playback: Playback<*>) {
-              playback.removePlaybackEventListener(this)
-              dismissAllowingStateLoss()
-            }
-          })
+        .bind(kohii, playerView) {
+          it.addStateListener(this@BigPlayerDialog)
         }
 
     minimizeButton.setOnClickListener {
@@ -159,15 +158,20 @@ class BigPlayerDialog : InfinityDialogFragment(), PlayerPanel, Playback.Callback
     }
   }
 
-  override fun onActive(playback: Playback<*>) {
+  override fun onActive(playback: Playback) {
     playerCallback?.onPlayerActive(this, playback)
   }
 
-  override fun onInActive(playback: Playback<*>) {
+  override fun onInActive(playback: Playback) {
     requireActivity().also {
       val decorView = it.window.decorView
       decorView.systemUiVisibility = systemUiOptions.get()
     }
     playerCallback?.onPlayerInActive(this, playback)
+  }
+
+  override fun onEnded(playback: Playback) {
+    playback.removeStateListener(this)
+    dismissAllowingStateLoss()
   }
 }

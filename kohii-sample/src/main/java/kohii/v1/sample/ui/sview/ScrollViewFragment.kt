@@ -21,25 +21,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import kohii.v1.Kohii
-import kohii.v1.Playable
-import kohii.v1.Playback
-import kohii.v1.Rebinder
-import kohii.v1.sample.R
+import kohii.v1.core.Common
+import kohii.v1.core.Playback
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
+import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.ui.player.InitData
-import kohii.v1.sample.ui.player.PlayerDialogFragment
-import kotlinx.android.synthetic.main.fragment_scroll_view.playerContainer
-import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
-import kotlinx.android.synthetic.main.fragment_scroll_view.scrollView
+import kohii.v1.sample.common.InitData
+import kohii.v1.sample.databinding.FragmentScrollViewBinding
 
 @Keep
 class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   companion object {
     const val videoUrl =
-      // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
-      "https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8" // Big Buck Bunny
+    // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
+      // "https://content.jwplatform.com/manifests/146UwF4L.m3u8" // Big Buck Bunny
+      assetVideoUri
 
     fun newInstance() = ScrollViewFragment().also {
       it.arguments = Bundle()
@@ -49,28 +47,34 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 
   private lateinit var kohii: Kohii
-  private var playback: Playback<*>? = null
+  private lateinit var binding: FragmentScrollViewBinding
+  private var playback: Playback? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    val viewRes = R.layout.fragment_scroll_view
-    return inflater.inflate(viewRes, container, false)
+    binding = FragmentScrollViewBinding.inflate(inflater, container, false)
+    return binding.root
   }
 
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
-    kohii = Kohii[this].also { it.register(this, this.scrollView) }
-    val rebinder = kohii.setUp(videoUrl)
-        .with {
-          tag = videoTag
-          repeatMode = Playable.REPEAT_MODE_ONE
-        }
-        .bind(playerView) { playback = it }
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?
+  ) {
+    super.onViewCreated(view, savedInstanceState)
+    kohii = Kohii[this]
+    kohii.register(this)
+        .addBucket(binding.scrollView)
 
-    playerContainer.setOnClickListener {
+    val rebinder = kohii.setUp(videoUrl) {
+      tag = videoTag
+      repeatMode = Common.REPEAT_MODE_ONE
+    }
+        .bind(binding.playerView) { playback = it }
+
+    binding.playerContainer.setOnClickListener {
       rebinder?.also {
         PlayerDialogFragment.newInstance(rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f))
             .show(childFragmentManager, videoTag)
@@ -80,7 +84,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
 
   override fun onDestroyView() {
     super.onDestroyView()
-    playerContainer.setOnClickListener(null)
+    binding.playerContainer.setOnClickListener(null)
   }
 
   // BEGIN: PlayerDialogFragment.Callback
@@ -89,7 +93,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
   }
 
   override fun onDialogInActive(rebinder: Rebinder) {
-    rebinder.rebind(kohii, playerView) {
+    rebinder.bind(kohii, binding.playerView) {
       playback = it
     }
   }

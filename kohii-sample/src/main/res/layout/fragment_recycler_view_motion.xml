@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,7 @@
   ~ limitations under the License.
   -->
 
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/overlayContainer"
@@ -33,23 +31,89 @@
       app:layout_behavior="@string/appbar_scrolling_view_behavior"
       />
 
-  <FrameLayout
-      android:id="@+id/bottomSheet"
+  <androidx.constraintlayout.motion.widget.MotionLayout
+      android:id="@+id/motionLayout"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       app:behavior_hideable="true"
       app:behavior_peekHeight="80dp"
+      app:layoutDescription="@xml/overlay_motion_scene"
       app:layout_behavior="@string/bottom_sheet_behavior"
       >
-    <include
-        layout="@layout/video_overlay_fullscreen"
-        android:id="@+id/videoOverlay"
+
+    <View
+        android:id="@+id/dummy_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         />
-  </FrameLayout>
+
+    <View
+        android:id="@+id/video_player_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <FrameLayout
+        android:id="@+id/video_player_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/colorAccent"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@id/video_player_frame"
+        app:layout_constraintLeft_toLeftOf="@id/video_player_frame"
+        app:layout_constraintRight_toRightOf="@id/video_player_frame"
+        app:layout_constraintTop_toTopOf="@id/video_player_frame"
+        >
+      <com.google.android.exoplayer2.ui.PlayerView
+          android:id="@+id/overlayPlayerView"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          app:resize_mode="fixed_width"
+          app:show_buffering="when_playing"
+          app:surface_type="texture_view"
+          app:use_controller="false"
+          />
+    </FrameLayout>
+
+    <View
+        android:id="@+id/video_title_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/video_player_frame"
+        />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/video_overlay_title"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/video_title_frame"
+        app:layout_constraintEnd_toEndOf="@id/video_title_frame"
+        app:layout_constraintStart_toStartOf="@id/video_title_frame"
+        app:layout_constraintTop_toTopOf="@id/video_title_frame"
+        >
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="@dimen/activity_horizontal_margin"
+          android:text="@string/large_text"
+          android:textColor="@android:color/white"
+          />
+    </androidx.core.widget.NestedScrollView>
+
+  </androidx.constraintlayout.motion.widget.MotionLayout>
 
   <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
       android:id="@+id/actionButton"

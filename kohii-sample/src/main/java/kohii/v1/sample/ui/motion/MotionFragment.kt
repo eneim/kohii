@@ -21,14 +21,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
+import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
-import kohii.v1.Kohii
-import kohii.v1.Rebinder
+import kohii.v1.core.Rebinder
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.InitData
 import kohii.v1.sample.databinding.FragmentMotionBinding
-import kohii.v1.sample.ui.player.InitData
-import kohii.v1.sample.ui.player.PlayerActivity
 import kotlinx.android.synthetic.main.fragment_motion.scrollView
 
 /**
@@ -41,23 +41,20 @@ class MotionFragment : BaseFragment(), Presenter {
     fun newInstance() = MotionFragment()
   }
 
-  private var binding: FragmentMotionBinding? = null
+  lateinit var binding: FragmentMotionBinding
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    binding = (DataBindingUtil.inflate(
+    binding = DataBindingUtil.inflate(
         inflater,
         R.layout.fragment_motion,
         container,
         false
-    ) as FragmentMotionBinding).also {
-      it.motion = Motion()
-      it.lifecycleOwner = this
-    }
-    return binding!!.root
+    ) as FragmentMotionBinding
+    return binding.root
   }
 
   override fun onViewCreated(
@@ -65,25 +62,29 @@ class MotionFragment : BaseFragment(), Presenter {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    Kohii[this].register(this, scrollView)
+    Kohii[this].register(this)
+        .addBucket(scrollView)
+    binding.motion = Motion()
+    binding.lifecycleOwner = viewLifecycleOwner
   }
 
   override fun onStart() {
     super.onStart()
-    binding?.presenter = this
+    binding.presenter = this
   }
 
   override fun onStop() {
     super.onStop()
-    binding?.presenter = null
+    binding.presenter = null
   }
 
   override fun onVideoClick(
     container: View,
     video: Video
   ) {
-    val rebinder = container.getTag(R.id.motion_view_tag)
-    (rebinder as? Rebinder)?.also {
+    val playerView = (container as ViewGroup)[0]
+    val rebinder = playerView.getTag(R.id.motion_view_tag) as Rebinder?
+    if (rebinder != null) {
       startActivity(
           PlayerActivity.createIntent(
               requireContext(),
@@ -91,7 +92,7 @@ class MotionFragment : BaseFragment(), Presenter {
                   tag = "${video.javaClass.canonicalName}::${video.url}",
                   aspectRatio = video.width / video.height
               ),
-              it
+              rebinder
           )
       )
     }

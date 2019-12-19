@@ -21,17 +21,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import androidx.recyclerview.widget.RecyclerView
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kohii.v1.Kohii
+import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.getApp
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
-import okio.buffer
-import okio.source
 
 /**
  * @author eneim (2018/10/30).
@@ -42,16 +36,6 @@ class MixMediaFragment : BaseFragment() {
 
   companion object {
     fun newInstance() = MixMediaFragment()
-  }
-
-  private val videos: List<Item> by lazy {
-    val asset = requireActivity().application.assets
-    val type = Types.newParameterizedType(List::class.java, Item::class.java)
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-    val adapter: JsonAdapter<List<Item>> = moshi.adapter(type)
-    adapter.fromJson(asset.open("medias.json").source().buffer()) ?: emptyList()
   }
 
   override fun onCreateView(
@@ -67,11 +51,14 @@ class MixMediaFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = Kohii[this].also { it.register(this, recyclerView) }
+    val kohii = Kohii[this].also {
+      it.register(this)
+          .addBucket(recyclerView)
+    }
 
-    (recyclerView as RecyclerView).also {
+    recyclerView.also {
       it.setHasFixedSize(true)
-      it.adapter = ItemsAdapter(videos, kohii)
+      it.adapter = ItemsAdapter(getApp().exoItems, kohii)
     }
   }
 }

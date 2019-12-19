@@ -17,7 +17,7 @@
 package kohii.v1.sample.ui.motion
 
 import android.view.View
-import kohii.v1.Kohii
+import kohii.v1.exoplayer.Kohii
 
 /**
  *

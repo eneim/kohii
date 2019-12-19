@@ -20,7 +20,11 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--dontobfuscate
+# [BEGIN]
+
+-repackageclasses x
+
+#-dontobfuscate
 
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
@@ -30,6 +34,8 @@
 }
 
 -keep @com.squareup.moshi.JsonQualifier interface *
+
+-keepclassmembers class kohii.v1.sample.data.** { *; }
 
 # Enum field names are used by the integrated EnumJsonAdapter.
 # Annotate enums with @JsonClass(generateAdapter = false) to use them with Moshi.
@@ -84,3 +90,8 @@
 
 # Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
 -dontwarn org.codehaus.mojo.animal_sniffer.*
+
+# -keep class com.google.api.** { *; }
+-keepclassmembers class * {
+  @com.google.api.client.util.Key <fields>;
+}

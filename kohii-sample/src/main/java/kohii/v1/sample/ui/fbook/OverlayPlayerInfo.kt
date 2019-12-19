@@ -16,14 +16,14 @@
 
 package kohii.v1.sample.ui.fbook
 
-import kohii.v1.Rebinder
+import kohii.v1.core.Rebinder
 
 data class OverlayPlayerInfo(
   val mode: Int = -1,
   val rebinder: Rebinder
 ) {
   companion object {
-    const val MODE_DIALOG = 1
+    const val MODE_FULLSCREEN = 1
     const val MODE_FLOAT = 2
   }
 }

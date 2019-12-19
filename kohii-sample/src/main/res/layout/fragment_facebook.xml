@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,7 @@
   ~ limitations under the License.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
@@ -25,17 +23,34 @@
     tools:context=".MainActivity"
     >
 
-  <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/recyclerView"
+  <FrameLayout
+      android:id="@+id/content"
       android:layout_width="0dp"
       android:layout_height="0dp"
-      android:orientation="vertical"
-      app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
       app:layout_behavior="@string/appbar_scrolling_view_behavior"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toTopOf="parent"
-      />
+      >
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        />
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/dummyPlayer"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom|right"
+        android:visibility="gone"
+        app:surface_type="texture_view"
+        app:use_controller="false"
+        />
+
+  </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
