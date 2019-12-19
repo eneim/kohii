@@ -22,7 +22,7 @@ Video playback for Android made easy.
 
 | Automatic playback                                           | Playback continuity (Seamless fullscreen)                    |
 | :----------------------------------------------------------- | :----------------------------------------------------------- |
-| <img src="./art/kohii_demo_2.gif" width="216" height="468"/> | <img src="./art/kohii_demo_3.gif" width="468" height="468"/> |
+| <img src="./art/kohii_demo_2.gif" width="216"/> | <img src="./art/kohii_demo_3.gif" width="468"/> |
 
 ## Setup
 
@@ -78,8 +78,3 @@ kohii.setUp(videoUrl).bind(playerView);
 **Kohii** works on Android 4.4+ (API level 19+) and on Java 8+. It is recommended to use **Kohii** using the **Kotlin&trade;** language.
 
 The core library doesn't come with any actual playback logic. Actual implementation comes with extension libraries. The extensions require corresponding 3rd libraries: `kohii-exoplayer` will require `exoplayer`, `kohii-androidx` will require `androidx.media2`.
-
-Read more:
-
-- [Getting start](/usage/start/)
-- [Basic usages](/usage/basic/)

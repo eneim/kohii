@@ -4,7 +4,7 @@ Advance usages session will focus on using **Kohii** with **ExoPlayer**. Using o
 
 Here, we assume that you are familiar with **ExoPlayer**, including its core components (Player, ExoPlayer, SimpleExoPlayer, MediaSource, etc) and UI system (PlayerView, PlayerControlView, ControlDispatcher, etc).
 
-This session may use some keywords about components in **Kohii** like **Container**, **Bucket**, etc. You can find their definitions here: [Components](/customize/terms).
+This session may use some keywords about components in **Kohii** like **Container**, **Bucket**, etc. You can find their definitions here: [Components](../../customize/terms).
 
 ## Using unique tag
 
@@ -116,10 +116,5 @@ While allowing client to define this behavior, **Kohii** will strictly observe s
 ## Manual controller (experiment)
 
 _COMING SOON_
-
-Next:
-
-- [Exploring demo app](/usage/demos/)
-- [Extending Kohii](/customize/custom_engine/)
 
 [^1]: The Video that is selected to play
