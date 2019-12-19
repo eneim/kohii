@@ -65,7 +65,3 @@ implementation "im.ene.kohii:kohii-experiments:${kohiiVersion}"
 
 !!! warning
     Again, please use this package with caution!
-
-Next:
-
-- [Basic usages](/usage/basic/)

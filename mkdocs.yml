@@ -32,6 +32,10 @@ extra:
     - type: 'github'
       link: 'https://github.com/eneim/kohii'
 
+google_analytics:
+  - 'UA-72567780-9'
+  - 'auto'
+
 # Navigation
 nav:
   - 'Overview': index.md
