@@ -39,8 +39,6 @@ internal class VideoViewBridge(
   private val mediaItem: MediaItem = UriMediaItem.Builder(media.uri)
       .build()
 
-  // We want to use SessionPlayer but at 1.0.1 it hasn't exposed the method getVideoSize yet.
-  // TODO change to SessionPlayer once new version is released.
   private var player: MediaPlayer? = null
 
   override var renderer: VideoView? = null
@@ -82,11 +80,11 @@ internal class VideoViewBridge(
   override fun ready() {
     if (player == null) {
       player = playerProvider.acquirePlayer(media)
-      requireNotNull(player).also {
-        it.setMediaItem(mediaItem)
-        renderer?.setPlayer(it)
-        it.prepare()
-      }
+          .also {
+            it.setMediaItem(mediaItem)
+            renderer?.setPlayer(it)
+            it.prepare()
+          }
     }
   }
 
@@ -103,17 +101,18 @@ internal class VideoViewBridge(
   }
 
   override fun release() {
-    player?.close()
+    player?.let {
+      // TODO any other local clean up?
+      playerProvider.releasePlayer(media, it)
+    }
     player = null
   }
 
-  override var videoSize: VideoSize
+  override var videoSize: VideoSize = VideoSize.ORIGINAL
     get() {
       return player?.let {
         val size = it.videoSize
         VideoSize(size.width, size.height)
-      } ?: VideoSize.ORIGINAL
-    }
-    set(value) {
+      } ?: field
     }
 }
