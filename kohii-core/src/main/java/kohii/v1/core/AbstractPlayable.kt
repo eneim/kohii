@@ -185,6 +185,12 @@ abstract class AbstractPlayable<RENDERER : Any>(
     this.playback = null // Will also clear current Manager.
   }
 
+  override fun onDetached(playback: Playback) {
+    "Playable#onDetached $playback, $this".logInfo()
+    require(playback === this.playback)
+    master.onPlaybackDetached(playback)
+  }
+
   override fun considerRequestRenderer(playback: Playback) {
     "Playable#considerRequestRenderer $playback, $this".logInfo()
     require(playback === this.playback)

@@ -26,7 +26,7 @@ import kohii.v1.media.Media
 
 class Binder(
   private val engine: Engine<*>,
-  val media: Media
+  internal val media: Media
 ) {
 
   class Options {

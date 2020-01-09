@@ -50,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.3"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.4"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -100,6 +100,7 @@ object Libs {
 
     object Media {
       private const val version = "1.0.1"
+      // private const val version = "1.1.0-SNAPSHOT"
       val widget = "androidx.media2:media2-widget:$version"
       val common = "androidx.media2:media2-common:$version"
       val player = "androidx.media2:media2-player:$version"

@@ -21,6 +21,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -58,9 +59,9 @@ internal class YouTubePlayerContainerView @JvmOverloads constructor(
         })
     val params = LayoutParams(MATCH_PARENT, MATCH_PARENT)
     params.gravity = Gravity.CENTER
+    this.playerView = playerView
     super.addView(playerView, 0, params)
     lifecycleOwner.lifecycle.addObserver(this)
-    this.playerView = playerView
   }
 
   override fun initialize(
@@ -84,6 +85,14 @@ internal class YouTubePlayerContainerView @JvmOverloads constructor(
 
   override fun onStop(owner: LifecycleOwner) {
     playerView?.d()
+  }
+
+  override fun onViewAdded(child: View?) {
+    if (child !== this.playerView) throw IllegalArgumentException("Expect $playerView, got $child")
+  }
+
+  override fun onViewRemoved(child: View?) {
+    throw UnsupportedOperationException("This view does not allow removing View.")
   }
 
   override fun onDestroy(owner: LifecycleOwner) {

@@ -54,7 +54,8 @@ class Group(
   internal val managers = ArrayDeque<Manager>()
   internal val organizer = Organizer()
 
-  private var stickyManager by Delegates.observable<Manager?>(
+  @Suppress("RemoveExplicitTypeArguments")
+  private var stickyManager: Manager? by Delegates.observable<Manager?>(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
@@ -71,23 +72,23 @@ class Group(
       }
   )
 
-  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+  internal var groupVolume: VolumeInfo by Delegates.observable(
       initialValue = VolumeInfo(),
       onChange = { _, from, to ->
         if (from == to) return@observable
         // Update VolumeInfo of all Managers. This operation will then callback to this #applyVolumeInfo
-        managers.forEach { it.volumeInfoUpdater = to }
+        managers.forEach { it.managerVolume = to }
       }
   )
 
   internal val volumeInfo: VolumeInfo
-    get() = volumeInfoUpdater
+    get() = groupVolume
 
   internal var lock: Boolean = false
     set(value) {
       if (field == value) return
       field = value
-      managers.forEach { it.lock = lock }
+      managers.forEach { it.lock = value }
     }
 
   private val handler = Handler(this)
@@ -162,15 +163,18 @@ class Group(
     val oldSelection = organizer.selection
     val newSelection = if (lock) emptyList() else organizer.selectFinal(toPlay)
 
-    // biggest Rect cover all selected Playbacks
+    // biggest Rect that covers all selected Playbacks
     val cover = newSelection.fold(Rect()) { acc, playback ->
       acc.union(playback.token.containerRect)
       return@fold acc
     }
 
     // Update distanceToPlay
+    // calculate a target: Pair<Pair<Int, Int>, Pair<Int, Int>> to save information.
     val target = (cover.centerX() to cover.width() / 2) to (cover.centerY() to cover.height() / 2)
     if (target.first.second > 0 && target.second.second > 0) {
+      // update distance of non-selected Playback first, so they can release unused/obsoleted
+      // resource before the selected ones who consume a lot of resources.
       playbacks.partitionToMutableSets(
           predicate = { it.isActive },
           transform = { it }

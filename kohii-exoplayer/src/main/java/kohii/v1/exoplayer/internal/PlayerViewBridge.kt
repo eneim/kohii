@@ -18,7 +18,6 @@ package kohii.v1.exoplayer.internal
 
 import android.content.Context
 import android.util.Log
-import android.util.Pair
 import android.widget.Toast
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
@@ -33,7 +32,6 @@ import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.util.ErrorMessageProvider
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.Common
 import kohii.v1.core.PlayerEventListener
@@ -56,8 +54,7 @@ internal class PlayerViewBridge(
   private val media: Media,
   private val playerProvider: ExoPlayerProvider,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
-) : AbstractBridge<PlayerView>(),
-    PlayerEventListener, ErrorMessageProvider<ExoPlaybackException> {
+) : AbstractBridge<PlayerView>(), PlayerEventListener {
 
   companion object {
     internal fun isBehindLiveWindow(error: ExoPlaybackException?): Boolean {
@@ -143,7 +140,6 @@ internal class PlayerViewBridge(
       }
 
       field = value
-      field?.setErrorMessageProvider(this)
     }
 
   override fun ready() {
@@ -329,32 +325,6 @@ internal class PlayerViewBridge(
       Toast.makeText(context, message, Toast.LENGTH_SHORT)
           .show()
     }
-  }
-
-  // ErrorMessageProvider<ExoPlaybackException> ⬇︎
-
-  override fun getErrorMessage(e: ExoPlaybackException?): Pair<Int, String> {
-    Log.e("Kohii::Bridge", "Error: ${e?.cause}")
-    var errorString = context.getString(R.string.error_generic)
-    if (e?.type == ExoPlaybackException.TYPE_RENDERER) {
-      val exception = e.rendererException
-      if (exception is DecoderInitializationException) {
-        // Special case for decoder initialization failures.
-        errorString = if (exception.decoderName == null) {
-          when {
-            exception.cause is MediaCodecUtil.DecoderQueryException ->
-              context.getString(R.string.error_querying_decoders)
-            exception.secureDecoderRequired ->
-              context.getString(R.string.error_no_secure_decoder, exception.mimeType)
-            else -> context.getString(R.string.error_no_decoder, exception.mimeType)
-          }
-        } else {
-          context.getString(R.string.error_instantiating_decoder, exception.decoderName)
-        }
-      }
-    }
-
-    return Pair.create(0, errorString)
   }
 
   // DefaultEventListener ⬇︎

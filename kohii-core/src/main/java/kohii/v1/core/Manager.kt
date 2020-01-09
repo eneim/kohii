@@ -74,7 +74,7 @@ class Manager(
 
   // Use as both Queue and Stack.
   // - When adding new Bucket, we add it to tail of the Queue.
-  // - When promoting a Bucket as sticky, we push it to head of the Queue.
+  // - When promoting a Bucket as sticky, we push the same Bucket to head of the Queue.
   // - When demoting a Bucket from sticky, we just poll the head.
   internal val buckets = ArrayDeque<Bucket>(4 /* less than default minimum of ArrayDeque */)
   // Up to one Bucket can be sticky at a time.
@@ -82,10 +82,11 @@ class Manager(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
-        // Move 'to' from buckets.
+        // Promote 'to' from buckets.
         if (to != null /* set new sticky Bucket */) {
           buckets.push(to) // Push it to head.
         } else { // 'to' is null then 'from' must be nonnull. Consider to remove it from head.
+          // Demote 'from'
           if (buckets.peek() === from) buckets.pop()
         }
       }
@@ -95,22 +96,20 @@ class Manager(
 
   internal var sticky: Boolean = false
 
-  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+  internal var managerVolume: VolumeInfo by Delegates.observable(
       initialValue = VolumeInfo(),
       onChange = { _, from, to ->
         if (from == to) return@observable
         // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
-        buckets.forEach { it.volumeInfoUpdater = to }
+        buckets.forEach { it.bucketVolume = to }
       }
   )
 
   internal val volumeInfo: VolumeInfo
-    get() = volumeInfoUpdater
+    get() = managerVolume
 
   init {
-    volumeInfoUpdater = group.volumeInfo
-    group.onManagerCreated(this)
-    lifecycleOwner.lifecycle.addObserver(this)
+    managerVolume = group.volumeInfo
   }
 
   override fun compareTo(other: Manager): Int {
@@ -139,7 +138,10 @@ class Manager(
     buckets.toMutableList()
         .onEach { onRemoveBucket(it.root) }
         .clear()
-    rendererProviders.onEach { it.value.clear() }
+    rendererProviders.onEach {
+      owner.lifecycle.removeObserver(it.value)
+      it.value.clear()
+    }
         .clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
@@ -168,7 +170,10 @@ class Manager(
     provider: RendererProvider
   ) {
     val prev = rendererProviders.put(type, provider)
-    if (prev !== provider) prev?.clear()
+    if (prev !== provider) {
+      prev?.clear()
+      lifecycleOwner.lifecycle.addObserver(provider)
+    }
   }
 
   internal fun isChangingConfigurations(): Boolean {
@@ -347,7 +352,7 @@ class Manager(
     bucket: Bucket,
     volumeInfo: VolumeInfo
   ) {
-    playbacks.forEach { if (it.value.bucket === bucket) it.value.volumeInfoUpdater = volumeInfo }
+    playbacks.forEach { if (it.value.bucket === bucket) it.value.playbackVolume = volumeInfo }
   }
 
   /**
@@ -370,29 +375,29 @@ class Manager(
     when (scope) {
       PLAYBACK -> {
         require(target is Playback) { "Expected Playback, found ${target.javaClass.canonicalName}" }
-        target.volumeInfoUpdater = volumeInfo
+        target.playbackVolume = volumeInfo
       }
       BUCKET -> {
         when (target) {
-          is Bucket -> target.volumeInfoUpdater = volumeInfo
-          is Playback -> target.bucket.volumeInfoUpdater = volumeInfo
+          is Bucket -> target.bucketVolume = volumeInfo
+          is Playback -> target.bucket.bucketVolume = volumeInfo
           // If neither Playback nor Bucket, must be the root View of the Bucket.
           else -> {
             requireNotNull(buckets.find { it.root === target }) {
               "$target is not a root of any Bucket."
             }
-                .volumeInfoUpdater = volumeInfo
+                .bucketVolume = volumeInfo
           }
         }
       }
       MANAGER -> {
-        this.volumeInfoUpdater = volumeInfo
+        this.managerVolume = volumeInfo
       }
       GROUP -> {
-        this.group.volumeInfoUpdater = volumeInfo
+        this.group.groupVolume = volumeInfo
       }
       GLOBAL -> {
-        this.master.groups.forEach { it.volumeInfoUpdater = volumeInfo }
+        this.master.groups.forEach { it.groupVolume = volumeInfo }
       }
     }
   }

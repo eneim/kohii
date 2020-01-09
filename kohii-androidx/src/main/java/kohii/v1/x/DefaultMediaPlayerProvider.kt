@@ -34,13 +34,11 @@ internal class DefaultMediaPlayerProvider(
     internal val MAX_POOL_SIZE = max(Util.SDK_INT / 6, Runtime.getRuntime().availableProcessors())
   }
 
-  private val plainPlayerPool = Pools.SimplePool<MediaPlayer>(
-      MAX_POOL_SIZE
-  )
+  private val playerPool = Pools.SimplePool<MediaPlayer>(MAX_POOL_SIZE)
 
   override fun acquirePlayer(media: Media): MediaPlayer {
     return if (media.mediaDrm != null) MediaPlayer(context.applicationContext) else run {
-      return@run plainPlayerPool.acquire() ?: MediaPlayer(context.applicationContext)
+      playerPool.acquire() ?: MediaPlayer(context.applicationContext)
     }
   }
 
@@ -48,10 +46,10 @@ internal class DefaultMediaPlayerProvider(
     media: Media,
     player: MediaPlayer
   ) {
-    if (media.mediaDrm == null) plainPlayerPool.release(player)
+    if (media.mediaDrm == null) playerPool.release(player)
   }
 
   override fun cleanUp() {
-    plainPlayerPool.onEachAcquired { it.close() }
+    playerPool.onEachAcquired { it.close() }
   }
 }
