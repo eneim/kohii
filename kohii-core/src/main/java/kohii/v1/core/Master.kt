@@ -57,6 +57,7 @@ import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
+// We still have some problems as below:
 // Problem 1: problem with manual playback controller on RecyclerView
 // - Expected behavior: if a Playable tag is bound to a Playback whose Controller is not null,
 // the Playable should be manually controllable. Once User/Client manually start a Playback/Playable,
@@ -72,6 +73,8 @@ import kotlin.properties.Delegates
 
 // Problem 2: how to easily, yet effectively register an Engine once it is created?
 // - We do not want to do the registration in `init` block. As it will leak `this`.
+// - Currently it is done using SingletonHolder (soon to be renamed to 'Capsule'). While forcing
+// developer to use it is not quite kind, but it is not bad at all.
 class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
@@ -120,7 +123,6 @@ class Master private constructor(context: Context) : PlayableManager {
 
   val app = context.applicationContext as Application
 
-  @Suppress("MemberVisibilityCanBePrivate")
   internal val engines = mutableMapOf<Class<*>, Engine<*>>()
   internal val groups = mutableSetOf<Group>()
   internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
@@ -139,7 +141,8 @@ class Master private constructor(context: Context) : PlayableManager {
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
 
-  private val componentCallbacks by lazy(NONE) {
+  @Suppress("MemberVisibilityCanBePrivate")
+  internal val componentCallbacks by lazy(NONE) {
     object : ComponentCallbacks2 {
       override fun onLowMemory() {
         // do nothing
@@ -221,7 +224,7 @@ class Master private constructor(context: Context) : PlayableManager {
     managerLifecycleOwner: LifecycleOwner,
     memoryMode: MemoryMode = AUTO
   ): Manager {
-    require(!activity.isDestroyed) {
+    check(!activity.isDestroyed) {
       "Cannot register a destroyed Activity: $activity"
     }
     val group = groups.find { it.activity === activity } ?: Group(
@@ -234,7 +237,10 @@ class Master private constructor(context: Context) : PlayableManager {
     return group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
         ?: Manager(
             this, group, host, managerLifecycleOwner, memoryMode
-        ).also { group.onManagerCreated(it) }
+        ).also {
+          group.onManagerCreated(it)
+          managerLifecycleOwner.lifecycle.addObserver(it)
+        }
   }
 
   /**
@@ -264,6 +270,7 @@ class Master private constructor(context: Context) : PlayableManager {
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
     // but then another Playable is registered to the same Container, we need to kick the previous Playable.
     val sameTag = requests.asSequence()
+        .filter { it.value.tag !== NO_TAG }
         .firstOrNull { it.value.tag == tag }
         ?.key
     if (sameTag != null) requests.remove(sameTag)
@@ -310,21 +317,37 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   internal fun trySavePlaybackInfo(playable: Playable) {
-    if (playable.tag === NO_TAG) return
-    if (!playbackInfoStore.containsKey(playable.tag)) {
+    val key = if (playable.tag !== NO_TAG) {
+      playable.tag
+    } else {
+      val playback = playable.playback
+      if (playback == null || !playback.isAttached) return
+      playback
+    }
+
+    if (!playbackInfoStore.containsKey(key)) {
       val info = playable.playbackInfo
-      playbackInfoStore[playable.tag] = info
+      playbackInfoStore[key] = info
     }
   }
 
   // If this method is called, it must be before any call to playable.bridge.prepare(flag)
   internal fun tryRestorePlaybackInfo(playable: Playable) {
-    if (playable.tag === NO_TAG) return
-    val cache = playbackInfoStore.remove(playable.tag)
+    val cache = if (playable.tag !== NO_TAG) {
+      playbackInfoStore.remove(playable.tag)
+    } else {
+      val key = playable.playback ?: return
+      playbackInfoStore.remove(key)
+    }
+
     // Only restoring playback state if there is cached state, and the player is not ready yet.
     if (cache != null && playable.playerState <= Common.STATE_IDLE) {
       playable.playbackInfo = cache
     }
+  }
+
+  internal fun onPlaybackDetached(playback: Playback) {
+    playbackInfoStore.remove(playback)
   }
 
   internal fun cleanupPendingPlayables() {
@@ -343,8 +366,7 @@ class Master private constructor(context: Context) : PlayableManager {
   private val dispatcher = Dispatcher(this)
 
   internal fun onGroupCreated(group: Group) {
-    groups.add(group)
-    dispatcher.sendEmptyMessage(MSG_CLEANUP)
+    if (groups.add(group)) dispatcher.sendEmptyMessage(MSG_CLEANUP)
   }
 
   internal fun onGroupDestroyed(group: Group) {
@@ -613,7 +635,6 @@ class Master private constructor(context: Context) : PlayableManager {
           threshold = options.threshold,
           preload = options.preload,
           repeatMode = options.repeatMode,
-          // TODO 2019/11/18 temporarily disable manual playback. Will revise the logic.
           controller = options.controller,
           artworkHintListener = options.artworkHintListener,
           callbacks = options.callbacks
@@ -621,7 +642,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
       when {
         // Scenario: Playable accepts renderer of type PlayerView, and
-        // the container is an instance PlayerView or its subtype.
+        // the container is an instance of PlayerView or its subtype.
         playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
           StaticViewRendererPlayback(
               bucket.manager, bucket, container, config
@@ -714,7 +735,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
     // used by RecyclerViewBucket to 'assume' that it will hold this container
     // It is recommended to use Engine#cancel to easily remove a queued request from cache.
-    var bucket: Bucket? = null
+    internal var bucket: Bucket? = null
 
     internal fun onBind() {
       master.onBind(playable, tag, container, options, callback)
