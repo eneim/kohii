@@ -286,7 +286,7 @@ abstract class Playback(
         playable?.onDistanceChanged(this, from, to)
       })
 
-  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+  internal var playbackVolume: VolumeInfo by Delegates.observable(
       initialValue = bucket.volumeInfo,
       onChange = { _, from, to ->
         if (from == to) return@observable
@@ -296,7 +296,7 @@ abstract class Playback(
   )
 
   init {
-    volumeInfoUpdater = bucket.volumeInfo
+    playbackVolume = bucket.volumeInfo
   }
 
   internal var playable: Playable? = null
@@ -332,7 +332,7 @@ abstract class Playback(
     get() = playable?.playerState ?: STATE_IDLE
 
   val volumeInfo: VolumeInfo
-    get() = volumeInfoUpdater
+    get() = playbackVolume
 
   private val playbackInfo: PlaybackInfo
     get() = playable?.playbackInfo ?: PlaybackInfo()
