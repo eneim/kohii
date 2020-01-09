@@ -29,10 +29,10 @@ import kohii.v1.utils.SingletonHolder
 
 class OfficialYouTubePlayerEngine private constructor(
   master: Master
-) : Engine<YouTubePlayerFragment>(master,
+) : Engine<YouTubePlayerFragment>(
+    master,
     OfficialYouTubePlayerPlayableCreator(master)
-),
-    DefaultLifecycleObserver {
+), DefaultLifecycleObserver {
 
   private constructor(context: Context) : this(Master[context])
 
@@ -55,8 +55,7 @@ class OfficialYouTubePlayerEngine private constructor(
         else -> throw IllegalArgumentException("${host.javaClass} is not supported.")
       }
 
-    val provider =
-      OfficialYouTubePlayerRendererProvider(fragmentManager)
+    val provider = OfficialYouTubePlayerRendererProvider(fragmentManager)
     manager.registerRendererProvider(YouTubePlayerFragment::class.java, provider)
   }
 }
