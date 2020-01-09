@@ -186,7 +186,7 @@ abstract class Bucket constructor(
         .clear()
   }
 
-  internal var volumeInfoUpdater: VolumeInfo by Delegates.observable(
+  internal var bucketVolume: VolumeInfo by Delegates.observable(
       initialValue = VolumeInfo(),
       onChange = { _, from, to ->
         if (from == to) return@observable
@@ -195,10 +195,10 @@ abstract class Bucket constructor(
   )
 
   internal val volumeInfo: VolumeInfo
-    get() = volumeInfoUpdater
+    get() = bucketVolume
 
   init {
-    volumeInfoUpdater = manager.volumeInfo
+    bucketVolume = manager.volumeInfo
   }
 
   // This operation should be considered heavy/expensive.
