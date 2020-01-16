@@ -50,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.4"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.5"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -78,6 +78,7 @@ object Libs {
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$version"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$version"
     const val extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$version"
+    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3"
   }
 
   object AndroidX {
@@ -118,7 +119,7 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.0-rc03"
+      private const val version = "1.2.0-rc05"
       val fragment = "androidx.fragment:fragment:$version"
       val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
@@ -169,7 +170,7 @@ object Libs {
     }
 
     object Work {
-      private const val version = "2.3.0-beta01"
+      private const val version = "2.3.0-rc01"
       val runtimeKtx = "androidx.work:work-runtime-ktx:$version"
     }
   }
