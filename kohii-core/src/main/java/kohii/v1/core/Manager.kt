@@ -269,7 +269,7 @@ class Manager(
               .filter { playback ->
                 val kohiiCannotPause = master.plannedManualPlayables.contains(playback.tag) &&
                     master.playablesStartedByClient.contains(playback.tag) &&
-                    (!requireNotNull(playback.config.controller).kohiiCanPause())
+                    !requireNotNull(playback.config.controller).kohiiCanPause()
                 kohiiCannotPause || it.allowToPlay(playback)
               }
           it to candidates
@@ -283,8 +283,8 @@ class Manager(
           activePlaybacks.removeAll(it)
         }
 
-    activePlaybacks.addAll(inactivePlaybacks)
-    return if (lock) emptySet<Playback>() to (toPlay + activePlaybacks) else toPlay to activePlaybacks
+    val toPause = activePlaybacks.apply { addAll(inactivePlaybacks) }
+    return if (lock) emptySet<Playback>() to (toPlay + toPause) else toPlay to toPause
   }
 
   internal fun addPlayback(playback: Playback) {
