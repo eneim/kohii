@@ -47,6 +47,7 @@ internal class DefaultMediaPlayerProvider(
     player: MediaPlayer
   ) {
     if (media.mediaDrm == null) playerPool.release(player)
+    else player.close()
   }
 
   override fun cleanUp() {
