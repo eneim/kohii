@@ -127,7 +127,8 @@ class FbookFragment : BaseFragment(),
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     val manager = kohii.register(this)
-        .addBucket(recyclerView, content)
+        .addBucket(recyclerView)
+        .addBucket(content)
 
     viewModel.apply {
       timelineVolume.observe(viewLifecycleOwner) {

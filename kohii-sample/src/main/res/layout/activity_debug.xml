@@ -20,10 +20,9 @@
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:viewBindingIgnore="true"
     >
 
-  <fragment
+  <androidx.fragment.app.FragmentContainerView
       android:id="@+id/fragmentContainer"
       android:name="kohii.v1.dev.DevScrollViewFragment"
       android:layout_width="match_parent"
@@ -44,4 +43,5 @@
       android:visibility="gone"
       app:resize_mode="fixed_width"
       />
+
 </FrameLayout>

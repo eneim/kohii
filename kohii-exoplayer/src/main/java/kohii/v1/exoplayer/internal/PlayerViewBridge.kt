@@ -74,8 +74,7 @@ internal class PlayerViewBridge(
   private var listenerApplied = false
   private var sourcePrepared = false
 
-  private var _playbackInfo =
-    PlaybackInfo() // Backing field for PlaybackInfo set/get
+  private var _playbackInfo = PlaybackInfo() // Backing field for PlaybackInfo set/get
   private var _repeatMode = Common.REPEAT_MODE_OFF // Backing field
   private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
   private var mediaSource: MediaSource? = null

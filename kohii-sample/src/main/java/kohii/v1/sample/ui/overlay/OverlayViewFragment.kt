@@ -125,7 +125,8 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     manager = kohii.register(this)
-        .addBucket(binding.recyclerView, binding.videoPlayerContainer)
+        .addBucket(binding.recyclerView)
+        .addBucket(binding.videoPlayerContainer)
 
     adapter = VideoItemsAdapter(getApp().videos, kohii,
         shouldBindVideo = { /* the Rebinder is not selected */ it != selection.second },

@@ -17,8 +17,7 @@
 <resources>
 
   <!-- Base application theme. -->
-  <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
-  </style>
+  <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar" />
 
   <style name="AppTheme.Light" parent="Theme.MaterialComponents.Light.DarkActionBar">
     <!--<item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
@@ -26,16 +25,16 @@
     <item name="windowNoTitle">true</item>
   </style>
 
+  <style name="AppTheme.Dev" parent="Theme.MaterialComponents.Light.DarkActionBar" />
+
   <style name="AppTheme.Fbook" parent="Theme.MaterialComponents.Light.Bridge">
     <item name="windowActionBar">false</item>
     <item name="windowNoTitle">true</item>
   </style>
 
-  <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">
-  </style>
+  <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar" />
 
-  <style name="Kohii.Dialog.Infinity" parent="Theme.MaterialComponents.Light.DialogWhenLarge">
-  </style>
+  <style name="Kohii.Dialog.Infinity" parent="Theme.MaterialComponents.Light.DialogWhenLarge" />
 
   <style name="Kohii.Dialog.Infinity.NoTitle">
     <item name="windowActionBar">false</item>

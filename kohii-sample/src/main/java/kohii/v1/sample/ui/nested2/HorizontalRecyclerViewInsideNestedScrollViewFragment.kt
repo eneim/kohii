@@ -48,7 +48,8 @@ class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(scrollView, recyclerView)
+        .addBucket(scrollView)
+        .addBucket(recyclerView)
 
     libIntro.text = getString(R.string.lib_intro).parseAsHtml()
 
