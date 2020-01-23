@@ -28,6 +28,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import kohii.v1.core.Bucket.Companion.defaultSelector
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Scope.BUCKET
 import kohii.v1.core.Scope.GLOBAL
@@ -216,10 +217,13 @@ class Manager(
     if (playback != null) refresh()
   }
 
-  private fun onAddBucket(view: View) {
+  private fun onAddBucket(
+    view: View,
+    selector: Selector
+  ) {
     val existing = buckets.find { it.root === view }
     if (existing != null) return
-    val bucket = Bucket[this@Manager, view]
+    val bucket = Bucket[this@Manager, view, selector]
     if (buckets.add(bucket)) {
       bucket.onAdded()
       view.doOnAttach { v ->
@@ -327,8 +331,17 @@ class Manager(
 
   // Public APIs
 
+  @Deprecated("Using addBucket with single View instead.")
   fun addBucket(vararg views: View): Manager {
-    views.forEach { this.onAddBucket(it) }
+    views.forEach { this.onAddBucket(it, defaultSelector) }
+    return this
+  }
+
+  fun addBucket(
+    view: View,
+    selector: Selector = defaultSelector
+  ): Manager {
+    this.onAddBucket(view, selector)
     return this
   }
 

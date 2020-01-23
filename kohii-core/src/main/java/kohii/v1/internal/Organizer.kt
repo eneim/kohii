@@ -19,17 +19,16 @@ package kohii.v1.internal
 import kohii.v1.core.Playback
 import kotlin.properties.Delegates
 
-// TODO revise the design for this class
 internal class Organizer {
 
-  internal var selection: List<Playback> by Delegates.observable(
+  internal var selection: Collection<Playback> by Delegates.observable(
       initialValue = emptyList(),
       onChange = { _, _, _ ->
       }
   )
 
   internal fun selectFinal(candidates: Collection<Playback>): Collection<Playback> {
-    this.selection = listOfNotNull(candidates.firstOrNull())
+    this.selection = candidates /* listOfNotNull(candidates.firstOrNull()) */
     return this.selection
   }
 }

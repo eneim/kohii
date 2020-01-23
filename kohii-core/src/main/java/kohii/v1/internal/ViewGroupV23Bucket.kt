@@ -22,12 +22,14 @@ import android.view.View.OnScrollChangeListener
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import kohii.v1.core.Manager
+import kohii.v1.core.Selector
 
 @RequiresApi(VERSION_CODES.M)
 internal class ViewGroupV23Bucket(
   manager: Manager,
-  root: ViewGroup
-) : ViewGroupBucket(manager, root), OnScrollChangeListener {
+  root: ViewGroup,
+  selector: Selector = defaultSelector
+) : ViewGroupBucket(manager, root, selector), OnScrollChangeListener {
 
   override fun onScrollChange(
     v: View?,
