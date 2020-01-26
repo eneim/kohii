@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package kohii.v1
+package kohii.v1.core
 
 /**
  * @author eneim (2018/06/24).
  */
-inline class PendingState(val value: Boolean)
+internal inline class PendingState(val value: Boolean)

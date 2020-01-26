@@ -42,7 +42,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.util.Util
-import kohii.v1.PendingState
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.MemoryMode.AUTO
 import kohii.v1.core.MemoryMode.BALANCED
