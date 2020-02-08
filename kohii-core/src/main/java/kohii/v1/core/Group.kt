@@ -129,7 +129,7 @@ class Group(
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
-    require(ViewCompat.isAttachedToWindow(container))
+    check(ViewCompat.isAttachedToWindow(container))
     return managers.asSequence()
         .mapNotNull { it.findBucketForContainer(container) }
         .firstOrNull()

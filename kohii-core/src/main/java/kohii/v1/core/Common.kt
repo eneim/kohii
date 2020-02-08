@@ -21,7 +21,6 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo
-import kohii.v1.PendingState
 
 object Common {
 

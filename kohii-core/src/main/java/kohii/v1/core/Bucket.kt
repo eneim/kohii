@@ -40,9 +40,12 @@ import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
+typealias Selector = (Collection<Playback>) -> Collection<Playback>
+
 abstract class Bucket constructor(
   val manager: Manager,
-  open val root: View
+  open val root: View,
+  internal val selector: Selector
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
   companion object {
@@ -51,30 +54,33 @@ abstract class Bucket constructor(
     const val BOTH_AXIS = -1
     const val NONE_AXIS = -2
 
-    val comparators = mapOf(
+    internal val comparators = mapOf(
         HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
         VERTICAL to Playback.VERTICAL_COMPARATOR,
         BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,
         NONE_AXIS to Playback.BOTH_AXIS_COMPARATOR
     )
 
+    internal val defaultSelector: Selector = { it -> listOfNotNull(it.firstOrNull()) }
+
     @JvmStatic
     internal operator fun get(
       manager: Manager,
-      root: View
+      root: View,
+      selector: Selector
     ): Bucket {
       return when (root) {
-        is RecyclerView -> RecyclerViewBucket(manager, root)
+        is RecyclerView -> RecyclerViewBucket(manager, root, selector)
         is NestedScrollView -> NestedScrollViewBucket(
-            manager, root
+            manager, root, selector
         )
-        is ViewPager2 -> ViewPager2Bucket(manager, root)
-        is ViewPager -> ViewPagerBucket(manager, root)
+        is ViewPager2 -> ViewPager2Bucket(manager, root, selector)
+        is ViewPager -> ViewPagerBucket(manager, root, selector)
         is ViewGroup -> {
           if (Build.VERSION.SDK_INT >= 23)
-            ViewGroupV23Bucket(manager, root)
+            ViewGroupV23Bucket(manager, root, selector)
           else
-            ViewGroupBucket(manager, root)
+            ViewGroupBucket(manager, root, selector)
         }
         else -> throw IllegalArgumentException("Unsupported: $root")
       }
@@ -92,7 +98,7 @@ abstract class Bucket constructor(
 
   private val behaviorHolder by lazy(NONE) {
     val container = findCoordinatorLayoutDirectChildContainer(
-        manager.group.activity.window.peekDecorView(), root
+        manager.group.activity.window.peekDecorView(), target = root
     )
     val params = container?.layoutParams
     return@lazy if (params is CoordinatorLayout.LayoutParams) params else null
@@ -212,23 +218,20 @@ abstract class Bucket constructor(
     val grouped = candidates.sortedWith(comparator)
         .groupBy {
           it.tag != Master.NO_TAG && it.config.controller != null
-          // equals => manager.master.plannedManualPlayables.contains(it.tag)
+          // equals to `manager.master.plannedManualPlayables.contains(it.tag)`
         }
         .withDefault { emptyList() }
 
-    val manualCandidates = with(grouped.getValue(true)) {
-      val started = asSequence()
-          .find {
-            manager.master.playablesStartedByClient.contains(it.tag) // Started by client.
-          }
+    val manualCandidate = with(grouped.getValue(true)) {
+      val started = find { manager.master.playablesStartedByClient.contains(it.tag) }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 
     val automaticCandidates by lazy(NONE) {
-      listOfNotNull(grouped.getValue(false).firstOrNull())
+      selector(grouped.getValue(false))
     }
 
-    return if (manualCandidates.isNotEmpty()) manualCandidates else automaticCandidates
+    return if (manualCandidate.isNotEmpty()) manualCandidate else automaticCandidates
   }
 
   override fun equals(other: Any?): Boolean {

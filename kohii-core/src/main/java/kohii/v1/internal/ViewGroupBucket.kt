@@ -22,12 +22,14 @@ import android.view.ViewTreeObserver.OnScrollChangedListener
 import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
+import kohii.v1.core.Selector
 import kotlin.LazyThreadSafetyMode.NONE
 
 internal open class ViewGroupBucket(
   manager: Manager,
-  override val root: ViewGroup
-) : Bucket(manager, root) {
+  override val root: ViewGroup,
+  selector: Selector = defaultSelector
+) : Bucket(manager, root, selector) {
 
   private val globalScrollChangeListener by lazy(NONE) {
     OnScrollChangedListener { manager.refresh() }

@@ -73,3 +73,7 @@
 .settings/
 .classpath
 .project
+/.idea/dictionaries/
+/kohii-ads/build/
+/kohii-core/build/
+/kohii-experiments/build/

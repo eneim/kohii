@@ -18,19 +18,12 @@ package kohii.v1.dev
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import kohii.v1.exoplayer.Kohii
-import kohii.v1.sample.R
-import kotlinx.android.synthetic.main.activity_debug.content
+import kohii.v1.sample.R.layout
 
 class DevActivity : AppCompatActivity() {
 
-  lateinit var kohii: Kohii
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_debug)
-    kohii = Kohii[this]
-    kohii.register(this)
-        .addBucket(content)
+    setContentView(layout.activity_debug)
   }
 }

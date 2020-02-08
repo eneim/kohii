@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.v1.BuildConfig
+import kohii.v1.core.BridgeCreator
 import kohii.v1.core.Common
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
@@ -44,13 +45,12 @@ internal class PlayerViewPlayableCreator(
 
   private val app = master.app
 
-  private val defaultBridgeProvider by lazy(NONE) {
+  private val bridgeCreator: BridgeCreator<PlayerView> by lazy(NONE) {
     val userAgent = Common.getUserAgent(this.app, BuildConfig.LIB_NAME)
     val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
     // ExoPlayerProvider
-    val drmSessionManagerProvider =
-      DefaultDrmSessionManagerProvider(this.app, httpDataSource)
+    val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this.app, httpDataSource)
     val playerProvider = DefaultExoPlayerProvider(
         this.app,
         DefaultBandwidthMeterFactory(),
@@ -66,13 +66,10 @@ internal class PlayerViewPlayableCreator(
     val mediaCache: Cache =
       SimpleCache(
           contentDir,
-          LeastRecentlyUsedCacheEvictor(
-              CACHE_SIZE
-          ),
+          LeastRecentlyUsedCacheEvictor(CACHE_SIZE),
           ExoDatabaseProvider(this.app)
       )
-    val upstreamFactory =
-      DefaultDataSourceFactory(this.app, httpDataSource)
+    val upstreamFactory = DefaultDataSourceFactory(this.app, httpDataSource)
     val mediaSourceFactoryProvider =
       DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
     PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
@@ -86,11 +83,11 @@ internal class PlayerViewPlayableCreator(
         master,
         media,
         config,
-        defaultBridgeProvider.createBridge(app, media)
+        bridgeCreator.createBridge(app, media)
     )
   }
 
   override fun cleanUp() {
-    defaultBridgeProvider.cleanUp()
+    bridgeCreator.cleanUp()
   }
 }

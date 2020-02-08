@@ -28,13 +28,15 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
+import kohii.v1.core.Selector
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
 internal class RecyclerViewBucket(
   manager: Manager,
-  override val root: RecyclerView
-) : Bucket(manager, root), RecyclerView.OnChildAttachStateChangeListener {
+  override val root: RecyclerView,
+  selector: Selector = defaultSelector
+) : Bucket(manager, root, selector), RecyclerView.OnChildAttachStateChangeListener {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {
