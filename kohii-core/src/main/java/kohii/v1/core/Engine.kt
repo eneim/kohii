@@ -46,6 +46,7 @@ abstract class Engine<RENDERER : Any> constructor(
 
   abstract fun prepare(manager: Manager)
 
+  @JvmOverloads
   inline fun setUp(
     media: Media,
     crossinline options: Options.() -> Unit = {}
@@ -53,11 +54,13 @@ abstract class Engine<RENDERER : Any> constructor(
       this, media
   ).also { options(it.options) }
 
+  @JvmOverloads
   inline fun setUp(
     uri: Uri,
     crossinline options: Options.() -> Unit = {}
   ) = setUp(MediaItem(uri), options)
 
+  @JvmOverloads
   inline fun setUp(
     url: String,
     crossinline options: Options.() -> Unit = {}
@@ -83,6 +86,7 @@ abstract class Engine<RENDERER : Any> constructor(
     return if (tag == null) null else Rebinder(tag)
   }
 
+  @JvmOverloads
   fun register(
     fragment: Fragment,
     memoryMode: MemoryMode = LOW
@@ -91,6 +95,7 @@ abstract class Engine<RENDERER : Any> constructor(
     return master.registerInternal(activity, fragment, lifecycleOwner, memoryMode = memoryMode)
   }
 
+  @JvmOverloads
   fun register(
     activity: FragmentActivity,
     memoryMode: MemoryMode = LOW

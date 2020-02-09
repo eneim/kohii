@@ -337,6 +337,7 @@ class Manager(
     return this
   }
 
+  @JvmOverloads
   fun addBucket(
     view: View,
     selector: Selector = defaultSelector
