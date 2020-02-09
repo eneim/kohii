@@ -49,19 +49,19 @@ abstract class Bucket constructor(
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
   companion object {
+    val defaultSelector: Selector = { it -> listOfNotNull(it.firstOrNull()) }
+
     const val VERTICAL = RecyclerView.VERTICAL
     const val HORIZONTAL = RecyclerView.HORIZONTAL
     const val BOTH_AXIS = -1
     const val NONE_AXIS = -2
 
-    internal val comparators = mapOf(
+    internal val playbackComparators = mapOf(
         HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
         VERTICAL to Playback.VERTICAL_COMPARATOR,
         BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,
         NONE_AXIS to Playback.BOTH_AXIS_COMPARATOR
     )
-
-    internal val defaultSelector: Selector = { it -> listOfNotNull(it.firstOrNull()) }
 
     @JvmStatic
     internal operator fun get(
@@ -77,7 +77,9 @@ abstract class Bucket constructor(
         is ViewPager2 -> ViewPager2Bucket(manager, root, selector)
         is ViewPager -> ViewPagerBucket(manager, root, selector)
         is ViewGroup -> {
-          if (Build.VERSION.SDK_INT >= 23)
+          if (Build.VERSION
+                  .SDK_INT >= 23
+          )
             ViewGroupV23Bucket(manager, root, selector)
           else
             ViewGroupBucket(manager, root, selector)
@@ -98,7 +100,10 @@ abstract class Bucket constructor(
 
   private val behaviorHolder by lazy(NONE) {
     val container = findCoordinatorLayoutDirectChildContainer(
-        manager.group.activity.window.peekDecorView(), target = root
+        manager.group
+            .activity
+            .window
+            .peekDecorView(), target = root
     )
     val params = container?.layoutParams
     return@lazy if (params is CoordinatorLayout.LayoutParams) params else null
@@ -108,7 +113,8 @@ abstract class Bucket constructor(
 
   open fun allowToPlay(playback: Playback): Boolean {
     // Default judgement.
-    return playback.token.shouldPlay()
+    return playback.token
+        .shouldPlay()
   }
 
   abstract fun selectToPlay(candidates: Collection<Playback>): Collection<Playback>
@@ -214,16 +220,22 @@ abstract class Bucket constructor(
   ): Collection<Playback> {
     if (lock) return emptyList()
 
-    val comparator = comparators.getValue(orientation)
+    val comparator = playbackComparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
         .groupBy {
-          it.tag != Master.NO_TAG && it.config.controller != null
+          it.tag != Master.NO_TAG &&
+              it.config
+                  .controller != null
           // equals to `manager.master.plannedManualPlayables.contains(it.tag)`
         }
         .withDefault { emptyList() }
 
     val manualCandidate = with(grouped.getValue(true)) {
-      val started = find { manager.master.playablesStartedByClient.contains(it.tag) }
+      val started = find {
+        manager.master
+            .playablesStartedByClient
+            .contains(it.tag)
+      }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 
