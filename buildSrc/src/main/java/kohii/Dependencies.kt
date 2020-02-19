@@ -57,9 +57,9 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-rc02"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-rc03"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.2"
-    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
+    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
@@ -71,7 +71,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.3.70-eap-184"
+    private const val version = "1.3.61"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
