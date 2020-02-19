@@ -270,22 +270,28 @@
           <section>
             <rule>
               <match>
-                <AND>
-                  <NAME>xmlns:android</NAME>
-                  <XML_ATTRIBUTE />
-                  <XML_NAMESPACE>^$</XML_NAMESPACE>
-                </AND>
+                <NAME>class</NAME>
               </match>
             </rule>
           </section>
           <section>
             <rule>
               <match>
-                <AND>
-                  <NAME>xmlns:.*</NAME>
-                  <XML_ATTRIBUTE />
-                  <XML_NAMESPACE>^$</XML_NAMESPACE>
-                </AND>
+                <NAME>layout</NAME>
+              </match>
+            </rule>
+          </section>
+          <section>
+            <rule>
+              <match>
+                <NAME>xmlns:android</NAME>
+              </match>
+            </rule>
+          </section>
+          <section>
+            <rule>
+              <match>
+                <NAME>xmlns:.*</NAME>
               </match>
               <order>BY_NAME</order>
             </rule>
@@ -295,7 +301,6 @@
               <match>
                 <AND>
                   <NAME>.*:id</NAME>
-                  <XML_ATTRIBUTE />
                   <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
@@ -306,7 +311,6 @@
               <match>
                 <AND>
                   <NAME>.*:name</NAME>
-                  <XML_ATTRIBUTE />
                   <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
@@ -316,9 +320,8 @@
             <rule>
               <match>
                 <AND>
-                  <NAME>name</NAME>
-                  <XML_ATTRIBUTE />
-                  <XML_NAMESPACE>^$</XML_NAMESPACE>
+                  <NAME>.*:layout_width</NAME>
+                  <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
             </rule>
@@ -327,9 +330,8 @@
             <rule>
               <match>
                 <AND>
-                  <NAME>style</NAME>
-                  <XML_ATTRIBUTE />
-                  <XML_NAMESPACE>^$</XML_NAMESPACE>
+                  <NAME>.*:layout_height</NAME>
+                  <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
             </rule>
@@ -338,9 +340,8 @@
             <rule>
               <match>
                 <AND>
-                  <NAME>.*</NAME>
-                  <XML_ATTRIBUTE />
-                  <XML_NAMESPACE>^$</XML_NAMESPACE>
+                  <NAME>.*:layout_.*</NAME>
+                  <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
               <order>BY_NAME</order>
@@ -351,23 +352,36 @@
               <match>
                 <AND>
                   <NAME>.*</NAME>
-                  <XML_ATTRIBUTE />
                   <XML_NAMESPACE>http://schemas.android.com/apk/res/android</XML_NAMESPACE>
                 </AND>
               </match>
-              <order>ANDROID_ATTRIBUTE_ORDER</order>
+              <order>BY_NAME</order>
             </rule>
           </section>
           <section>
             <rule>
               <match>
                 <AND>
-                  <NAME>.*</NAME>
-                  <XML_ATTRIBUTE />
-                  <XML_NAMESPACE>.*</XML_NAMESPACE>
+                  <NAME>app:layout_.*</NAME>
+                  <XML_NAMESPACE>http://schemas.android.com/apk/res-auto</XML_NAMESPACE>
                 </AND>
               </match>
               <order>BY_NAME</order>
+            </rule>
+          </section>
+          <section>
+            <rule>
+              <match>
+                <NAME>.*(?&lt;!style)$</NAME>
+              </match>
+              <order>BY_NAME</order>
+            </rule>
+          </section>
+          <section>
+            <rule>
+              <match>
+                <NAME>style</NAME>
+              </match>
             </rule>
           </section>
         </rules>
@@ -376,20 +390,21 @@
     <codeStyleSettings language="kotlin">
       <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="1" />
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
-      <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="1" />
+      <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="0" />
       <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
       <option name="CALL_PARAMETERS_WRAP" value="1" />
       <option name="CALL_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
       <option name="CALL_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
-      <option name="METHOD_PARAMETERS_WRAP" value="2" />
+      <option name="METHOD_PARAMETERS_WRAP" value="5" />
       <option name="METHOD_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
       <option name="METHOD_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
-      <option name="EXTENDS_LIST_WRAP" value="5" />
-      <option name="METHOD_CALL_CHAIN_WRAP" value="2" />
+      <option name="EXTENDS_LIST_WRAP" value="1" />
+      <option name="METHOD_CALL_CHAIN_WRAP" value="1" />
       <option name="ASSIGNMENT_WRAP" value="1" />
-      <option name="METHOD_ANNOTATION_WRAP" value="1" />
       <option name="FIELD_ANNOTATION_WRAP" value="1" />
-      <option name="ENUM_CONSTANTS_WRAP" value="2" />
+      <option name="PARAMETER_ANNOTATION_WRAP" value="1" />
+      <option name="VARIABLE_ANNOTATION_WRAP" value="1" />
+      <option name="ENUM_CONSTANTS_WRAP" value="1" />
       <indentOptions>
         <option name="INDENT_SIZE" value="2" />
         <option name="CONTINUATION_INDENT_SIZE" value="4" />
