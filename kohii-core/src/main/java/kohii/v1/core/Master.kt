@@ -140,20 +140,11 @@ class Master private constructor(context: Context) : PlayableManager {
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
 
-  @Suppress("MemberVisibilityCanBePrivate")
-  internal val componentCallbacks by lazy(NONE) {
-    object : ComponentCallbacks2 {
-      override fun onLowMemory() {
-        // do nothing
-      }
-
-      override fun onConfigurationChanged(newConfig: Configuration) {
-        // do nothing
-      }
-
-      override fun onTrimMemory(level: Int) {
-        trimMemoryLevel = level
-      }
+  private val componentCallbacks = object : ComponentCallbacks2 {
+    override fun onLowMemory() = Unit
+    override fun onConfigurationChanged(newConfig: Configuration) = Unit
+    override fun onTrimMemory(level: Int) {
+      trimMemoryLevel = level
     }
   }
 
