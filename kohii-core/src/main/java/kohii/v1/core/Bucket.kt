@@ -71,9 +71,7 @@ abstract class Bucket constructor(
     ): Bucket {
       return when (root) {
         is RecyclerView -> RecyclerViewBucket(manager, root, selector)
-        is NestedScrollView -> NestedScrollViewBucket(
-            manager, root, selector
-        )
+        is NestedScrollView -> NestedScrollViewBucket(manager, root, selector)
         is ViewPager2 -> ViewPager2Bucket(manager, root, selector)
         is ViewPager -> ViewPagerBucket(manager, root, selector)
         is ViewGroup -> {
