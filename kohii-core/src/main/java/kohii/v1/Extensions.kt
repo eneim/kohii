@@ -22,6 +22,7 @@ import android.content.ContextWrapper
 import android.graphics.Rect
 import android.util.Log
 import android.view.View
+import android.view.Window
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
 import androidx.core.util.Pools.Pool
@@ -41,10 +42,8 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
 }
 
 // Return a View that is ancestor of container, and has direct parent is a CoordinatorLayout
-internal fun findCoordinatorLayoutDirectChildContainer(
-  root: View?,
-  target: View?
-): View? {
+internal fun Window.findCoordinatorLayoutDirectChildContainer(target: View?): View? {
+  val root = peekDecorView() ?: return null
   var view = target
   do {
     if (view != null && view.parent is CoordinatorLayout) {
