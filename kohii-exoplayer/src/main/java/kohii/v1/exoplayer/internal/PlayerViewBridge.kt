@@ -287,10 +287,9 @@ internal class PlayerViewBridge(
       listenerApplied = false
       val player = playerProvider.acquirePlayer(this.media)
       if (player is KohiiExoPlayer) {
-        val next = player.trackSelector.parameters.buildUpon()
+        player.trackSelector.parameters = player.trackSelector.parameters.buildUpon()
             .setMaxVideoSize(videoSize.maxWidth, videoSize.maxHeight)
             .build()
-        player.trackSelector.parameters = next
       }
       this.player = player
     }
