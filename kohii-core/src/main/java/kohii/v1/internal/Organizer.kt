@@ -27,8 +27,10 @@ internal class Organizer {
       }
   )
 
+  // TODO: we plan to support multiple playbacks in 1.1.0.
   internal fun selectFinal(candidates: Collection<Playback>): Collection<Playback> {
-    this.selection = candidates /* listOfNotNull(candidates.firstOrNull()) */
+    // this.selection = candidates
+    this.selection = listOfNotNull(candidates.firstOrNull())
     return this.selection
   }
 }
