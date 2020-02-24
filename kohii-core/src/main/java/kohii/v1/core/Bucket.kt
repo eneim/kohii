@@ -98,7 +98,7 @@ abstract class Bucket constructor(
     val container = manager.group
         .activity
         .window
-        .findCoordinatorLayoutDirectChildContainer(root)
+        .peekDecorView()?.findCoordinatorLayoutDirectChildContainer(root)
     val params = container?.layoutParams
     return@lazy if (params is CoordinatorLayout.LayoutParams) params else null
   }
