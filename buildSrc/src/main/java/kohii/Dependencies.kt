@@ -200,6 +200,8 @@ object Libs {
     val ima = extLib("ima")
     val cast = extLib("cast")
 
+    val workManager = extLib("workmanager")
+
     val allSnapshot = "com.github.google:exoplayer:${Versions.exoPlayerSnapShot}"
   }
 
