@@ -30,7 +30,8 @@ import kohii.v1.sample.common.BaseViewHolder
 
 class ExoVideoHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_player_container_with_title), Playback.StateListener, ArtworkHintListener {
+) : BaseViewHolder(parent, R.layout.holder_player_container_with_title), Playback.StateListener,
+    ArtworkHintListener {
 
   internal val container = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   internal val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
