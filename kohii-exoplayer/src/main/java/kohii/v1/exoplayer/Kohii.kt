@@ -46,4 +46,23 @@ class Kohii private constructor(
   override fun prepare(manager: Manager) {
     manager.registerRendererProvider(PlayerView::class.java, PlayerViewProvider())
   }
+
+  class Builder(context: Context) {
+
+    private val app: Context = context.applicationContext
+    private val master = Master[app]
+
+    private var playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master)
+
+    fun setPlayableCreator(playableCreator: PlayableCreator<PlayerView>): Builder = apply {
+      this.playableCreator = playableCreator
+    }
+
+    fun build(): Kohii = Kohii(
+        master = master,
+        playableCreator = playableCreator
+    ).also {
+      master.registerEngine(it)
+    }
+  }
 }

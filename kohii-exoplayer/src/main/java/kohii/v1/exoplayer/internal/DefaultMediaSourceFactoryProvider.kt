@@ -36,34 +36,21 @@ import kohii.v1.media.Media
 /**
  * @author eneim (2018/10/27).
  */
-class DefaultMediaSourceFactoryProvider private constructor(
+class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
   upstreamFactory: DataSource.Factory,
-  mediaCache: Cache? = null,
-  private val offlineSourceHelper: OfflineSourceHelper? = null
+  mediaCache: Cache? = null
 ) : MediaSourceFactoryProvider {
 
-  constructor(
-    upstreamFactory: DataSource.Factory,
-    mediaCache: Cache? = null
-  ) : this(upstreamFactory, mediaCache, null)
-
-  @Suppress("unused") //
-  constructor(
-    upstreamFactory: DataSource.Factory,
-    offlineSourceHelper: OfflineSourceHelper
-  ) : this(upstreamFactory, offlineSourceHelper.downloadCache, offlineSourceHelper)
-
-  private val dataSourceFactory: DataSource.Factory =
-    if (mediaCache != null) {
-      CacheDataSourceFactory(
-          mediaCache,
-          upstreamFactory,
-          FileDataSourceFactory(), null,
-          CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
-      )
-    } else {
-      upstreamFactory
-    }
+  private val dataSourceFactory: DataSource.Factory = if (mediaCache != null) {
+    CacheDataSourceFactory(
+        mediaCache,
+        upstreamFactory,
+        FileDataSourceFactory(), null,
+        CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
+    )
+  } else {
+    upstreamFactory
+  }
 
   override fun provideMediaSourceFactory(media: Media): MediaSourceFactory {
     @C.ContentType val type = Util.inferContentType(media.uri, media.type)
@@ -79,8 +66,6 @@ class DefaultMediaSourceFactoryProvider private constructor(
         }
       }
     }
-
-    if (offlineSourceHelper != null) return offlineSourceHelper.getMediaSourceFactory(media.uri)
 
     return when (type) {
       C.TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)

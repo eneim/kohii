@@ -39,7 +39,7 @@ import kotlin.math.max
 /**
  * @author eneim (2018/10/27).
  */
-class DefaultExoPlayerProvider(
+class DefaultExoPlayerProvider @JvmOverloads constructor(
   private val context: Context,
   private val bandwidthMeterFactory: BandwidthMeterFactory = DefaultBandwidthMeterFactory(),
   private val drmSessionManagerProvider: DrmSessionManagerProvider? = null,
