@@ -71,6 +71,8 @@ class Manager(
       refresh()
     }
 
+  // TODO: why we need the RendererProvider to be Manager-scoped?
+  //  Check with Fragment/DialogFragment
   private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
 
   // Use as both Queue and Stack.

@@ -20,6 +20,9 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.media.Media
 
+/**
+ * A pool to cache renderer for the Playback.
+ */
 interface RendererProvider : DefaultLifecycleObserver {
 
   @JvmDefault

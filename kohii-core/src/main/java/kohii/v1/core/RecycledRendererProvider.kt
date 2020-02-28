@@ -59,10 +59,8 @@ abstract class RecycledRendererProvider(private val poolSize: Int) : RendererPro
   ) {
     if (renderer == null) return
     val rendererType = getRendererType(playback.container, media)
-    val pool = pools.get(rendererType) ?: run {
-      val created = SimplePool<Any>(poolSize)
-      pools.put(rendererType, created)
-      created
+    val pool = pools.get(rendererType) ?: SimplePool<Any>(poolSize).also {
+      pools.put(rendererType, it)
     }
     pool.release(renderer)
   }

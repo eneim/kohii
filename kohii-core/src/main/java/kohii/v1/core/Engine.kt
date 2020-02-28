@@ -32,7 +32,7 @@ import kohii.v1.media.VolumeInfo
 
 abstract class Engine<RENDERER : Any> constructor(
   val master: Master,
-  internal val playableCreator: PlayableCreator<RENDERER>
+  val playableCreator: PlayableCreator<RENDERER>
 ) {
 
   constructor(
