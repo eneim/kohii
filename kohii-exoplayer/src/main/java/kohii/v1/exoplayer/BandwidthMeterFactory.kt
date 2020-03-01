@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
-package kohii.v1.exoplayer.internal
+package kohii.v1.exoplayer
 
-import com.google.android.exoplayer2.Player
-import kohii.v1.media.Media
+import android.content.Context
+import com.google.android.exoplayer2.upstream.BandwidthMeter
 
-/**
- * @author eneim (2018/10/27).
- *
- * A Pool to store unused Player instance. As initializing a Player is relatively expensive,
- * we try to cache them for reuse.
- */
-interface ExoPlayerProvider {
+interface BandwidthMeterFactory {
 
-  fun acquirePlayer(media: Media): Player
-
-  fun releasePlayer(
-    media: Media,
-    player: Player
-  )
-
-  fun cleanUp()
+  fun createBandwidthMeter(context: Context): BandwidthMeter
 }

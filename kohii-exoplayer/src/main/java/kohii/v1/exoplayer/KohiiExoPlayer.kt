@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exoplayer.internal
+package kohii.v1.exoplayer
 
 import android.content.Context
 import android.os.Looper

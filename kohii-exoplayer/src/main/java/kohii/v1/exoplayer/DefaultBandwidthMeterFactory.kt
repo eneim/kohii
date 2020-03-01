@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package kohii.v1.exoplayer.internal
+package kohii.v1.exoplayer
 
-import com.google.android.exoplayer2.source.ads.AdsMediaSource
-import kohii.v1.media.Media
+import android.content.Context
+import com.google.android.exoplayer2.upstream.BandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 
-/**
- * @author eneim (2018/10/27).
- */
-interface MediaSourceFactoryProvider {
+class DefaultBandwidthMeterFactory : BandwidthMeterFactory {
 
-  fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory
+  override fun createBandwidthMeter(context: Context): BandwidthMeter =
+    DefaultBandwidthMeter.Builder(context).build()
 }

@@ -23,13 +23,13 @@ import kohii.v1.core.Engine
 import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
-import kohii.v1.exoplayer.internal.PlayerViewPlayableCreator
-import kohii.v1.exoplayer.internal.PlayerViewProvider
+import kohii.v1.core.RendererProviderFactory
 import kohii.v1.utils.SingletonHolder
 
 class Kohii private constructor(
   master: Master,
-  playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master)
+  playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master),
+  private val rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
 ) : Engine<PlayerView>(master, playableCreator) {
 
   private constructor(context: Context) : this(Master[context])
@@ -44,22 +44,30 @@ class Kohii private constructor(
   }
 
   override fun prepare(manager: Manager) {
-    manager.registerRendererProvider(PlayerView::class.java, PlayerViewProvider())
+    manager.registerRendererProvider(PlayerView::class.java, rendererProviderFactory())
   }
 
   class Builder(context: Context) {
 
     private val master = Master[context.applicationContext]
 
-    private var playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master)
+    private var playableCreator: PlayableCreator<PlayerView> =
+      PlayerViewPlayableCreator(master)
+
+    private var rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
 
     fun setPlayableCreator(playableCreator: PlayableCreator<PlayerView>): Builder = apply {
       this.playableCreator = playableCreator
     }
 
+    fun setRendererProviderFactory(factory: RendererProviderFactory): Builder = apply {
+      this.rendererProviderFactory = factory
+    }
+
     fun build(): Kohii = Kohii(
         master = master,
-        playableCreator = playableCreator
+        playableCreator = playableCreator,
+        rendererProviderFactory = rendererProviderFactory
     ).also {
       master.registerEngine(it)
     }
