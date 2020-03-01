@@ -26,6 +26,9 @@ import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
 import kohii.v1.utils.SingletonHolder
 
+/**
+ * [Latte] is an [Engine] for [VideoView]
+ */
 @Experiment
 class Latte private constructor(
   master: Master,
@@ -45,5 +48,22 @@ class Latte private constructor(
 
   override fun prepare(manager: Manager) {
     manager.registerRendererProvider(VideoView::class.java, VideoViewProvider())
+  }
+
+  class Builder(context: Context) {
+
+    private val master = Master[context.applicationContext]
+
+    private var playableCreator: PlayableCreator<VideoView> = VideoViewPlayableCreator(master)
+
+    fun setPlayableCreator(playableCreator: PlayableCreator<VideoView>): Builder = apply {
+      this.playableCreator = playableCreator
+    }
+
+    fun build(): Latte = Latte(
+        master, playableCreator
+    ).also {
+      master.registerEngine(it)
+    }
   }
 }

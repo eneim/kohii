@@ -100,7 +100,7 @@ object Libs {
     val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     object Media {
-      private const val version = "1.0.2"
+      private const val version = "1.0.3"
       // private const val version = "1.1.0-SNAPSHOT"
       val widget = "androidx.media2:media2-widget:$version"
       val common = "androidx.media2:media2-common:$version"

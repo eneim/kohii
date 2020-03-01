@@ -49,8 +49,7 @@ class Kohii private constructor(
 
   class Builder(context: Context) {
 
-    private val app: Context = context.applicationContext
-    private val master = Master[app]
+    private val master = Master[context.applicationContext]
 
     private var playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master)
 

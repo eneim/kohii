@@ -23,11 +23,13 @@ import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
 import kohii.v1.media.Media
 
-internal class VideoViewPlayableCreator(
-  private val master: Master
+/**
+ * Default implementation of [PlayableCreator] that supports [VideoView]
+ */
+class VideoViewPlayableCreator @JvmOverloads constructor(
+  private val master: Master,
+  private val playerProvider: MediaPlayerProvider = DefaultMediaPlayerProvider(master.app)
 ) : PlayableCreator<VideoView>(VideoView::class.java) {
-
-  private val playerProvider = DefaultMediaPlayerProvider(master.app)
 
   override fun createPlayable(
     config: Config,
@@ -37,7 +39,7 @@ internal class VideoViewPlayableCreator(
         master,
         media,
         config,
-        VideoViewBridge(master.app, media, playerProvider)
+        VideoViewBridge(media, playerProvider)
     )
   }
 
