@@ -48,7 +48,7 @@ class VideoViewBridge(
       if (field === value) return // same reference
       field = value
       val player = this.player
-      if (player != null) field?.setPlayer(player)
+      if (player != null && value != null) value.setPlayer(player)
     }
 
   override val playerState: Int
@@ -100,6 +100,7 @@ class VideoViewBridge(
   override fun release() {
     player?.let {
       // TODO any other local clean up?
+      it.reset()
       playerProvider.releasePlayer(media, it)
     }
     player = null

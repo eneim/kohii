@@ -24,6 +24,7 @@ import kohii.v1.core.Engine
 import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
+import kohii.v1.core.RendererProviderFactory
 import kohii.v1.utils.SingletonHolder
 
 /**
@@ -32,7 +33,8 @@ import kohii.v1.utils.SingletonHolder
 @Experiment
 class Latte private constructor(
   master: Master,
-  playableCreator: PlayableCreator<VideoView> = VideoViewPlayableCreator(master)
+  playableCreator: PlayableCreator<VideoView> = VideoViewPlayableCreator(master),
+  private val rendererProviderFactory: RendererProviderFactory = { VideoViewProvider() }
 ) : Engine<VideoView>(master, playableCreator) {
 
   private constructor(context: Context) : this(Master[context])
@@ -47,7 +49,7 @@ class Latte private constructor(
   }
 
   override fun prepare(manager: Manager) {
-    manager.registerRendererProvider(VideoView::class.java, VideoViewProvider())
+    manager.registerRendererProvider(VideoView::class.java, rendererProviderFactory())
   }
 
   class Builder(context: Context) {
@@ -56,12 +58,18 @@ class Latte private constructor(
 
     private var playableCreator: PlayableCreator<VideoView> = VideoViewPlayableCreator(master)
 
+    private var rendererProviderFactory: RendererProviderFactory = { VideoViewProvider() }
+
     fun setPlayableCreator(playableCreator: PlayableCreator<VideoView>): Builder = apply {
       this.playableCreator = playableCreator
     }
 
+    fun setRendererProviderFactory(factory: RendererProviderFactory): Builder = apply {
+      this.rendererProviderFactory = factory
+    }
+
     fun build(): Latte = Latte(
-        master, playableCreator
+        master, playableCreator, rendererProviderFactory
     ).also {
       master.registerEngine(it)
     }
