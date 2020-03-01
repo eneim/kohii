@@ -50,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.6"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}"
 }
 
 @Suppress("MayBeConstant", "unused")
