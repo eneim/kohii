@@ -20,12 +20,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import kohii.v1.sample.MainActivity
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
-import kohii.v1.sample.common.splitCases
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class MainListFragment : BaseFragment() {
@@ -48,25 +47,20 @@ class MainListFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     recyclerView.adapter = DemoItemsAdapter(getApp().demoItems) {
-      val title =
-        if (it.title == 0) it.fragmentClass.simpleName.splitCases() else getString(it.title)
-      requireActivity().let { act ->
-        if (act is MainActivity) act.updateTitle(title)
-        else act.title = title
+      val fragment: Fragment = it.fragmentClass.newInstance().apply {
+        val bundle = Bundle()
+        bundle.putParcelable(KEY_DEMO_ITEM, it)
+        arguments = bundle
       }
+
       parentFragmentManager.commit {
         setReorderingAllowed(true) // Optimize for shared element transition
         replace(
-            R.id.fragmentContainer, it.fragmentClass.newInstance(),
+            R.id.fragmentContainer, fragment,
             it.fragmentClass.canonicalName
         )
         addToBackStack(null)
       }
     }
-  }
-
-  override fun onResume() {
-    super.onResume()
-    requireActivity().title = getString(R.string.app_name)
   }
 }

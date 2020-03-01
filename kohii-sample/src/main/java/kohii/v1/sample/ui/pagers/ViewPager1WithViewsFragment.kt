@@ -26,16 +26,18 @@ import kohii.v1.core.Common
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.getDisplayPoint
 import kohii.v1.sample.common.inflateView
 import kohii.v1.sample.data.Video
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlinx.android.synthetic.main.widget_video_container.view.videoFrame
 import kotlin.math.abs
 
 // ViewPager whose pages are Views
-class ViewPager1WithViewsFragment : BaseFragment() {
+class ViewPager1WithViewsFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = ViewPager1WithViewsFragment()
@@ -86,6 +88,8 @@ class ViewPager1WithViewsFragment : BaseFragment() {
       }
     }
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

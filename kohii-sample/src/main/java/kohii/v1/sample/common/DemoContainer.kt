@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2020 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.main
+package kohii.v1.sample.common
 
-import android.os.Parcelable
-import androidx.annotation.StringRes
-import androidx.fragment.app.Fragment
-import kotlinx.android.parcel.Parcelize
+import kohii.v1.sample.ui.main.DemoItem
 
-@Parcelize
-data class DemoItem(
-  @StringRes val title: Int = 0,
-  @StringRes val subTitle: Int = 0,
-  val fragmentClass: Class<out Fragment>
-) : Parcelable
+interface DemoContainer {
+
+  val demoItem: DemoItem?
+}

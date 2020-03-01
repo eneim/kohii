@@ -29,15 +29,19 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.sample.ui.nested5.MainAdapter.Companion.STATE_KEY
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
-class RecyclerViewInsideRecyclerViewFragment : BaseFragment() {
+class RecyclerViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = RecyclerViewInsideRecyclerViewFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

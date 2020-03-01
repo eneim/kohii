@@ -104,11 +104,12 @@ class DemoApp : Application() {
             R.string.demo_title_recycler_view_0,
             R.string.demo_desc_recycler_view_0,
             GridRecyclerViewWithUserClickFragment::class.java
-        ), DemoItem(
-        R.string.demo_title_fbook,
-        R.string.demo_desc_fbook,
-        FbookFragment::class.java
-    )
+        ),
+        DemoItem(
+            R.string.demo_title_fbook,
+            R.string.demo_desc_fbook,
+            FbookFragment::class.java
+        )
     ) + youtubeDemos + listOf(
         DemoItem(
             R.string.demo_title_recycler_view_1,

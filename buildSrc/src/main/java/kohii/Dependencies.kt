@@ -50,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.6"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -143,7 +143,8 @@ object Libs {
 
     val preference = "androidx.preference:preference-ktx:1.1.0"
 
-    val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta4"
+    // beta4 breaks the overlay demo ...
+    val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
 
     val core = "androidx.core:core:1.2.0"
     val coreKtx = "androidx.core:core-ktx:1.2.0"

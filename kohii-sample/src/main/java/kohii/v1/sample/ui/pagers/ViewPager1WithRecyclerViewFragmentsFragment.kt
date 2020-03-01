@@ -27,12 +27,14 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getDisplayPoint
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlin.math.abs
 
 // ViewPager (1) whose pages are Fragments
-class ViewPager1WithRecyclerViewFragmentsFragment : BaseFragment() {
+class ViewPager1WithRecyclerViewFragmentsFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = ViewPager1WithRecyclerViewFragmentsFragment()
@@ -47,6 +49,8 @@ class ViewPager1WithRecyclerViewFragmentsFragment : BaseFragment() {
 
     override fun getCount() = Int.MAX_VALUE / 2
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

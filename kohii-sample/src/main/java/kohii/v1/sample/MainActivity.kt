@@ -20,8 +20,14 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseActivity
+import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.common.splitCases
 import kohii.v1.sample.ui.combo.LandscapeFullscreenFragment
 import kohii.v1.sample.ui.main.MainListFragment
 import kotlinx.android.synthetic.main.main_activity.appBarLayout
@@ -42,6 +48,30 @@ class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragme
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main_activity)
     setSupportActionBar(this.toolbar)
+
+    supportFragmentManager.registerFragmentLifecycleCallbacks(
+        object : FragmentLifecycleCallbacks() {
+          override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
+            if (f !is BaseFragment) return
+            if (f !is DemoContainer) {
+              this@MainActivity.updateTitle(getString(R.string.app_name))
+              return
+            }
+            val titleId = f.demoItem?.title ?: 0
+            val title = if (titleId == 0) {
+              f.javaClass.simpleName.splitCases()
+            } else {
+              getString(titleId)
+            }
+            this@MainActivity.updateTitle(title)
+          }
+
+          override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+            if (f is DemoContainer) this@MainActivity.updateTitle(getString(R.string.app_name))
+          }
+        }, false
+    )
+
     if (savedInstanceState == null) {
       supportFragmentManager.beginTransaction()
           .replace(

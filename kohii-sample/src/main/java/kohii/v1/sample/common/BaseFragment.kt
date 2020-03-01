@@ -32,6 +32,7 @@ open class BaseFragment : Fragment() {
 
   companion object {
     const val videoUrl = "https://content.jwplatform.com/manifests/146UwF4L.m3u8"
+    const val KEY_DEMO_ITEM = "kohii::container::demo::item"
   }
 
   @Suppress("MemberVisibilityCanBePrivate")

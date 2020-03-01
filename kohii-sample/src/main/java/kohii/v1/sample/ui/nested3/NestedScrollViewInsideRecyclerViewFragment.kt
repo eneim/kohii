@@ -27,13 +27,17 @@ import kohii.v1.core.MemoryMode
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_debug_nestsv_in_rv.recyclerView
 
-class NestedScrollViewInsideRecyclerViewFragment : BaseFragment() {
+class NestedScrollViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = NestedScrollViewInsideRecyclerViewFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

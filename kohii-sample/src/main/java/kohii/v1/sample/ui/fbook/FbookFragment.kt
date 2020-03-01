@@ -40,6 +40,7 @@ import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.checkOverlayPermission
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.isLandscape
@@ -47,6 +48,7 @@ import kohii.v1.sample.ui.fbook.player.BigPlayerDialog
 import kohii.v1.sample.ui.fbook.player.FloatPlayerController
 import kohii.v1.sample.ui.fbook.player.PlayerPanel
 import kohii.v1.sample.ui.fbook.vh.VideoViewHolder
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_facebook.content
 import kotlinx.android.synthetic.main.fragment_facebook.dummyPlayer
 import kotlinx.android.synthetic.main.fragment_facebook.recyclerView
@@ -55,7 +57,7 @@ import kotlin.properties.Delegates
 /**
  * A demonstration that implements the UX of Facebook Videos.
  */
-class FbookFragment : BaseFragment(),
+class FbookFragment : BaseFragment(), DemoContainer,
     BackPressConsumer,
     FloatPlayerController,
     PlayerPanel.Callback, Manager.OnSelectionListener, Playback.StateListener {
@@ -66,6 +68,8 @@ class FbookFragment : BaseFragment(),
 
     fun newInstance() = FbookFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   private lateinit var kohii: Kohii
 

@@ -25,19 +25,23 @@ import androidx.fragment.app.commit
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.InitData
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 /**
  * Sample that uses Videos from ExoPlayer videos.
  * Clicking to an item will open fullscreen landscape Player.
  */
-class ExoPlayerVideosFragment : BaseFragment() {
+class ExoPlayerVideosFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = ExoPlayerVideosFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,
