@@ -25,15 +25,22 @@ import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 // Change VolumeInfo of each Playback individually, and store that info across config change.
-class EchoFragment : BaseFragment() {
+class EchoFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = EchoFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
+
+  private val viewModel: VolumeStateViewModel by viewModels()
+  private lateinit var kohii: Kohii
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -42,9 +49,6 @@ class EchoFragment : BaseFragment() {
   ): View? {
     return inflater.inflate(R.layout.fragment_recycler_view, container, false)
   }
-
-  private val viewModel: VolumeStateViewModel by viewModels()
-  private lateinit var kohii: Kohii
 
   override fun onViewCreated(
     view: View,

@@ -25,16 +25,20 @@ import androidx.lifecycle.observe
 import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.ui.main.DemoItem
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
-class GridRecyclerViewWithUserClickFragment : BaseFragment(),
+class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
     GridContentFragment.Callback,
     SinglePlayerFragment.Callback {
 
   companion object {
     fun newInstance() = GridRecyclerViewWithUserClickFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   private val viewModel: VideosViewModel by viewModels()
   private val videoFragment by lazy(NONE) {

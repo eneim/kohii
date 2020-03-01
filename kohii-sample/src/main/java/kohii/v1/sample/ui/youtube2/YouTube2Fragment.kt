@@ -25,15 +25,19 @@ import androidx.lifecycle.observe
 import kohii.v1.experiments.UnofficialYouTubePlayerEngine
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
-class YouTube2Fragment : BaseFragment() {
+class YouTube2Fragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = YouTube2Fragment()
   }
 
   private val viewModel: YouTubeViewModel by viewModels()
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

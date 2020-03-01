@@ -28,6 +28,8 @@ import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.dummyPlayer1
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.dummyPlayer2
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.libIntro
@@ -36,11 +38,14 @@ import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyc
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyclerViewTitle
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.scrollView
 
-class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
+class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment(),
+    DemoContainer {
 
   companion object {
     fun newInstance() = VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

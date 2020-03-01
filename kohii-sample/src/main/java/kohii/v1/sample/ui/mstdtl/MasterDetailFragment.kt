@@ -28,6 +28,8 @@ import androidx.fragment.app.commit
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.sample.ui.pagers.GridContentFragment
 import kohii.v1.sample.ui.pagers.ViewPager1WithFragmentsFragment
 import kotlinx.android.synthetic.main.fragment_master_detail.container
@@ -36,11 +38,15 @@ import kotlinx.android.synthetic.main.fragment_master_detail.container
  * @author eneim (2018/07/13).
  */
 @Keep
-class MasterDetailFragment : BaseFragment() {
+class MasterDetailFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = MasterDetailFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
+
+  lateinit var kohii: Kohii
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -49,8 +55,6 @@ class MasterDetailFragment : BaseFragment() {
   ): View {
     return inflater.inflate(R.layout.fragment_master_detail, container, false)
   }
-
-  lateinit var kohii: Kohii
 
   override fun onViewCreated(
     view: View,

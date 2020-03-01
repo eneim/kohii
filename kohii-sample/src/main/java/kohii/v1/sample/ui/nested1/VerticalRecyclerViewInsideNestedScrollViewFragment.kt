@@ -24,11 +24,15 @@ import androidx.core.text.parseAsHtml
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.libIntro
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyclerView
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.scrollView
 
-class VerticalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
+class VerticalRecyclerViewInsideNestedScrollViewFragment : BaseFragment(), DemoContainer {
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

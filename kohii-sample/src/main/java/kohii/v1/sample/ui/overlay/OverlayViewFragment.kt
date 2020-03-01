@@ -40,9 +40,11 @@ import kohii.v1.media.VolumeInfo
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BackPressConsumer
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.TransitionListenerAdapter
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.databinding.FragmentRecyclerViewMotionBinding
+import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.viewBehavior
 import kotlin.properties.Delegates
 
@@ -51,11 +53,14 @@ import kotlin.properties.Delegates
  */
 @Suppress("MemberVisibilityCanBePrivate")
 @Keep
-class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPressConsumer {
+class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPressConsumer,
+    DemoContainer {
 
   companion object {
     fun newInstance() = OverlayViewFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   private val overlayViewModel: OverlayViewModel by viewModels()
 

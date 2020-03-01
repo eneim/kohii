@@ -27,19 +27,23 @@ import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.InitData
 import kohii.v1.sample.databinding.FragmentMotionBinding
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_motion.scrollView
 
 /**
  * @author eneim (2018/07/15).
  */
 @Keep
-class MotionFragment : BaseFragment(), Presenter {
+class MotionFragment : BaseFragment(), Presenter, DemoContainer {
 
   companion object {
     fun newInstance() = MotionFragment()
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   lateinit var binding: FragmentMotionBinding
 

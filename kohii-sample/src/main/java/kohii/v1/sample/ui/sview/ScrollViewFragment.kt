@@ -27,11 +27,13 @@ import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.InitData
 import kohii.v1.sample.databinding.FragmentScrollViewBinding
+import kohii.v1.sample.ui.main.DemoItem
 
 @Keep
-class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
+class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, DemoContainer {
 
   companion object {
     const val videoUrl =
@@ -43,6 +45,8 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback {
       it.arguments = Bundle()
     }
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   private val videoTag by lazy { "${javaClass.canonicalName}::$videoUrl" }
 

@@ -25,11 +25,17 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_horizontal.libIntro
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_horizontal.recyclerView
 import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_horizontal.scrollView
 
-class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
+class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment(), DemoContainer {
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
+
+  lateinit var snapHelper: PagerSnapHelper
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -38,8 +44,6 @@ class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment() {
   ): View? {
     return inflater.inflate(R.layout.fragment_debug_rv_in_nestsv_horizontal, container, false)
   }
-
-  lateinit var snapHelper: PagerSnapHelper
 
   override fun onViewCreated(
     view: View,

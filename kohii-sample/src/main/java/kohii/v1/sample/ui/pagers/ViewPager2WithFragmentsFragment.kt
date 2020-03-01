@@ -27,14 +27,16 @@ import androidx.viewpager2.widget.MarginPageTransformer
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.getDisplayPoint
 import kohii.v1.sample.data.Video
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_pager_2_horizontal.viewPager
 import kotlin.math.abs
 
 // ViewPager2 whose pages are Fragments
-class ViewPager2WithFragmentsFragment : BaseFragment() {
+class ViewPager2WithFragmentsFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() =
@@ -52,6 +54,8 @@ class ViewPager2WithFragmentsFragment : BaseFragment() {
       return PageFragment.newInstance(position, videos[position % videos.size])
     }
   }
+
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,

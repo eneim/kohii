@@ -34,10 +34,12 @@ import kohii.v1.sample.PlayerInfo
 import kohii.v1.sample.PlayerInfoHolder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
+import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.doOnNextLayoutAs
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.toPixel
 import kohii.v1.sample.ui.list.data.Item
+import kohii.v1.sample.ui.main.DemoItem
 import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 import okio.buffer
 import okio.source
@@ -46,7 +48,7 @@ import okio.source
  * @author eneim (2018/07/06).
  */
 @Keep
-class VerticalListRecyclerViewFragment : BaseFragment() {
+class VerticalListRecyclerViewFragment : BaseFragment(), DemoContainer {
 
   companion object {
     fun newInstance() = VerticalListRecyclerViewFragment()
@@ -60,13 +62,7 @@ class VerticalListRecyclerViewFragment : BaseFragment() {
     return@lazy adapter.fromJson(asset.open("theme.json").source().buffer())!!
   }
 
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    parent: ViewGroup?,
-    state: Bundle?
-  ): View? {
-    return inflater.inflate(R.layout.fragment_recycler_view, parent, false)
-  }
+  override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   // Should be implemented by Activity, to keep information of latest clicked item position.
   private var playerInfoHolder: PlayerInfoHolder? = null
@@ -79,6 +75,14 @@ class VerticalListRecyclerViewFragment : BaseFragment() {
   override fun onDetach() {
     super.onDetach()
     playerInfoHolder = null
+  }
+
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    parent: ViewGroup?,
+    state: Bundle?
+  ): View? {
+    return inflater.inflate(R.layout.fragment_recycler_view, parent, false)
   }
 
   override fun onViewCreated(
