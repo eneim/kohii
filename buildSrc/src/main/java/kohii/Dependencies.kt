@@ -50,14 +50,14 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.5"
+  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}-beta.6"
 }
 
 @Suppress("MayBeConstant", "unused")
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0-rc03"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.2"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
@@ -100,7 +100,7 @@ object Libs {
     val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     object Media {
-      private const val version = "1.0.2"
+      private const val version = "1.0.3"
       // private const val version = "1.1.0-SNAPSHOT"
       val widget = "androidx.media2:media2-widget:$version"
       val common = "androidx.media2:media2-common:$version"
@@ -199,6 +199,8 @@ object Libs {
 
     val ima = extLib("ima")
     val cast = extLib("cast")
+
+    val workManager = extLib("workmanager")
 
     val allSnapshot = "com.github.google:exoplayer:${Versions.exoPlayerSnapShot}"
   }

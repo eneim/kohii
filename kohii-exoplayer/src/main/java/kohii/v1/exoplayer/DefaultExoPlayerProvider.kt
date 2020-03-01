@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2020 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exoplayer.internal
+package kohii.v1.exoplayer
 
 import android.content.Context
 import androidx.core.util.Pools
@@ -39,7 +39,7 @@ import kotlin.math.max
 /**
  * @author eneim (2018/10/27).
  */
-class DefaultExoPlayerProvider(
+class DefaultExoPlayerProvider @JvmOverloads constructor(
   private val context: Context,
   private val bandwidthMeterFactory: BandwidthMeterFactory = DefaultBandwidthMeterFactory(),
   private val drmSessionManagerProvider: DrmSessionManagerProvider? = null,

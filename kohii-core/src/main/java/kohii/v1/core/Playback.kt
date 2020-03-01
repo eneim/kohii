@@ -167,23 +167,33 @@ abstract class Playback(
     return provider.releaseRenderer(this, playable.media, renderer)
   }
 
+  /**
+   * Return `true` if this Playback successfully attaches the renderer, `false` otherwise.
+   */
   internal fun attachRenderer(renderer: Any?): Boolean {
     "Playback#attachRenderer $renderer $this".logDebug()
     return onAttachRenderer(renderer)
   }
 
+  /**
+   * Return `true` if this Playback successfully detaches the renderer, `false` otherwise.
+   */
   internal fun detachRenderer(renderer: Any?): Boolean {
     "Playback#detachRenderer $renderer $this".logDebug()
     return onDetachRenderer(renderer)
   }
 
-  // Return `true` to indicate that the Renderer is safely attached to container and
-  // can be used by the Playable.
+  /**
+   * Return `true` to indicate that the Renderer is safely attached to container and
+   * can be used by the Playable.
+   */
   protected abstract fun onAttachRenderer(renderer: Any?): Boolean
 
-  // Return `true` to indicate that the Renderer is safely detached from container and
-  // Playable should not use it any further. RendererProvider will then release the Renderer with
-  // proper mechanism (eg: put it back to Pool for reuse).
+  /**
+   * Return `true` to indicate that the Renderer is safely detached from container and
+   * Playable should not use it any further. RendererProvider will then release the Renderer with
+   * proper mechanism (eg: put it back to Pool for reuse).
+   */
   protected abstract fun onDetachRenderer(renderer: Any?): Boolean
 
   internal fun onAdded() {

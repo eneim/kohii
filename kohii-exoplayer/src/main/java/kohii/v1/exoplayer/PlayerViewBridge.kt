@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2020 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exoplayer.internal
+package kohii.v1.exoplayer
 
 import android.content.Context
 import android.util.Log
@@ -37,7 +37,10 @@ import kohii.v1.core.Common
 import kohii.v1.core.PlayerEventListener
 import kohii.v1.core.VideoSize
 import kohii.v1.core.VolumeInfoController
-import kohii.v1.exoplayer.R
+import kohii.v1.exoplayer.internal.addEventListener
+import kohii.v1.exoplayer.internal.getVolumeInfo
+import kohii.v1.exoplayer.internal.removeEventListener
+import kohii.v1.exoplayer.internal.setVolumeInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.PlaybackInfo.Companion.INDEX_UNSET
@@ -49,7 +52,7 @@ import kotlin.properties.Delegates
 /**
  * @author eneim (2018/06/24).
  */
-internal class PlayerViewBridge(
+class PlayerViewBridge(
   context: Context,
   private val media: Media,
   private val playerProvider: ExoPlayerProvider,
@@ -287,10 +290,9 @@ internal class PlayerViewBridge(
       listenerApplied = false
       val player = playerProvider.acquirePlayer(this.media)
       if (player is KohiiExoPlayer) {
-        val next = player.trackSelector.parameters.buildUpon()
+        player.trackSelector.parameters = player.trackSelector.parameters.buildUpon()
             .setMaxVideoSize(videoSize.maxWidth, videoSize.maxHeight)
             .build()
-        player.trackSelector.parameters = next
       }
       this.player = player
     }

@@ -24,9 +24,8 @@ import androidx.core.util.Pools.SimplePool
 import kohii.v1.media.Media
 import kohii.v1.onEachAcquired
 
-abstract class RecycledRendererProvider(private val poolSize: Int) : RendererProvider {
-
-  constructor() : this(2)
+abstract class RecycledRendererProvider @JvmOverloads constructor(private val poolSize: Int = 2) :
+    RendererProvider {
 
   private val pools = SparseArrayCompat<SimplePool<Any>>(4 /* smallest multiple of 4 */)
 
@@ -59,10 +58,8 @@ abstract class RecycledRendererProvider(private val poolSize: Int) : RendererPro
   ) {
     if (renderer == null) return
     val rendererType = getRendererType(playback.container, media)
-    val pool = pools.get(rendererType) ?: run {
-      val created = SimplePool<Any>(poolSize)
-      pools.put(rendererType, created)
-      created
+    val pool = pools.get(rendererType) ?: SimplePool<Any>(poolSize).also {
+      pools.put(rendererType, it)
     }
     pool.release(renderer)
   }

@@ -76,8 +76,10 @@ internal class DynamicFragmentRendererPlayback(
         scheduleAttachFragment(container, renderer)
         true
       } else {
-        if (view.parent != null && view.parent !== container) {
-          addViewToContainer(view, container)
+        if (view.parent != null) {
+          if (view.parent !== container) {
+            addViewToContainer(view, container)
+          }
           true
         } else {
           addViewToContainer(view, container)
@@ -96,8 +98,8 @@ internal class DynamicFragmentRendererPlayback(
             source: LifecycleOwner,
             event: Event
           ) {
-            source.lifecycle.removeObserver(this)
             if (fragmentManager.isStateSaved) return
+            source.lifecycle.removeObserver(this)
             if (ViewCompat.isAttachedToWindow(container)) {
               onAttachRenderer(renderer)
             }

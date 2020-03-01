@@ -16,7 +16,6 @@
 
 package kohii.v1.x
 
-import android.content.Context
 import androidx.media2.common.MediaItem
 import androidx.media2.common.SessionPlayer
 import androidx.media2.common.UriMediaItem
@@ -27,13 +26,16 @@ import kohii.v1.core.VideoSize
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
+import kotlin.properties.Delegates
 
+/**
+ * [kohii.v1.core.Bridge] for [VideoView]
+ */
 // Really experimental implementation of AbstractBridge using androidx.media2 APIs.
 // Not production-ready.
-internal class VideoViewBridge(
-  context: Context,
+class VideoViewBridge(
   private val media: Media,
-  private val playerProvider: MediaPlayerProvider = DefaultMediaPlayerProvider(context)
+  private val playerProvider: MediaPlayerProvider
 ) : AbstractBridge<VideoView>() {
 
   private val mediaItem: MediaItem = UriMediaItem.Builder(media.uri)
@@ -46,28 +48,22 @@ internal class VideoViewBridge(
       if (field === value) return // same reference
       field = value
       val player = this.player
-      if (player != null) field?.setPlayer(player)
+      if (player != null && value != null) value.setPlayer(player)
     }
 
   override val playerState: Int
     get() = this.player?.playerState ?: SessionPlayer.PLAYER_STATE_IDLE
 
-  override fun isPlaying(): Boolean {
-    return this.player?.playerState == SessionPlayer.PLAYER_STATE_PLAYING
-  }
+  override fun isPlaying(): Boolean =
+    this.player?.playerState == SessionPlayer.PLAYER_STATE_PLAYING
 
   override fun seekTo(positionMs: Long) {
     this.player?.seekTo(positionMs)
   }
 
-  private var _repeatMode: Int = player?.repeatMode ?: SessionPlayer.REPEAT_MODE_NONE
-
-  override var repeatMode: Int
-    get() = _repeatMode
-    set(value) {
-      _repeatMode = value
-      player?.repeatMode = value
-    }
+  override var repeatMode: Int by Delegates.observable(
+      player?.repeatMode ?: SessionPlayer.REPEAT_MODE_NONE
+  ) { _, _, newValue -> player?.repeatMode = newValue }
 
   override var playbackInfo: PlaybackInfo = PlaybackInfo()
 
@@ -82,6 +78,7 @@ internal class VideoViewBridge(
       player = playerProvider.acquirePlayer(media)
           .also {
             it.setMediaItem(mediaItem)
+            it.repeatMode = repeatMode
             renderer?.setPlayer(it)
             it.prepare()
           }
@@ -103,6 +100,7 @@ internal class VideoViewBridge(
   override fun release() {
     player?.let {
       // TODO any other local clean up?
+      it.reset()
       playerProvider.releasePlayer(media, it)
     }
     player = null

@@ -16,7 +16,7 @@
 
 package kohii.v1.core
 
-import android.os.Build
+import android.os.Build.VERSION
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.View.OnLayoutChangeListener
@@ -56,7 +56,7 @@ abstract class Bucket constructor(
     const val BOTH_AXIS = -1
     const val NONE_AXIS = -2
 
-    internal val playbackComparators = mapOf(
+    val playbackComparators = mapOf(
         HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
         VERTICAL to Playback.VERTICAL_COMPARATOR,
         BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,
@@ -75,9 +75,7 @@ abstract class Bucket constructor(
         is ViewPager2 -> ViewPager2Bucket(manager, root, selector)
         is ViewPager -> ViewPagerBucket(manager, root, selector)
         is ViewGroup -> {
-          if (Build.VERSION
-                  .SDK_INT >= 23
-          )
+          if (VERSION.SDK_INT >= 23)
             ViewGroupV23Bucket(manager, root, selector)
           else
             ViewGroupBucket(manager, root, selector)
@@ -97,12 +95,10 @@ abstract class Bucket constructor(
   private val containers = mutableSetOf<Any>()
 
   private val behaviorHolder by lazy(NONE) {
-    val container = findCoordinatorLayoutDirectChildContainer(
-        manager.group
-            .activity
-            .window
-            .peekDecorView(), target = root
-    )
+    val container = manager.group
+        .activity
+        .window
+        .peekDecorView()?.findCoordinatorLayoutDirectChildContainer(root)
     val params = container?.layoutParams
     return@lazy if (params is CoordinatorLayout.LayoutParams) params else null
   }

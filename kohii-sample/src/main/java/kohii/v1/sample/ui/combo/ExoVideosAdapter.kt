@@ -70,6 +70,7 @@ class ExoVideosAdapter(
           playback.removeStateListener(holder)
         }
       }
+      artworkHintListener = holder
     }
         .bind(holder.container) {
           onLoad?.invoke(holder, position)

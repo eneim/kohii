@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2020 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.exoplayer.internal
+package kohii.v1.exoplayer
 
 import android.net.Uri
 import com.google.android.exoplayer2.C
@@ -30,40 +30,26 @@ import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import kohii.v1.exoplayer.HybridMediaItem
 import kohii.v1.media.Media
 
 /**
  * @author eneim (2018/10/27).
  */
-class DefaultMediaSourceFactoryProvider private constructor(
+class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
   upstreamFactory: DataSource.Factory,
-  mediaCache: Cache? = null,
-  private val offlineSourceHelper: OfflineSourceHelper? = null
+  mediaCache: Cache? = null
 ) : MediaSourceFactoryProvider {
 
-  constructor(
-    upstreamFactory: DataSource.Factory,
-    mediaCache: Cache? = null
-  ) : this(upstreamFactory, mediaCache, null)
-
-  @Suppress("unused") //
-  constructor(
-    upstreamFactory: DataSource.Factory,
-    offlineSourceHelper: OfflineSourceHelper
-  ) : this(upstreamFactory, offlineSourceHelper.downloadCache, offlineSourceHelper)
-
-  private val dataSourceFactory: DataSource.Factory =
-    if (mediaCache != null) {
-      CacheDataSourceFactory(
-          mediaCache,
-          upstreamFactory,
-          FileDataSourceFactory(), null,
-          CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
-      )
-    } else {
-      upstreamFactory
-    }
+  private val dataSourceFactory: DataSource.Factory = if (mediaCache != null) {
+    CacheDataSourceFactory(
+        mediaCache,
+        upstreamFactory,
+        FileDataSourceFactory(), null,
+        CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
+    )
+  } else {
+    upstreamFactory
+  }
 
   override fun provideMediaSourceFactory(media: Media): MediaSourceFactory {
     @C.ContentType val type = Util.inferContentType(media.uri, media.type)
@@ -79,8 +65,6 @@ class DefaultMediaSourceFactoryProvider private constructor(
         }
       }
     }
-
-    if (offlineSourceHelper != null) return offlineSourceHelper.getMediaSourceFactory(media.uri)
 
     return when (type) {
       C.TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)

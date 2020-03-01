@@ -145,7 +145,7 @@ class Group(
 
   private fun refresh() {
     val playbacks = this.playbacks // save a cache to prevent re-mapping
-    playbacks.forEach { it.onRefresh() }
+    playbacks.forEach { it.onRefresh() } // update token
 
     val toPlay = linkedSetOf<Playback>() // Need the order.
     val toPause = arraySetOf<Playback>()
@@ -163,8 +163,32 @@ class Group(
     val oldSelection = organizer.selection
     val newSelection = if (lock) emptyList() else organizer.selectFinal(toPlay)
 
+    // Next: as Playbacks are split into 2 collections, we then release unused resources and prepare
+    // the ones that need to. We do so by updating Playback's distance to candidate.
+    updatePlaybackDistances(playbacks, newSelection)
+
+    (toPause + toPlay + oldSelection - newSelection).mapNotNull { it.playable }
+        .forEach { dispatcher.pause(it) }
+
+    if (newSelection.isNotEmpty()) {
+      newSelection.mapNotNull { it.playable }
+          .forEach { dispatcher.play(it) }
+
+      val grouped = newSelection.groupBy { it.manager }
+      this.managers.asSequence()
+          .filter { it.host is OnSelectionListener }
+          .forEach {
+            (it.host as OnSelectionListener).onSelection(grouped[it] ?: emptyList())
+          }
+    }
+  }
+
+  private fun updatePlaybackDistances(
+    playbacks: Collection<Playback>,
+    selection: Collection<Playback>
+  ) {
     // biggest Rect that covers all selected Playbacks
-    val cover = newSelection.fold(Rect()) { acc, playback ->
+    val cover = selection.fold(Rect()) { acc, playback ->
       acc.union(playback.token.containerRect)
       return@fold acc
     }
@@ -182,25 +206,10 @@ class Group(
           .also { (active, inactive) ->
             inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
             // TODO better way that doesn't require allocating new collection?
-            (active - newSelection).sortedBy { it.token.containerRect distanceTo target }
+            (active - selection).sortedBy { it.token.containerRect distanceTo target }
                 .forEachIndexed { index, playback -> playback.distanceToPlay = index }
           }
-      newSelection.forEach { it.distanceToPlay = 0 }
-    }
-
-    (toPause + toPlay + oldSelection - newSelection).mapNotNull { it.playable }
-        .forEach { dispatcher.pause(it) }
-
-    if (newSelection.isNotEmpty()) {
-      newSelection.mapNotNull { it.playable }
-          .forEach { dispatcher.play(it) }
-
-      val grouped = newSelection.groupBy { it.manager }
-      this.managers.asSequence()
-          .filter { it.host is OnSelectionListener }
-          .forEach {
-            (it.host as OnSelectionListener).onSelection(grouped.getOrElse(it) { emptyList() })
-          }
+      selection.forEach { it.distanceToPlay = 0 }
     }
   }
 

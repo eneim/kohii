@@ -19,16 +19,19 @@ package kohii.v1.sample.ui.combo
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.material.snackbar.Snackbar
 import kohii.v1.core.Playback
+import kohii.v1.core.Playback.ArtworkHintListener
 import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 
 class ExoVideoHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_player_container_with_title), Playback.StateListener {
+) : BaseViewHolder(parent, R.layout.holder_player_container_with_title), Playback.StateListener,
+    ArtworkHintListener {
 
   internal val container = itemView.findViewById(R.id.playerContainer) as AspectRatioFrameLayout
   internal val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
@@ -64,5 +67,9 @@ class ExoVideoHolder(
         Snackbar.LENGTH_LONG
     )
         .show()
+  }
+
+  override fun onArtworkHint(shouldShow: Boolean, position: Long, state: Int) {
+    thumbnail.isVisible = shouldShow
   }
 }
