@@ -22,7 +22,6 @@ import android.content.ContextWrapper
 import android.graphics.Rect
 import android.util.Log
 import android.view.View
-import android.view.Window
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
 import androidx.core.util.Pools.Pool
