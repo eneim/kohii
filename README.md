@@ -40,8 +40,8 @@ allprojects {
 
 ```groovy
 // Add these to app level build.gradle (or to module that will use Kohii)
-implementation "im.ene.kohii:kohii-core:1.0.0.2010004-B2" // core library
-implementation "im.ene.kohii:kohii-exoplayer:1.0.0.2010004-B2" // default support for ExoPlayer
+implementation "im.ene.kohii:kohii-core:1.0.0.2010004" // core library
+implementation "im.ene.kohii:kohii-exoplayer:1.0.0.2010004" // default support for ExoPlayer
 implementation "com.google.android.exoplayer:exoplayer:2.10.4" // required ExoPlayer implementation.
 ```
 
