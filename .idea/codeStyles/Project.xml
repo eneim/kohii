@@ -231,6 +231,7 @@
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="Markdown">
+      <option name="RIGHT_MARGIN" value="100" />
       <indentOptions>
         <option name="INDENT_SIZE" value="2" />
       </indentOptions>

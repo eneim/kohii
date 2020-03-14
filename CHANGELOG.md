@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.0.0.2010004
+
+_2020.03.015_
+
+- Open `Builder` for `Kohii` and `Latte`. Clients can now use custom implementations to construct
+those classes. Example usages:
+
+```Kotlin
+val kohii = Kohii.Builder(context)
+    .setPlayableCreator(customPlayableCreator)
+    .build()
+```
+
 ## 1.0.0.2010004-beta.5
 
 Experiment release for `Bucket.Selector`, usage is not finalized yet. Currently it is proved to allow select multiple Playbacks for a Bucket, but finally only one Playback will be picked to play by the Group.

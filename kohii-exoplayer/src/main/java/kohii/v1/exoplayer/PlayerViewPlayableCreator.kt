@@ -35,7 +35,7 @@ import kohii.v1.media.Media
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
-typealias PlayerViewBridgeCreatorFactory = (Context) -> BridgeCreator<PlayerView>
+typealias PlayerViewBridgeCreatorFactory = Context.() -> BridgeCreator<PlayerView>
 
 class PlayerViewPlayableCreator internal constructor(
   private val master: Master,
@@ -49,20 +49,20 @@ class PlayerViewPlayableCreator internal constructor(
     private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
 
     // Only pass Application to this method.
-    private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { app ->
-      val userAgent = Common.getUserAgent(app, BuildConfig.LIB_NAME)
+    private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = {
+      val userAgent = Common.getUserAgent(this, BuildConfig.LIB_NAME)
       val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
       // ExoPlayerProvider
-      val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(app, httpDataSource)
+      val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this, httpDataSource)
       val playerProvider: ExoPlayerProvider = DefaultExoPlayerProvider(
-          app,
+          this,
           DefaultBandwidthMeterFactory(),
           drmSessionManagerProvider
       )
 
       // MediaSourceFactoryProvider
-      val fileDir = app.getExternalFilesDir(null) ?: app.filesDir
+      val fileDir = getExternalFilesDir(null) ?: filesDir
       val contentDir = File(
           fileDir,
           CACHE_CONTENT_DIRECTORY
@@ -70,9 +70,9 @@ class PlayerViewPlayableCreator internal constructor(
       val mediaCache: Cache = SimpleCache(
           contentDir,
           LeastRecentlyUsedCacheEvictor(CACHE_SIZE),
-          ExoDatabaseProvider(app)
+          ExoDatabaseProvider(this)
       )
-      val upstreamFactory = DefaultDataSourceFactory(app, httpDataSource)
+      val upstreamFactory = DefaultDataSourceFactory(this, httpDataSource)
       val mediaSourceFactoryProvider: MediaSourceFactoryProvider =
         DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
       PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)

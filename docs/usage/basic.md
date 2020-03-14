@@ -68,11 +68,11 @@ The difference here is: who is the **main actor**? In traditional way, the `Vide
 
 To give you an imagine about why it is good this way, consider this scenario: you have a list of Videos, and you want to open one Video in fullscreen, ***smoothly***.
 
-*Thinking* in traditional way: How I can open this `VideoView` (which is now in the list) in fullscreen? If I use other `VideoView` I will need to call that `setVideoPath` again and it will create new resource and stuff and the playback will be reloaded, and so on... We see some challenges here already.
+Thinking in _traditional way_: How I can open this `VideoView` (which is now in the list) in fullscreen? If I use other `VideoView` I will need to call that `setVideoPath` again and it will create new resource and stuff and the playback will be reloaded, and so on... We see some challenges here already.
 
-While *thinking* in **Kohii** way, it sounds easier: How can I open this Video (which is now in the list) in fullscreen? Can I just ***switch*** it from current `VideoView` to the fullscreen `VideoView`?
+While thinking in _**Kohii** way_, it sounds easier: How can I open this Video (which is now in the list) in fullscreen? Can I just ***switch*** it from current `VideoView` to the fullscreen `VideoView`?
 
-You can say that the real code can give you whatever you want, but **having a good abstraction gives a lot of flexibility for long term**. How this idea comes to life will be discussed later.
+You can say that the real code can give you whatever you want, but **having a good abstraction makes it easier for the implementation, in long term**. How this idea comes to life will be discussed later.
 
 Now that you have the concept about **Kohii**, let's get our hands dirty.
 
