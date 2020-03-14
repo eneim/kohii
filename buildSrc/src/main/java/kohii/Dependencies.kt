@@ -19,8 +19,8 @@ package kohii
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Versions {
   const val exoPlayerSnapShot = "dev-v2-SNAPSHOT"
-  const val exoPlayer = "2.10.4"
-  const val exoPlayerCode = 2010004
+  const val exoPlayer = "2.11.3"
+  const val exoPlayerCode = 2011003
 }
 
 object ReleaseInfo {
@@ -50,7 +50,7 @@ object BuildConfig {
       .inputStream.reader().use { it.readText() }.trim().toInt()
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.0.0.${Versions.exoPlayerCode}"
+  val releaseVersionName = "1.1.0.${Versions.exoPlayerCode}-A1"
 }
 
 @Suppress("MayBeConstant", "unused")
