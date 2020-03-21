@@ -22,8 +22,7 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager
 import com.google.android.exoplayer2.drm.DrmSessionManager
-import com.google.android.exoplayer2.drm.ExoMediaDrm
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
+import com.google.android.exoplayer2.drm.ExoMediaCrypto
 import com.google.android.exoplayer2.drm.FrameworkMediaDrm
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback
 import com.google.android.exoplayer2.drm.UnsupportedDrmException
@@ -32,7 +31,6 @@ import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.util.Util.getDrmUuid
 import kohii.v1.media.Media
 import java.util.UUID
-import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * @author eneim (2018/10/27).
@@ -42,11 +40,9 @@ class DefaultDrmSessionManagerProvider(
   private val httpDataSourceFactory: HttpDataSource.Factory
 ) : DrmSessionManagerProvider {
 
-  private val cache = lazy(NONE) { HashMap<DrmSessionManager<*>, ExoMediaDrm<*>>() }
-
-  override fun provideDrmSessionManager(media: Media): DrmSessionManager<FrameworkMediaCrypto>? {
+  override fun provideDrmSessionManager(media: Media): DrmSessionManager<ExoMediaCrypto>? {
     val mediaDrm = media.mediaDrm ?: return null
-    var drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>? = null
+    var drmSessionManager: DrmSessionManager<ExoMediaCrypto>? = null
     var errorStringId = R.string.error_drm_unknown
     var subString: String? = null
 
@@ -86,11 +82,11 @@ class DefaultDrmSessionManagerProvider(
   @Throws(UnsupportedDrmException::class)
   private fun buildDrmSessionManagerV18(
     uuid: UUID,
-    licenseUrl: String?,
+    licenseUrl: String,
     keyRequestProperties: Array<String>?,
     multiSession: Boolean,
     httpDataSourceFactory: HttpDataSource.Factory
-  ): DrmSessionManager<FrameworkMediaCrypto> {
+  ): DrmSessionManager<ExoMediaCrypto> {
     val drmCallback = HttpMediaDrmCallback(licenseUrl, httpDataSourceFactory)
     if (keyRequestProperties != null) {
       var i = 0
@@ -99,26 +95,9 @@ class DefaultDrmSessionManagerProvider(
         i += 2
       }
     }
-    val mediaDrm = FrameworkMediaDrm.newInstance(uuid)
-    return DefaultDrmSessionManager(
-        uuid,
-        mediaDrm,
-        drmCallback,
-        null,
-        multiSession
-    ).also { cache.value[it] = mediaDrm }
-  }
-
-  override fun releaseDrmSessionManager(sessionManager: DrmSessionManager<*>?) {
-    if (sessionManager != null && cache.isInitialized()) {
-      cache.value.remove(sessionManager)
-          ?.release()
-    }
-  }
-
-  override fun cleanUp() {
-    if (cache.isInitialized()) {
-      cache.value.forEach { (_, u) -> u.release() }
-    }
+    return DefaultDrmSessionManager.Builder()
+        .setUuidAndExoMediaDrmProvider(uuid, FrameworkMediaDrm.DEFAULT_PROVIDER)
+        .setMultiSession(multiSession)
+        .build(drmCallback)
   }
 }

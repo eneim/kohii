@@ -56,7 +56,7 @@ fun Player.addEventListener(listener: PlayerEventListener) {
   this.metadataComponent?.addMetadataOutput(listener)
 }
 
-fun Player.removeEventListener(listener: PlayerEventListener?) {
+fun Player.removeEventListener(listener: PlayerEventListener) {
   this.removeListener(listener)
   this.videoComponent?.removeVideoListener(listener)
   this.audioComponent?.removeAudioListener(listener)

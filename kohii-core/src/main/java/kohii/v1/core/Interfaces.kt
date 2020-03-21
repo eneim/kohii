@@ -47,12 +47,10 @@ interface PlayerEventListener : EventListener,
     MetadataOutput {
 
   @JvmDefault
-  override fun onCues(cues: MutableList<Cue>?) {
-  }
+  override fun onCues(cues: MutableList<Cue>) = Unit
 
   @JvmDefault
-  override fun onMetadata(metadata: Metadata?) {
-  }
+  override fun onMetadata(metadata: Metadata) = Unit
 }
 
 interface VolumeChangedListener {
@@ -68,7 +66,7 @@ interface ErrorListener {
 class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(),
     PlayerEventListener {
 
-  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {
+  override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
     this.forEach { it.onPlaybackParametersChanged(playbackParameters) }
   }
 
@@ -77,13 +75,13 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(),
   }
 
   override fun onTracksChanged(
-    trackGroups: TrackGroupArray?,
-    trackSelections: TrackSelectionArray?
+    trackGroups: TrackGroupArray,
+    trackSelections: TrackSelectionArray
   ) {
     this.forEach { it.onTracksChanged(trackGroups, trackSelections) }
   }
 
-  override fun onPlayerError(error: ExoPlaybackException?) {
+  override fun onPlayerError(error: ExoPlaybackException) {
     this.forEach { it.onPlayerError(error) }
   }
 
@@ -103,12 +101,8 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(),
     this.forEach { it.onShuffleModeEnabledChanged(shuffleModeEnabled) }
   }
 
-  override fun onTimelineChanged(
-    timeline: Timeline?,
-    manifest: Any?,
-    reason: Int
-  ) {
-    this.forEach { it.onTimelineChanged(timeline, manifest, reason) }
+  override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+    this.forEach { it.onTimelineChanged(timeline, reason) }
   }
 
   override fun onPlayerStateChanged(
@@ -133,15 +127,15 @@ class PlayerEventListeners : CopyOnWriteArraySet<PlayerEventListener>(),
     this.forEach { it.onRenderedFirstFrame() }
   }
 
-  override fun onCues(cues: MutableList<Cue>?) {
+  override fun onCues(cues: MutableList<Cue>) {
     this.forEach { it.onCues(cues) }
   }
 
-  override fun onMetadata(metadata: Metadata?) {
+  override fun onMetadata(metadata: Metadata) {
     this.forEach { it.onMetadata(metadata) }
   }
 
-  override fun onAudioAttributesChanged(audioAttributes: AudioAttributes?) {
+  override fun onAudioAttributesChanged(audioAttributes: AudioAttributes) {
     this.forEach { it.onAudioAttributesChanged(audioAttributes) }
   }
 

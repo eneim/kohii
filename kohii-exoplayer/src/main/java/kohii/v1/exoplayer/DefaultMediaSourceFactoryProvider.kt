@@ -18,14 +18,15 @@ package kohii.v1.exoplayer
 
 import android.net.Uri
 import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.drm.DrmSessionManager
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.source.ads.AdsMediaSource.MediaSourceFactory
 import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.FileDataSourceFactory
+import com.google.android.exoplayer2.upstream.FileDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
@@ -36,19 +37,20 @@ import kohii.v1.media.Media
  * @author eneim (2018/10/27).
  */
 class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
-  upstreamFactory: DataSource.Factory,
+  dataSourceFactory: DataSource.Factory,
+  private val drmSessionManagerProvider: DrmSessionManagerProvider,
   mediaCache: Cache? = null
 ) : MediaSourceFactoryProvider {
 
   private val dataSourceFactory: DataSource.Factory = if (mediaCache != null) {
     CacheDataSourceFactory(
         mediaCache,
-        upstreamFactory,
-        FileDataSourceFactory(), null,
+        dataSourceFactory,
+        FileDataSource.Factory(), null,
         CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
     )
   } else {
-    upstreamFactory
+    dataSourceFactory
   }
 
   override fun provideMediaSourceFactory(media: Media): MediaSourceFactory {
@@ -63,10 +65,14 @@ class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
         override fun createMediaSource(uri: Uri?): MediaSource {
           return media.mediaSource
         }
+
+        override fun setDrmSessionManager(drmSessionManager: DrmSessionManager<*>?): MediaSourceFactory {
+          return this
+        }
       }
     }
 
-    return when (type) {
+    val factory = when (type) {
       C.TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
       C.TYPE_SS -> SsMediaSource.Factory(dataSourceFactory)
       C.TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
@@ -75,5 +81,8 @@ class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
         throw IllegalStateException("Unsupported type: $type")
       }
     }
+    val drmSessionManager = drmSessionManagerProvider.provideDrmSessionManager(media)
+    if (drmSessionManager != null) factory.setDrmSessionManager(drmSessionManager)
+    return factory
   }
 }

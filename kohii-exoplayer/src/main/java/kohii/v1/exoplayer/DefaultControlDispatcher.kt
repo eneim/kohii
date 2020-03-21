@@ -34,24 +34,24 @@ class DefaultControlDispatcher(
   override fun kohiiCanStart() = kohiiCanStart
 
   override fun dispatchSeekTo(
-    player: Player?,
+    player: Player,
     windowIndex: Int,
     positionMs: Long
   ): Boolean {
-    player?.seekTo(windowIndex, positionMs)
+    player.seekTo(windowIndex, positionMs)
     return true
   }
 
   override fun dispatchSetShuffleModeEnabled(
-    player: Player?,
+    player: Player,
     shuffleModeEnabled: Boolean
   ): Boolean {
-    player?.shuffleModeEnabled = shuffleModeEnabled
+    player.shuffleModeEnabled = shuffleModeEnabled
     return true
   }
 
   override fun dispatchSetPlayWhenReady(
-    player: Player?,
+    player: Player,
     playWhenReady: Boolean
   ): Boolean {
     val playable = manager.findPlayableForContainer(container)
@@ -63,20 +63,20 @@ class DefaultControlDispatcher(
   }
 
   override fun dispatchSetRepeatMode(
-    player: Player?,
+    player: Player,
     repeatMode: Int
   ): Boolean {
-    player?.repeatMode = repeatMode
+    player.repeatMode = repeatMode
     return true
   }
 
   override fun dispatchStop(
-    player: Player?,
+    player: Player,
     reset: Boolean
   ): Boolean {
     val playable = manager.findPlayableForContainer(container)
     if (playable != null) manager.pause(playable)
-    player?.stop(reset)
+    player.stop(reset)
     return true
   }
 }

@@ -54,11 +54,9 @@ class PlayerViewPlayableCreator internal constructor(
       val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
       // ExoPlayerProvider
-      val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this, httpDataSource)
       val playerProvider: ExoPlayerProvider = DefaultExoPlayerProvider(
           this,
-          DefaultBandwidthMeterFactory(),
-          drmSessionManagerProvider
+          DefaultBandwidthMeterFactory()
       )
 
       // MediaSourceFactoryProvider
@@ -73,16 +71,15 @@ class PlayerViewPlayableCreator internal constructor(
           ExoDatabaseProvider(this)
       )
       val upstreamFactory = DefaultDataSourceFactory(this, httpDataSource)
+      val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this, httpDataSource)
       val mediaSourceFactoryProvider: MediaSourceFactoryProvider =
-        DefaultMediaSourceFactoryProvider(upstreamFactory, mediaCache)
+        DefaultMediaSourceFactoryProvider(upstreamFactory, drmSessionManagerProvider, mediaCache)
       PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
     }
   }
 
-  private val bridgeCreator: BridgeCreator<PlayerView> by lazy(NONE) {
-    bridgeCreatorFactory(
-        master.app
-    )
+  private val bridgeCreator: Lazy<BridgeCreator<PlayerView>> = lazy(NONE) {
+    bridgeCreatorFactory(master.app)
   }
 
   override fun createPlayable(
@@ -93,20 +90,19 @@ class PlayerViewPlayableCreator internal constructor(
         master,
         media,
         config,
-        bridgeCreator.createBridge(master.app, media)
+        bridgeCreator.value.createBridge(master.app, media)
     )
   }
 
   override fun cleanUp() {
-    bridgeCreator.cleanUp()
+    if (bridgeCreator.isInitialized()) bridgeCreator.value.cleanUp()
   }
 
   class Builder(context: Context) {
 
     private val app = context.applicationContext
 
-    private var bridgeCreatorFactory: PlayerViewBridgeCreatorFactory =
-      defaultBridgeCreatorFactory
+    private var bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = defaultBridgeCreatorFactory
 
     fun setBridgeCreatorFactory(factory: PlayerViewBridgeCreatorFactory): Builder = apply {
       this.bridgeCreatorFactory = factory
