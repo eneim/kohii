@@ -52,6 +52,9 @@ import kohii.v1.internal.DynamicFragmentRendererPlayback
 import kohii.v1.internal.DynamicViewRendererPlayback
 import kohii.v1.internal.MasterNetworkCallback
 import kohii.v1.internal.StaticViewRendererPlayback
+import kohii.v1.logDebug
+import kohii.v1.logInfo
+import kohii.v1.logWarn
 import kohii.v1.media.PlaybackInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
@@ -245,16 +248,13 @@ class Master private constructor(context: Context) : PlayableManager {
     options: Options,
     callback: ((Playback) -> Unit)? = null
   ) {
+    "Request queue: $tag, $container, $playable".logDebug()
     // Remove any queued bind requests for the same container.
     dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
     // Remove any queued releasing for the same Playable, as we are binding it now.
-    dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable
-    )
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     // Remove any queued destruction for the same Playable, as we are binding it now.
-    dispatcher.removeMessages(
-        MSG_DESTROY_PLAYABLE, playable
-    )
+    dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     // Keep track of which Playable will be bound to which Container.
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
     // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
@@ -263,7 +263,7 @@ class Master private constructor(context: Context) : PlayableManager {
         .filter { it.value.tag !== NO_TAG }
         .firstOrNull { it.value.tag == tag }
         ?.key
-    if (sameTag != null) requests.remove(sameTag)
+    if (sameTag != null) requests.remove(sameTag)?.onRemoved()
     requests[container] = BindRequest(
         this, playable, container, tag, options, callback
     )
@@ -729,6 +729,18 @@ class Master private constructor(context: Context) : PlayableManager {
 
     internal fun onBind() {
       master.onBind(playable, tag, container, options, callback)
+      "Request bound: $tag, $container, $playable".logInfo()
+    }
+
+    internal fun onRemoved() {
+      options.artworkHintListener = null
+      options.controller = null
+      options.callbacks.clear()
+      "Request removed: $tag, $container, $playable".logWarn()
+    }
+
+    override fun toString(): String {
+      return "R: $tag, $container"
     }
   }
 

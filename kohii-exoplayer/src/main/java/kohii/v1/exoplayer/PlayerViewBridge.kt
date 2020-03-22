@@ -196,10 +196,9 @@ class PlayerViewBridge(
   }
 
   override fun isPlaying(): Boolean {
-    player?.isLoading
     return player?.run {
-      playbackState in Player.STATE_BUFFERING..Player.STATE_READY &&
-          playWhenReady &&
+      playWhenReady &&
+          playbackState in Player.STATE_BUFFERING..Player.STATE_READY &&
           playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_NONE
     } ?: false
   }

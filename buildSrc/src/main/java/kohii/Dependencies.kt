@@ -244,8 +244,8 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0"
-    val okio = "com.squareup.okio:okio:2.4.1"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.2"
+    val okio = "com.squareup.okio:okio:2.4.3"
   }
 
   object Glide {
@@ -265,5 +265,6 @@ object Libs {
   object Other {
     val androidSvg = "com.caverock:androidsvg-aar:1.4"
     val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"
+    val timber = "com.jakewharton.timber:timber:4.7.1"
   }
 }

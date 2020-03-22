@@ -27,7 +27,7 @@ import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.ui.main.DemoItem
-import kotlin.LazyThreadSafetyMode.NONE
+import timber.log.Timber
 import kotlin.properties.Delegates
 
 class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
@@ -41,9 +41,8 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
   override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   private val viewModel: VideosViewModel by viewModels()
-  private val videoFragment by lazy(NONE) {
-    childFragmentManager.findFragmentById(R.id.mainPanel) as GridContentFragment
-  }
+
+  private lateinit var videoFragment: GridContentFragment
   private var selected: Rebinder? by Delegates.observable<Rebinder?>(
       null,
       onChange = { _, from, to ->
@@ -72,6 +71,7 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    videoFragment = childFragmentManager.findFragmentById(R.id.mainPanel) as GridContentFragment
     viewModel.selectedRebinder.observe(viewLifecycleOwner) { rebinder ->
       this.selected = rebinder
     }
@@ -81,15 +81,18 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
 
   override fun onSelected(rebinder: Rebinder) {
     viewModel.selectedRebinder.value = rebinder
+    Timber.i("Selected: $rebinder")
   }
 
   // SinglePlayerFragment.Callback
 
   override fun onShown(rebinder: Rebinder) {
     viewModel.selectedRebinder.value = rebinder
+    Timber.i("Shown: $rebinder")
   }
 
   override fun onDismiss(rebinder: Rebinder) {
     viewModel.selectedRebinder.value = null
+    Timber.i("Dismiss: $rebinder")
   }
 }

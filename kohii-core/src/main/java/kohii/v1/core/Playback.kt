@@ -23,15 +23,14 @@ import androidx.annotation.FloatRange
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
+import com.google.android.exoplayer2.Player
 import kohii.v1.BuildConfig
 import kohii.v1.core.Bucket.Companion.BOTH_AXIS
 import kohii.v1.core.Bucket.Companion.HORIZONTAL
 import kohii.v1.core.Bucket.Companion.NONE_AXIS
 import kohii.v1.core.Bucket.Companion.VERTICAL
-import kohii.v1.core.Common.STATE_BUFFERING
 import kohii.v1.core.Common.STATE_ENDED
 import kohii.v1.core.Common.STATE_IDLE
-import kohii.v1.core.Common.STATE_READY
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -390,22 +389,22 @@ abstract class Playback(
   ) {
     "Playback#onPlayerStateChanged $playWhenReady - $playbackState, $this".logDebug()
     when (playbackState) {
-      STATE_IDLE -> {
+      Player.STATE_IDLE -> {
       }
-      STATE_BUFFERING -> {
+      Player.STATE_BUFFERING -> {
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       }
-      STATE_READY -> {
+      Player.STATE_READY -> {
         listeners.forEach {
           if (playWhenReady) it.onPlaying(this@Playback) else it.onPaused(this@Playback)
         }
       }
-      STATE_ENDED -> {
+      Player.STATE_ENDED -> {
         listeners.forEach { it.onEnded(this@Playback) }
       }
     }
     artworkHintListener?.onArtworkHint(
-        playerState == STATE_ENDED || playerState == STATE_IDLE,
+        playable?.run { !isPlaying() } ?: true,
         playbackInfo.resumePosition, playerState
     )
   }

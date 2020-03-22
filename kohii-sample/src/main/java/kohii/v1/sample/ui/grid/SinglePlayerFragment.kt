@@ -26,9 +26,7 @@ import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.BuildConfig
-import kohii.v1.sample.R
-import kotlinx.android.synthetic.main.holder_player_view.playerContainer
-import kotlinx.android.synthetic.main.holder_player_view.playerView
+import kohii.v1.sample.databinding.HolderPlayerViewBinding
 import kotlin.LazyThreadSafetyMode.NONE
 
 class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
@@ -44,6 +42,13 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     }
   }
 
+  private val kohii: Kohii by lazy(NONE) { Kohii[this] }
+  private val binding: HolderPlayerViewBinding get() = requireNotNull(_binding)
+  private val rebinder: Rebinder by lazy(NONE) {
+    requireNotNull(arguments?.getParcelable<Rebinder>(EXTRA_REBINDER))
+  }
+
+  private var _binding: HolderPlayerViewBinding? = null
   private var callback: Callback? = null
 
   override fun onAttach(context: Context) {
@@ -61,12 +66,8 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    return inflater.inflate(R.layout.holder_player_view, container, false)
-  }
-
-  private lateinit var kohii: Kohii
-  private val rebinder: Rebinder by lazy(NONE) {
-    requireNotNull(arguments?.getParcelable<Rebinder>(EXTRA_REBINDER))
+    _binding = HolderPlayerViewBinding.inflate(inflater, container, false)
+    return binding.root
   }
 
   override fun onViewCreated(
@@ -74,19 +75,30 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    playerContainer.setAspectRatio(16 / 9F)
-    kohii = Kohii[this]
+    binding.playerContainer.setAspectRatio(16 / 9F)
     kohii.register(this)
-        .addBucket(playerContainer)
+        .addBucket(binding.playerContainer)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    _binding = null
   }
 
   override fun onStart() {
     super.onStart()
-    rebinder.with { callbacks += this@SinglePlayerFragment }
-        .bind(kohii, playerView) {
-          callback?.onShown(rebinder)
-          kohii.stick(it)
-        }
+    binding.root.post { // Use `post`, so that it will be executed _late_ enough.
+      rebinder.with {
+        callbacks += this@SinglePlayerFragment
+      }.bind(kohii, binding.playerView) {
+        kohii.stick(it)
+      }
+    }
+  }
+
+  override fun onActive(playback: Playback) {
+    super.onActive(playback)
+    callback?.onShown(rebinder)
   }
 
   override fun onInActive(playback: Playback) {
