@@ -272,6 +272,7 @@ abstract class Playback(
   internal fun onRefresh() {
     "Playback#onRefresh $this".logDebug()
     _token = updateToken()
+    "Playback#onRefresh token updated -> $this".logDebug()
   }
 
   private var playbackState: Int = STATE_CREATED

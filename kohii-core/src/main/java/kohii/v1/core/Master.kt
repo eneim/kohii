@@ -728,15 +728,16 @@ class Master private constructor(context: Context) : PlayableManager {
     internal var bucket: Bucket? = null
 
     internal fun onBind() {
+      "Request bind: $tag, $container, $playable".logInfo()
       master.onBind(playable, tag, container, options, callback)
       "Request bound: $tag, $container, $playable".logInfo()
     }
 
     internal fun onRemoved() {
+      "Request removed: $tag, $container, $playable".logWarn()
       options.artworkHintListener = null
       options.controller = null
       options.callbacks.clear()
-      "Request removed: $tag, $container, $playable".logWarn()
     }
 
     override fun toString(): String {
