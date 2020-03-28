@@ -40,6 +40,7 @@ import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
 import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 class Manager(
   internal val master: Master,
@@ -82,7 +83,7 @@ class Manager(
   // - When demoting a Bucket from sticky, we just poll the head.
   internal val buckets = ArrayDeque<Bucket>(4 /* less than default minimum of ArrayDeque */)
   // Up to one Bucket can be sticky at a time.
-  private var stickyBucket by Delegates.observable<Bucket?>(
+  private var stickyBucket by observable<Bucket?>(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
@@ -100,20 +101,17 @@ class Manager(
 
   internal var sticky: Boolean = false
 
-  internal var managerVolume: VolumeInfo by Delegates.observable(
-      initialValue = VolumeInfo(),
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
-        buckets.forEach { it.bucketVolume = to }
-      }
-  )
+  internal var managerVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, from, to ->
+    if (from == to) return@observable
+    // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
+    buckets.forEach { it.bucketVolumeInfo = to }
+  }
 
   internal val volumeInfo: VolumeInfo
-    get() = managerVolume
+    get() = managerVolumeInfo
 
   init {
-    managerVolume = group.volumeInfo
+    managerVolumeInfo = group.volumeInfo
   }
 
   override fun compareTo(other: Manager): Int {
@@ -367,11 +365,13 @@ class Manager(
     }
   }
 
-  internal fun updateBucketVolumeInfo(
+  internal fun onBucketVolumeInfoUpdated(
     bucket: Bucket,
-    volumeInfo: VolumeInfo
+    effectiveVolumeInfo: VolumeInfo
   ) {
-    playbacks.forEach { if (it.value.bucket === bucket) it.value.playbackVolume = volumeInfo }
+    playbacks.forEach {
+      if (it.value.bucket === bucket) it.value.playbackVolumeInfo = effectiveVolumeInfo
+    }
   }
 
   /**
@@ -394,29 +394,29 @@ class Manager(
     when (scope) {
       PLAYBACK -> {
         require(target is Playback) { "Expected Playback, found ${target.javaClass.canonicalName}" }
-        target.playbackVolume = volumeInfo
+        target.playbackVolumeInfo = target.bucket.effectiveVolumeInfo(volumeInfo)
       }
       BUCKET -> {
         when (target) {
-          is Bucket -> target.bucketVolume = volumeInfo
-          is Playback -> target.bucket.bucketVolume = volumeInfo
+          is Bucket -> target.bucketVolumeInfo = volumeInfo
+          is Playback -> target.bucket.bucketVolumeInfo = volumeInfo
           // If neither Playback nor Bucket, must be the root View of the Bucket.
           else -> {
             requireNotNull(buckets.find { it.root === target }) {
               "$target is not a root of any Bucket."
             }
-                .bucketVolume = volumeInfo
+                .bucketVolumeInfo = volumeInfo
           }
         }
       }
       MANAGER -> {
-        this.managerVolume = volumeInfo
+        this.managerVolumeInfo = volumeInfo
       }
       GROUP -> {
-        this.group.groupVolume = volumeInfo
+        this.group.groupVolumeInfo = volumeInfo
       }
       GLOBAL -> {
-        this.master.groups.forEach { it.groupVolume = volumeInfo }
+        this.master.groups.forEach { it.groupVolumeInfo = volumeInfo }
       }
     }
   }

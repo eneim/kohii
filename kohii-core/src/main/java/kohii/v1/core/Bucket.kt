@@ -28,6 +28,8 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import kohii.v1.core.Strategy.MULTIPLE_PLAYER
+import kohii.v1.core.Strategy.SINGLE_PLAYER
 import kohii.v1.findCoordinatorLayoutDirectChildContainer
 import kohii.v1.internal.BehaviorWrapper
 import kohii.v1.internal.NestedScrollViewBucket
@@ -38,14 +40,14 @@ import kohii.v1.internal.ViewPager2Bucket
 import kohii.v1.internal.ViewPagerBucket
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 typealias Selector = (Collection<Playback>) -> Collection<Playback>
 
 abstract class Bucket constructor(
   val manager: Manager,
   open val root: View,
-  var strategy: Strategy = Strategy.SINGLE_PLAYER,
+  strategy: Strategy = SINGLE_PLAYER,
   internal val selector: Selector
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
@@ -194,19 +196,33 @@ abstract class Bucket constructor(
         .clear()
   }
 
-  internal var bucketVolume: VolumeInfo by Delegates.observable(
-      initialValue = VolumeInfo(),
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        manager.updateBucketVolumeInfo(this, to)
-      }
-  )
-
   internal val volumeInfo: VolumeInfo
-    get() = bucketVolume
+    get() = bucketVolumeInfo
+
+  internal var bucketVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, _, _ ->
+    manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+  }
+
+  private val volumeConstraint: VolumeInfo
+    get() = when (strategy) {
+      MULTIPLE_PLAYER -> VolumeInfo(false, 0F)
+      SINGLE_PLAYER -> VolumeInfo(false, 1F)
+      else -> VolumeInfo()
+    }
+
+  internal var strategy: Strategy by observable(strategy) { _, from, to ->
+    if (from != to) manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+  }
 
   init {
-    bucketVolume = manager.volumeInfo
+    bucketVolumeInfo = manager.volumeInfo
+  }
+
+  internal fun effectiveVolumeInfo(origin: VolumeInfo): VolumeInfo {
+    return with(origin) {
+      val constraint = volumeConstraint
+      VolumeInfo(mute && constraint.mute, volume.coerceAtMost(constraint.volume))
+    }
   }
 
   // This operation should be considered heavy/expensive.

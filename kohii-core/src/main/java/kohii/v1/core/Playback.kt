@@ -263,15 +263,15 @@ abstract class Playback(
   }
 
   // Will be updated everytime 'onRefresh' is called.
-  private var _token: Token =
+  private var playbackToken: Token =
     Token(config.threshold, -1F, Rect())
 
   internal val token: Token
-    get() = _token
+    get() = playbackToken
 
   internal fun onRefresh() {
     "Playback#onRefresh $this".logDebug()
-    _token = updateToken()
+    playbackToken = updateToken()
     "Playback#onRefresh token updated -> $this".logDebug()
   }
 
@@ -296,17 +296,15 @@ abstract class Playback(
         playable?.onDistanceChanged(this, from, to)
       })
 
-  internal var playbackVolume: VolumeInfo by Delegates.observable(
-      initialValue = bucket.volumeInfo,
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        "Playback#volumeInfo $from --> $to, $this".logDebug()
-        playable?.onVolumeInfoChanged(this, from, to)
-      }
-  )
+  internal var playbackVolumeInfo: VolumeInfo by Delegates.observable(
+      bucket.effectiveVolumeInfo(bucket.volumeInfo)
+  ) { _, from, to ->
+    "Playback#volumeInfo $from --> $to, $this".logDebug()
+    playable?.onVolumeInfoChanged(this, from, to)
+  }
 
   init {
-    playbackVolume = bucket.volumeInfo
+    playbackVolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
   }
 
   internal var playable: Playable? = null
@@ -342,7 +340,7 @@ abstract class Playback(
     get() = playable?.playerState ?: STATE_IDLE
 
   val volumeInfo: VolumeInfo
-    get() = playbackVolume
+    get() = playbackVolumeInfo
 
   private val playbackInfo: PlaybackInfo
     get() = playable?.playbackInfo ?: PlaybackInfo()

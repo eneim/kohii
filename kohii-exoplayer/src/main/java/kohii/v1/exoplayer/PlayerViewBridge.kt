@@ -41,6 +41,7 @@ import kohii.v1.exoplayer.internal.addEventListener
 import kohii.v1.exoplayer.internal.getVolumeInfo
 import kohii.v1.exoplayer.internal.removeEventListener
 import kohii.v1.exoplayer.internal.setVolumeInfo
+import kohii.v1.logInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.PlaybackInfo.Companion.INDEX_UNSET
@@ -205,6 +206,7 @@ class PlayerViewBridge(
 
   override var volumeInfo: VolumeInfo = player?.getVolumeInfo() ?: VolumeInfo()
     set(value) {
+      "Bridge#volumeInfo: $field -> $value, $this".logInfo()
       if (field == value) return
       field = value
       player?.setVolumeInfo(value)

@@ -67,7 +67,7 @@ class DefaultExoPlayerProvider @JvmOverloads constructor(
         Util.getLooper()
     )
 
-    (result as? SimpleExoPlayer)?.also { it.setAudioAttributes(it.audioAttributes, true) }
+    (result as? SimpleExoPlayer)?.also { it.setAudioAttributes(it.audioAttributes, false) }
     return result
   }
 
