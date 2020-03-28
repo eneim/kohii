@@ -120,3 +120,7 @@ internal fun String.logError(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.
     Log.e(tag, this)
   }
 }
+
+internal inline fun debugOnly(crossinline action: () -> Unit) {
+  if (BuildConfig.DEBUG) action()
+}

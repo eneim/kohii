@@ -40,6 +40,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.util.Util
 import kohii.v1.core.Binder.Options
@@ -47,6 +48,7 @@ import kohii.v1.core.MemoryMode.AUTO
 import kohii.v1.core.MemoryMode.BALANCED
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Playback.Config
+import kohii.v1.debugOnly
 import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
 import kohii.v1.internal.DynamicViewRendererPlayback
@@ -99,6 +101,12 @@ class Master private constructor(context: Context) : PlayableManager {
       }
       MSG_BIND_PLAYABLE -> {
         val container = msg.obj as ViewGroup
+        debugOnly {
+          val request = master.requests[container]
+          if (request != null) {
+            "Request bind: ${request.tag}, $container, ${request.playable}".logInfo()
+          }
+        }
         container.doOnAttach {
           master.requests.remove(it)
               ?.onBind()
@@ -274,9 +282,7 @@ class Master private constructor(context: Context) : PlayableManager {
     playable: Playable,
     clearState: Boolean
   ) {
-    dispatcher.removeMessages(
-        MSG_DESTROY_PLAYABLE, playable
-    )
+    dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_DESTROY_PLAYABLE, clearState.compareTo(true), -1, playable)
         .sendToTarget()
   }
@@ -376,7 +382,7 @@ class Master private constructor(context: Context) : PlayableManager {
                 MSG_BIND_PLAYABLE, it.key
             )
             it.value.playable.playback = null
-            requests.remove(it.key)
+            requests.remove(it.key)?.onRemoved()
           }
     }
     if (groups.isEmpty()) {
@@ -389,10 +395,11 @@ class Master private constructor(context: Context) : PlayableManager {
     requests.values.filter {
       val bucket = it.bucket
       return@filter bucket != null && bucket.manager.group === group
+          && bucket.manager.lifecycleOwner.lifecycle.currentState < CREATED
     }
         .forEach {
           it.playable.playback = null
-          requests.remove(it.container)
+          requests.remove(it.container)?.onRemoved()
         }
 
     // If no Manager is online, cleanup stuffs
@@ -737,7 +744,6 @@ class Master private constructor(context: Context) : PlayableManager {
     internal var bucket: Bucket? = null
 
     internal fun onBind() {
-      "Request bind: $tag, $container, $playable".logInfo()
       master.onBind(playable, tag, container, options, callback)
       "Request bound: $tag, $container, $playable".logInfo()
     }
