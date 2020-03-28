@@ -71,9 +71,7 @@ internal class RecyclerViewBucket(
   }
 
   private val scrollListener by lazy(NONE) {
-    SimpleScrollListener(
-        manager
-    )
+    SimpleScrollListener(manager)
   }
 
   override fun onAdded() {

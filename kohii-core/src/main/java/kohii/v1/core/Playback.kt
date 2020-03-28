@@ -372,7 +372,7 @@ abstract class Playback(
 
   fun unbind() {
     "Playback#unbind, $this".logDebug()
-    container.post {
+    manager.master.dispatcher.post {
       playable?.onUnbind(this) ?: manager.removePlayback(this)
     }
   }

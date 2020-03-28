@@ -78,7 +78,7 @@ object Libs {
 
     val junit = "junit:junit:4.12"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
-    val robolectric = "org.robolectric:robolectric:4.3"
+    val robolectric = "org.robolectric:robolectric:4.3.1"
     val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
 

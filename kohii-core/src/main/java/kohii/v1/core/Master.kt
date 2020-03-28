@@ -30,8 +30,8 @@ import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.os.Build.VERSION
 import android.os.Handler
+import android.os.Handler.Callback
 import android.os.Looper
-import android.os.Message
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.arrayMapOf
@@ -96,32 +96,34 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  private class Dispatcher(val master: Master) : Handler(Looper.getMainLooper()) {
-
-    override fun handleMessage(msg: Message) {
-      when (msg.what) {
-        MSG_CLEANUP -> {
-          master.cleanupPendingPlayables()
-        }
-        MSG_BIND_PLAYABLE -> {
-          val container = msg.obj as ViewGroup
-          container.doOnAttach {
-            master.requests.remove(it)
-                ?.onBind()
-          }
-        }
-        MSG_RELEASE_PLAYABLE -> {
-          val playable = (msg.obj as Playable)
-          playable.onRelease()
-        }
-        MSG_DESTROY_PLAYABLE -> {
-          val playable = msg.obj as Playable
-          val clearState = msg.arg1 == 0
-          master.onTearDown(playable, clearState)
-        }
+  internal class Dispatcher(val master: Master) : Handler(Looper.getMainLooper(), Callback { msg ->
+    when (msg.what) {
+      MSG_CLEANUP -> {
+        master.cleanupPendingPlayables()
+        true
       }
+      MSG_BIND_PLAYABLE -> {
+        val container = msg.obj as ViewGroup
+        container.doOnAttach {
+          master.requests.remove(it)
+              ?.onBind()
+        }
+        true
+      }
+      MSG_RELEASE_PLAYABLE -> {
+        val playable = (msg.obj as Playable)
+        playable.onRelease()
+        true
+      }
+      MSG_DESTROY_PLAYABLE -> {
+        val playable = msg.obj as Playable
+        val clearState = msg.arg1 == 0
+        master.onTearDown(playable, clearState)
+        true
+      }
+      else -> false
     }
-  }
+  })
 
   val app = context.applicationContext as Application
 
@@ -287,6 +289,7 @@ class Master private constructor(context: Context) : PlayableManager {
     playable: Playable,
     clearState: Boolean
   ) {
+    "Master#onTearDown: $playable, clear: $clearState".logDebug()
     check(playable.manager == null) {
       "Teardown $playable, found manager: ${playable.manager}"
     }
@@ -298,7 +301,10 @@ class Master private constructor(context: Context) : PlayableManager {
     releasePlayable(playable)
     playables.remove(playable)
     if (clearState) {
-      playbackInfoStore.remove(playable.tag)
+      // [2020.03.28] Note: in RecyclerView, when a ViewHolder is reused for other Video, its
+      // previous mapped Playable will be torn down with `clearState` set to true. If we remove
+      // the PlaybackInfo from playbackInfoStore, it will be reset on the rebind. Let's not do it.
+      // playbackInfoStore.remove(playable.tag)
       playablesStartedByClient.remove(playable.tag)
       playablesPendingStates.remove(playable.tag)
     }
@@ -307,9 +313,12 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   internal fun trySavePlaybackInfo(playable: Playable) {
+    "Master#trySavePlaybackInfo: $playable".logDebug()
     val key = if (playable.tag !== NO_TAG) {
       playable.tag
     } else {
+      // if there is no available tag, we use the playback as info key, to allow state caching in
+      // the same session.
       val playback = playable.playback
       if (playback == null || !playback.isAttached) return
       playback
@@ -317,12 +326,14 @@ class Master private constructor(context: Context) : PlayableManager {
 
     if (!playbackInfoStore.containsKey(key)) {
       val info = playable.playbackInfo
+      "Master#trySavePlaybackInfo: $info, $playable".logInfo()
       playbackInfoStore[key] = info
     }
   }
 
   // If this method is called, it must be before any call to playable.bridge.prepare(flag)
   internal fun tryRestorePlaybackInfo(playable: Playable) {
+    "Master#tryRestorePlaybackInfo: $playable".logDebug()
     val cache = if (playable.tag !== NO_TAG) {
       playbackInfoStore.remove(playable.tag)
     } else {
@@ -330,6 +341,7 @@ class Master private constructor(context: Context) : PlayableManager {
       playbackInfoStore.remove(key)
     }
 
+    "Master#tryRestorePlaybackInfo: $cache, $playable".logInfo()
     // Only restoring playback state if there is cached state, and the player is not ready yet.
     if (cache != null && playable.playerState <= Common.STATE_IDLE) {
       playable.playbackInfo = cache
@@ -337,6 +349,7 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   internal fun onPlaybackDetached(playback: Playback) {
+    "Master#onPlaybackDetached: $playback".logDebug()
     playbackInfoStore.remove(playback)
   }
 
@@ -353,7 +366,7 @@ class Master private constructor(context: Context) : PlayableManager {
         .clear()
   }
 
-  private val dispatcher = Dispatcher(this)
+  internal val dispatcher = Dispatcher(this)
 
   internal fun onGroupCreated(group: Group) {
     if (groups.add(group)) dispatcher.sendEmptyMessage(MSG_CLEANUP)
