@@ -16,6 +16,24 @@
 
 package kohii.v1.core
 
-enum class Strategy {
-  NO_PLAYER, SINGLE_PLAYER, MULTIPLE_PLAYER
+@Suppress("ClassName")
+sealed class Strategy : Selector {
+
+  object NO_PLAYER : Strategy() {
+    override fun invoke(playbacks: Collection<Playback>): Collection<Playback> {
+      return emptyList()
+    }
+  }
+
+  object SINGLE_PLAYER : Strategy() {
+    override fun invoke(playbacks: Collection<Playback>): Collection<Playback> {
+      return listOfNotNull(playbacks.firstOrNull())
+    }
+  }
+
+  object MULTI_PLAYER : Strategy() {
+    override fun invoke(playback: Collection<Playback>): Collection<Playback> {
+      return playback
+    }
+  }
 }

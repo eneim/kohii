@@ -28,7 +28,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import kohii.v1.core.Bucket.Companion.defaultSelector
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Scope.BUCKET
 import kohii.v1.core.Scope.GLOBAL
@@ -39,7 +38,6 @@ import kohii.v1.core.Strategy.SINGLE_PLAYER
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
-import kotlin.properties.Delegates
 import kotlin.properties.Delegates.observable
 
 class Manager(
@@ -133,7 +131,7 @@ class Manager(
 
   override fun onDestroy(owner: LifecycleOwner) {
     playbacks.values.toMutableList()
-        .also { group.organizer.selection -= it }
+        .also { group.selection -= it }
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
@@ -220,12 +218,11 @@ class Manager(
 
   private fun onAddBucket(
     view: View,
-    strategy: Strategy,
-    selector: Selector
+    strategy: Strategy
   ) {
     val existing = buckets.find { it.root === view }
     if (existing != null) return
-    val bucket = Bucket[this@Manager, view, strategy, selector]
+    val bucket = Bucket[this@Manager, view, strategy]
     if (buckets.add(bucket)) {
       bucket.onAdded()
       view.doOnAttach { v ->
@@ -269,7 +266,7 @@ class Manager(
 
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
-        .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
+        .filter { bucketToPlaybacks[it].orEmpty().isNotEmpty() }
         .map {
           val candidates = bucketToPlaybacks.getValue(it)
               .filter { playback ->
@@ -281,7 +278,7 @@ class Manager(
           it to candidates
         }
         .map { (bucket, candidates) ->
-          bucket.selectToPlay(candidates)
+          bucket.strategy(bucket.selectToPlay(candidates))
         }
         .find { it.isNotEmpty() }
         ?.also {
@@ -335,17 +332,16 @@ class Manager(
 
   @Deprecated("Using addBucket with single View instead.")
   fun addBucket(vararg views: View): Manager {
-    views.forEach { this.onAddBucket(it, SINGLE_PLAYER, defaultSelector) }
+    views.forEach { this.onAddBucket(it, SINGLE_PLAYER) }
     return this
   }
 
   @JvmOverloads
   fun addBucket(
     view: View,
-    strategy: Strategy = SINGLE_PLAYER,
-    selector: Selector = defaultSelector
+    strategy: Strategy = SINGLE_PLAYER
   ): Manager {
-    this.onAddBucket(view, strategy, selector)
+    this.onAddBucket(view, strategy)
     return this
   }
 

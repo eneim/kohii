@@ -28,8 +28,8 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
-import kohii.v1.core.Strategy.MULTIPLE_PLAYER
-import kohii.v1.core.Strategy.SINGLE_PLAYER
+import kohii.v1.core.Strategy.MULTI_PLAYER
+import kohii.v1.core.Strategy.NO_PLAYER
 import kohii.v1.findCoordinatorLayoutDirectChildContainer
 import kohii.v1.internal.BehaviorWrapper
 import kohii.v1.internal.NestedScrollViewBucket
@@ -47,13 +47,10 @@ typealias Selector = (Collection<Playback>) -> Collection<Playback>
 abstract class Bucket constructor(
   val manager: Manager,
   open val root: View,
-  strategy: Strategy = SINGLE_PLAYER,
-  internal val selector: Selector
+  strategy: Strategy
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
   companion object {
-    val defaultSelector: Selector = { it -> listOfNotNull(it.firstOrNull()) }
-
     const val VERTICAL = RecyclerView.VERTICAL
     const val HORIZONTAL = RecyclerView.HORIZONTAL
     const val BOTH_AXIS = -1
@@ -70,19 +67,18 @@ abstract class Bucket constructor(
     internal operator fun get(
       manager: Manager,
       root: View,
-      strategy: Strategy,
-      selector: Selector
+      strategy: Strategy
     ): Bucket {
       return when (root) {
-        is RecyclerView -> RecyclerViewBucket(manager, root, strategy, selector)
-        is NestedScrollView -> NestedScrollViewBucket(manager, root, strategy, selector)
-        is ViewPager2 -> ViewPager2Bucket(manager, root, strategy, selector)
-        is ViewPager -> ViewPagerBucket(manager, root, strategy, selector)
+        is RecyclerView -> RecyclerViewBucket(manager, root, strategy)
+        is NestedScrollView -> NestedScrollViewBucket(manager, root, strategy)
+        is ViewPager2 -> ViewPager2Bucket(manager, root, strategy)
+        is ViewPager -> ViewPagerBucket(manager, root, strategy)
         is ViewGroup -> {
           if (VERSION.SDK_INT >= 23)
-            ViewGroupV23Bucket(manager, root, strategy, selector)
+            ViewGroupV23Bucket(manager, root, strategy)
           else
-            ViewGroupBucket(manager, root, strategy, selector)
+            ViewGroupBucket(manager, root, strategy)
         }
         else -> throw IllegalArgumentException("Unsupported: $root")
       }
@@ -205,13 +201,15 @@ abstract class Bucket constructor(
 
   private val volumeConstraint: VolumeInfo
     get() = when (strategy) {
-      MULTIPLE_PLAYER -> VolumeInfo(false, 0F)
-      SINGLE_PLAYER -> VolumeInfo(false, 1F)
+      MULTI_PLAYER -> VolumeInfo(false, 0F)
       else -> VolumeInfo()
     }
 
   internal var strategy: Strategy by observable(strategy) { _, from, to ->
-    if (from != to) manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+    if (from != to) {
+      manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+      manager.refresh()
+    }
   }
 
   init {
@@ -231,6 +229,7 @@ abstract class Bucket constructor(
     orientation: Int
   ): Collection<Playback> {
     if (lock) return emptyList()
+    if (strategy == NO_PLAYER) return emptyList()
 
     val comparator = playbackComparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
@@ -251,11 +250,7 @@ abstract class Bucket constructor(
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 
-    val automaticCandidates by lazy(NONE) {
-      selector(grouped.getValue(false))
-    }
-
-    return if (manualCandidate.isNotEmpty()) manualCandidate else automaticCandidates
+    return if (manualCandidate.isNotEmpty()) manualCandidate else grouped.getValue(false)
   }
 
   override fun equals(other: Any?): Boolean {

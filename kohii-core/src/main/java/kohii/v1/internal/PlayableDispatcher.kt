@@ -83,7 +83,7 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
   }
 
   internal fun pause(playable: Playable) {
-    if (master.groups.find { it.organizer.selection.isNotEmpty() } != null) {
+    if (master.groups.find { it.selection.isNotEmpty() } != null) {
       justPause(playable)
       return
     }

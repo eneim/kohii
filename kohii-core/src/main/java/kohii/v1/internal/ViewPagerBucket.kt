@@ -23,16 +23,14 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
-import kohii.v1.core.Selector
 import kohii.v1.core.Strategy
 import kohii.v1.core.Strategy.SINGLE_PLAYER
 
 internal class ViewPagerBucket(
   manager: Manager,
   override val root: ViewPager,
-  strategy: Strategy = SINGLE_PLAYER,
-  selector: Selector = defaultSelector
-) : Bucket(manager, root, strategy, selector), OnPageChangeListener {
+  strategy: Strategy = SINGLE_PLAYER
+) : Bucket(manager, root, strategy), OnPageChangeListener {
 
   override fun onAdded() {
     super.onAdded()

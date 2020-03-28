@@ -27,7 +27,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
-import kohii.v1.internal.Organizer
 import kohii.v1.internal.PlayableDispatcher
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
@@ -47,7 +46,7 @@ class Group(
   }
 
   internal val managers = ArrayDeque<Manager>()
-  internal val organizer = Organizer()
+  internal var selection: Set<Playback> = emptySet()
 
   private var stickyManager: Manager? by observable<Manager?>(null) { _, from, to ->
     if (from === to) return@observable
@@ -153,8 +152,9 @@ class Group(
       toPause.addAll(canPause)
     }
 
-    val oldSelection = organizer.selection
-    val newSelection = if (lock) emptyList() else organizer.selectFinal(toPlay)
+    val oldSelection = selection
+    selection = if (lock) emptySet() else toPlay
+    val newSelection = selection
 
     // Next: as Playbacks are split into 2 collections, we then release unused resources and prepare
     // the ones that need to. We do so by updating Playback's distance to candidate.
