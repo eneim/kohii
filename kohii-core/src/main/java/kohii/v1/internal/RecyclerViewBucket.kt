@@ -29,14 +29,17 @@ import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
+import kohii.v1.core.Strategy
+import kohii.v1.core.Strategy.SINGLE_PLAYER
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
 internal class RecyclerViewBucket(
   manager: Manager,
   override val root: RecyclerView,
+  strategy: Strategy = SINGLE_PLAYER,
   selector: Selector = defaultSelector
-) : Bucket(manager, root, selector), RecyclerView.OnChildAttachStateChangeListener {
+) : Bucket(manager, root, strategy, selector), RecyclerView.OnChildAttachStateChangeListener {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {

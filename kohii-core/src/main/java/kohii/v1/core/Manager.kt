@@ -35,6 +35,7 @@ import kohii.v1.core.Scope.GLOBAL
 import kohii.v1.core.Scope.GROUP
 import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
+import kohii.v1.core.Strategy.SINGLE_PLAYER
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
@@ -221,11 +222,12 @@ class Manager(
 
   private fun onAddBucket(
     view: View,
+    strategy: Strategy,
     selector: Selector
   ) {
     val existing = buckets.find { it.root === view }
     if (existing != null) return
-    val bucket = Bucket[this@Manager, view, selector]
+    val bucket = Bucket[this@Manager, view, strategy, selector]
     if (buckets.add(bucket)) {
       bucket.onAdded()
       view.doOnAttach { v ->
@@ -335,16 +337,17 @@ class Manager(
 
   @Deprecated("Using addBucket with single View instead.")
   fun addBucket(vararg views: View): Manager {
-    views.forEach { this.onAddBucket(it, defaultSelector) }
+    views.forEach { this.onAddBucket(it, SINGLE_PLAYER, defaultSelector) }
     return this
   }
 
   @JvmOverloads
   fun addBucket(
     view: View,
+    strategy: Strategy = SINGLE_PLAYER,
     selector: Selector = defaultSelector
   ): Manager {
-    this.onAddBucket(view, selector)
+    this.onAddBucket(view, strategy, selector)
     return this
   }
 

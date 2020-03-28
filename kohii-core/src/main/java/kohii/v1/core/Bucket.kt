@@ -45,6 +45,7 @@ typealias Selector = (Collection<Playback>) -> Collection<Playback>
 abstract class Bucket constructor(
   val manager: Manager,
   open val root: View,
+  var strategy: Strategy = Strategy.SINGLE_PLAYER,
   internal val selector: Selector
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
@@ -67,18 +68,19 @@ abstract class Bucket constructor(
     internal operator fun get(
       manager: Manager,
       root: View,
+      strategy: Strategy,
       selector: Selector
     ): Bucket {
       return when (root) {
-        is RecyclerView -> RecyclerViewBucket(manager, root, selector)
-        is NestedScrollView -> NestedScrollViewBucket(manager, root, selector)
-        is ViewPager2 -> ViewPager2Bucket(manager, root, selector)
-        is ViewPager -> ViewPagerBucket(manager, root, selector)
+        is RecyclerView -> RecyclerViewBucket(manager, root, strategy, selector)
+        is NestedScrollView -> NestedScrollViewBucket(manager, root, strategy, selector)
+        is ViewPager2 -> ViewPager2Bucket(manager, root, strategy, selector)
+        is ViewPager -> ViewPagerBucket(manager, root, strategy, selector)
         is ViewGroup -> {
           if (VERSION.SDK_INT >= 23)
-            ViewGroupV23Bucket(manager, root, selector)
+            ViewGroupV23Bucket(manager, root, strategy, selector)
           else
-            ViewGroupBucket(manager, root, selector)
+            ViewGroupBucket(manager, root, strategy, selector)
         }
         else -> throw IllegalArgumentException("Unsupported: $root")
       }

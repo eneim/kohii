@@ -24,12 +24,15 @@ import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
+import kohii.v1.core.Strategy
+import kohii.v1.core.Strategy.SINGLE_PLAYER
 
 internal class NestedScrollViewBucket(
   manager: Manager,
   override val root: NestedScrollView,
+  strategy: Strategy = SINGLE_PLAYER,
   selector: Selector = defaultSelector
-) : Bucket(manager, root, selector), OnScrollChangeListener {
+) : Bucket(manager, root, strategy, selector), OnScrollChangeListener {
 
   override fun onScrollChange(
     v: NestedScrollView?,

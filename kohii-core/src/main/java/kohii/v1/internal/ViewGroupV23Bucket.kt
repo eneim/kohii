@@ -23,13 +23,16 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import kohii.v1.core.Manager
 import kohii.v1.core.Selector
+import kohii.v1.core.Strategy
+import kohii.v1.core.Strategy.SINGLE_PLAYER
 
 @RequiresApi(VERSION_CODES.M)
 internal class ViewGroupV23Bucket(
   manager: Manager,
   root: ViewGroup,
+  strategy: Strategy = SINGLE_PLAYER,
   selector: Selector = defaultSelector
-) : ViewGroupBucket(manager, root, selector), OnScrollChangeListener {
+) : ViewGroupBucket(manager, root, strategy, selector), OnScrollChangeListener {
 
   override fun onScrollChange(
     v: View?,
