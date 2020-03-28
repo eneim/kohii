@@ -72,11 +72,6 @@ import kotlin.properties.Delegates
 // is to create a Callback that is triggered once a manually started Playback/Playable is
 // detached/removed. The callback must return a boolean value indicating that it will handle the
 // Playback by some mechanism to keep it playing, or else Kohii will do the rest (= ignore it).
-
-// Problem 2: how to easily, yet effectively register an Engine once it is created?
-// - We do not want to do the registration in `init` block. As it will leak `this`.
-// - Currently it is done using SingletonHolder (soon to be renamed to 'Capsule'). While forcing
-// developer to use it is not quite kind, but it is not bad at all.
 class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
@@ -258,9 +253,10 @@ class Master private constructor(context: Context) : PlayableManager {
     // Remove any queued destruction for the same Playable, as we are binding it now.
     dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     // Keep track of which Playable will be bound to which Container.
-    // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately trigger the binding,
-    // because we wait for the Container to be attached to the Window first. So if a Playable is registered to be bound,
-    // but then another Playable is registered to the same Container, we need to kick the previous Playable.
+    // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately
+    // trigger the binding, because we wait for the Container to be attached to the Window first.
+    // So if a Playable is registered to be bound, but then another Playable is registered to the
+    // same Container, we need to kick the previous Playable.
     val sameTag = requests.asSequence()
         .filter { it.value.tag !== NO_TAG }
         .firstOrNull { it.value.tag == tag }
