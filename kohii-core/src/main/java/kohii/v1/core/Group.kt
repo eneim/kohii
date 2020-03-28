@@ -46,16 +46,10 @@ class Group(
     private val managerComparator = Comparator<Manager> { o1, o2 -> o2.compareTo(o1) }
   }
 
-  override fun handleMessage(msg: Message): Boolean {
-    if (msg.what == MSG_REFRESH) this.refresh()
-    return true
-  }
-
   internal val managers = ArrayDeque<Manager>()
   internal val organizer = Organizer()
 
-  @Suppress("RemoveExplicitTypeArguments")
-  private var stickyManager: Manager? by Delegates.observable<Manager?>(
+  private var stickyManager by Delegates.observable<Manager?>(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
@@ -94,6 +88,9 @@ class Group(
   private val handler = Handler(this)
   private val dispatcher = PlayableDispatcher(master)
 
+  private val playbacks: Collection<Playback>
+    get() = managers.flatMap { it.playbacks.values }
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass !== other?.javaClass) return false
@@ -106,8 +103,10 @@ class Group(
     return activity.hashCode()
   }
 
-  private val playbacks: Collection<Playback>
-    get() = managers.flatMap { it.playbacks.values }
+  override fun handleMessage(msg: Message): Boolean {
+    if (msg.what == MSG_REFRESH) this.refresh()
+    return true
+  }
 
   override fun onCreate(owner: LifecycleOwner) {
     master.onGroupCreated(this)
