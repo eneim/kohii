@@ -47,7 +47,8 @@ typealias Selector = (Collection<Playback>) -> Collection<Playback>
 abstract class Bucket constructor(
   val manager: Manager,
   open val root: View,
-  strategy: Strategy
+  strategy: Strategy,
+  internal val selector: Selector
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
   companion object {
@@ -67,18 +68,19 @@ abstract class Bucket constructor(
     internal operator fun get(
       manager: Manager,
       root: View,
-      strategy: Strategy
+      strategy: Strategy,
+      selector: Selector
     ): Bucket {
       return when (root) {
-        is RecyclerView -> RecyclerViewBucket(manager, root, strategy)
-        is NestedScrollView -> NestedScrollViewBucket(manager, root, strategy)
-        is ViewPager2 -> ViewPager2Bucket(manager, root, strategy)
-        is ViewPager -> ViewPagerBucket(manager, root, strategy)
+        is RecyclerView -> RecyclerViewBucket(manager, root, strategy, selector)
+        is NestedScrollView -> NestedScrollViewBucket(manager, root, strategy, selector)
+        is ViewPager2 -> ViewPager2Bucket(manager, root, strategy, selector)
+        is ViewPager -> ViewPagerBucket(manager, root, strategy, selector)
         is ViewGroup -> {
           if (VERSION.SDK_INT >= 23)
-            ViewGroupV23Bucket(manager, root, strategy)
+            ViewGroupV23Bucket(manager, root, strategy, selector)
           else
-            ViewGroupBucket(manager, root, strategy)
+            ViewGroupBucket(manager, root, strategy, selector)
         }
         else -> throw IllegalArgumentException("Unsupported: $root")
       }
@@ -250,7 +252,7 @@ abstract class Bucket constructor(
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 
-    return if (manualCandidate.isNotEmpty()) manualCandidate else grouped.getValue(false)
+    return if (manualCandidate.isNotEmpty()) manualCandidate else selector(grouped.getValue(false))
   }
 
   override fun equals(other: Any?): Boolean {

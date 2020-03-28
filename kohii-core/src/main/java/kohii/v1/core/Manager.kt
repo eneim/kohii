@@ -218,11 +218,12 @@ class Manager(
 
   private fun onAddBucket(
     view: View,
-    strategy: Strategy
+    strategy: Strategy,
+    selector: Selector
   ) {
     val existing = buckets.find { it.root === view }
     if (existing != null) return
-    val bucket = Bucket[this@Manager, view, strategy]
+    val bucket = Bucket[this@Manager, view, strategy, selector]
     if (buckets.add(bucket)) {
       bucket.onAdded()
       view.doOnAttach { v ->
@@ -332,16 +333,17 @@ class Manager(
 
   @Deprecated("Using addBucket with single View instead.")
   fun addBucket(vararg views: View): Manager {
-    views.forEach { this.onAddBucket(it, SINGLE_PLAYER) }
+    views.forEach { this.onAddBucket(it, SINGLE_PLAYER, SINGLE_PLAYER) }
     return this
   }
 
   @JvmOverloads
   fun addBucket(
     view: View,
-    strategy: Strategy = SINGLE_PLAYER
+    strategy: Strategy = SINGLE_PLAYER,
+    selector: Selector = SINGLE_PLAYER
   ): Manager {
-    this.onAddBucket(view, strategy)
+    this.onAddBucket(view, strategy, selector)
     return this
   }
 
