@@ -23,7 +23,7 @@ theme:
     accent: 'cyan'
   font:
     # text: 'Open Sans'
-    text: 'Karla' # 'Karla', 'Noto Sans JP', 'Montserrat', 'Open Sans'
+    text: 'Inter' # 'Karla', 'Noto Sans JP', 'Montserrat', 'Open Sans'
     code: 'Roboto Mono' # 'Oxygen Mono', 'Fira Code', 'Roboto Mono'
 
 # Customization

@@ -6,7 +6,7 @@ This section helps you to understand the core components of **Kohii**.
 
 ## Renderer and Container
 
-When play a Video to a destimation `View`, we call that View a `renderer`. `VideoView` in Android framework, `PlayerView` in ExoPlayer are well-known `renderer`s. In **Kohii**, by calling `bind(someView)`, you are *placing* your Video to an *object* that can then contain a `renderer`. We call that *object* a `container`. In **Kohii**, we deal with `ViewGroup` as `container`, but theorically it can be anything. In the future, we will try to expand the concept of `container` to other types. Also, a `renderer` can also be `container`, in which case we see the `renderer` is self-contained.
+When play a Video to a destination `View`, we call that View a `renderer`. `VideoView` in Android framework, `PlayerView` in ExoPlayer are well-known `renderer`s. In **Kohii**, by calling `bind(someView)`, you are *placing* your Video to an *object* that can then contain a `renderer`. We call that *object* a `container`. In **Kohii**, we deal with `ViewGroup` as `container`, but theoretically it can be anything. In the future, we will try to expand the concept of `container` to other types. Also, a `renderer` can also be `container`, in which case we see the `renderer` is self-contained.
 
 The ideas of **container** and **renderer** allow **Kohii** to build the abstraction where a `renderer` can be attached to `container`, detached from `container` and passed around, which allows `renderer`s to be reused for unlimited number of Videos. This is actually implemented in `kohii-exoplayer` already.
 
