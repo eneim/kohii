@@ -49,7 +49,7 @@ class Manager(
 ) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
 
   companion object {
-    internal fun compareAndCheck(
+    private fun compareAndCheck(
       left: Prioritized,
       right: Prioritized
     ): Int {
@@ -71,8 +71,7 @@ class Manager(
       refresh()
     }
 
-  // TODO: why we need the RendererProvider to be Manager-scoped?
-  //  Check with Fragment/DialogFragment
+  // Need RendererProvider to be Manager-scoped since we may have Fragment as Renderer.
   private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
 
   // Use as both Queue and Stack.

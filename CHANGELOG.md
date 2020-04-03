@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.0.2011003
+
+_Under development_
+
+- Support _multiple playback_. Check out [docs](https://eneim.github.io/kohii/usage/advance/) for more information.
+
 ## 1.0.0.2010004
 
 _2020.03.015_
