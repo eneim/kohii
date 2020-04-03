@@ -27,12 +27,11 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
-import kohii.v1.internal.Organizer
 import kohii.v1.internal.PlayableDispatcher
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 class Group(
   internal val master: Master,
@@ -47,36 +46,30 @@ class Group(
   }
 
   internal val managers = ArrayDeque<Manager>()
-  internal val organizer = Organizer()
+  internal var selection: Set<Playback> = emptySet()
 
-  private var stickyManager by Delegates.observable<Manager?>(
-      initialValue = null,
-      onChange = { _, from, to ->
-        if (from === to) return@observable
-        if (to != null) { // a Manager is promoted
-          to.sticky = true
-          managers.push(to)
-        } else {
-          require(from != null && from.sticky)
-          if (managers.peek() === from) {
-            from.sticky = false
-            managers.pop()
-          }
-        }
+  private var stickyManager: Manager? by observable<Manager?>(null) { _, from, to ->
+    if (from === to) return@observable
+    if (to != null) { // a Manager is promoted
+      to.sticky = true
+      managers.push(to)
+    } else {
+      require(from != null && from.sticky)
+      if (managers.peek() === from) {
+        from.sticky = false
+        managers.pop()
       }
-  )
+    }
+  }
 
-  internal var groupVolume: VolumeInfo by Delegates.observable(
-      initialValue = VolumeInfo(),
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        // Update VolumeInfo of all Managers. This operation will then callback to this #applyVolumeInfo
-        managers.forEach { it.managerVolume = to }
-      }
-  )
+  internal var groupVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, from, to ->
+    if (from == to) return@observable
+    // Update VolumeInfo of all Managers. This operation will then callback to this #applyVolumeInfo
+    managers.forEach { it.managerVolumeInfo = to }
+  }
 
   internal val volumeInfo: VolumeInfo
-    get() = groupVolume
+    get() = groupVolumeInfo
 
   internal var lock: Boolean = false
     set(value) {
@@ -159,8 +152,9 @@ class Group(
       toPause.addAll(canPause)
     }
 
-    val oldSelection = organizer.selection
-    val newSelection = if (lock) emptyList() else organizer.selectFinal(toPlay)
+    val oldSelection = selection
+    selection = if (lock) emptySet() else toPlay
+    val newSelection = selection
 
     // Next: as Playbacks are split into 2 collections, we then release unused resources and prepare
     // the ones that need to. We do so by updating Playback's distance to candidate.

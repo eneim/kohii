@@ -28,6 +28,8 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import kohii.v1.core.Strategy.MULTI_PLAYER
+import kohii.v1.core.Strategy.NO_PLAYER
 import kohii.v1.findCoordinatorLayoutDirectChildContainer
 import kohii.v1.internal.BehaviorWrapper
 import kohii.v1.internal.NestedScrollViewBucket
@@ -38,19 +40,18 @@ import kohii.v1.internal.ViewPager2Bucket
 import kohii.v1.internal.ViewPagerBucket
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 typealias Selector = (Collection<Playback>) -> Collection<Playback>
 
 abstract class Bucket constructor(
   val manager: Manager,
   open val root: View,
+  strategy: Strategy,
   internal val selector: Selector
 ) : OnAttachStateChangeListener, OnLayoutChangeListener {
 
   companion object {
-    val defaultSelector: Selector = { it -> listOfNotNull(it.firstOrNull()) }
-
     const val VERTICAL = RecyclerView.VERTICAL
     const val HORIZONTAL = RecyclerView.HORIZONTAL
     const val BOTH_AXIS = -1
@@ -67,18 +68,19 @@ abstract class Bucket constructor(
     internal operator fun get(
       manager: Manager,
       root: View,
+      strategy: Strategy,
       selector: Selector
     ): Bucket {
       return when (root) {
-        is RecyclerView -> RecyclerViewBucket(manager, root, selector)
-        is NestedScrollView -> NestedScrollViewBucket(manager, root, selector)
-        is ViewPager2 -> ViewPager2Bucket(manager, root, selector)
-        is ViewPager -> ViewPagerBucket(manager, root, selector)
+        is RecyclerView -> RecyclerViewBucket(manager, root, strategy, selector)
+        is NestedScrollView -> NestedScrollViewBucket(manager, root, strategy, selector)
+        is ViewPager2 -> ViewPager2Bucket(manager, root, strategy, selector)
+        is ViewPager -> ViewPagerBucket(manager, root, strategy, selector)
         is ViewGroup -> {
           if (VERSION.SDK_INT >= 23)
-            ViewGroupV23Bucket(manager, root, selector)
+            ViewGroupV23Bucket(manager, root, strategy, selector)
           else
-            ViewGroupBucket(manager, root, selector)
+            ViewGroupBucket(manager, root, strategy, selector)
         }
         else -> throw IllegalArgumentException("Unsupported: $root")
       }
@@ -192,19 +194,35 @@ abstract class Bucket constructor(
         .clear()
   }
 
-  internal var bucketVolume: VolumeInfo by Delegates.observable(
-      initialValue = VolumeInfo(),
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        manager.updateBucketVolumeInfo(this, to)
-      }
-  )
-
   internal val volumeInfo: VolumeInfo
-    get() = bucketVolume
+    get() = bucketVolumeInfo
+
+  internal var bucketVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, _, _ ->
+    manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+  }
+
+  private val volumeConstraint: VolumeInfo
+    get() = when (strategy) {
+      MULTI_PLAYER -> VolumeInfo(false, 0F)
+      else -> VolumeInfo()
+    }
+
+  internal var strategy: Strategy by observable(strategy) { _, from, to ->
+    if (from != to) {
+      manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+      manager.refresh()
+    }
+  }
 
   init {
-    bucketVolume = manager.volumeInfo
+    bucketVolumeInfo = manager.volumeInfo
+  }
+
+  internal fun effectiveVolumeInfo(origin: VolumeInfo): VolumeInfo {
+    return with(origin) {
+      val constraint = volumeConstraint
+      VolumeInfo(mute && constraint.mute, volume.coerceAtMost(constraint.volume))
+    }
   }
 
   // This operation should be considered heavy/expensive.
@@ -213,6 +231,7 @@ abstract class Bucket constructor(
     orientation: Int
   ): Collection<Playback> {
     if (lock) return emptyList()
+    if (strategy == NO_PLAYER) return emptyList()
 
     val comparator = playbackComparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
@@ -233,11 +252,7 @@ abstract class Bucket constructor(
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 
-    val automaticCandidates by lazy(NONE) {
-      selector(grouped.getValue(false))
-    }
-
-    return if (manualCandidate.isNotEmpty()) manualCandidate else automaticCandidates
+    return if (manualCandidate.isNotEmpty()) manualCandidate else selector(grouped.getValue(false))
   }
 
   override fun equals(other: Any?): Boolean {

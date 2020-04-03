@@ -28,17 +28,17 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import kohii.v1.core.Bucket.Companion.defaultSelector
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Scope.BUCKET
 import kohii.v1.core.Scope.GLOBAL
 import kohii.v1.core.Scope.GROUP
 import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
+import kohii.v1.core.Strategy.SINGLE_PLAYER
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 class Manager(
   internal val master: Master,
@@ -81,7 +81,7 @@ class Manager(
   // - When demoting a Bucket from sticky, we just poll the head.
   internal val buckets = ArrayDeque<Bucket>(4 /* less than default minimum of ArrayDeque */)
   // Up to one Bucket can be sticky at a time.
-  private var stickyBucket by Delegates.observable<Bucket?>(
+  private var stickyBucket by observable<Bucket?>(
       initialValue = null,
       onChange = { _, from, to ->
         if (from === to) return@observable
@@ -99,20 +99,17 @@ class Manager(
 
   internal var sticky: Boolean = false
 
-  internal var managerVolume: VolumeInfo by Delegates.observable(
-      initialValue = VolumeInfo(),
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
-        buckets.forEach { it.bucketVolume = to }
-      }
-  )
+  internal var managerVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, from, to ->
+    if (from == to) return@observable
+    // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
+    buckets.forEach { it.bucketVolumeInfo = to }
+  }
 
   internal val volumeInfo: VolumeInfo
-    get() = managerVolume
+    get() = managerVolumeInfo
 
   init {
-    managerVolume = group.volumeInfo
+    managerVolumeInfo = group.volumeInfo
   }
 
   override fun compareTo(other: Manager): Int {
@@ -134,7 +131,7 @@ class Manager(
 
   override fun onDestroy(owner: LifecycleOwner) {
     playbacks.values.toMutableList()
-        .also { group.organizer.selection -= it }
+        .also { group.selection -= it }
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
@@ -221,11 +218,12 @@ class Manager(
 
   private fun onAddBucket(
     view: View,
+    strategy: Strategy,
     selector: Selector
   ) {
     val existing = buckets.find { it.root === view }
     if (existing != null) return
-    val bucket = Bucket[this@Manager, view, selector]
+    val bucket = Bucket[this@Manager, view, strategy, selector]
     if (buckets.add(bucket)) {
       bucket.onAdded()
       view.doOnAttach { v ->
@@ -269,7 +267,7 @@ class Manager(
 
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
-        .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
+        .filter { bucketToPlaybacks[it].orEmpty().isNotEmpty() }
         .map {
           val candidates = bucketToPlaybacks.getValue(it)
               .filter { playback ->
@@ -281,7 +279,7 @@ class Manager(
           it to candidates
         }
         .map { (bucket, candidates) ->
-          bucket.selectToPlay(candidates)
+          bucket.strategy(bucket.selectToPlay(candidates))
         }
         .find { it.isNotEmpty() }
         ?.also {
@@ -335,16 +333,17 @@ class Manager(
 
   @Deprecated("Using addBucket with single View instead.")
   fun addBucket(vararg views: View): Manager {
-    views.forEach { this.onAddBucket(it, defaultSelector) }
+    views.forEach { this.onAddBucket(it, SINGLE_PLAYER, SINGLE_PLAYER) }
     return this
   }
 
   @JvmOverloads
   fun addBucket(
     view: View,
-    selector: Selector = defaultSelector
+    strategy: Strategy = SINGLE_PLAYER,
+    selector: Selector = SINGLE_PLAYER
   ): Manager {
-    this.onAddBucket(view, selector)
+    this.onAddBucket(view, strategy, selector)
     return this
   }
 
@@ -364,11 +363,13 @@ class Manager(
     }
   }
 
-  internal fun updateBucketVolumeInfo(
+  internal fun onBucketVolumeInfoUpdated(
     bucket: Bucket,
-    volumeInfo: VolumeInfo
+    effectiveVolumeInfo: VolumeInfo
   ) {
-    playbacks.forEach { if (it.value.bucket === bucket) it.value.playbackVolume = volumeInfo }
+    playbacks.forEach {
+      if (it.value.bucket === bucket) it.value.playbackVolumeInfo = effectiveVolumeInfo
+    }
   }
 
   /**
@@ -391,29 +392,29 @@ class Manager(
     when (scope) {
       PLAYBACK -> {
         require(target is Playback) { "Expected Playback, found ${target.javaClass.canonicalName}" }
-        target.playbackVolume = volumeInfo
+        target.playbackVolumeInfo = target.bucket.effectiveVolumeInfo(volumeInfo)
       }
       BUCKET -> {
         when (target) {
-          is Bucket -> target.bucketVolume = volumeInfo
-          is Playback -> target.bucket.bucketVolume = volumeInfo
+          is Bucket -> target.bucketVolumeInfo = volumeInfo
+          is Playback -> target.bucket.bucketVolumeInfo = volumeInfo
           // If neither Playback nor Bucket, must be the root View of the Bucket.
           else -> {
             requireNotNull(buckets.find { it.root === target }) {
               "$target is not a root of any Bucket."
             }
-                .bucketVolume = volumeInfo
+                .bucketVolumeInfo = volumeInfo
           }
         }
       }
       MANAGER -> {
-        this.managerVolume = volumeInfo
+        this.managerVolumeInfo = volumeInfo
       }
       GROUP -> {
-        this.group.groupVolume = volumeInfo
+        this.group.groupVolumeInfo = volumeInfo
       }
       GLOBAL -> {
-        this.master.groups.forEach { it.groupVolume = volumeInfo }
+        this.master.groups.forEach { it.groupVolumeInfo = volumeInfo }
       }
     }
   }

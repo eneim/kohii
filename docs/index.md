@@ -14,14 +14,14 @@ Video playback for Android made easy.
 
 - [x] Easy to start: just one line to start a Video playback.
 - [x] Automatic playback experience on RecyclerView, NestedScrollView, ViewPager2, etc.
-- [x] Configuration change handling works out of the box, including the transition from local playback to fullscreen playback and vice versa.
+- [x] Configuration change handling works out of the box, including the switching from in-list player to fullscreen player and vice versa.
 - [x] Feature-rich sample app that covers either simple or advance use cases.
-- [x] Extension-based structure, including default implementations that support ExoPlayer, AndroidX Media2, YouTube Player SDK.
+- [x] Extensible, including default implementations that support ExoPlayer, AndroidX Media2, YouTube Player SDK.
 
 ## Demo
 
-| Automatic playback                                           | Playback continuity (Seamless fullscreen)                    |
-| :----------------------------------------------------------- | :----------------------------------------------------------- |
+| Automatic playback| Playback continuity (Seamless fullscreen)|
+| :- |:- |
 | <img src="./art/kohii_demo_2.gif" width="216"/> | <img src="./art/kohii_demo_3.gif" width="468"/> |
 
 ## Setup
@@ -39,7 +39,7 @@ allprojects {
 
 ```groovy
 // Add these to app level build.gradle (or to module that will use Kohii)
-def kohiiVersion = '1.0.0.2010004-B2'
+def kohiiVersion = '1.0.0.2010004'
 def exoPlayerVersion = '2.10.4'
 
 implementation "im.ene.kohii:kohii-core:${kohiiVersion}"

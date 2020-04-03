@@ -21,7 +21,7 @@ This artifact contains core design of the library. It doesn't contain enough imp
 This artifact contains the implementation of `kohii-core` that uses **ExoPlayer** as playback *backend*. As a result, you will also need to include necessary **ExoPlayer** artifacts as well. Your dependency to use `kohii-exoplayer` will look like below:
 
 ```groovy
-def kohiiVersion = '1.0.0.2010004-B2' // always use latest available version
+def kohiiVersion = '1.0.0.2010004' // always use latest available version
 def exoplayerVersion = '2.10.4'
 
 implementation "im.ene.kohii:kohii-core:${kohiiVersion}"
@@ -37,7 +37,7 @@ implementation "com.google.android.exoplayer:exoplayer:${exoplayerVersion}"
 This artifact contains the implementation of `kohii-core` that uses **AndroidX Media2** as playback *backend*. As a result, you will also need to include necessary **AndroidX Media2** artifacts as well. The setup would be the same as `kohii-exoplayer`, accept that you need these instead of **ExoPlayer**:
 
 ```groovy
-def kohiiVersion = '1.0.0.2010004-B2' // always use latest available version
+def kohiiVersion = '1.0.0.2010004' // always use latest available version
 
 implementation "im.ene.kohii:kohii-core:${kohiiVersion}"
 implementation "im.ene.kohii:kohii-androidx:${kohiiVersion}"
@@ -57,7 +57,7 @@ This artifacts includes experimental implementations. In short the playback logi
 Currently, `kohii-experiments` provides playback logic for **YouTube Playback** based on the Official [YouTube Android Player API](https://developers.google.com/youtube/android/player) and the Unofficial [YouTube Player library for Android and Chromecast](https://github.com/PierfrancescoSoffritti/android-youtube-player). Using this package as below:
 
 ```groovy
-def kohiiVersion = '1.0.0.2010004-B2' // always use latest available version
+def kohiiVersion = '1.0.0.2010004' // always use latest available version
 
 implementation "im.ene.kohii:kohii-core:${kohiiVersion}"
 implementation "im.ene.kohii:kohii-experiments:${kohiiVersion}"
