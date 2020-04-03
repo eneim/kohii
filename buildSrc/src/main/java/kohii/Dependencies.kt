@@ -41,13 +41,25 @@ object BuildConfig {
   const val minSdkVersion = 19
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
-  private val gitCommitHash = Runtime.getRuntime()
-      .exec("git rev-parse --short HEAD")
-      .inputStream.reader()
-      .use { it.readText() }
-      .trim()
-  private val gitCommitCount = 100 + Runtime.getRuntime().exec("git rev-list --count HEAD")
-      .inputStream.reader().use { it.readText() }.trim().toInt()
+  private val gitCommitHash = try {
+    Runtime.getRuntime()
+        .exec("git rev-parse --short HEAD")
+        .inputStream.reader()
+        .use { it.readText() }
+        .trim()
+  } catch (er: Exception) {
+    "1.0.0"
+  }
+
+  private val gitCommitCount = 100 + try {
+    Runtime.getRuntime()
+        .exec("git rev-list --count HEAD")
+        .inputStream.reader()
+        .use { it.readText() }
+        .trim().toInt()
+  } catch (er: Exception) {
+    0
+  }
 
   val releaseVersionCode = gitCommitCount
   val releaseVersionName = "1.1.0.${Versions.exoPlayerCode}-A1"
@@ -57,7 +69,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:3.6.0"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:4.0.0-beta03"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.2"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
@@ -66,7 +78,7 @@ object Libs {
 
     val junit = "junit:junit:4.12"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
-    val robolectric = "org.robolectric:robolectric:4.3"
+    val robolectric = "org.robolectric:robolectric:4.3.1"
     val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
 
@@ -232,8 +244,8 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0"
-    val okio = "com.squareup.okio:okio:2.4.1"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.2"
+    val okio = "com.squareup.okio:okio:2.4.3"
   }
 
   object Glide {
@@ -253,5 +265,6 @@ object Libs {
   object Other {
     val androidSvg = "com.caverock:androidsvg-aar:1.4"
     val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"
+    val timber = "com.jakewharton.timber:timber:4.7.1"
   }
 }

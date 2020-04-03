@@ -23,13 +23,15 @@ import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
+import kohii.v1.core.Strategy
 import kotlin.LazyThreadSafetyMode.NONE
 
 internal class ViewPager2Bucket(
   manager: Manager,
   override val root: ViewPager2,
-  selector: Selector = defaultSelector
-) : Bucket(manager, root, selector) {
+  strategy: Strategy,
+  selector: Selector
+) : Bucket(manager, root, strategy, selector) {
 
   private class SimplePageChangeCallback(val manager: Manager) : ViewPager2.OnPageChangeCallback() {
     override fun onPageScrollStateChanged(state: Int) {

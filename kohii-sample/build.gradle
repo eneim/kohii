@@ -162,6 +162,8 @@ dependencies {
   implementation Libs.Google.apiClientGson
   implementation Libs.Google.firebaseAnalytics
 
+  implementation(Libs.Other.timber)
+
   debugImplementation Libs.Square.leakCanary
 
   testImplementation Libs.Common.junit

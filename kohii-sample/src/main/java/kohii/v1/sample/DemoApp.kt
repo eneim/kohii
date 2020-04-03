@@ -47,6 +47,8 @@ import kohii.v1.sample.ui.youtube1.YouTube1Fragment
 import kohii.v1.sample.ui.youtube2.YouTube2Fragment
 import okio.buffer
 import okio.source
+import timber.log.Timber
+import timber.log.Timber.DebugTree
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
@@ -197,5 +199,8 @@ class DemoApp : Application() {
   @Suppress("RedundantOverride")
   override fun onCreate() {
     super.onCreate()
+    if (BuildConfig.DEBUG) {
+      Timber.plant(DebugTree())
+    }
   }
 }

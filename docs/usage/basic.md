@@ -2,7 +2,7 @@
 
 ## The scenario
 
-This **basic usage** session will guide you step-by-step to complete this scenario: you have a `Fragment` with many Videos in a `RecyclerView`. You want each Video to start playing automatically if that Video is *visible more than 65% of its full area, and stay on top of all the visible Videos (fully, or partly)*. If you scroll the list, the Video that is not visible enough will be paused automatically, and the other Video which sastisfy the condition above will start playing automatically.
+This **basic usage** session will guide you step-by-step to complete this scenario: you have a `Fragment` with many Videos in a vertical `RecyclerView`. You want each Video to start playing automatically if that Video is *visible more than 65% of its full area, and stay on top of all the visible Videos (fully, or partly)*. If you scroll the list, the Video that is not visible enough will be paused automatically, and the other Video which sastisfy the condition above will start playing automatically.
 
 <img src="../../art/kohii_demo_2.gif" width="216" style="display: block; margin: 0 auto;"/>
 
@@ -29,12 +29,12 @@ kohii.register(this)
 Second, add this in your `RecyclerView.Adapter#onBindViewHolder`, or corresponding place in `ViewHolder`
 
 ```Kotlin tab=
-// You must pass the kohii instance here
+// You need to pass the kohii instance here
 kohii.setUp(videoUrl).bind(playerView)
 ```
 
 ```Java tab=
-// You must pass the kohii instance here
+// You need to pass the kohii instance here
 kohii.setUp(videoUrl).bind(playerView);
 ```
 
@@ -42,7 +42,7 @@ Done, you have what you want. But before leaving, let's discover the details bel
 
 ## Before you start: thinking in Kohii
 
-It is important that you get the concept of **Kohii** before you start. Because the way you think about Video playback until now would be different to what **Kohii** provides.
+It is important that you get the concept of **Kohii** before we go further. Because the way you think about Video playback until now would be different to what **Kohii** thinks.
 
 Until now, you may see and/or use the following pattern:
 
@@ -64,7 +64,7 @@ This line reads:
 
 > I have a Video and I will play it in a VideoView. Let's setup the Video and bind it to the VideoView.
 
-The difference here is: who is the **main actor**? In traditional way, the `VideoView` *owns* the Video and therefore, when it dies, we also lose the Video playback. In **Kohii**, we let the Video to *own* the `VideoView` it will *be played* on. So when the `VideoView` dies, your Video can be smoothly switched to other `VideoView`, or just be gone.
+The difference here is: who is the **main actor**? In traditional way, the `VideoView` *owns* the Video and therefore, when it dies, we also lose the Video playback. In **Kohii**, we let the Video be the active part. It *acknowledges* the `VideoView` it will *be played* on. So when the `VideoView` dies, your Video can be smoothly switched to other `VideoView`.
 
 To give you an imagine about why it is good this way, consider this scenario: you have a list of Videos, and you want to open one Video in fullscreen, ***smoothly***.
 
@@ -72,7 +72,7 @@ Thinking in _traditional way_: How I can open this `VideoView` (which is now in 
 
 While thinking in _**Kohii** way_, it sounds easier: How can I open this Video (which is now in the list) in fullscreen? Can I just ***switch*** it from current `VideoView` to the fullscreen `VideoView`?
 
-You can say that the real code can give you whatever you want, but **having a good abstraction makes it easier for the implementation, in long term**. How this idea comes to life will be discussed later.
+This way of thinking is the base for all the abstractions in **Kohii**. How this idea comes to life will be discussed later.
 
 Now that you have the concept about **Kohii**, let's get our hands dirty.
 
@@ -109,10 +109,12 @@ As a *singleton*, **Kohii** instance can be passed around or re-obtained in othe
 - Where you are using **Kohii** from? A `Fragment` or `Activity`? Line below answers that question:
 
 ```Kotlin tab=
+// From the Fragment's onViewCreated()
 kohii.register(this@Fragment)
 ```
 
 ```Java tab=
+// From the Fragment's onViewCreated()
 kohii.register(this);
 ```
 

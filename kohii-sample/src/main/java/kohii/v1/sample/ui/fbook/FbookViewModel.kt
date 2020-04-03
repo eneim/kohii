@@ -22,9 +22,7 @@ import kohii.v1.media.VolumeInfo
 
 class FbookViewModel : ViewModel() {
 
-  val timelineVolume = MutableLiveData<VolumeInfo>(
-      VolumeInfo()
-  )
+  val timelineVolume = MutableLiveData(VolumeInfo())
 
   val overlayPlayerInfo = MutableLiveData<OverlayPlayerInfo>()
 }

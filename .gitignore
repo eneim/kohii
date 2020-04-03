@@ -78,3 +78,5 @@
 /kohii-core/build/
 /kohii-experiments/build/
 /.idea/markdown-navigator-enh.xml
+/.idea/jarRepositories.xml
+/.idea/render.experimental.xml

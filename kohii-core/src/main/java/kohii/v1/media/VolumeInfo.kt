@@ -24,25 +24,9 @@ import kotlinx.android.parcel.Parcelize
  */
 @Parcelize
 data class VolumeInfo(
-  var mute: Boolean = false,
-  var volume: Float = 1F
+  val mute: Boolean = false,
+  val volume: Float = 1F
 ) : Parcelable {
 
   constructor(original: VolumeInfo) : this(original.mute, original.volume)
-
-  fun setTo(
-    mute: Boolean,
-    volume: Float
-  ) {
-    this.mute = mute
-    this.volume = volume
-  }
-
-  fun setTo(volumeInfo: VolumeInfo) {
-    this.setTo(volumeInfo.mute, volumeInfo.volume)
-  }
-
-  companion object {
-    val SCRAP = VolumeInfo(false, 1F)
-  }
 }

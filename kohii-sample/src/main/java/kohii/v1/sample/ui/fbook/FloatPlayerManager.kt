@@ -74,6 +74,7 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
   private var floatViewFirstX: Int = 0
   private var floatViewFirstY: Int = 0
 
+  @SuppressLint("ClickableViewAccessibility")
   val floatViewOnTouchListener = View.OnTouchListener { _, event ->
     val params = floatParams
     val totalDeltaX = floatViewLastX - floatViewFirstX

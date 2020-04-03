@@ -24,12 +24,14 @@ import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
+import kohii.v1.core.Strategy
 
 internal class ViewPagerBucket(
   manager: Manager,
   override val root: ViewPager,
-  selector: Selector = defaultSelector
-) : Bucket(manager, root, selector), OnPageChangeListener {
+  strategy: Strategy,
+  selector: Selector
+) : Bucket(manager, root, strategy, selector), OnPageChangeListener {
 
   override fun onAdded() {
     super.onAdded()

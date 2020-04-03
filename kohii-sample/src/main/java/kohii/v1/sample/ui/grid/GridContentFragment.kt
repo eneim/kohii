@@ -36,6 +36,16 @@ import kotlin.LazyThreadSafetyMode.NONE
 
 class GridContentFragment : BaseFragment() {
 
+  private val kohii by lazy(NONE) { Kohii[this] }
+
+  private val binding: FragmentRecyclerviewGridBinding get() = requireNotNull(_binding)
+  private val selectionTracker: SelectionTracker<Rebinder> get() = requireNotNull(_selectionTracker)
+
+  private var _binding: FragmentRecyclerviewGridBinding? = null
+  private var _selectionTracker: SelectionTracker<Rebinder>? = null
+
+  private var callback: Callback? = null
+
   override fun onAttach(context: Context) {
     super.onAttach(context)
     callback = parentFragment as? Callback
@@ -51,19 +61,9 @@ class GridContentFragment : BaseFragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    binding = FragmentRecyclerviewGridBinding.inflate(inflater, container, false)
+    _binding = FragmentRecyclerviewGridBinding.inflate(inflater, container, false)
     return binding.root
   }
-
-  private val kohii by lazy(NONE) { Kohii[this] }
-
-  private lateinit var binding: FragmentRecyclerviewGridBinding
-  private lateinit var adapter: ItemsAdapter
-  private lateinit var selectionTracker: SelectionTracker<Rebinder>
-  private lateinit var videoKeyProvider: VideoTagKeyProvider
-  private lateinit var videoItemDetailsLookup: VideoItemDetailsLookup
-
-  private var callback: Callback? = null
 
   override fun onViewCreated(
     view: View,
@@ -80,7 +80,7 @@ class GridContentFragment : BaseFragment() {
       }
     }
 
-    adapter = ItemsAdapter(
+    val adapter = ItemsAdapter(
         kohii,
         shouldBindVideo = { !selectionTracker.isSelected(it) },
         onVideoClick = { callback?.onSelected(it) }
@@ -89,10 +89,10 @@ class GridContentFragment : BaseFragment() {
     (binding.container.layoutManager as? GridLayoutManager)?.spanSizeLookup = spanSizeLookup
     binding.container.adapter = adapter
 
-    videoKeyProvider = VideoTagKeyProvider(binding.container)
-    videoItemDetailsLookup = VideoItemDetailsLookup(binding.container)
+    val videoKeyProvider = VideoTagKeyProvider(binding.container)
+    val videoItemDetailsLookup = VideoItemDetailsLookup(binding.container)
 
-    selectionTracker = SelectionTracker.Builder<Rebinder>(
+    _selectionTracker = SelectionTracker.Builder(
         "${BuildConfig.APPLICATION_ID}::sample::grid",
         binding.container,
         videoKeyProvider,
@@ -103,6 +103,11 @@ class GridContentFragment : BaseFragment() {
         .build()
 
     selectionTracker.onRestoreInstanceState(savedInstanceState)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    _binding = null
   }
 
   override fun onSaveInstanceState(outState: Bundle) {

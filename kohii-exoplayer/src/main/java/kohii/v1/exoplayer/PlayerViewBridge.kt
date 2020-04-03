@@ -41,6 +41,8 @@ import kohii.v1.exoplayer.internal.addEventListener
 import kohii.v1.exoplayer.internal.getVolumeInfo
 import kohii.v1.exoplayer.internal.removeEventListener
 import kohii.v1.exoplayer.internal.setVolumeInfo
+import kohii.v1.logDebug
+import kohii.v1.logInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.PlaybackInfo.Companion.INDEX_UNSET
@@ -151,6 +153,7 @@ class PlayerViewBridge(
   }
 
   override fun play() {
+    "Bridge#play(): $this".logDebug()
     if (videoSize != VideoSize.NONE) {
       requireNotNull(player).playWhenReady = true
     }
@@ -195,15 +198,17 @@ class PlayerViewBridge(
     this.inErrorState = false
   }
 
-  // TODO double check this once ExoPlayer release the "Player.isPlaying" API
   override fun isPlaying(): Boolean {
-    return player?.let {
-      it.playbackState in 2..3 && it.playWhenReady
+    return player?.run {
+      playWhenReady &&
+          playbackState in Player.STATE_BUFFERING..Player.STATE_READY &&
+          playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_NONE
     } ?: false
   }
 
   override var volumeInfo: VolumeInfo = player?.getVolumeInfo() ?: VolumeInfo()
     set(value) {
+      "Bridge#volumeInfo: $field -> $value, $this".logInfo()
       if (field == value) return
       field = value
       player?.setVolumeInfo(value)
@@ -263,14 +268,12 @@ class PlayerViewBridge(
   }
 
   private fun prepareMediaSource() {
-    // Note: we allow subclass to create MediaSource on demand. So it can be not-null here.
-    // The flag sourcePrepared can also be set to false somewhere else.
-    if (mediaSource == null) {
+    val mediaSource: MediaSource = this.mediaSource ?: run {
       sourcePrepared = false
-      mediaSource = mediaSourceFactory.createMediaSource(this.media.uri)
+      mediaSourceFactory.createMediaSource(this.media.uri).also { this.mediaSource = it }
     }
 
-    // Player is reset, need to prepare again.
+    // Player was reset, need to prepare again.
     if (player?.playbackState == Common.STATE_IDLE) {
       sourcePrepared = false
     }
@@ -304,7 +307,7 @@ class PlayerViewBridge(
         listenerApplied = true
       }
 
-      it.playbackParameters = _playbackParams
+      it.setPlaybackParameters(_playbackParams)
       val hasResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
       if (hasResumePosition) {
         it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
@@ -330,15 +333,15 @@ class PlayerViewBridge(
 
   // DefaultEventListener ⬇︎
 
-  override fun onPlayerError(error: ExoPlaybackException?) {
-    Log.e("Kohii::Bridge", "Error: ${error?.cause}")
+  override fun onPlayerError(error: ExoPlaybackException) {
+    Log.e("Kohii::Bridge", "Error: ${error.cause}")
     if (renderer == null) {
       var errorString: String? = null
-      if (error?.type == ExoPlaybackException.TYPE_RENDERER) {
+      if (error.type == ExoPlaybackException.TYPE_RENDERER) {
         val exception = error.rendererException
         if (exception is DecoderInitializationException) {
           // Special case for decoder initialization failures.
-          errorString = if (exception.decoderName == null) {
+          errorString = if (exception.codecInfo == null) {
             when {
               exception.cause is MediaCodecUtil.DecoderQueryException ->
                 context.getString(R.string.error_querying_decoders)
@@ -347,7 +350,7 @@ class PlayerViewBridge(
               else -> context.getString(R.string.error_no_decoder, exception.mimeType)
             }
           } else {
-            context.getString(R.string.error_instantiating_decoder, exception.decoderName)
+            context.getString(R.string.error_instantiating_decoder, exception.codecInfo?.name ?: "")
           }
         }
       }
@@ -361,7 +364,7 @@ class PlayerViewBridge(
     } else {
       updatePlaybackInfo()
     }
-    if (error != null) this.errorListeners.onError(error)
+    this.errorListeners.onError(error)
   }
 
   override fun onPositionDiscontinuity(reason: Int) {
@@ -375,8 +378,8 @@ class PlayerViewBridge(
   }
 
   override fun onTracksChanged(
-    trackGroups: TrackGroupArray?,
-    trackSelections: TrackSelectionArray?
+    trackGroups: TrackGroupArray,
+    trackSelections: TrackSelectionArray
   ) {
     if (trackGroups == lastSeenTrackGroupArray) return
     lastSeenTrackGroupArray = trackGroups

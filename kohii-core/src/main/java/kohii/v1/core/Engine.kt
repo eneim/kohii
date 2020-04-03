@@ -70,7 +70,7 @@ abstract class Engine<RENDERER : Any> constructor(
     master.requests.filterValues { it.tag == tag }
         .forEach {
           it.value.playable.playback = null
-          master.requests.remove(it.key)
+          master.requests.remove(it.key)?.onRemoved()
         }
   }
 
@@ -78,7 +78,7 @@ abstract class Engine<RENDERER : Any> constructor(
     master.requests.remove(container)
         ?.also {
           it.playable.playback = null
-        }
+        }?.onRemoved()
   }
 
   // TODO do not allow this anymore.

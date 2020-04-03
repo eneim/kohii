@@ -30,7 +30,7 @@ interface MediaDrm : Comparable<MediaDrm>, Parcelable {
   // DRM Scheme
   val type: String
 
-  val licenseUrl: String?
+  val licenseUrl: String
 
   val keyRequestPropertiesArray: Array<String>?
 

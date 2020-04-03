@@ -58,6 +58,13 @@ internal class VideoViewHolder(
     position: Long,
     state: Int
   ) {
-    thumbnail.isVisible = shouldShow
+    // Using animation to ease user's eyes when the thumbnail is shown/hidden
+    thumbnail.animate()
+        .alpha(if (shouldShow) 1F else 0F)
+        .setDuration(200)
+        .withEndAction {
+          thumbnail.isVisible = shouldShow
+        }
+        .start()
   }
 }

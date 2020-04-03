@@ -27,6 +27,6 @@
     app:resize_mode="fixed_width"
     app:show_buffering="when_playing"
     app:shutter_background_color="@android:color/black"
-    app:surface_type="spherical_view"
+    app:surface_type="spherical_gl_surface_view"
     app:use_controller="false"
     />

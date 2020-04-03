@@ -82,7 +82,7 @@ interface Bridge<RENDERER : Any> {
   fun addEventListener(listener: PlayerEventListener)
 
   /**
-   * Remove an [PlayerEventListener] from this Playable.
+   * Remove a [PlayerEventListener] from this Playable.
    *
    * @param listener the EventListener to be removed. If null, nothing happens.
    */

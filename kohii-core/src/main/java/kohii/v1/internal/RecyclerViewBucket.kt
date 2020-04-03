@@ -29,14 +29,16 @@ import kohii.v1.core.Bucket
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
+import kohii.v1.core.Strategy
 import java.lang.ref.WeakReference
 import kotlin.LazyThreadSafetyMode.NONE
 
 internal class RecyclerViewBucket(
   manager: Manager,
   override val root: RecyclerView,
-  selector: Selector = defaultSelector
-) : Bucket(manager, root, selector), RecyclerView.OnChildAttachStateChangeListener {
+  strategy: Strategy,
+  selector: Selector
+) : Bucket(manager, root, strategy, selector), RecyclerView.OnChildAttachStateChangeListener {
 
   companion object {
     fun RecyclerView.fetchOrientation(): Int {
@@ -71,9 +73,7 @@ internal class RecyclerViewBucket(
   }
 
   private val scrollListener by lazy(NONE) {
-    SimpleScrollListener(
-        manager
-    )
+    SimpleScrollListener(manager)
   }
 
   override fun onAdded() {

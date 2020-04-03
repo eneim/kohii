@@ -16,7 +16,7 @@
 
 package kohii.v1.exoplayer
 
-import com.google.android.exoplayer2.source.ads.AdsMediaSource
+import com.google.android.exoplayer2.source.MediaSourceFactory
 import kohii.v1.media.Media
 
 /**
@@ -24,5 +24,5 @@ import kohii.v1.media.Media
  */
 interface MediaSourceFactoryProvider {
 
-  fun provideMediaSourceFactory(media: Media): AdsMediaSource.MediaSourceFactory
+  fun provideMediaSourceFactory(media: Media): MediaSourceFactory
 }

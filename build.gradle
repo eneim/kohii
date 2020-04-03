@@ -16,6 +16,8 @@
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 import kohii.Libs
+import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 buildscript {
   repositories {
@@ -58,13 +60,13 @@ allprojects {
     task.targetCompatibility = JavaVersion.VERSION_1_8
   }
 
-  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach { task ->
+  tasks.withType(KotlinJvmCompile).configureEach { task ->
     task.kotlinOptions {
       jvmTarget = "1.8"
     }
   }
 
-  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile).configureEach { task ->
+  tasks.withType(KotlinCompile).configureEach { task ->
     task.kotlinOptions {
       freeCompilerArgs += [
           '-XXLanguage:+InlineClasses',

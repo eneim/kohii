@@ -42,8 +42,8 @@ data class DrmItem(
 ) : MediaDrm {
   override val type: String
     get() = item.drmScheme!!
-  override val licenseUrl: String?
-    get() = item.drmLicenseUrl
+  override val licenseUrl: String
+    get() = requireNotNull(item.drmLicenseUrl)
   override val keyRequestPropertiesArray: Array<String>?
     get() = null
   override val multiSession: Boolean

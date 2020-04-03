@@ -17,7 +17,7 @@
 package kohii.v1.exoplayer
 
 import com.google.android.exoplayer2.drm.DrmSessionManager
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto
+import com.google.android.exoplayer2.drm.ExoMediaCrypto
 import kohii.v1.media.Media
 
 /**
@@ -25,9 +25,5 @@ import kohii.v1.media.Media
  */
 interface DrmSessionManagerProvider {
 
-  fun provideDrmSessionManager(media: Media): DrmSessionManager<FrameworkMediaCrypto>?
-
-  fun releaseDrmSessionManager(sessionManager: DrmSessionManager<*>?)
-
-  fun cleanUp()
+  fun provideDrmSessionManager(media: Media): DrmSessionManager<ExoMediaCrypto>?
 }

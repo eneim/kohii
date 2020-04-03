@@ -95,14 +95,17 @@ abstract class AbstractPlayable<RENDERER : Any>(
   private val memoryMode: MemoryMode
     get() = (manager as? Manager)?.memoryMode ?: LOW
 
-  override var manager: PlayableManager? by Delegates.observable<PlayableManager?>(
+  override var manager by Delegates.observable<PlayableManager?>(
       null,
       onChange = { _, from, to ->
         if (from === to) return@observable
         "Playable#manager $from --> $to, $this".logInfo()
         if (to == null) {
           master.trySavePlaybackInfo(this)
-          master.tearDown(this, if (from is Manager) !from.isChangingConfigurations() else true)
+          master.tearDown(
+              playable = this,
+              clearState = if (from is Manager) !from.isChangingConfigurations() else true
+          )
         } else if (from === null) {
           master.tryRestorePlaybackInfo(this)
         }
@@ -110,7 +113,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   )
 
   @Suppress("IfThenToElvis")
-  override var playback: Playback? by Delegates.observable<Playback?>(
+  override var playback by Delegates.observable<Playback?>(
       null,
       onChange = { _, from, to ->
         if (from === to) return@observable

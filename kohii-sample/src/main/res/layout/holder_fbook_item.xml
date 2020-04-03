@@ -215,7 +215,7 @@
       android:id="@+id/videoContainer"
       android:layout_width="match_parent"
       android:layout_height="0dp"
-      android:background="#ccffff00"
+      android:background="#cc0a0a0a"
       android:visibility="gone"
       app:layout_constraintDimensionRatio="16:9"
       app:layout_constraintEnd_toEndOf="parent"
