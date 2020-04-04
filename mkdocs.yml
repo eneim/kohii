@@ -42,7 +42,15 @@ nav:
   - 'Using Kohii':
       - 'Getting start': usage/start.md
       - 'Basic usages': usage/basic.md
-      - 'Advance usages': usage/advance.md
+      - 'Advance usages':
+          - 'Advance Kohii': usage/advance.md
+          - 'Using Builder': usage/advance/builder.md
+          - 'Using unique tag': usage/advance/unique-tag.md
+          - 'Show/Hide thumbnail': usage/advance/thumbnail.md
+          - 'Switching renderers': usage/advance/switch-renderer.md
+          - 'Reusing renderer': usage/advance/reuse-renderer-instance.md
+          - 'Using MemoryMode': usage/advance/memory-mode.md
+          - 'Multiple playbacks': usage/advance/multiple-playbacks.md
       - 'Demo app': usage/demos.md
   - 'Extending Kohii':
       - 'Components': customize/terms.md
