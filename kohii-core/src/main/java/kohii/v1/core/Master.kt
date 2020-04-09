@@ -135,14 +135,12 @@ class Master private constructor(context: Context) : PlayableManager {
   internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
-  // We want to keep the map of manual Playables even if the Activity is destroyed and recreated.
-  internal val plannedManualPlayables by lazy(NONE) { arraySetOf<Any /* Playable tag */>() }
   // TODO when to remove entries of this map?
-  internal val playablesStartedByClient by lazy(NONE) { arraySetOf<Any /* Playable tag */>() }
+  internal val manuallyStartedPlayables = arraySetOf<Any /* Playable tag */>()
+
   // TODO when to remove entries of this map?
-  internal val playablesPendingStates by lazy(NONE) {
-    arrayMapOf<Any /* Playable tag */, PendingState>()
-  }
+  internal val playablesPendingActions = arrayMapOf<Any /* Playable tag */, PlaybackAction>()
+
   // TODO design a dedicated mechanism for this store, considering paging to save in-memory space.
   // TODO when to remove entries of this map?
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
@@ -307,8 +305,8 @@ class Master private constructor(context: Context) : PlayableManager {
       // previous mapped Playable will be torn down with `clearState` set to true. If we remove
       // the PlaybackInfo from playbackInfoStore, it will be reset on the rebind. Let's not do it.
       // playbackInfoStore.remove(playable.tag)
-      playablesStartedByClient.remove(playable.tag)
-      playablesPendingStates.remove(playable.tag)
+      manuallyStartedPlayables.remove(playable.tag)
+      playablesPendingActions.remove(playable.tag)
     }
 
     if (playables.isEmpty()) cleanUp()
@@ -469,12 +467,13 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
   internal fun play(playable: Playable) {
-    // val controller = playable.playback?.config?.controller
     val tag = playable.tag
-    if (/* controller != null && */ plannedManualPlayables.contains(tag)) {
+    if (tag == NO_TAG) return
+    val controller = playable.playback?.config?.controller
+    if (controller != null) {
       requireNotNull(playable.playback).also {
-        /* if (!controller.kohiiCanPause()) */ playablesStartedByClient.add(tag)
-        playablesPendingStates[tag] = Common.PENDING_PLAY
+        /* if (!controller.kohiiCanPause()) */ manuallyStartedPlayables.add(tag)
+        playablesPendingActions[tag] = Common.PLAY
         it.manager.refresh()
       }
     }
@@ -482,11 +481,12 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // Must be a request to pause from Client. This method will set necessary flags and refresh all.
   internal fun pause(playable: Playable) {
-    // val controller = playable.playback?.config?.controller
     val tag = playable.tag
-    if (/* controller != null */ plannedManualPlayables.contains(tag)) {
-      playablesPendingStates[tag] = Common.PENDING_PAUSE
-      playablesStartedByClient.remove(tag)
+    if (tag == NO_TAG) return
+    val controller = playable.playback?.config?.controller
+    if (controller != null) {
+      playablesPendingActions[tag] = Common.PAUSE
+      manuallyStartedPlayables.remove(tag)
       requireNotNull(playable.playback).manager.refresh()
     }
   }

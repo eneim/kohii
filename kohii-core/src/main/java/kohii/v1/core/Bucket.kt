@@ -244,7 +244,7 @@ abstract class Bucket constructor(
     val manualCandidate = with(grouped.getValue(true)) {
       val started = find {
         manager.master
-            .playablesStartedByClient
+            .manuallyStartedPlayables
             .contains(it.tag)
       }
       return@with listOfNotNull(started ?: this@with.firstOrNull())

@@ -34,8 +34,8 @@ object Common {
   const val STATE_READY = 3 // Player.STATE_READY
   const val STATE_ENDED = 4 // Player.STATE_ENDED
 
-  internal val PENDING_PLAY = PendingState(true)
-  internal val PENDING_PAUSE = PendingState(false)
+  internal val PLAY = PlaybackAction(true)
+  internal val PAUSE = PlaybackAction(false)
 
   // ExoPlayer's doesn't catch a RuntimeException and crash if Device has too many App installed.
   @RestrictTo(LIBRARY_GROUP)
