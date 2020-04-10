@@ -51,29 +51,22 @@ abstract class Playback(
     @Suppress("unused")
     const val DELAY_INFINITE = -1L
 
-    internal val CENTER_X: Comparator<Token> by lazy(NONE) {
-      Comparator<Token> { o1, o2 ->
-        compareValues(o1.containerRect.centerX(), o2.containerRect.centerX())
-      }
+    internal val CENTER_X: Comparator<Token> = Comparator { o1, o2 ->
+      compareValues(o1.containerRect.centerX(), o2.containerRect.centerX())
     }
 
-    internal val CENTER_Y: Comparator<Token> by lazy(NONE) {
-      Comparator<Token> { o1, o2 ->
-        compareValues(o1.containerRect.centerY(), o2.containerRect.centerY())
-      }
+    internal val CENTER_Y: Comparator<Token> = Comparator { o1, o2 ->
+      compareValues(o1.containerRect.centerY(), o2.containerRect.centerY())
     }
 
-    internal val VERTICAL_COMPARATOR by lazy(NONE) {
+    internal val VERTICAL_COMPARATOR =
       Comparator<Playback> { o1, o2 -> o1.compareWith(o2, VERTICAL) }
-    }
 
-    internal val HORIZONTAL_COMPARATOR by lazy(NONE) {
+    internal val HORIZONTAL_COMPARATOR =
       Comparator<Playback> { o1, o2 -> o1.compareWith(o2, HORIZONTAL) }
-    }
 
-    internal val BOTH_AXIS_COMPARATOR by lazy(NONE) {
+    internal val BOTH_AXIS_COMPARATOR =
       Comparator<Playback> { o1, o2 -> o1.compareWith(o2, BOTH_AXIS) }
-    }
 
     private const val STATE_CREATED = -1
     private const val STATE_REMOVED = 0
@@ -88,7 +81,9 @@ abstract class Playback(
     private val threshold: Float = 0.65F,
     @FloatRange(from = -1.0, to = 1.0)
     val areaOffset: Float, // -1 ~ < 0 : inactive or detached, 0 ~ 1: active
-    val containerRect: Rect // Relative Rect to its Bucket's root View.
+    val containerRect: Rect, // Relative Rect to its Bucket's root View.
+    val containerWidth: Int,
+    val containerHeight: Int
   ) {
 
     fun shouldPrepare(): Boolean {
@@ -117,18 +112,18 @@ abstract class Playback(
 
   protected open fun updateToken(): Token {
     "Playback#updateToken $this".logDebug()
-    val containerRect = Rect()
-    if (!lifecycleState.isAtLeast(STARTED)) return Token(
-        config.threshold, -1F, containerRect
-    )
-    if (!ViewCompat.isAttachedToWindow(container)) {
-      return Token(config.threshold, -1F, containerRect)
+    tmpRect.setEmpty()
+    if (!lifecycleState.isAtLeast(STARTED)) {
+      return Token(config.threshold, -1F, tmpRect, container.width, container.height)
     }
 
-    val visible = container.getGlobalVisibleRect(containerRect)
-    if (!visible) return Token(
-        config.threshold, -1F, containerRect
-    )
+    if (!ViewCompat.isAttachedToWindow(container)) {
+      return Token(config.threshold, -1F, tmpRect, container.width, container.height)
+    }
+
+    if (!container.getGlobalVisibleRect(tmpRect)) {
+      return Token(config.threshold, -1F, tmpRect, container.width, container.height)
+    }
 
     val drawArea = with(Rect()) {
       container.getDrawingRect(this)
@@ -139,15 +134,15 @@ abstract class Playback(
     }
 
     val offset: Float =
-      if (drawArea > 0)
-        (containerRect.width() * containerRect.height()) / drawArea.toFloat()
-      else
-        0F
-    return Token(config.threshold, offset, containerRect)
+      if (drawArea > 0) (tmpRect.width() * tmpRect.height()) / drawArea.toFloat()
+      else 0F
+    return Token(config.threshold, offset, tmpRect, container.width, container.height)
   }
 
+  private val tmpRect = Rect()
   private val callbacks = ArrayDeque<Callback>()
   private val listeners = ArrayDeque<StateListener>()
+
   private var artworkHintListener: ArtworkHintListener? = null
 
   internal open fun acquireRenderer(): Any? {
@@ -264,7 +259,7 @@ abstract class Playback(
 
   // Will be updated everytime 'onRefresh' is called.
   private var playbackToken: Token =
-    Token(config.threshold, -1F, Rect())
+    Token(config.threshold, -1F, Rect(), 0, 0)
 
   internal val token: Token
     get() = playbackToken
