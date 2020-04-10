@@ -643,6 +643,7 @@ class Master private constructor(context: Context) : PlayableManager {
           repeatMode = options.repeatMode,
           controller = options.controller,
           artworkHintListener = options.artworkHintListener,
+          tokenUpdateListener = options.tokenUpdateListener,
           callbacks = options.callbacks
       )
 

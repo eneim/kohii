@@ -86,12 +86,16 @@ abstract class Playback(
     val containerHeight: Int
   ) {
 
-    fun shouldPrepare(): Boolean {
+    internal fun shouldPrepare(): Boolean {
       return areaOffset >= 0
     }
 
-    fun shouldPlay(): Boolean {
+    internal fun shouldPlay(): Boolean {
       return areaOffset >= threshold
+    }
+
+    override fun toString(): String {
+      return "Token(offset=$areaOffset, rect=$containerRect, width=$containerWidth, height=$containerHeight)"
     }
   }
 
@@ -103,6 +107,7 @@ abstract class Playback(
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val controller: Controller? = null,
     val artworkHintListener: ArtworkHintListener? = null,
+    val tokenUpdateListener: TokenUpdateListener? = null,
     val callbacks: Set<Callback> = emptySet()
   )
 
@@ -144,6 +149,7 @@ abstract class Playback(
   private val listeners = ArrayDeque<StateListener>()
 
   private var artworkHintListener: ArtworkHintListener? = null
+  private var tokenUpdateListener: TokenUpdateListener? = null
 
   internal open fun acquireRenderer(): Any? {
     val playable = this.playable
@@ -195,6 +201,7 @@ abstract class Playback(
     playbackState = STATE_ADDED
     callbacks.forEach { it.onAdded(this) }
     artworkHintListener = config.artworkHintListener
+    tokenUpdateListener = config.tokenUpdateListener
     bucket.addContainer(this.container)
   }
 
@@ -202,6 +209,7 @@ abstract class Playback(
     "Playback#onRemoved $this".logDebug()
     playbackState = STATE_REMOVED
     bucket.removeContainer(this.container)
+    tokenUpdateListener = null
     artworkHintListener = null
     callbacks.onEach { it.onRemoved(this) }
         .clear()
@@ -267,6 +275,7 @@ abstract class Playback(
   internal fun onRefresh() {
     "Playback#onRefresh $this".logDebug()
     playbackToken = updateToken()
+    tokenUpdateListener?.onTokenUpdate(this, token)
     "Playback#onRefresh token updated -> $this".logDebug()
   }
 
@@ -535,5 +544,10 @@ abstract class Playback(
       position: Long,
       state: Int
     )
+  }
+
+  interface TokenUpdateListener {
+
+    fun onTokenUpdate(playback: Playback, token: Token)
   }
 }

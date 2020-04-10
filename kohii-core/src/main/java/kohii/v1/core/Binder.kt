@@ -22,6 +22,7 @@ import kohii.v1.core.Playable.Config
 import kohii.v1.core.Playback.ArtworkHintListener
 import kohii.v1.core.Playback.Callback
 import kohii.v1.core.Playback.Controller
+import kohii.v1.core.Playback.TokenUpdateListener
 import kohii.v1.media.Media
 
 class Binder(
@@ -37,6 +38,7 @@ class Binder(
     var repeatMode: Int = Common.REPEAT_MODE_OFF
     var controller: Controller? = null
     var artworkHintListener: ArtworkHintListener? = null
+    var tokenUpdateListener: TokenUpdateListener? = null
     val callbacks = mutableSetOf<Callback>()
   }
 
