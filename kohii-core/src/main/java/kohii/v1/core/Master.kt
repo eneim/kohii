@@ -160,6 +160,7 @@ class Master private constructor(context: Context) : PlayableManager {
         context: Context?,
         intent: Intent?
       ) {
+        if (isInitialStickyBroadcast) return
         if (context != null && intent != null) {
           if (intent.action == Intent.ACTION_SCREEN_OFF) {
             Master[context].pause(Scope.GLOBAL)
@@ -348,6 +349,15 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
+  // [Draft] return true if this [Master] wants to handle this step by itself, false otherwise.
+  internal fun onPlaybackInActive(playable: Playable, playback: Playback): Boolean {
+    "Master#onPlaybackInActive: $playback".logDebug()
+    return playback.tag != NO_TAG
+        && playback.config.controller != null
+        && !playback.config.controller.kohiiCanPause()
+        && playable.isPlaying()
+  }
+
   internal fun onPlaybackDetached(playback: Playback) {
     "Master#onPlaybackDetached: $playback".logDebug()
     playbackInfoStore.remove(playback)
@@ -376,9 +386,7 @@ class Master private constructor(context: Context) : PlayableManager {
     if (groups.remove(group)) {
       requests.filter { it.key.context.findActivity() === group.activity }
           .forEach {
-            dispatcher.removeMessages(
-                MSG_BIND_PLAYABLE, it.key
-            )
+            dispatcher.removeMessages(MSG_BIND_PLAYABLE, it.key)
             it.value.playable.playback = null
             requests.remove(it.key)?.onRemoved()
           }
@@ -458,9 +466,7 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   internal fun releasePlayable(playable: Playable) {
-    dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable
-    )
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
         .sendToTarget()
   }
@@ -634,7 +640,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
     requireNotNull(bucket) { "No Manager and Bucket available for $container" }
 
-    val createNew by lazy(NONE) {
+    val newPlayback by lazy(NONE) {
       val config = Config(
           tag = options.tag,
           delay = options.delay,
@@ -673,57 +679,57 @@ class Master private constructor(context: Context) : PlayableManager {
       }
     }
 
-    val sameContainer = bucket.manager.playbacks[container]
-    val samePlayable = playable.playback
+    val playbackForSameContainer = bucket.manager.playbacks[container]
+    val playbackForSamePlayable = playable.playback
 
     val resolvedPlayback = //
-      if (sameContainer == null) { // Bind to new Container
-        if (samePlayable == null) {
+      if (playbackForSameContainer == null) { // Bind to new Container
+        if (playbackForSamePlayable == null) {
           // both sameContainer and samePlayable are null --> fresh binding
-          playable.playback = createNew
-          bucket.manager.addPlayback(createNew)
-          createNew
+          playable.playback = newPlayback
+          bucket.manager.addPlayback(newPlayback)
+          newPlayback
         } else {
           // samePlayable is not null --> a bound Playable to be rebound to other/new Container
           // Action: create new Playback for new Container, make the new binding and remove old binding of
           // the 'samePlayable' Playback
-          samePlayable.manager.removePlayback(samePlayable)
+          playbackForSamePlayable.manager.removePlayback(playbackForSamePlayable)
           dispatcher.removeMessages(
               MSG_DESTROY_PLAYABLE, playable
           )
-          playable.playback = createNew
-          bucket.manager.addPlayback(createNew)
-          createNew
+          playable.playback = newPlayback
+          bucket.manager.addPlayback(newPlayback)
+          newPlayback
         }
       } else {
-        if (samePlayable == null) {
+        if (playbackForSamePlayable == null) {
           // sameContainer is not null but samePlayable is null --> new Playable is bound to a bound Container
           // Action: create new Playback for current Container, make the new binding and remove old binding of
           // the 'sameContainer'
-          sameContainer.manager.removePlayback(sameContainer)
+          playbackForSameContainer.manager.removePlayback(playbackForSameContainer)
           dispatcher.removeMessages(
               MSG_DESTROY_PLAYABLE, playable
           )
-          playable.playback = createNew
-          bucket.manager.addPlayback(createNew)
-          createNew
+          playable.playback = newPlayback
+          bucket.manager.addPlayback(newPlayback)
+          newPlayback
         } else {
           // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
-          if (sameContainer === samePlayable) {
+          if (playbackForSameContainer === playbackForSamePlayable) {
             // Nothing to do
-            samePlayable
+            playbackForSamePlayable
           } else {
             // Scenario: rebind a bound Playable from one Container to other Container that is being bound.
             // Action: remove both 'sameContainer' and 'samePlayable', create new one for the Container.
             // to the Container
-            sameContainer.manager.removePlayback(sameContainer)
-            samePlayable.manager.removePlayback(samePlayable)
+            playbackForSameContainer.manager.removePlayback(playbackForSameContainer)
+            playbackForSamePlayable.manager.removePlayback(playbackForSamePlayable)
             dispatcher.removeMessages(
                 MSG_DESTROY_PLAYABLE, playable
             )
-            playable.playback = createNew
-            bucket.manager.addPlayback(createNew)
-            createNew
+            playable.playback = newPlayback
+            bucket.manager.addPlayback(newPlayback)
+            newPlayback
           }
         }
       }

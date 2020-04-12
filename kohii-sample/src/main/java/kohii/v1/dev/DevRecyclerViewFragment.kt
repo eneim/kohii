@@ -33,14 +33,15 @@ import kohii.v1.sample.databinding.ActivityDevRecyclerviewBinding
 
 class DevRecyclerViewFragment : BaseFragment() {
 
-  lateinit var binding: ActivityDevRecyclerviewBinding
+  private var _binding: ActivityDevRecyclerviewBinding? = null
+  private val binding: ActivityDevRecyclerviewBinding get() = requireNotNull(_binding)
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    binding = ActivityDevRecyclerviewBinding.inflate(inflater, container, false)
+    _binding = ActivityDevRecyclerviewBinding.inflate(inflater, container, false)
     return binding.root
   }
 
@@ -54,6 +55,11 @@ class DevRecyclerViewFragment : BaseFragment() {
         .addBucket(binding.recyclerView)
 
     binding.recyclerView.adapter = DummyAdapter(kohii, manager)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    _binding = null
   }
 }
 
@@ -88,7 +94,7 @@ internal class DummyAdapter(
         controller = DefaultControlDispatcher(
             manager, holder.playerView,
             kohiiCanStart = false,
-            kohiiCanPause = true
+            kohiiCanPause = false
         )
       }
     }

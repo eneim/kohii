@@ -166,7 +166,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     "Playable#onInActive $playback, $this".logInfo()
     require(playback === this.playback)
     val configChange = playback.manager.isChangingConfigurations()
-    if (!configChange) {
+    if (!configChange && !master.onPlaybackInActive(this, playback)) {
       master.trySavePlaybackInfo(this)
       master.releasePlayable(this)
     }
