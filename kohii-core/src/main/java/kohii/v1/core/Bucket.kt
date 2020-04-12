@@ -133,15 +133,15 @@ abstract class Bucket constructor(
   }
 
   @CallSuper
-  override fun onViewDetachedFromWindow(v: View?) {
-    "Bucket#onViewDetachedFromWindow: $v".logDebug()
-    manager.onContainerDetachedFromWindow(v)
-  }
-
-  @CallSuper
   override fun onViewAttachedToWindow(v: View?) {
     "Bucket#onViewAttachedToWindow: $v".logDebug()
     manager.onContainerAttachedToWindow(v)
+  }
+
+  @CallSuper
+  override fun onViewDetachedFromWindow(v: View?) {
+    "Bucket#onViewDetachedFromWindow: $v".logDebug()
+    manager.onContainerDetachedFromWindow(v)
   }
 
   @CallSuper
@@ -265,7 +265,7 @@ abstract class Bucket constructor(
     return true
   }
 
-  private val lazyHashCode by lazy(NONE) {
+  private val lazyHashCode = run {
     val result = manager.hashCode()
     31 * result + root.hashCode()
   }
