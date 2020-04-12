@@ -619,65 +619,19 @@ class Master private constructor(context: Context) : PlayableManager {
     groups.forEach { engine.inject(it) }
   }
 
-  internal fun onBind(
+  internal inline fun onBind(
     playable: Playable,
     tag: Any,
+    bucket: Bucket,
     container: ViewGroup,
-    options: Options,
-    callback: ((Playback) -> Unit)? = null
+    noinline callback: ((Playback) -> Unit)? = null,
+    crossinline createNewPlayback: () -> Playback
   ) {
-    // Cancel any pending release/destroy request. This Playable deserves to live a bit longer.
-    dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable
-    )
-    dispatcher.removeMessages(
-        MSG_DESTROY_PLAYABLE, playable
-    )
+    // Cancel any pending release/destroy request. This Playable needs to live a bit longer.
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
+    dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+
     playables[playable] = tag
-    val bucket = groups.asSequence()
-        .mapNotNull { it.findBucketForContainer(container) }
-        .firstOrNull()
-
-    requireNotNull(bucket) { "No Manager and Bucket available for $container" }
-
-    val newPlayback by lazy(NONE) {
-      val config = Config(
-          tag = options.tag,
-          delay = options.delay,
-          threshold = options.threshold,
-          preload = options.preload,
-          repeatMode = options.repeatMode,
-          controller = options.controller,
-          artworkHintListener = options.artworkHintListener,
-          tokenUpdateListener = options.tokenUpdateListener,
-          callbacks = options.callbacks
-      )
-
-      when {
-        // Scenario: Playable accepts renderer of type PlayerView, and
-        // the container is an instance of PlayerView or its subtype.
-        playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
-          StaticViewRendererPlayback(
-              bucket.manager, bucket, container, config
-          )
-        }
-        View::class.java.isAssignableFrom(playable.config.rendererType) -> {
-          DynamicViewRendererPlayback(
-              bucket.manager, bucket, container, config
-          )
-        }
-        Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
-          DynamicFragmentRendererPlayback(
-              bucket.manager, bucket, container, config
-          )
-        }
-        else -> {
-          throw IllegalArgumentException(
-              "Unsupported Renderer type: ${playable.config.rendererType}"
-          )
-        }
-      }
-    }
 
     val playbackForSameContainer = bucket.manager.playbacks[container]
     val playbackForSamePlayable = playable.playback
@@ -686,6 +640,7 @@ class Master private constructor(context: Context) : PlayableManager {
       if (playbackForSameContainer == null) { // Bind to new Container
         if (playbackForSamePlayable == null) {
           // both sameContainer and samePlayable are null --> fresh binding
+          val newPlayback = createNewPlayback()
           playable.playback = newPlayback
           bucket.manager.addPlayback(newPlayback)
           newPlayback
@@ -694,9 +649,8 @@ class Master private constructor(context: Context) : PlayableManager {
           // Action: create new Playback for new Container, make the new binding and remove old binding of
           // the 'samePlayable' Playback
           playbackForSamePlayable.manager.removePlayback(playbackForSamePlayable)
-          dispatcher.removeMessages(
-              MSG_DESTROY_PLAYABLE, playable
-          )
+          dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+          val newPlayback = createNewPlayback()
           playable.playback = newPlayback
           bucket.manager.addPlayback(newPlayback)
           newPlayback
@@ -707,9 +661,8 @@ class Master private constructor(context: Context) : PlayableManager {
           // Action: create new Playback for current Container, make the new binding and remove old binding of
           // the 'sameContainer'
           playbackForSameContainer.manager.removePlayback(playbackForSameContainer)
-          dispatcher.removeMessages(
-              MSG_DESTROY_PLAYABLE, playable
-          )
+          dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+          val newPlayback = createNewPlayback()
           playable.playback = newPlayback
           bucket.manager.addPlayback(newPlayback)
           newPlayback
@@ -724,9 +677,8 @@ class Master private constructor(context: Context) : PlayableManager {
             // to the Container
             playbackForSameContainer.manager.removePlayback(playbackForSameContainer)
             playbackForSamePlayable.manager.removePlayback(playbackForSamePlayable)
-            dispatcher.removeMessages(
-                MSG_DESTROY_PLAYABLE, playable
-            )
+            dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+            val newPlayback = createNewPlayback()
             playable.playback = newPlayback
             bucket.manager.addPlayback(newPlayback)
             newPlayback
@@ -751,7 +703,44 @@ class Master private constructor(context: Context) : PlayableManager {
     internal var bucket: Bucket? = null
 
     internal fun onBind() {
-      master.onBind(playable, tag, container, options, callback)
+      val bucket = master.groups.asSequence()
+          .mapNotNull { it.findBucketForContainer(container) }
+          .firstOrNull()
+
+      requireNotNull(bucket) { "No Manager and Bucket available for $container" }
+
+      master.onBind(playable, tag, bucket, container, callback, createNewPlayback@{
+        val config = Config(
+            tag = options.tag,
+            delay = options.delay,
+            threshold = options.threshold,
+            preload = options.preload,
+            repeatMode = options.repeatMode,
+            controller = options.controller,
+            artworkHintListener = options.artworkHintListener,
+            tokenUpdateListener = options.tokenUpdateListener,
+            callbacks = options.callbacks
+        )
+
+        return@createNewPlayback when {
+          // Scenario: Playable accepts renderer of type PlayerView, and
+          // the container is an instance of PlayerView or its subtype.
+          playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
+            StaticViewRendererPlayback(bucket.manager, bucket, container, config)
+          }
+          View::class.java.isAssignableFrom(playable.config.rendererType) -> {
+            DynamicViewRendererPlayback(bucket.manager, bucket, container, config)
+          }
+          Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
+            DynamicFragmentRendererPlayback(bucket.manager, bucket, container, config)
+          }
+          else -> {
+            throw IllegalArgumentException(
+                "Unsupported Renderer type: ${playable.config.rendererType}"
+            )
+          }
+        }
+      })
       "Request bound: $tag, $container, $playable".logInfo()
     }
 
