@@ -265,12 +265,12 @@ abstract class Bucket constructor(
     return true
   }
 
-  private val lazyHashCode = run {
-    val result = manager.hashCode()
-    31 * result + root.hashCode()
-  }
+  private var lazyHashCode: Int = -1
 
   override fun hashCode(): Int {
+    if (lazyHashCode == -1) {
+      lazyHashCode = manager.hashCode() * 31 + root.hashCode()
+    }
     return lazyHashCode
   }
 }
