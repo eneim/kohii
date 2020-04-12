@@ -44,8 +44,7 @@ abstract class Playback(
   internal val bucket: Bucket,
   val container: ViewGroup,
   val config: Config = Config()
-) : PlayerEventListener,
-    ErrorListener {
+) : PlayableContainer, PlayerEventListener, ErrorListener {
 
   companion object {
     @Suppress("unused")
@@ -95,7 +94,7 @@ abstract class Playback(
     }
 
     override fun toString(): String {
-      return "Token(offset=$areaOffset, rect=$containerRect, width=$containerWidth, height=$containerHeight)"
+      return "Token(a=$areaOffset, r=$containerRect, w=$containerWidth, h=$containerHeight)"
     }
   }
 
@@ -112,7 +111,7 @@ abstract class Playback(
   )
 
   override fun toString(): String {
-    return "${super.toString()}, [$playable], [${token.areaOffset}, ${token.containerRect}]"
+    return "${super.toString()}, [$playable], [${token}]"
   }
 
   protected open fun updateToken(): Token {

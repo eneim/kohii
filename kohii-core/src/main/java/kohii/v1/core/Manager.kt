@@ -35,6 +35,7 @@ import kohii.v1.core.Scope.GROUP
 import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.core.Strategy.SINGLE_PLAYER
+import kohii.v1.logDebug
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
@@ -191,6 +192,7 @@ class Manager(
 
   internal fun onContainerAttachedToWindow(container: Any?) {
     val playback = playbacks[container]
+    "Manager#onContainerAttachedToWindow: $playback".logDebug()
     if (playback != null) {
       onPlaybackAttached(playback)
       onPlaybackActive(playback)
@@ -201,6 +203,7 @@ class Manager(
   internal fun onContainerDetachedFromWindow(container: Any?) {
     // A detached Container can be re-attached later (in case of RecyclerView)
     val playback = playbacks[container]
+    "Manager#onContainerDetachedFromWindow: $playback".logDebug()
     if (playback != null) {
       if (playback.isAttached) {
         if (playback.isActive) onPlaybackInActive(playback)
