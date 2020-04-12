@@ -38,6 +38,7 @@ import kohii.v1.internal.ViewGroupBucket
 import kohii.v1.internal.ViewGroupV23Bucket
 import kohii.v1.internal.ViewPager2Bucket
 import kohii.v1.internal.ViewPagerBucket
+import kohii.v1.logDebug
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates.observable
@@ -133,11 +134,13 @@ abstract class Bucket constructor(
 
   @CallSuper
   override fun onViewDetachedFromWindow(v: View?) {
+    "Bucket#onViewDetachedFromWindow: $v".logDebug()
     manager.onContainerDetachedFromWindow(v)
   }
 
   @CallSuper
   override fun onViewAttachedToWindow(v: View?) {
+    "Bucket#onViewAttachedToWindow: $v".logDebug()
     manager.onContainerAttachedToWindow(v)
   }
 
