@@ -622,7 +622,7 @@ class Master private constructor(context: Context) : PlayableManager {
   internal inline fun onBind(
     playable: Playable,
     tag: Any,
-    bucket: Bucket,
+    manager: Manager,
     container: ViewGroup,
     noinline callback: ((Playback) -> Unit)? = null,
     crossinline createNewPlayback: () -> Playback
@@ -633,7 +633,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
     playables[playable] = tag
 
-    val playbackForSameContainer = bucket.manager.playbacks[container]
+    val playbackForSameContainer = manager.playbacks[container]
     val playbackForSamePlayable = playable.playback
 
     val resolvedPlayback = //
@@ -642,7 +642,7 @@ class Master private constructor(context: Context) : PlayableManager {
           // both sameContainer and samePlayable are null --> fresh binding
           val newPlayback = createNewPlayback()
           playable.playback = newPlayback
-          bucket.manager.addPlayback(newPlayback)
+          manager.addPlayback(newPlayback)
           newPlayback
         } else {
           // samePlayable is not null --> a bound Playable to be rebound to other/new Container
@@ -652,7 +652,7 @@ class Master private constructor(context: Context) : PlayableManager {
           dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
           val newPlayback = createNewPlayback()
           playable.playback = newPlayback
-          bucket.manager.addPlayback(newPlayback)
+          manager.addPlayback(newPlayback)
           newPlayback
         }
       } else {
@@ -664,7 +664,7 @@ class Master private constructor(context: Context) : PlayableManager {
           dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
           val newPlayback = createNewPlayback()
           playable.playback = newPlayback
-          bucket.manager.addPlayback(newPlayback)
+          manager.addPlayback(newPlayback)
           newPlayback
         } else {
           // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
@@ -680,7 +680,7 @@ class Master private constructor(context: Context) : PlayableManager {
             dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
             val newPlayback = createNewPlayback()
             playable.playback = newPlayback
-            bucket.manager.addPlayback(newPlayback)
+            manager.addPlayback(newPlayback)
             newPlayback
           }
         }
@@ -709,7 +709,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
       requireNotNull(bucket) { "No Manager and Bucket available for $container" }
 
-      master.onBind(playable, tag, bucket, container, callback, createNewPlayback@{
+      master.onBind(playable, tag, bucket.manager, container, callback, createNewPlayback@{
         val config = Config(
             tag = options.tag,
             delay = options.delay,
