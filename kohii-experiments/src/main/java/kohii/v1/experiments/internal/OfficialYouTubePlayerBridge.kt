@@ -153,6 +153,7 @@ internal class OfficialYouTubePlayerBridge(
   }
 
   override fun play() {
+    super.play()
     if (videoSize == VideoSize.NONE) return
     if (!this.isPlaying() || _loadedVideoId != media.uri.toString()) {
       this._playWhenReady = true
@@ -165,6 +166,7 @@ internal class OfficialYouTubePlayerBridge(
   }
 
   override fun pause() {
+    super.pause()
     this._playWhenReady = false
     updatePlaybackInfo()
     try {

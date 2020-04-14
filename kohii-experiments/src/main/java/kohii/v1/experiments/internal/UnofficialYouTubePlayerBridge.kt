@@ -159,6 +159,7 @@ internal class UnofficialYouTubePlayerBridge(
   }
 
   override fun play() {
+    super.play()
     if (videoSize == VideoSize.NONE) return
     val videoId = media.uri.toString()
     if (tracker.state != PLAYING || tracker.videoId != videoId) {
@@ -183,6 +184,7 @@ internal class UnofficialYouTubePlayerBridge(
   }
 
   override fun pause() {
+    super.pause()
     updatePlaybackInfo(player)
     player?.pause()
   }

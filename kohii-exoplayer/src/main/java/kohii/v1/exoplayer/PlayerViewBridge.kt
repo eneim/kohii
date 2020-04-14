@@ -153,13 +153,14 @@ class PlayerViewBridge(
   }
 
   override fun play() {
-    "Bridge#play(): $this".logDebug()
+    super.play()
     if (videoSize != VideoSize.NONE) {
       requireNotNull(player).playWhenReady = true
     }
   }
 
   override fun pause() {
+    super.pause()
     if (sourcePrepared) player?.playWhenReady = false
   }
 
