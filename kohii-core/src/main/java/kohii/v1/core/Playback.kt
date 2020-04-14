@@ -37,7 +37,6 @@ import kohii.v1.media.VolumeInfo
 import java.util.ArrayDeque
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
-import kotlin.properties.Delegates
 
 abstract class Playback(
   internal val manager: Manager,
@@ -291,21 +290,25 @@ abstract class Playback(
   // The smaller, the closer it is to be selected to Play.
   // Consider to prepare the underline Playable for low enough distance, and release it otherwise.
   // This value is updated by Group. In active Playback always has Int.MAX_VALUE distance.
-  internal var distanceToPlay: Int by Delegates.observable(
-      Int.MAX_VALUE,
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        "Playback#distanceToPlay $from --> $to, $this".logDebug()
-        playable?.onDistanceChanged(this, from, to)
-      })
+  internal var distanceToPlay: Int = Int.MAX_VALUE
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      "Playback#distanceToPlay $from --> $to, $this".logDebug()
+      if (from == to) return
+      playable?.onDistanceChanged(this, from, to)
+    }
 
-  internal var playbackVolumeInfo: VolumeInfo by Delegates.observable(
-      bucket.effectiveVolumeInfo(bucket.volumeInfo)
-  ) { _, from, to ->
-    "Playback#volumeInfo $from --> $to, $this".logDebug()
-    playable?.onVolumeInfoChanged(this, from, to)
-  }
-
+  internal var playbackVolumeInfo: VolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      "Playback#volumeInfo $from --> $to, $this".logDebug()
+      playable?.onVolumeInfoChanged(this, from, to)
+    }
+  
   init {
     playbackVolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
   }
