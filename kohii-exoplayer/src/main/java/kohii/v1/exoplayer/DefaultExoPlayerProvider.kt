@@ -53,9 +53,7 @@ class DefaultExoPlayerProvider @JvmOverloads constructor(
   }
 
   // Cache...
-  private val plainPlayerPool = Pools.SimplePool<Player>(
-      MAX_POOL_SIZE
-  )
+  private val plainPlayerPool = Pools.SimplePool<Player>(MAX_POOL_SIZE)
 
   override fun acquirePlayer(media: Media): Player {
     val result = plainPlayerPool.acquire() ?: KohiiExoPlayer(
@@ -67,6 +65,7 @@ class DefaultExoPlayerProvider @JvmOverloads constructor(
         Util.getLooper()
     )
 
+    result.playWhenReady = false
     (result as? SimpleExoPlayer)?.also { it.setAudioAttributes(it.audioAttributes, false) }
     return result
   }

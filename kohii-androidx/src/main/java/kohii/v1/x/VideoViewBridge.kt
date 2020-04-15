@@ -86,10 +86,12 @@ class VideoViewBridge(
   }
 
   override fun play() {
+    super.play()
     requireNotNull(player).play()
   }
 
   override fun pause() {
+    super.pause()
     player?.pause()
   }
 

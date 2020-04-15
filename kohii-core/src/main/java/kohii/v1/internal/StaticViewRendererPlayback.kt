@@ -37,8 +37,8 @@ internal class StaticViewRendererPlayback(
   }
 
   override fun onInActive() {
-    super.onInActive()
     playable?.considerReleaseRenderer(this)
+    super.onInActive()
   }
 
   override fun acquireRenderer(): Any? {

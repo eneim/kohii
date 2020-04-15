@@ -58,6 +58,7 @@ import kohii.v1.logDebug
 import kohii.v1.logInfo
 import kohii.v1.logWarn
 import kohii.v1.media.PlaybackInfo
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
@@ -135,14 +136,18 @@ class Master private constructor(context: Context) : PlayableManager {
   internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
-  // We want to keep the map of manual Playables even if the Activity is destroyed and recreated.
-  internal val plannedManualPlayables by lazy(NONE) { arraySetOf<Any /* Playable tag */>() }
+  // Memorize the tags which belongs to Playbacks that enable manual playbacks. On config change,
+  // we may not get the binding of these tags yet, but we may need to play them.
   // TODO when to remove entries of this map?
-  internal val playablesStartedByClient by lazy(NONE) { arraySetOf<Any /* Playable tag */>() }
+  internal val plannedManualPlayables = arraySetOf<Any /* Playable tag */>()
+
+  // Reference of the Playable started manually by the User. This Playable can be paused if
+  // the controller allows the library to pause it.
+  internal val manuallyStartedPlayable = AtomicReference<Playable>()
+
   // TODO when to remove entries of this map?
-  internal val playablesPendingStates by lazy(NONE) {
-    arrayMapOf<Any /* Playable tag */, PendingState>()
-  }
+  internal val playablesPendingActions = arrayMapOf<Any /* Playable tag */, PlaybackAction>()
+
   // TODO design a dedicated mechanism for this store, considering paging to save in-memory space.
   // TODO when to remove entries of this map?
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
@@ -162,6 +167,7 @@ class Master private constructor(context: Context) : PlayableManager {
         context: Context?,
         intent: Intent?
       ) {
+        if (isInitialStickyBroadcast) return
         if (context != null && intent != null) {
           if (intent.action == Intent.ACTION_SCREEN_OFF) {
             Master[context].pause(Scope.GLOBAL)
@@ -292,7 +298,7 @@ class Master private constructor(context: Context) : PlayableManager {
     clearState: Boolean
   ) {
     "Master#onTearDown: $playable, clear: $clearState".logDebug()
-    check(playable.manager == null) {
+    check(playable.manager == null || playable.manager === this) {
       "Teardown $playable, found manager: ${playable.manager}"
     }
     check(playable.playback == null) {
@@ -302,15 +308,9 @@ class Master private constructor(context: Context) : PlayableManager {
     trySavePlaybackInfo(playable)
     releasePlayable(playable)
     playables.remove(playable)
-    if (clearState) {
-      // [2020.03.28] Note: in RecyclerView, when a ViewHolder is reused for other Video, its
-      // previous mapped Playable will be torn down with `clearState` set to true. If we remove
-      // the PlaybackInfo from playbackInfoStore, it will be reset on the rebind. Let's not do it.
-      // playbackInfoStore.remove(playable.tag)
-      playablesStartedByClient.remove(playable.tag)
-      playablesPendingStates.remove(playable.tag)
+    if (playable === manuallyStartedPlayable.get()) {
+      manuallyStartedPlayable.set(null)
     }
-
     if (playables.isEmpty()) cleanUp()
   }
 
@@ -350,6 +350,12 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
+  // [Draft] return true if this [Master] wants to handle this step by itself, false otherwise.
+  internal fun onPlaybackInActive(playable: Playable, playback: Playback): Boolean {
+    "Master#onPlaybackInActive: $playback".logDebug()
+    return manuallyStartedPlayable.get() === playable && playable.isPlaying()
+  }
+
   internal fun onPlaybackDetached(playback: Playback) {
     "Master#onPlaybackDetached: $playback".logDebug()
     playbackInfoStore.remove(playback)
@@ -358,12 +364,18 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun cleanupPendingPlayables() {
     playables.filter { it.key.manager === this }
         .keys.toMutableList()
-        .onEach {
-          require(it.playback == null) {
-            "$it has manager: $this but found Playback: ${it.playback}"
+        .apply {
+          val manuallyStartedPlayable = manuallyStartedPlayable.get()
+          if (manuallyStartedPlayable != null && manuallyStartedPlayable.isPlaying()) {
+            minusAssign(manuallyStartedPlayable)
           }
-          it.manager = null
-          tearDown(it, true)
+        }
+        .onEach { playable ->
+          require(playable.playback == null) {
+            "$playable has manager: $this but found Playback: ${playable.playback}"
+          }
+          playable.manager = null
+          tearDown(playable, true)
         }
         .clear()
   }
@@ -378,15 +390,17 @@ class Master private constructor(context: Context) : PlayableManager {
     if (groups.remove(group)) {
       requests.filter { it.key.context.findActivity() === group.activity }
           .forEach {
-            dispatcher.removeMessages(
-                MSG_BIND_PLAYABLE, it.key
-            )
+            dispatcher.removeMessages(MSG_BIND_PLAYABLE, it.key)
             it.value.playable.playback = null
             requests.remove(it.key)?.onRemoved()
           }
     }
     if (groups.isEmpty()) {
       dispatcher.removeMessages(MSG_CLEANUP)
+      // The last activity is destroyed but not a config change.
+      if (!group.activity.isChangingConfigurations) {
+        manuallyStartedPlayable.get()?.manager = null
+      }
     }
   }
 
@@ -453,28 +467,26 @@ class Master private constructor(context: Context) : PlayableManager {
     playable: Playable,
     loadSource: Boolean = false
   ) {
-    dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable
-    )
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     playable.onPrepare(loadSource)
   }
 
   internal fun releasePlayable(playable: Playable) {
-    dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable
-    )
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
         .sendToTarget()
   }
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
   internal fun play(playable: Playable) {
-    // val controller = playable.playback?.config?.controller
     val tag = playable.tag
-    if (/* controller != null && */ plannedManualPlayables.contains(tag)) {
+    if (tag == NO_TAG) return
+    if (plannedManualPlayables.contains(tag)) {
       requireNotNull(playable.playback).also {
-        /* if (!controller.kohiiCanPause()) */ playablesStartedByClient.add(tag)
-        playablesPendingStates[tag] = Common.PENDING_PLAY
+        if (!requireNotNull(it.config.controller).kohiiCanPause()) {
+          manuallyStartedPlayable.set(playable)
+        }
+        playablesPendingActions[tag] = Common.PLAY
         it.manager.refresh()
       }
     }
@@ -482,11 +494,12 @@ class Master private constructor(context: Context) : PlayableManager {
 
   // Must be a request to pause from Client. This method will set necessary flags and refresh all.
   internal fun pause(playable: Playable) {
-    // val controller = playable.playback?.config?.controller
     val tag = playable.tag
-    if (/* controller != null */ plannedManualPlayables.contains(tag)) {
-      playablesPendingStates[tag] = Common.PENDING_PAUSE
-      playablesStartedByClient.remove(tag)
+    if (tag == NO_TAG) return
+    val controller = playable.playback?.config?.controller
+    if (controller != null) {
+      playablesPendingActions[tag] = Common.PAUSE
+      manuallyStartedPlayable.set(null)
       requireNotNull(playable.playback).manager.refresh()
     }
   }
@@ -613,116 +626,69 @@ class Master private constructor(context: Context) : PlayableManager {
     groups.forEach { engine.inject(it) }
   }
 
-  internal fun onBind(
+  internal inline fun onBind(
     playable: Playable,
     tag: Any,
+    manager: Manager,
     container: ViewGroup,
-    options: Options,
-    callback: ((Playback) -> Unit)? = null
+    noinline callback: ((Playback) -> Unit)? = null,
+    crossinline createNewPlayback: () -> Playback
   ) {
-    // Cancel any pending release/destroy request. This Playable deserves to live a bit longer.
-    dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable
-    )
-    dispatcher.removeMessages(
-        MSG_DESTROY_PLAYABLE, playable
-    )
+    // Cancel any pending release/destroy request. This Playable needs to live a bit longer.
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
+    dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+
     playables[playable] = tag
-    val bucket = groups.asSequence()
-        .mapNotNull { it.findBucketForContainer(container) }
-        .firstOrNull()
 
-    requireNotNull(bucket) { "No Manager and Bucket available for $container" }
-
-    val createNew by lazy(NONE) {
-      val config = Config(
-          tag = options.tag,
-          delay = options.delay,
-          threshold = options.threshold,
-          preload = options.preload,
-          repeatMode = options.repeatMode,
-          controller = options.controller,
-          artworkHintListener = options.artworkHintListener,
-          callbacks = options.callbacks
-      )
-
-      when {
-        // Scenario: Playable accepts renderer of type PlayerView, and
-        // the container is an instance of PlayerView or its subtype.
-        playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
-          StaticViewRendererPlayback(
-              bucket.manager, bucket, container, config
-          )
-        }
-        View::class.java.isAssignableFrom(playable.config.rendererType) -> {
-          DynamicViewRendererPlayback(
-              bucket.manager, bucket, container, config
-          )
-        }
-        Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
-          DynamicFragmentRendererPlayback(
-              bucket.manager, bucket, container, config
-          )
-        }
-        else -> {
-          throw IllegalArgumentException(
-              "Unsupported Renderer type: ${playable.config.rendererType}"
-          )
-        }
-      }
-    }
-
-    val sameContainer = bucket.manager.playbacks[container]
-    val samePlayable = playable.playback
+    val playbackForSameContainer = manager.playbacks[container]
+    val playbackForSamePlayable = playable.playback
 
     val resolvedPlayback = //
-      if (sameContainer == null) { // Bind to new Container
-        if (samePlayable == null) {
+      if (playbackForSameContainer == null) { // Bind to new Container
+        if (playbackForSamePlayable == null) {
           // both sameContainer and samePlayable are null --> fresh binding
-          playable.playback = createNew
-          bucket.manager.addPlayback(createNew)
-          createNew
+          val newPlayback = createNewPlayback()
+          playable.playback = newPlayback
+          manager.addPlayback(newPlayback)
+          newPlayback
         } else {
           // samePlayable is not null --> a bound Playable to be rebound to other/new Container
           // Action: create new Playback for new Container, make the new binding and remove old binding of
           // the 'samePlayable' Playback
-          samePlayable.manager.removePlayback(samePlayable)
-          dispatcher.removeMessages(
-              MSG_DESTROY_PLAYABLE, playable
-          )
-          playable.playback = createNew
-          bucket.manager.addPlayback(createNew)
-          createNew
+          playbackForSamePlayable.manager.removePlayback(playbackForSamePlayable)
+          dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+          val newPlayback = createNewPlayback()
+          playable.playback = newPlayback
+          manager.addPlayback(newPlayback)
+          newPlayback
         }
       } else {
-        if (samePlayable == null) {
+        if (playbackForSamePlayable == null) {
           // sameContainer is not null but samePlayable is null --> new Playable is bound to a bound Container
           // Action: create new Playback for current Container, make the new binding and remove old binding of
           // the 'sameContainer'
-          sameContainer.manager.removePlayback(sameContainer)
-          dispatcher.removeMessages(
-              MSG_DESTROY_PLAYABLE, playable
-          )
-          playable.playback = createNew
-          bucket.manager.addPlayback(createNew)
-          createNew
+          playbackForSameContainer.manager.removePlayback(playbackForSameContainer)
+          dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+          val newPlayback = createNewPlayback()
+          playable.playback = newPlayback
+          manager.addPlayback(newPlayback)
+          newPlayback
         } else {
           // both sameContainer and samePlayable are not null --> a bound Playable to be rebound to a bound Container
-          if (sameContainer === samePlayable) {
+          if (playbackForSameContainer === playbackForSamePlayable) {
             // Nothing to do
-            samePlayable
+            playbackForSamePlayable
           } else {
             // Scenario: rebind a bound Playable from one Container to other Container that is being bound.
             // Action: remove both 'sameContainer' and 'samePlayable', create new one for the Container.
             // to the Container
-            sameContainer.manager.removePlayback(sameContainer)
-            samePlayable.manager.removePlayback(samePlayable)
-            dispatcher.removeMessages(
-                MSG_DESTROY_PLAYABLE, playable
-            )
-            playable.playback = createNew
-            bucket.manager.addPlayback(createNew)
-            createNew
+            playbackForSameContainer.manager.removePlayback(playbackForSameContainer)
+            playbackForSamePlayable.manager.removePlayback(playbackForSamePlayable)
+            dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
+            val newPlayback = createNewPlayback()
+            playable.playback = newPlayback
+            manager.addPlayback(newPlayback)
+            newPlayback
           }
         }
       }
@@ -744,7 +710,44 @@ class Master private constructor(context: Context) : PlayableManager {
     internal var bucket: Bucket? = null
 
     internal fun onBind() {
-      master.onBind(playable, tag, container, options, callback)
+      val bucket = master.groups.asSequence()
+          .mapNotNull { it.findBucketForContainer(container) }
+          .firstOrNull()
+
+      requireNotNull(bucket) { "No Manager and Bucket available for $container" }
+
+      master.onBind(playable, tag, bucket.manager, container, callback, createNewPlayback@{
+        val config = Config(
+            tag = options.tag,
+            delay = options.delay,
+            threshold = options.threshold,
+            preload = options.preload,
+            repeatMode = options.repeatMode,
+            controller = options.controller,
+            artworkHintListener = options.artworkHintListener,
+            tokenUpdateListener = options.tokenUpdateListener,
+            callbacks = options.callbacks
+        )
+
+        return@createNewPlayback when {
+          // Scenario: Playable accepts renderer of type PlayerView, and
+          // the container is an instance of PlayerView or its subtype.
+          playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
+            StaticViewRendererPlayback(bucket.manager, bucket, container, config)
+          }
+          View::class.java.isAssignableFrom(playable.config.rendererType) -> {
+            DynamicViewRendererPlayback(bucket.manager, bucket, container, config)
+          }
+          Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
+            DynamicFragmentRendererPlayback(bucket.manager, bucket, container, config)
+          }
+          else -> {
+            throw IllegalArgumentException(
+                "Unsupported Renderer type: ${playable.config.rendererType}"
+            )
+          }
+        }
+      })
       "Request bound: $tag, $container, $playable".logInfo()
     }
 

@@ -28,7 +28,6 @@ import kohii.v1.logWarn
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kotlin.properties.Delegates
 
 abstract class AbstractPlayable<RENDERER : Any>(
   protected val master: Master,
@@ -40,7 +39,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override val tag: Any = config.tag
 
   override fun toString(): String {
-    return "Playable@$tag"
+    return "Playable([t=$tag][h=${super.hashCode()}])"
   }
 
   // Ensure the preparation for the playback
@@ -50,6 +49,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   }
 
   override fun onReset() {
+    "Playable#onReset $this".logInfo()
     bridge.reset(true)
   }
 
@@ -68,7 +68,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun onPlay() {
     "Playable#onPlay $this".logWarn()
     playback?.onPlay()
-    if (!playRequested) {
+    if (!playRequested || !bridge.isPlaying()) {
       playRequested = true
       bridge.play()
     }
@@ -76,7 +76,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
 
   override fun onPause() {
     "Playable#onPause $this".logWarn()
-    if (playRequested) {
+    if (playRequested || bridge.isPlaying()) {
       playRequested = false
       bridge.pause()
     }
@@ -95,64 +95,69 @@ abstract class AbstractPlayable<RENDERER : Any>(
   private val memoryMode: MemoryMode
     get() = (manager as? Manager)?.memoryMode ?: LOW
 
-  override var manager by Delegates.observable<PlayableManager?>(
-      null,
-      onChange = { _, from, to ->
-        if (from === to) return@observable
-        "Playable#manager $from --> $to, $this".logInfo()
-        if (to == null) {
-          master.trySavePlaybackInfo(this)
-          master.tearDown(
-              playable = this,
-              clearState = if (from is Manager) !from.isChangingConfigurations() else true
-          )
-        } else if (from === null) {
-          master.tryRestorePlaybackInfo(this)
-        }
+  override var manager: PlayableManager? = null
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from === to) return
+      "Playable#manager $from --> $to, $this".logInfo()
+      if (to == null) {
+        master.trySavePlaybackInfo(this)
+        master.tearDown(
+            playable = this,
+            clearState = if (from is Manager) !from.isChangingConfigurations() else true
+        )
+      } else if (from === null) {
+        master.tryRestorePlaybackInfo(this)
       }
-  )
+    }
 
   @Suppress("IfThenToElvis")
-  override var playback by Delegates.observable<Playback?>(
-      null,
-      onChange = { _, from, to ->
-        if (from === to) return@observable
-        "Playable#playback $from --> $to, $this".logInfo()
-        if (from != null) {
-          bridge.removeErrorListener(from)
-          bridge.removeEventListener(from)
-          from.removeCallback(this)
-          if (from.playable === this) from.playable = null
+  override var playback: Playback? = null
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from === to) return
+      "Playable#playback $from --> $to, $this".logInfo()
+      if (from != null) {
+        bridge.removeErrorListener(from)
+        bridge.removeEventListener(from)
+        from.removeCallback(this)
+        if (from.playable === this) from.playable = null
+      }
+
+      this.manager =
+        if (to != null) {
+          to.manager
+        } else {
+          val configChange = if (from != null) from.manager.isChangingConfigurations() else false
+          if (!configChange) {
+            // TODO need a better implementation.
+            if (master.manuallyStartedPlayable.get() === this && isPlaying()) master
+            else null
+          } else if (!onConfigChange()) {
+            // On config change, if the Playable doesn't support, we need to pause the Video.
+            onPause()
+            null
+          } else {
+            master // to prevent the Playable from being destroyed when Manager is null.
+          }
         }
 
-        this.manager =
-          if (to != null) {
-            to.manager
-          } else {
-            val configChange = if (from != null) from.manager.isChangingConfigurations() else false
-            if (!configChange) null
-            else if (!onConfigChange()) {
-              // On config change, if the Playable doesn't support, we need to pause the Video.
-              onPause()
-              null
-            } else {
-              master // to prevent the Playable from being destroyed when Manager is null.
-            }
-          }
-
-        if (to != null) {
-          to.playable = this
-          to.addCallback(this)
-          to.config.callbacks.forEach { cb -> to.addCallback(cb) }
-          bridge.addEventListener(to)
-          bridge.addErrorListener(to)
-          if (to.tag != Master.NO_TAG) {
-            if (to.config.controller != null) master.plannedManualPlayables.add(to.tag)
-            else master.plannedManualPlayables.remove(to.tag)
-          }
+      if (to != null) {
+        to.playable = this
+        to.addCallback(this)
+        to.config.callbacks.forEach { cb -> to.addCallback(cb) }
+        bridge.addEventListener(to)
+        bridge.addErrorListener(to)
+        if (to.tag != Master.NO_TAG) {
+          if (to.config.controller != null) master.plannedManualPlayables.add(to.tag)
+          else master.plannedManualPlayables.remove(to.tag)
         }
       }
-  )
+    }
 
   override val playerState: Int
     get() = bridge.playerState
@@ -170,7 +175,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     "Playable#onInActive $playback, $this".logInfo()
     require(playback === this.playback)
     val configChange = playback.manager.isChangingConfigurations()
-    if (!configChange) {
+    if (!configChange && !master.onPlaybackInActive(this, playback)) {
       master.trySavePlaybackInfo(this)
       master.releasePlayable(this)
     }
@@ -238,7 +243,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
         master.trySavePlaybackInfo(this)
         master.releasePlayable(this)
       } else {
-        if (memoryMode != BALANCED) {
+        if (memoryMode !== BALANCED) {
           bridge.reset(false)
         }
       }

@@ -192,15 +192,15 @@ class Group(
     if (target.first.second > 0 && target.second.second > 0) {
       // update distance of non-selected Playback first, so they can release unused/obsoleted
       // resource before the selected ones who consume a lot of resources.
-      playbacks.partitionToMutableSets(
+      (playbacks - selection).partitionToMutableSets(
           predicate = { it.isActive },
           transform = { it }
       )
           .also { (active, inactive) ->
             inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
             // TODO better way that doesn't require allocating new collection?
-            (active - selection).sortedBy { it.token.containerRect distanceTo target }
-                .forEachIndexed { index, playback -> playback.distanceToPlay = index }
+            active.sortedBy { it.token.containerRect distanceTo target }
+                .forEachIndexed { index, playback -> playback.distanceToPlay = index + 1 }
           }
       selection.forEach { it.distanceToPlay = 0 }
     }

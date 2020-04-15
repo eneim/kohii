@@ -22,6 +22,7 @@ import kohii.v1.core.Master.Companion.NO_TAG
 import kohii.v1.core.Playback.ArtworkHintListener
 import kohii.v1.core.Playback.Callback
 import kohii.v1.core.Playback.Controller
+import kohii.v1.core.Playback.TokenUpdateListener
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
@@ -39,6 +40,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
     var repeatMode: Int = Common.REPEAT_MODE_OFF
     var controller: Controller? = null
     var artworkHintListener: ArtworkHintListener? = null
+    var tokenUpdateListener: TokenUpdateListener? = null
     val callbacks = mutableSetOf<Callback>()
   }
 
@@ -77,6 +79,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
           it.repeatMode = options.repeatMode
           it.controller = options.controller
           it.artworkHintListener = options.artworkHintListener
+          it.tokenUpdateListener = options.tokenUpdateListener
           it.callbacks += options.callbacks
         }, callback
     )

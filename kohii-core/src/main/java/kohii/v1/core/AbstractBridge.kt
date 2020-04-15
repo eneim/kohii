@@ -16,6 +16,8 @@
 
 package kohii.v1.core
 
+import androidx.annotation.CallSuper
+import kohii.v1.logInfo
 import kotlin.LazyThreadSafetyMode.NONE
 
 abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
@@ -46,5 +48,15 @@ abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
 
   override fun removeErrorListener(errorListener: ErrorListener?) {
     this.errorListeners.remove(errorListener)
+  }
+
+  @CallSuper
+  override fun play() {
+    "Bridge#play $this".logInfo()
+  }
+
+  @CallSuper
+  override fun pause() {
+    "Bridge#pause $this".logInfo()
   }
 }

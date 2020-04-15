@@ -38,6 +38,7 @@ import kohii.v1.internal.ViewGroupBucket
 import kohii.v1.internal.ViewGroupV23Bucket
 import kohii.v1.internal.ViewPager2Bucket
 import kohii.v1.internal.ViewPagerBucket
+import kohii.v1.logDebug
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates.observable
@@ -132,13 +133,15 @@ abstract class Bucket constructor(
   }
 
   @CallSuper
-  override fun onViewDetachedFromWindow(v: View?) {
-    manager.onContainerDetachedFromWindow(v)
+  override fun onViewAttachedToWindow(v: View?) {
+    "Bucket#onViewAttachedToWindow: $v".logDebug()
+    manager.onContainerAttachedToWindow(v)
   }
 
   @CallSuper
-  override fun onViewAttachedToWindow(v: View?) {
-    manager.onContainerAttachedToWindow(v)
+  override fun onViewDetachedFromWindow(v: View?) {
+    "Bucket#onViewDetachedFromWindow: $v".logDebug()
+    manager.onContainerDetachedFromWindow(v)
   }
 
   @CallSuper
@@ -234,18 +237,14 @@ abstract class Bucket constructor(
     val comparator = playbackComparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
         .groupBy {
-          it.tag != Master.NO_TAG &&
-              it.config
-                  .controller != null
+          it.tag != Master.NO_TAG && it.config.controller != null
           // equals to `manager.master.plannedManualPlayables.contains(it.tag)`
         }
         .withDefault { emptyList() }
 
     val manualCandidate = with(grouped.getValue(true)) {
       val started = find {
-        manager.master
-            .playablesStartedByClient
-            .contains(it.tag)
+        manager.master.manuallyStartedPlayable.get() === it.playable
       }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
@@ -262,12 +261,12 @@ abstract class Bucket constructor(
     return true
   }
 
-  private val lazyHashCode by lazy(NONE) {
-    val result = manager.hashCode()
-    31 * result + root.hashCode()
-  }
+  private var lazyHashCode: Int = -1
 
   override fun hashCode(): Int {
+    if (lazyHashCode == -1) {
+      lazyHashCode = manager.hashCode() * 31 + root.hashCode()
+    }
     return lazyHashCode
   }
 }

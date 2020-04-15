@@ -174,3 +174,5 @@ interface VolumeInfoController {
 }
 
 interface PlayableManager
+
+interface PlayableContainer
