@@ -24,7 +24,6 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
 import kohii.v1.core.Strategy
-import kotlin.LazyThreadSafetyMode.NONE
 
 internal open class ViewGroupBucket(
   manager: Manager,
@@ -33,9 +32,7 @@ internal open class ViewGroupBucket(
   selector: Selector
 ) : Bucket(manager, root, strategy, selector) {
 
-  private val globalScrollChangeListener by lazy(NONE) {
-    OnScrollChangedListener { manager.refresh() }
-  }
+  private val globalScrollChangeListener = OnScrollChangedListener { manager.refresh() }
 
   override fun onAdded() {
     super.onAdded()

@@ -24,7 +24,7 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
 import kohii.v1.core.RendererProviderFactory
-import kohii.v1.utils.SingletonHolder
+import kohii.v1.utils.Capsule
 import java.net.CookieHandler
 import java.net.CookieManager
 import java.net.CookiePolicy
@@ -37,7 +37,7 @@ class Kohii private constructor(
 
   private constructor(context: Context) : this(Master[context])
 
-  companion object : SingletonHolder<Kohii, Context>(::Kohii) {
+  companion object : Capsule<Kohii, Context>(::Kohii) {
 
     @JvmStatic // convenient static call for Java
     operator fun get(context: Context) = super.getInstance(context)
