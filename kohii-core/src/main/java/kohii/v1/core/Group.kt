@@ -31,7 +31,6 @@ import kohii.v1.internal.PlayableDispatcher
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
-import kotlin.properties.Delegates.observable
 
 class Group(
   internal val master: Master,
@@ -48,25 +47,29 @@ class Group(
   internal val managers = ArrayDeque<Manager>()
   internal var selection: Set<Playback> = emptySet()
 
-  private var stickyManager: Manager? by observable<Manager?>(null) { _, from, to ->
-    if (from === to) return@observable
-    if (to != null) { // a Manager is promoted
-      to.sticky = true
-      managers.push(to)
-    } else {
-      require(from != null && from.sticky)
-      if (managers.peek() === from) {
-        from.sticky = false
-        managers.pop()
+  private var stickyManager: Manager? = null
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from === to) return
+      if (to != null) { // a Manager is promoted
+        to.sticky = true
+        managers.push(to)
+      } else {
+        require(from != null && from.sticky)
+        if (managers.peek() === from) {
+          from.sticky = false
+          managers.pop()
+        }
       }
     }
-  }
 
-  internal var groupVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, from, to ->
-    if (from == to) return@observable
-    // Update VolumeInfo of all Managers. This operation will then callback to this #applyVolumeInfo
-    managers.forEach { it.managerVolumeInfo = to }
-  }
+  internal var groupVolumeInfo: VolumeInfo = VolumeInfo()
+    set(value) {
+      field = value
+      managers.forEach { it.managerVolumeInfo = value }
+    }
 
   internal val volumeInfo: VolumeInfo
     get() = groupVolumeInfo

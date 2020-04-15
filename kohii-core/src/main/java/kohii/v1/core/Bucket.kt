@@ -214,7 +214,7 @@ abstract class Bucket constructor(
       val from = field
       field = value
       val to = field
-      if (from != to) {
+      if (from !== to) {
         manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
         manager.refresh()
       }
