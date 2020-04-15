@@ -41,7 +41,6 @@ import kohii.v1.internal.ViewPagerBucket
 import kohii.v1.logDebug
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
-import kotlin.properties.Delegates.observable
 
 typealias Selector = (Collection<Playback>) -> Collection<Playback>
 
@@ -198,9 +197,11 @@ abstract class Bucket constructor(
   internal val volumeInfo: VolumeInfo
     get() = bucketVolumeInfo
 
-  internal var bucketVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, _, _ ->
-    manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
-  }
+  internal var bucketVolumeInfo: VolumeInfo = VolumeInfo()
+    set(value) {
+      field = value
+      manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+    }
 
   private val volumeConstraint: VolumeInfo
     get() = when (strategy) {
@@ -208,12 +209,16 @@ abstract class Bucket constructor(
       else -> VolumeInfo()
     }
 
-  internal var strategy: Strategy by observable(strategy) { _, from, to ->
-    if (from != to) {
-      manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
-      manager.refresh()
+  internal var strategy: Strategy = strategy
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from != to) {
+        manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+        manager.refresh()
+      }
     }
-  }
 
   init {
     bucketVolumeInfo = manager.volumeInfo
