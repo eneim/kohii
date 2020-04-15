@@ -58,6 +58,7 @@ import kohii.v1.logDebug
 import kohii.v1.logInfo
 import kohii.v1.logWarn
 import kohii.v1.media.PlaybackInfo
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.properties.Delegates
 
@@ -135,8 +136,14 @@ class Master private constructor(context: Context) : PlayableManager {
   internal val requests = mutableMapOf<ViewGroup /* Container */, BindRequest>()
   internal val playables = mutableMapOf<Playable, Any /* Playable tag */>()
 
+  // Memorize the tags which belongs to Playbacks that enable manual playbacks. On config change,
+  // we may not get the binding of these tags yet, but we may need to play them.
   // TODO when to remove entries of this map?
-  internal val manuallyStartedPlayables = arraySetOf<Any /* Playable tag */>()
+  internal val plannedManualPlayables = arraySetOf<Any /* Playable tag */>()
+
+  // Reference of the Playable started manually by the User. This Playable can be paused if
+  // the controller allows the library to pause it.
+  internal val manuallyStartedPlayable = AtomicReference<Playable>()
 
   // TODO when to remove entries of this map?
   internal val playablesPendingActions = arrayMapOf<Any /* Playable tag */, PlaybackAction>()
@@ -291,7 +298,7 @@ class Master private constructor(context: Context) : PlayableManager {
     clearState: Boolean
   ) {
     "Master#onTearDown: $playable, clear: $clearState".logDebug()
-    check(playable.manager == null) {
+    check(playable.manager == null || playable.manager === this) {
       "Teardown $playable, found manager: ${playable.manager}"
     }
     check(playable.playback == null) {
@@ -301,15 +308,9 @@ class Master private constructor(context: Context) : PlayableManager {
     trySavePlaybackInfo(playable)
     releasePlayable(playable)
     playables.remove(playable)
-    if (clearState) {
-      // [2020.03.28] Note: in RecyclerView, when a ViewHolder is reused for other Video, its
-      // previous mapped Playable will be torn down with `clearState` set to true. If we remove
-      // the PlaybackInfo from playbackInfoStore, it will be reset on the rebind. Let's not do it.
-      // playbackInfoStore.remove(playable.tag)
-      manuallyStartedPlayables.remove(playable.tag)
-      playablesPendingActions.remove(playable.tag)
+    if (playable === manuallyStartedPlayable.get()) {
+      manuallyStartedPlayable.set(null)
     }
-
     if (playables.isEmpty()) cleanUp()
   }
 
@@ -352,10 +353,7 @@ class Master private constructor(context: Context) : PlayableManager {
   // [Draft] return true if this [Master] wants to handle this step by itself, false otherwise.
   internal fun onPlaybackInActive(playable: Playable, playback: Playback): Boolean {
     "Master#onPlaybackInActive: $playback".logDebug()
-    return playback.tag != NO_TAG
-        && playback.config.controller != null
-        && !playback.config.controller.kohiiCanPause()
-        && playable.isPlaying()
+    return manuallyStartedPlayable.get() === playable && playable.isPlaying()
   }
 
   internal fun onPlaybackDetached(playback: Playback) {
@@ -366,12 +364,18 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun cleanupPendingPlayables() {
     playables.filter { it.key.manager === this }
         .keys.toMutableList()
-        .onEach {
-          require(it.playback == null) {
-            "$it has manager: $this but found Playback: ${it.playback}"
+        .apply {
+          val manuallyStartedPlayable = manuallyStartedPlayable.get()
+          if (manuallyStartedPlayable != null && manuallyStartedPlayable.isPlaying()) {
+            minusAssign(manuallyStartedPlayable)
           }
-          it.manager = null
-          tearDown(it, true)
+        }
+        .onEach { playable ->
+          require(playable.playback == null) {
+            "$playable has manager: $this but found Playback: ${playable.playback}"
+          }
+          playable.manager = null
+          tearDown(playable, true)
         }
         .clear()
   }
@@ -393,6 +397,10 @@ class Master private constructor(context: Context) : PlayableManager {
     }
     if (groups.isEmpty()) {
       dispatcher.removeMessages(MSG_CLEANUP)
+      // The last activity is destroyed but not a config change.
+      if (!group.activity.isChangingConfigurations) {
+        manuallyStartedPlayable.get()?.manager = null
+      }
     }
   }
 
@@ -459,9 +467,7 @@ class Master private constructor(context: Context) : PlayableManager {
     playable: Playable,
     loadSource: Boolean = false
   ) {
-    dispatcher.removeMessages(
-        MSG_RELEASE_PLAYABLE, playable
-    )
+    dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     playable.onPrepare(loadSource)
   }
 
@@ -475,10 +481,11 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun play(playable: Playable) {
     val tag = playable.tag
     if (tag == NO_TAG) return
-    val controller = playable.playback?.config?.controller
-    if (controller != null) {
+    if (plannedManualPlayables.contains(tag)) {
       requireNotNull(playable.playback).also {
-        /* if (!controller.kohiiCanPause()) */ manuallyStartedPlayables.add(tag)
+        if (!requireNotNull(it.config.controller).kohiiCanPause()) {
+          manuallyStartedPlayable.set(playable)
+        }
         playablesPendingActions[tag] = Common.PLAY
         it.manager.refresh()
       }
@@ -492,7 +499,7 @@ class Master private constructor(context: Context) : PlayableManager {
     val controller = playable.playback?.config?.controller
     if (controller != null) {
       playablesPendingActions[tag] = Common.PAUSE
-      manuallyStartedPlayables.remove(tag)
+      manuallyStartedPlayable.set(null)
       requireNotNull(playable.playback).manager.refresh()
     }
   }

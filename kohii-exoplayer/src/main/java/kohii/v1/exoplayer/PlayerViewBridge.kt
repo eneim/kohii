@@ -41,7 +41,6 @@ import kohii.v1.exoplayer.internal.addEventListener
 import kohii.v1.exoplayer.internal.getVolumeInfo
 import kohii.v1.exoplayer.internal.removeEventListener
 import kohii.v1.exoplayer.internal.setVolumeInfo
-import kohii.v1.logDebug
 import kohii.v1.logInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo

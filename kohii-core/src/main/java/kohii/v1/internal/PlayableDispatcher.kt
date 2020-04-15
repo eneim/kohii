@@ -22,6 +22,7 @@ import android.os.Message
 import kohii.v1.core.Common
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
+import kohii.v1.logWarn
 
 internal class PlayableDispatcher(val master: Master) : Handler.Callback {
 
@@ -45,35 +46,30 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
   }
 
   internal fun play(playable: Playable) {
+    "Dispatcher#play: $playable".logWarn()
+    val manuallyStartedPlayable = master.manuallyStartedPlayable.get()
+    // Has manual controller
+    if (manuallyStartedPlayable != null /* has Playable started by client */
+        && manuallyStartedPlayable.isPlaying() /* the Playable is playing */
+        && manuallyStartedPlayable !== playable /* but not this one */
+    ) {
+      // Pause due to lower priority.
+      justPause(playable)
+      return
+    }
+
     playable.onReady()
-    val controller = playable.playback?.config?.controller
-    if (playable.tag == Master.NO_TAG || controller == null) {
+    if (!master.plannedManualPlayables.contains(playable.tag)) {
       justPlay(playable)
     } else {
-      // Has manual controller.
-      if (master.manuallyStartedPlayables.isNotEmpty() /* has Playable started by client */
-          && !master.manuallyStartedPlayables.contains(playable.tag) /* but not this one */
-      ) {
-        // Pause due to lower priority.
-        justPause(playable)
-        return
-      }
-
       val nextAction = master.playablesPendingActions[playable.tag]
-      if (nextAction != null) { // We set a flag somewhere by User/Client reaction.
+      if (nextAction != null) { // A flag was set somewhere by User/Client reaction.
         if (nextAction == Common.PLAY) justPlay(playable)
         else justPause(playable)
       } else {
+        val controller = requireNotNull(playable.playback?.config?.controller)
         // No history of User action, let's determine next action by ourselves
         if (controller.kohiiCanStart()) {
-          // master.playablesPendingStates[playable.tag] = Common.PENDING_PLAY
-
-          // If we come here from a manual start, master.playableStartedByClient must
-          // contains the playable tag already.
-          // if (!controller.kohiiCanPause()) {
-          // Mark a Playable as started by User --> System will not pause it.
-          //   master.playablesStartedByClient.add(playable.tag)
-          // }
           justPlay(playable)
         }
       }
@@ -81,31 +77,32 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
   }
 
   internal fun pause(playable: Playable) {
+    "Dispatcher#pause: $playable".logWarn()
+    val manuallyStartedPlayable = master.manuallyStartedPlayable.get()
+    // Has manual controller
+    if (manuallyStartedPlayable != null /* has Playable started by client */
+        && manuallyStartedPlayable.isPlaying() /* the Playable is playing */
+        && manuallyStartedPlayable !== playable /* but not this one */
+    ) {
+      justPause(playable)
+      return
+    }
+
     if (master.groups.find { it.selection.isNotEmpty() } != null) {
       justPause(playable)
       return
     }
 
-    val controller = playable.playback?.config?.controller
-    if (playable.tag == Master.NO_TAG || controller == null) {
+    if (!master.plannedManualPlayables.contains(playable.tag)) {
       justPause(playable)
     } else {
-      // Has manual controller
-      if (master.manuallyStartedPlayables.isNotEmpty() /* has Playable started by client */
-          && !master.manuallyStartedPlayables.contains(playable.tag) /* but not this one */
-      ) {
-        justPause(playable)
-        return
-      }
-
+      val controller = requireNotNull(playable.playback?.config?.controller)
       val nextAction = master.playablesPendingActions[playable.tag]
       if (nextAction != null && nextAction == Common.PAUSE) {
         justPause(playable)
       } else {
         if (controller.kohiiCanPause()) {
           justPause(playable)
-        } else {
-          // what to do?
         }
       }
     }

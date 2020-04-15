@@ -213,7 +213,7 @@ class Manager(
     }
   }
 
-  internal fun onContainerLayoutChanged(container: Any?) {
+  internal fun onContainerLayoutChanged(container: Any) {
     val playback = playbacks[container]
     if (playback != null) refresh()
   }
@@ -269,12 +269,11 @@ class Manager(
 
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
-        .filter { bucketToPlaybacks[it].orEmpty().isNotEmpty() }
+        .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
         .map {
           val candidates = bucketToPlaybacks.getValue(it).filter { playback ->
-            val kohiiCannotPause = playback.tag != Master.NO_TAG
-                && playback.config.controller != null
-                && master.manuallyStartedPlayables.contains(playback.tag)
+            val kohiiCannotPause = master.manuallyStartedPlayable.get() === playback.playable
+                && master.plannedManualPlayables.contains(playback.tag)
                 && !requireNotNull(playback.config.controller).kohiiCanPause()
             return@filter kohiiCannotPause || it.allowToPlay(playback)
           }

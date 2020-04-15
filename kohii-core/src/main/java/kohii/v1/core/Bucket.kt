@@ -237,18 +237,14 @@ abstract class Bucket constructor(
     val comparator = playbackComparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
         .groupBy {
-          it.tag != Master.NO_TAG &&
-              it.config
-                  .controller != null
+          it.tag != Master.NO_TAG && it.config.controller != null
           // equals to `manager.master.plannedManualPlayables.contains(it.tag)`
         }
         .withDefault { emptyList() }
 
     val manualCandidate = with(grouped.getValue(true)) {
       val started = find {
-        manager.master
-            .manuallyStartedPlayables
-            .contains(it.tag)
+        manager.master.manuallyStartedPlayable.get() === it.playable
       }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
