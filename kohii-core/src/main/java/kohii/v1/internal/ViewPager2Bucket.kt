@@ -24,7 +24,6 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
 import kohii.v1.core.Strategy
-import kotlin.LazyThreadSafetyMode.NONE
 
 internal class ViewPager2Bucket(
   manager: Manager,
@@ -43,11 +42,7 @@ internal class ViewPager2Bucket(
     }
   }
 
-  private val pageChangeCallback by lazy(NONE) {
-    SimplePageChangeCallback(
-        manager
-    )
-  }
+  private val pageChangeCallback = SimplePageChangeCallback(manager)
 
   override fun onAdded() {
     super.onAdded()

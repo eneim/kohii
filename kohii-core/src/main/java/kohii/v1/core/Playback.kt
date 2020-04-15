@@ -35,7 +35,6 @@ import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 import java.util.ArrayDeque
-import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.max
 
 abstract class Playback(
@@ -308,7 +307,7 @@ abstract class Playback(
       "Playback#volumeInfo $from --> $to, $this".logDebug()
       playable?.onVolumeInfoChanged(this, from, to)
     }
-  
+
   init {
     playbackVolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
   }
@@ -323,14 +322,15 @@ abstract class Playback(
     val thisToken = this.token
     val thatToken = other.token
 
-    val compareVertically by lazy(NONE) { CENTER_Y.compare(thisToken, thatToken) }
-    val compareHorizontally by lazy(NONE) { CENTER_X.compare(thisToken, thatToken) }
-
     var result = when (orientation) {
-      VERTICAL -> compareVertically
-      HORIZONTAL -> compareHorizontally
-      BOTH_AXIS -> max(compareVertically, compareHorizontally)
-      NONE_AXIS -> max(compareVertically, compareHorizontally)
+      VERTICAL -> CENTER_Y.compare(thisToken, thatToken)
+      HORIZONTAL -> CENTER_X.compare(thisToken, thatToken)
+      BOTH_AXIS -> max(
+          CENTER_Y.compare(thisToken, thatToken), CENTER_X.compare(thisToken, thatToken)
+      )
+      NONE_AXIS -> max(
+          CENTER_Y.compare(thisToken, thatToken), CENTER_X.compare(thisToken, thatToken)
+      )
       else -> 0
     }
 

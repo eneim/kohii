@@ -39,7 +39,6 @@ import kohii.v1.logDebug
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
-import kotlin.properties.Delegates.observable
 
 class Manager(
   internal val master: Master,
@@ -80,30 +79,33 @@ class Manager(
   // - When promoting a Bucket as sticky, we push the same Bucket to head of the Queue.
   // - When demoting a Bucket from sticky, we just poll the head.
   internal val buckets = ArrayDeque<Bucket>(4 /* less than default minimum of ArrayDeque */)
+
   // Up to one Bucket can be sticky at a time.
-  private var stickyBucket by observable<Bucket?>(
-      initialValue = null,
-      onChange = { _, from, to ->
-        if (from === to) return@observable
-        // Promote 'to' from buckets.
-        if (to != null /* set new sticky Bucket */) {
-          buckets.push(to) // Push it to head.
-        } else { // 'to' is null then 'from' must be nonnull. Consider to remove it from head.
-          // Demote 'from'
-          if (buckets.peek() === from) buckets.pop()
-        }
+  private var stickyBucket: Bucket? = null
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from === to) return
+      // Promote 'to' from buckets.
+      if (to != null /* set new sticky Bucket */) {
+        buckets.push(to) // Push it to head.
+      } else { // 'to' is null then 'from' must be nonnull. Consider to remove it from head.
+        // Demote 'from'
+        if (buckets.peek() === from) buckets.pop()
       }
-  )
+    }
 
   internal val playbacks = mutableMapOf<Any /* container */, Playback>()
 
   internal var sticky: Boolean = false
 
-  internal var managerVolumeInfo: VolumeInfo by observable(VolumeInfo()) { _, from, to ->
-    if (from == to) return@observable
-    // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
-    buckets.forEach { it.bucketVolumeInfo = to }
-  }
+  internal var managerVolumeInfo: VolumeInfo = VolumeInfo()
+    set(value) {
+      field = value
+      // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
+      buckets.forEach { it.bucketVolumeInfo = value }
+    }
 
   internal val volumeInfo: VolumeInfo
     get() = managerVolumeInfo
