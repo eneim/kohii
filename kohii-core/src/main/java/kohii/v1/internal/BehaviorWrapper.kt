@@ -51,13 +51,8 @@ internal class BehaviorWrapper<V : View>(
     when (msg?.what) {
       EVENT_SCROLL, EVENT_TOUCH -> {
         scrollConsumed.set(false)
-        handler.removeMessages(
-            EVENT_IDLE
-        )
-        handler.sendEmptyMessageDelayed(
-            EVENT_IDLE,
-            EVENT_DELAY
-        )
+        handler.removeMessages(EVENT_IDLE)
+        handler.sendEmptyMessageDelayed(EVENT_IDLE, EVENT_DELAY)
       }
       EVENT_IDLE -> {
         // idle --> consume it.
@@ -238,9 +233,7 @@ internal class BehaviorWrapper<V : View>(
     ev: MotionEvent
   ): Boolean {
     handler.removeCallbacksAndMessages(null)
-    handler.sendEmptyMessage(
-        EVENT_TOUCH
-    )
+    handler.sendEmptyMessage(EVENT_TOUCH)
     return delegate.onInterceptTouchEvent(parent, child, ev)
   }
 
@@ -315,9 +308,7 @@ internal class BehaviorWrapper<V : View>(
     ev: MotionEvent
   ): Boolean {
     handler.removeCallbacksAndMessages(null)
-    handler.sendEmptyMessage(
-        EVENT_TOUCH
-    )
+    handler.sendEmptyMessage(EVENT_TOUCH)
     return delegate.onTouchEvent(parent, child, ev)
   }
 
@@ -333,9 +324,7 @@ internal class BehaviorWrapper<V : View>(
     axes: Int
   ): Boolean {
     handler.removeCallbacksAndMessages(null)
-    handler.sendEmptyMessage(
-        EVENT_SCROLL
-    )
+    handler.sendEmptyMessage(EVENT_SCROLL)
     return delegate.onStartNestedScroll(coordinatorLayout, child, directTargetChild, target, axes)
   }
 
@@ -348,9 +337,7 @@ internal class BehaviorWrapper<V : View>(
     type: Int
   ): Boolean {
     handler.removeCallbacksAndMessages(null)
-    handler.sendEmptyMessage(
-        EVENT_SCROLL
-    )
+    handler.sendEmptyMessage(EVENT_SCROLL)
     return delegate.onStartNestedScroll(
         coordinatorLayout, child, directTargetChild, target, axes, type
     )

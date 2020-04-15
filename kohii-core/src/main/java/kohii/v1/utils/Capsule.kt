@@ -20,8 +20,11 @@ import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX
 import kohii.v1.core.Engine
 
+/**
+ * Singleton Holder
+ */
 @RestrictTo(LIBRARY_GROUP_PREFIX)
-open class SingletonHolder<T : Any, in A>(
+open class Capsule<T : Any, in A>(
   creator: (A) -> T,
   onCreate: ((T) -> Unit) = { if (it is Engine<*>) it.master.registerEngine(it) }
 ) {

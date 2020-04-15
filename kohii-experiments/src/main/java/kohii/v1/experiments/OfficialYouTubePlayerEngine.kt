@@ -25,7 +25,7 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.experiments.internal.OfficialYouTubePlayerPlayableCreator
 import kohii.v1.experiments.internal.OfficialYouTubePlayerRendererProvider
-import kohii.v1.utils.SingletonHolder
+import kohii.v1.utils.Capsule
 
 class OfficialYouTubePlayerEngine private constructor(
   master: Master
@@ -36,7 +36,7 @@ class OfficialYouTubePlayerEngine private constructor(
 
   private constructor(context: Context) : this(Master[context])
 
-  companion object : SingletonHolder<OfficialYouTubePlayerEngine, Context>(
+  companion object : Capsule<OfficialYouTubePlayerEngine, Context>(
       ::OfficialYouTubePlayerEngine
   ) {
 

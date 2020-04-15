@@ -30,7 +30,6 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Selector
 import kohii.v1.core.Strategy
-import java.lang.ref.WeakReference
 
 internal class RecyclerViewBucket(
   manager: Manager,
@@ -58,21 +57,11 @@ internal class RecyclerViewBucket(
     }
   }
 
-  internal class SimpleScrollListener(manager: Manager) : OnScrollListener() {
-
-    private val weakManager = WeakReference(manager)
-
-    override fun onScrolled(
-      recyclerView: RecyclerView,
-      dx: Int,
-      dy: Int
-    ) {
-      weakManager.get()
-          ?.refresh()
+  private val scrollListener = object : OnScrollListener() {
+    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+      manager.refresh()
     }
   }
-
-  private val scrollListener = SimpleScrollListener(manager)
 
   override fun onAdded() {
     super.onAdded()

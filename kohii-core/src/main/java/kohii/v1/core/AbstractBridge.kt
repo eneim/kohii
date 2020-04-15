@@ -18,13 +18,12 @@ package kohii.v1.core
 
 import androidx.annotation.CallSuper
 import kohii.v1.logInfo
-import kotlin.LazyThreadSafetyMode.NONE
 
 abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
 
   protected val eventListeners = PlayerEventListeners()
   protected val errorListeners = ErrorListeners()
-  protected val volumeListeners by lazy(NONE) { VolumeChangedListeners() }
+  protected val volumeListeners = VolumeChangedListeners()
 
   override fun addEventListener(listener: PlayerEventListener) {
     this.eventListeners.add(listener)

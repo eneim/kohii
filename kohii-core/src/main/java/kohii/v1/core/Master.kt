@@ -60,21 +60,7 @@ import kohii.v1.logWarn
 import kohii.v1.media.PlaybackInfo
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.LazyThreadSafetyMode.NONE
-import kotlin.properties.Delegates
 
-// We still have some problems as below:
-// Problem 1: problem with manual playback controller on RecyclerView
-// - Expected behavior: if a Playable tag is bound to a Playback whose Controller is not null,
-// the Playable should be manually controllable. Once User/Client manually start a Playback/Playable,
-// and Controller doesn't allow Kohii to pause it, this Playable should be kept playing until it stops
-// due to the Video ends, or other error.
-// - Problem: Once a Playback container is recycled/detached, it is not managed by Manager anymore,
-// and it should be. But then the manually started Playable is not bound anymore so when Group
-// refresh the Playbacks, currently it doesn't take into account the not-bound-manually-started Playables.
-// - Possible solution: we don't want to keep Playable alive more than it should be. A possible solution
-// is to create a Callback that is triggered once a manually started Playback/Playable is
-// detached/removed. The callback must return a boolean value indicating that it will handle the
-// Playback by some mechanism to keep it playing, or else Kohii will do the rest (= ignore it).
 class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
@@ -198,24 +184,29 @@ class Master private constructor(context: Context) : PlayableManager {
     MasterNetworkCallback(this)
   }
 
-  private var networkType: Int by Delegates.observable(Util.getNetworkType(app)) { _, from, to ->
-    if (from == to) return@observable
-    playables.forEach { it.key.onNetworkTypeChanged(from, to) }
-  }
+  private var networkType: Int = Util.getNetworkType(app)
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from == to) return
+      playables.forEach { it.key.onNetworkTypeChanged(from, to) }
+    }
 
   internal fun onNetworkChanged() {
     this.networkType = Util.getNetworkType(app)
   }
 
-  internal var trimMemoryLevel: Int by Delegates.observable(
-      initialValue = RunningAppProcessInfo().let {
-        ActivityManager.getMyMemoryState(it)
-        it.lastTrimLevel
-      },
-      onChange = { _, from, to ->
-        if (from != to) groups.forEach { it.onRefresh() }
-      }
-  )
+  internal var trimMemoryLevel: Int = RunningAppProcessInfo().let {
+    ActivityManager.getMyMemoryState(it)
+    it.lastTrimLevel
+  }
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from != to) groups.forEach { it.onRefresh() }
+    }
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
     if (actual !== AUTO) return actual
