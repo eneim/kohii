@@ -26,7 +26,6 @@ import kohii.v1.core.VideoSize
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kotlin.properties.Delegates
 
 /**
  * [kohii.v1.core.Bridge] for [VideoView]
@@ -61,9 +60,11 @@ class VideoViewBridge(
     this.player?.seekTo(positionMs)
   }
 
-  override var repeatMode: Int by Delegates.observable(
-      player?.repeatMode ?: SessionPlayer.REPEAT_MODE_NONE
-  ) { _, _, newValue -> player?.repeatMode = newValue }
+  override var repeatMode: Int = player?.repeatMode ?: SessionPlayer.REPEAT_MODE_NONE
+    set(value) {
+      field = value
+      player?.repeatMode = value
+    }
 
   override var playbackInfo: PlaybackInfo = PlaybackInfo()
 

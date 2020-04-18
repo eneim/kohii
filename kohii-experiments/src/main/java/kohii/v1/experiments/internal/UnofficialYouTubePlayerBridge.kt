@@ -34,7 +34,6 @@ import kohii.v1.core.VideoSize
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kotlin.properties.Delegates
 
 internal class UnofficialYouTubePlayerBridge(
   private val media: Media
@@ -50,23 +49,24 @@ internal class UnofficialYouTubePlayerBridge(
     }
   }
 
-  private var player: YouTubePlayer? by Delegates.observable<YouTubePlayer?>(
-      initialValue = null,
-      onChange = { _, from, to ->
-        if (from === to) return@observable
-        updatePlaybackInfo(from)
-        tracker.videoId = null
-        tracker.state = UNKNOWN
-        if (from != null) {
-          from.removeListener(tracker)
-          from.removeListener(playerListener)
-        }
-        if (to != null) {
-          to.addListener(tracker)
-          to.addListener(playerListener)
-        }
+  private var player: YouTubePlayer? = null
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from === to) return
+      updatePlaybackInfo(from)
+      tracker.videoId = null
+      tracker.state = UNKNOWN
+      if (from != null) {
+        from.removeListener(tracker)
+        from.removeListener(playerListener)
       }
-  )
+      if (to != null) {
+        to.addListener(tracker)
+        to.addListener(playerListener)
+      }
+    }
 
   private val tracker = LocalPlayerTracker()
 
@@ -92,15 +92,15 @@ internal class UnofficialYouTubePlayerBridge(
     }
   }
 
-  private var _playbackInfo: PlaybackInfo by Delegates.observable(
-      PlaybackInfo(0, 0),
-      onChange = { _, oldVal, newVal ->
-        // Note: we ignore volume setting here.
-        if (newVal.resumePosition != oldVal.resumePosition) {
-          player?.seekTo(newVal.resumePosition.toFloat())
-        }
+  private var _playbackInfo: PlaybackInfo = PlaybackInfo(0, 0)
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (to.resumePosition != from.resumePosition) {
+        player?.seekTo(to.resumePosition.toFloat())
       }
-  )
+    }
 
   override var videoSize: VideoSize = VideoSize.ORIGINAL
 
@@ -129,9 +129,7 @@ internal class UnofficialYouTubePlayerBridge(
 
   // override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
-  override var repeatMode: Int by Delegates.observable(
-      Common.REPEAT_MODE_OFF,
-      onChange = { _, _, _ -> /* youtube library doesn't have looping support */ })
+  override var repeatMode: Int = Common.REPEAT_MODE_OFF
 
   override val playerState: Int
     get() = mapState(tracker.state)

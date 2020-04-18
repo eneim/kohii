@@ -35,7 +35,6 @@ import kohii.v1.experiments.performRelease
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
-import kotlin.properties.Delegates
 
 internal class OfficialYouTubePlayerBridge(
   private val media: Media
@@ -68,30 +67,33 @@ internal class OfficialYouTubePlayerBridge(
     }
   }
 
-  internal var player by Delegates.observable<YouTubePlayer?>(
-      initialValue = null,
-      onChange = { _, from, to ->
-        if (from === to) return@observable
-        from?.performRelease()
-        if (to != null) {
-          to.setPlayerStateChangeListener(this)
-          to.setPlaybackEventListener(this)
-          to.setManageAudioFocus(true)
-          to.setPlayerStyle(MINIMAL)
-          to.setShowFullscreenButton(false)
-        } else {
-          _playWhenReady = false
-          _playbackState = Common.STATE_IDLE
-        }
+  internal var player: YouTubePlayer? = null
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from === to) return
+      from?.performRelease()
+      if (to != null) {
+        to.setPlayerStateChangeListener(this)
+        to.setPlaybackEventListener(this)
+        to.setManageAudioFocus(true)
+        to.setPlayerStyle(MINIMAL)
+        to.setShowFullscreenButton(false)
+      } else {
+        _playWhenReady = false
+        _playbackState = Common.STATE_IDLE
       }
-  )
+    }
 
-  private var _playbackState by Delegates.observable(
-      initialValue = Common.STATE_IDLE,
-      onChange = { _, oldVal, newVal ->
-        if (oldVal == newVal) return@observable
-        this.eventListeners.onPlayerStateChanged(this._playWhenReady, newVal)
-      })
+  private var _playbackState = Common.STATE_IDLE
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from == to) return
+      this.eventListeners.onPlayerStateChanged(this._playWhenReady, to)
+    }
 
   private var _playWhenReady: Boolean = false
   private var _loadedVideoId: String? = null
@@ -108,20 +110,21 @@ internal class OfficialYouTubePlayerBridge(
     return this.renderer?.allowedToPlay() == true
   }
 
-  // Update this value will trigger player to seek.
-  private var _playbackInfo: PlaybackInfo by Delegates.observable(
-      initialValue = PlaybackInfo(),
-      onChange = { _, oldVal, newVal ->
-        val posChanged = newVal.resumePosition != oldVal.resumePosition
-        if (posChanged) {
-          val newPos = newVal.resumePosition.toInt()
-          try {
-            player?.seekToMillis(newPos)
-          } catch (error: Exception) {
-            error.printStackTrace()
-          }
+  private var _playbackInfo: PlaybackInfo = PlaybackInfo()
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      val posChanged = to.resumePosition != from.resumePosition
+      if (posChanged) {
+        val newPos = to.resumePosition.toInt()
+        try {
+          player?.seekToMillis(newPos)
+        } catch (error: Exception) {
+          error.printStackTrace()
         }
-      })
+      }
+    }
 
   override var playbackInfo: PlaybackInfo
     get() {
