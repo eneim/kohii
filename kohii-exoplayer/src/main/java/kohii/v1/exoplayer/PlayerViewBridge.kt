@@ -48,7 +48,6 @@ import kohii.v1.media.PlaybackInfo.Companion.INDEX_UNSET
 import kohii.v1.media.PlaybackInfo.Companion.TIME_UNSET
 import kohii.v1.media.VolumeInfo
 import kotlin.math.max
-import kotlin.properties.Delegates
 
 /**
  * @author eneim (2018/06/24).
@@ -91,22 +90,23 @@ class PlayerViewBridge(
   override val playerState: Int
     get() = player?.playbackState ?: Common.STATE_IDLE
 
-  override var videoSize: VideoSize by Delegates.observable(
-      VideoSize.ORIGINAL,
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        if (to != VideoSize.NONE) {
-          val player = this.player
-          if (player is KohiiExoPlayer) {
-            val current = player.trackSelector.parameters
-            val next = current.buildUpon()
-                .setMaxVideoSize(to.maxWidth, to.maxHeight)
-                .build()
-            player.trackSelector.parameters = next
-          }
+  override var videoSize: VideoSize = VideoSize.ORIGINAL
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from == to) return
+      if (to != VideoSize.NONE) {
+        val player = this.player
+        if (player is KohiiExoPlayer) {
+          val current = player.trackSelector.parameters
+          val next = current.buildUpon()
+              .setMaxVideoSize(to.maxWidth, to.maxHeight)
+              .build()
+          player.trackSelector.parameters = next
         }
       }
-  )
+    }
 
   override fun prepare(loadSource: Boolean) {
     super.addEventListener(this)

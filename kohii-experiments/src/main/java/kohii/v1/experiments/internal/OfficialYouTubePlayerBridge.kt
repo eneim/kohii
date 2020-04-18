@@ -139,18 +139,22 @@ internal class OfficialYouTubePlayerBridge(
 
   override var videoSize: VideoSize = VideoSize.ORIGINAL
 
-  override var renderer by Delegates.observable<YouTubePlayerFragment?>(null) { _, from, to ->
-    if (from === to) return@observable
-    if (to != null && to.view != null) {
-      to.removeLifecycleObserver(this@OfficialYouTubePlayerBridge)
+  override var renderer: YouTubePlayerFragment? = null
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from === to) return
+      if (to != null && to.view != null) {
+        to.removeLifecycleObserver(this@OfficialYouTubePlayerBridge)
+      }
+      if (from == null) {
+        updatePlaybackInfo()
+        player = null
+      } else {
+        from.addLifecycleObserver(this@OfficialYouTubePlayerBridge)
+      }
     }
-    if (from == null) {
-      updatePlaybackInfo()
-      player = null
-    } else {
-      from.addLifecycleObserver(this@OfficialYouTubePlayerBridge)
-    }
-  }
 
   override fun play() {
     super.play()
@@ -158,7 +162,7 @@ internal class OfficialYouTubePlayerBridge(
     if (!this.isPlaying() || _loadedVideoId != media.uri.toString()) {
       this._playWhenReady = true
       this.renderer?.let {
-        if (it.view != null) {
+        if (it.isVisible) {
           this.player?.play() ?: it.initialize(initializedListener)
         }
       }
