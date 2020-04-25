@@ -32,8 +32,8 @@ sealed class Strategy : Selector {
   }
 
   object MULTI_PLAYER : Strategy() {
-    override fun invoke(playback: Collection<Playback>): Collection<Playback> {
-      return playback
+    override fun invoke(playbacks: Collection<Playback>): Collection<Playback> {
+      return playbacks
     }
   }
 }

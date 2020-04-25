@@ -57,7 +57,7 @@ abstract class Bucket constructor(
     const val BOTH_AXIS = -1
     const val NONE_AXIS = -2
 
-    val playbackComparators = mapOf(
+    private val playbackComparators = mapOf(
         HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
         VERTICAL to Playback.VERTICAL_COMPARATOR,
         BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,

@@ -188,7 +188,7 @@ class Manager(
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
-    require(ViewCompat.isAttachedToWindow(container))
+    if (!ViewCompat.isAttachedToWindow(container)) return null
     return buckets.find { it.accepts(container) }
   }
 
