@@ -46,6 +46,7 @@ class Binder(
   @PublishedApi
   internal val options = Options()
 
+  @JvmOverloads
   fun bind(
     container: ViewGroup,
     callback: ((Playback) -> Unit)? = null

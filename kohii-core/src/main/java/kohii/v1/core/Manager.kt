@@ -25,7 +25,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event
+import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.core.MemoryMode.LOW
@@ -41,12 +43,16 @@ import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
 
-class Manager(
+/**
+ * @param activeLifecycleState the minimum [Lifecycle.State] where the [Playback] can be playing.
+ */
+class Manager internal constructor(
   internal val master: Master,
   internal val group: Group,
   val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
-  internal val memoryMode: MemoryMode = LOW
+  internal val memoryMode: MemoryMode = LOW,
+  private val activeLifecycleState: State = State.STARTED
 ) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
 
   companion object {
@@ -294,7 +300,11 @@ class Manager(
         }
 
     val toPause = activePlaybacks.apply { addAll(inactivePlaybacks) }
-    return if (lock) emptySet<Playback>() to (toPlay + toPause) else toPlay to toPause
+    return if (lock || lifecycleOwner.lifecycle.currentState < activeLifecycleState) {
+      emptySet<Playback>() to (toPlay + toPause)
+    } else {
+      toPlay to toPause
+    }
   }
 
   internal fun addPlayback(playback: Playback) {

@@ -82,7 +82,7 @@ class FbookFragment : BaseFragment(), DemoContainer,
         from?.removeStateListener(this@FbookFragment)
         if (to != null) {
           to.addStateListener(this@FbookFragment)
-          currentSelectedRebinder = kohii.fetchRebinder(to.tag)
+          currentSelectedRebinder = Rebinder(to.tag)
         }
       }
   )

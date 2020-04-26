@@ -221,7 +221,8 @@ class Master private constructor(context: Context) : PlayableManager {
     activity: FragmentActivity,
     host: Any,
     managerLifecycleOwner: LifecycleOwner,
-    memoryMode: MemoryMode = AUTO
+    memoryMode: MemoryMode = AUTO,
+    activeLifecycleState: State
   ): Manager {
     check(!activity.isDestroyed) {
       "Cannot register a destroyed Activity: $activity"
@@ -234,18 +235,17 @@ class Master private constructor(context: Context) : PlayableManager {
     }
 
     return group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
-        ?: Manager(
-            this, group, host, managerLifecycleOwner, memoryMode
-        ).also {
-          group.onManagerCreated(it)
-          managerLifecycleOwner.lifecycle.addObserver(it)
-        }
+        ?: Manager(this, group, host, managerLifecycleOwner, memoryMode, activeLifecycleState)
+            .also {
+              group.onManagerCreated(it)
+              managerLifecycleOwner.lifecycle.addObserver(it)
+            }
   }
 
   /**
    * @param container container is the [ViewGroup] that holds the Video. It should be an empty
    * ViewGroup, or a PlayerView itself. Note that View can be created from [android.app.Service] so
-   * its Context is no need to be an [android.app.Activity]
+   * its Context doesn't need to be an [android.app.Activity]
    */
   internal fun bind(
     playable: Playable,
