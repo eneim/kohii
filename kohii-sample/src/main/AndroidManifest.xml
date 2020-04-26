@@ -36,14 +36,20 @@
         android:supportsPictureInPicture="true"
         android:theme="@style/AppTheme.Light"
         android:uiOptions="splitActionBarWhenNarrow" />
+
     <activity
         android:name=".ui.motion.PlayerActivity"
         android:theme="@style/AppTheme.Dark" />
+
     <activity
         android:name="kohii.v1.dev.DevActivity"
         android:label="@string/app_name"
         android:supportsPictureInPicture="true"
         android:theme="@style/AppTheme.Dev" />
+
+    <activity
+        android:name="kohii.v1.dev.PlayerActivity"
+        android:theme="@style/AppTheme.Dark" />
 
     <activity-alias
         android:name="Home"
