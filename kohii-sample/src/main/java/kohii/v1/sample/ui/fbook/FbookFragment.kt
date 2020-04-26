@@ -338,8 +338,6 @@ class FbookFragment : BaseFragment(), DemoContainer,
 
   @Suppress("UNUSED_PARAMETER")
   private fun closeFloatPlayer(rebinder: Rebinder) {
-    floatPlayerManager.closeFloatPlayer {
-
-    }
+    floatPlayerManager.closeFloatPlayer()
   }
 }

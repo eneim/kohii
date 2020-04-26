@@ -34,12 +34,14 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.math.abs
 
 internal class FloatPlayerManager(val activity: FragmentActivity) {
 
   internal val kohii = Kohii[activity]
   internal val windowManager = activity.getSystemService(WINDOW_SERVICE) as WindowManager
+
   @SuppressLint("InflateParams")
   internal val floatView: View = LayoutInflater.from(activity)
       .inflate(R.layout.widget_float_player, null)
@@ -121,8 +123,8 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
     viewTouchConsumedByMove
   }
 
-  val container by lazy { floatView.findViewById(R.id.playerContainer) as ViewGroup }
-  val playerView by lazy { floatView.findViewById(R.id.playerView) as PlayerView }
+  val container by lazy(NONE) { floatView.findViewById(R.id.playerContainer) as ViewGroup }
+  val playerView by lazy(NONE) { floatView.findViewById(R.id.playerView) as PlayerView }
 
   internal val floating = AtomicBoolean(false)
 
@@ -140,7 +142,7 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
     }
   }
 
-  internal inline fun closeFloatPlayer(crossinline callback: () -> Unit) {
+  internal inline fun closeFloatPlayer(crossinline callback: () -> Unit = {}) {
     if (floating.compareAndSet(true, false)) {
       activity.runOnUiThread {
         floatView.setOnTouchListener(null)
