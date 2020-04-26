@@ -23,6 +23,8 @@ import androidx.annotation.CallSuper
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle.State
+import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.MemoryMode.LOW
@@ -50,9 +52,8 @@ abstract class Engine<RENDERER : Any> constructor(
   inline fun setUp(
     media: Media,
     crossinline options: Options.() -> Unit = {}
-  ): Binder = Binder(
-      this, media
-  ).also { options(it.options) }
+  ): Binder = Binder(this, media)
+      .also { options(it.options) }
 
   @JvmOverloads
   inline fun setUp(
@@ -81,7 +82,10 @@ abstract class Engine<RENDERER : Any> constructor(
         }?.onRemoved()
   }
 
-  // TODO do not allow this anymore.
+  @Deprecated(
+      "Just create the Rebinder directly.",
+      ReplaceWith("Rebinder(tag)", "kohii.v1.core.Rebinder")
+  )
   fun fetchRebinder(tag: Any?): Rebinder? {
     return if (tag == null) null else Rebinder(tag)
   }
@@ -89,17 +93,31 @@ abstract class Engine<RENDERER : Any> constructor(
   @JvmOverloads
   fun register(
     fragment: Fragment,
-    memoryMode: MemoryMode = LOW
+    memoryMode: MemoryMode = LOW,
+    activeLifecycleState: State = STARTED
   ): Manager {
     val (activity, lifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
-    return master.registerInternal(activity, fragment, lifecycleOwner, memoryMode = memoryMode)
+    return master.registerInternal(
+        activity = activity,
+        host = fragment,
+        managerLifecycleOwner = lifecycleOwner,
+        memoryMode = memoryMode,
+        activeLifecycleState = activeLifecycleState
+    )
   }
 
   @JvmOverloads
   fun register(
     activity: FragmentActivity,
-    memoryMode: MemoryMode = LOW
-  ): Manager = master.registerInternal(activity, activity, activity, memoryMode = memoryMode)
+    memoryMode: MemoryMode = LOW,
+    activeLifecycleState: State = STARTED
+  ): Manager = master.registerInternal(
+      activity = activity,
+      host = activity,
+      managerLifecycleOwner = activity,
+      memoryMode = memoryMode,
+      activeLifecycleState = activeLifecycleState
+  )
 
   fun applyVolumeInfo(
     volumeInfo: VolumeInfo,

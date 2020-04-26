@@ -51,6 +51,7 @@ nav:
           - 'Reusing renderer': usage/advance/reuse-renderer-instance.md
           - 'Using MemoryMode': usage/advance/memory-mode.md
           - 'Multiple playbacks': usage/advance/multiple-playbacks.md
+          - 'Manual playback (experimental)': usage/advance/manual-playback.md
       - 'Demo app': usage/demos.md
   - 'Extending Kohii':
       - 'Components': customize/terms.md

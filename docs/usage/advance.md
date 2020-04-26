@@ -15,3 +15,4 @@ Advance usages by **Kohii**:
 - [Reuse PlayerView instance for multiple Videos](advance/reuse-renderer-instance.md)
 - [Using MemoryMode to improve UX](advance/memory-mode.md)
 - [Playing many Videos at the same time](advance/multiple-playbacks.md)
+- [Manual playback](advance/manual-playback.md)

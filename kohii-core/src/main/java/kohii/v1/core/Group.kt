@@ -213,7 +213,6 @@ class Group(
       )
           .also { (active, inactive) ->
             inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
-            // TODO better way that doesn't require allocating new collection?
             active.sortedBy { it.token.containerRect distanceTo target }
                 .forEachIndexed { index, playback -> playback.distanceToPlay = index + 1 }
           }
