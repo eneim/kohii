@@ -137,6 +137,7 @@ class Manager internal constructor(
     event: Event
   ) {
     playbacks.forEach { it.value.lifecycleState = source.lifecycle.currentState }
+    refresh()
   }
 
   override fun onDestroy(owner: LifecycleOwner) {
