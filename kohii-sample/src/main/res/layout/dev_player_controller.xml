@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020 Nam Nguyen, nam@ene.im
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="#cc000000"
+    >
+
+  <ImageButton
+      android:id="@+id/exo_fullscreen_enter"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:ignore="ContentDescription"
+      style="@style/ExoMediaButton.FullScreen.Enter"
+      />
+
+  <ImageButton
+      android:id="@+id/exo_fullscreen_exit"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:ignore="ContentDescription"
+      android:visibility="invisible"
+      style="@style/ExoMediaButton.FullScreen.Exit"
+      />
+
+  <ImageButton
+      android:id="@+id/exo_play"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toEndOf="@id/barrier_0"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:ignore="ContentDescription"
+      style="@style/ExoMediaButton.Play"
+      />
+
+  <ImageButton
+      android:id="@+id/exo_pause"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toEndOf="@id/barrier_0"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:ignore="ContentDescription"
+      style="@style/ExoMediaButton.Pause"
+      />
+
+  <androidx.constraintlayout.widget.Barrier
+      android:id="@+id/barrier_0"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:barrierDirection="end"
+      app:constraint_referenced_ids="exo_fullscreen_enter, exo_fullscreen_exit"
+      />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
