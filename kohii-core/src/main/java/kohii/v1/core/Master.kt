@@ -40,7 +40,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.CREATED
+import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.exoplayer2.util.Util
 import kohii.v1.core.Binder.Options
@@ -138,6 +140,8 @@ class Master private constructor(context: Context) : PlayableManager {
   // TODO when to remove entries of this map?
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
+
+  internal var groupsMaxLifecycleState: State = DESTROYED
 
   private val componentCallbacks = object : ComponentCallbacks2 {
     override fun onLowMemory() = Unit
@@ -352,6 +356,14 @@ class Master private constructor(context: Context) : PlayableManager {
     playbackInfoStore.remove(playback)
   }
 
+  internal fun notifyPlaybackChanged(playable: Playable, from: Playback?, to: Playback?) {
+    if (playable.tag !== NO_TAG) {
+      for (group in groups) {
+        group.notifyPlaybackChanged(playable, from, to)
+      }
+    }
+  }
+
   internal fun cleanupPendingPlayables() {
     playables.filter { it.key.manager === this }
         .keys.toMutableList()
@@ -372,6 +384,10 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   internal val dispatcher = Dispatcher(this)
+
+  internal fun onGroupLifecycleStateChanged() {
+    groupsMaxLifecycleState = groups.map { it.activity.lifecycle.currentState }.max() ?: DESTROYED
+  }
 
   internal fun onGroupCreated(group: Group) {
     if (groups.add(group)) dispatcher.sendEmptyMessage(MSG_CLEANUP)

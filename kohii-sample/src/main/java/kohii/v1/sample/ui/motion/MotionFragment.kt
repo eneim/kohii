@@ -93,7 +93,7 @@ class MotionFragment : BaseFragment(), Presenter, DemoContainer {
           PlayerActivity.createIntent(
               requireContext(),
               InitData(
-                  tag = "${video.javaClass.canonicalName}::${video.url}",
+                  tag = rebinder.tag.toString(),
                   aspectRatio = video.width / video.height
               ),
               rebinder

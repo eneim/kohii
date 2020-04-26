@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +14,27 @@
   ~ limitations under the License.
   -->
 
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.exoplayer2.ui.AspectRatioFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/playerContainer"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/card_dark_background"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:minHeight="240dp"
+    app:resize_mode="fixed_width"
     >
 
   <com.google.android.exoplayer2.ui.PlayerView
-      android:id="@id/playerView"
+      android:id="@+id/playerView"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
+      android:layout_gravity="center"
+      android:minHeight="240dp"
+      app:controller_layout_id="@layout/dev_player_controller"
       app:keep_content_on_player_reset="true"
-      app:resize_mode="fit"
+      app:resize_mode="fixed_width"
       app:show_buffering="when_playing"
-      app:surface_type="surface_view"
-      app:use_controller="false"
+      app:surface_type="texture_view"
+      app:use_controller="true"
       />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</com.google.android.exoplayer2.ui.AspectRatioFrameLayout>

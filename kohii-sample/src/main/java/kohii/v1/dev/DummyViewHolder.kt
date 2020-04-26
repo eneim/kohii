@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.dev
 
-@Suppress("ClassName")
-sealed class Strategy : Selector {
+import android.view.View
+import android.view.ViewGroup
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.sample.R
+import kohii.v1.sample.common.BaseViewHolder
 
-  object NO_PLAYER : Strategy() {
-    override fun invoke(playbacks: Collection<Playback>): Collection<Playback> {
-      return emptyList()
-    }
-  }
-
-  object SINGLE_PLAYER : Strategy() {
-    override fun invoke(playbacks: Collection<Playback>): Collection<Playback> {
-      return listOfNotNull(playbacks.firstOrNull())
-    }
-  }
-
-  object MULTI_PLAYER : Strategy() {
-    override fun invoke(playbacks: Collection<Playback>): Collection<Playback> {
-      return playbacks
-    }
-  }
+internal class DummyViewHolder(
+  parent: ViewGroup
+) : BaseViewHolder(parent, R.layout.dev_video_holder) {
+  internal val playerView: PlayerView = itemView.findViewById(R.id.playerView)
+  internal val enterFullscreen: View = itemView.findViewById(R.id.exo_fullscreen_enter)
 }

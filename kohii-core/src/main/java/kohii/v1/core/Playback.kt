@@ -37,9 +37,23 @@ import kohii.v1.media.VolumeInfo
 import java.util.ArrayDeque
 import kotlin.math.max
 
+/**
+ * Common interface of an object that defines the connection between a [Playable] and a [ViewGroup]
+ * as an [container]. When the [Master] receive a request to bind a Video to a [ViewGroup], it first
+ * produce a [Playable] (either by acquiring from cache, or creating a new one) for the Video, and
+ * then creating a new instance of this object if needed.
+ *
+ * A [Playback] does not only store the information about the [ViewGroup] as [container], and the
+ * [Playable], but also help the [Master] to know if the [Playable] should be played or paused, by
+ * telling it to how much the [container] is visible and other conditions.
+ *
+ * @see [kohii.v1.internal.StaticViewRendererPlayback]
+ * @see [kohii.v1.internal.DynamicViewRendererPlayback]
+ * @see [kohii.v1.internal.DynamicFragmentRendererPlayback]
+ */
 abstract class Playback(
-  internal val manager: Manager,
-  internal val bucket: Bucket,
+  val manager: Manager,
+  val bucket: Bucket,
   val container: ViewGroup,
   val config: Config = Config()
 ) : PlayableContainer, PlayerEventListener, ErrorListener {

@@ -20,15 +20,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.core.Manager
-import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
-import kohii.v1.sample.DemoApp
-import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.common.BaseViewHolder
+import kohii.v1.sample.common.InitData
 import kohii.v1.sample.databinding.ActivityDevRecyclerviewBinding
 
 class DevRecyclerViewFragment : BaseFragment() {
@@ -54,50 +49,23 @@ class DevRecyclerViewFragment : BaseFragment() {
     val manager = kohii.register(this)
         .addBucket(binding.recyclerView)
 
-    binding.recyclerView.adapter = DummyAdapter(kohii, manager)
+    binding.recyclerView.adapter =
+      DummyAdapter(kohii, manager, enterFullscreenListener = { adapter, holder, _, tag ->
+        manager.observe(tag) { _, from, to ->
+          if (from?.bucket?.root !== binding.recyclerView && to == null) {
+            adapter.bindVideo(holder)
+          }
+        }
+
+        val intent = PlayerActivity.createIntent(
+            requireContext(), InitData(tag.toString(), 16 / 9F), Rebinder(tag)
+        )
+        startActivity(intent)
+      })
   }
 
   override fun onDestroyView() {
     super.onDestroyView()
     _binding = null
-  }
-}
-
-internal class DummyViewHolder(
-  parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_player_view) {
-  internal val playerView: PlayerView = itemView.findViewById(R.id.playerView)
-}
-
-internal class DummyAdapter(
-  val kohii: Kohii,
-  val manager: Manager
-) : Adapter<DummyViewHolder>() {
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int
-  ): DummyViewHolder {
-    return DummyViewHolder(parent)
-  }
-
-  override fun getItemCount(): Int {
-    return Int.MAX_VALUE / 2
-  }
-
-  override fun onBindViewHolder(
-    holder: DummyViewHolder,
-    position: Int
-  ) {
-    kohii.setUp(DemoApp.assetVideoUri) {
-      tag = "player::$position"
-      if (position == 0) {
-        controller = DefaultControlDispatcher(
-            manager, holder.playerView,
-            kohiiCanStart = false,
-            kohiiCanPause = false
-        )
-      }
-    }
-        .bind(holder.playerView)
   }
 }

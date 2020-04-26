@@ -57,7 +57,7 @@ abstract class Bucket constructor(
     const val BOTH_AXIS = -1
     const val NONE_AXIS = -2
 
-    val playbackComparators = mapOf(
+    private val playbackComparators = mapOf(
         HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
         VERTICAL to Playback.VERTICAL_COMPARATOR,
         BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,
@@ -241,10 +241,7 @@ abstract class Bucket constructor(
 
     val comparator = playbackComparators.getValue(orientation)
     val grouped = candidates.sortedWith(comparator)
-        .groupBy {
-          it.tag != Master.NO_TAG && it.config.controller != null
-          // equals to `manager.master.plannedManualPlayables.contains(it.tag)`
-        }
+        .groupBy { it.tag != Master.NO_TAG && it.config.controller != null }
         .withDefault { emptyList() }
 
     val manualCandidate = with(grouped.getValue(true)) {

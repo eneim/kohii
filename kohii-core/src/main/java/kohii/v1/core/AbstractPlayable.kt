@@ -39,7 +39,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override val tag: Any = config.tag
 
   override fun toString(): String {
-    return "Playable([t=$tag][h=${super.hashCode()}])"
+    return "Playable([t=$tag][b=$bridge][h=${super.hashCode()}])"
   }
 
   // Ensure the preparation for the playback
@@ -113,7 +113,6 @@ abstract class AbstractPlayable<RENDERER : Any>(
       }
     }
 
-  @Suppress("IfThenToElvis")
   override var playback: Playback? = null
     set(value) {
       val from = field
@@ -128,23 +127,22 @@ abstract class AbstractPlayable<RENDERER : Any>(
         if (from.playable === this) from.playable = null
       }
 
-      this.manager =
-        if (to != null) {
-          to.manager
+      this.manager = if (to != null) {
+        to.manager
+      } else {
+        val configChange = from?.manager?.isChangingConfigurations() == true
+        if (!configChange) {
+          // TODO need a better implementation.
+          if (master.manuallyStartedPlayable.get() === this && isPlaying()) master
+          else null
+        } else if (!onConfigChange()) {
+          // On config change, if the Playable doesn't support, we need to pause the Video.
+          onPause()
+          null
         } else {
-          val configChange = if (from != null) from.manager.isChangingConfigurations() else false
-          if (!configChange) {
-            // TODO need a better implementation.
-            if (master.manuallyStartedPlayable.get() === this && isPlaying()) master
-            else null
-          } else if (!onConfigChange()) {
-            // On config change, if the Playable doesn't support, we need to pause the Video.
-            onPause()
-            null
-          } else {
-            master // to prevent the Playable from being destroyed when Manager is null.
-          }
+          master // to prevent the Playable from being destroyed when Manager is null.
         }
+      }
 
       if (to != null) {
         to.playable = this
@@ -157,6 +155,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
           else master.plannedManualPlayables.remove(to.tag)
         }
       }
+
+      master.notifyPlaybackChanged(this, from, to)
     }
 
   override val playerState: Int

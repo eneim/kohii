@@ -36,6 +36,7 @@ import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.core.Strategy.SINGLE_PLAYER
 import kohii.v1.logDebug
+import kohii.v1.logInfo
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
@@ -73,6 +74,7 @@ class Manager(
 
   // Need RendererProvider to be Manager-scoped since we may have Fragment as Renderer.
   private val rendererProviders = mutableMapOf<Class<*>, RendererProvider>()
+  private val playableObservers = mutableMapOf<Any, PlayableObserver>()
 
   // Use as both Queue and Stack.
   // - When adding new Bucket, we add it to tail of the Queue.
@@ -145,6 +147,7 @@ class Manager(
       it.value.clear()
     }
         .clear()
+    playableObservers.clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
   }
@@ -188,7 +191,7 @@ class Manager(
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
-    require(ViewCompat.isAttachedToWindow(container))
+    if (!ViewCompat.isAttachedToWindow(container)) return null
     return buckets.find { it.accepts(container) }
   }
 
@@ -316,6 +319,11 @@ class Manager(
     playbacks[container]?.let { removePlayback(it) }
   }
 
+  internal fun notifyPlaybackChanged(playable: Playable, from: Playback?, to: Playback?) {
+    "Manager#notifyPlaybackChanged ${playable.tag}, $from, $to, $this".logInfo()
+    playableObservers[playable.tag]?.invoke(playable.tag, from, to)
+  }
+
   private fun onPlaybackAttached(playback: Playback) {
     playback.onAttached()
   }
@@ -333,6 +341,18 @@ class Manager(
   }
 
   // Public APIs
+
+  /**
+   * Observe to the changes of [Playable]'s [Playback] by its tag.
+   *
+   * @param mediaTag tag of the [Playable] to observe, must not be [Master.NO_TAG].
+   * @param observer the [PlayableObserver] to be notified about the change.
+   * @return `true` if the [observer] is registered, `false` otherwise.
+   */
+  fun observe(mediaTag: Any, observer: PlayableObserver): Boolean {
+    require(mediaTag !== Master.NO_TAG)
+    return playableObservers.put(mediaTag, observer) !== observer
+  }
 
   @Deprecated("Using addBucket with single View instead.")
   fun addBucket(vararg views: View): Manager {

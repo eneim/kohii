@@ -176,3 +176,13 @@ interface VolumeInfoController {
 interface PlayableManager
 
 interface PlayableContainer
+
+/**
+ * An observer to allow client to know when the [Playable] (defined by its tag)'s [Playback] has
+ * changed. Client can use the [Manager.observe] method to register an observer.
+ */
+typealias PlayableObserver = (
+  Any /* Playable Tag */,
+  Playback? /* Previous Playback */,
+  Playback? /* Next Playback */
+) -> Unit
