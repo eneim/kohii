@@ -227,7 +227,7 @@ abstract class Bucket constructor(
   internal fun effectiveVolumeInfo(origin: VolumeInfo): VolumeInfo {
     return with(origin) {
       val constraint = volumeConstraint
-      VolumeInfo(mute && constraint.mute, volume.coerceAtMost(constraint.volume))
+      VolumeInfo(mute || constraint.mute, volume.coerceAtMost(constraint.volume))
     }
   }
 
