@@ -39,7 +39,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override val tag: Any = config.tag
 
   override fun toString(): String {
-    return "Playable([t=$tag][h=${super.hashCode()}])"
+    return "Playable([t=$tag][b=$bridge][h=${super.hashCode()}])"
   }
 
   // Ensure the preparation for the playback
@@ -155,6 +155,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
           else master.plannedManualPlayables.remove(to.tag)
         }
       }
+
+      master.notifyPlaybackChanged(this, from, to)
     }
 
   override val playerState: Int

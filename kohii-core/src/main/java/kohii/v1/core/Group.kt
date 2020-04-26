@@ -21,21 +21,24 @@ import android.os.Handler
 import android.os.Message
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
-import androidx.core.app.ComponentActivity
 import androidx.core.view.ViewCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle.Event
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.distanceTo
 import kohii.v1.internal.PlayableDispatcher
+import kohii.v1.logDebug
 import kohii.v1.media.VolumeInfo
 import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
 
 class Group(
   internal val master: Master,
-  internal val activity: ComponentActivity
-) : DefaultLifecycleObserver, Handler.Callback {
+  internal val activity: FragmentActivity
+) : DefaultLifecycleObserver, LifecycleEventObserver, Handler.Callback {
 
   companion object {
     const val DELAY = 2 * 1000L / 60 /* about 2 frames */
@@ -104,6 +107,10 @@ class Group(
     return true
   }
 
+  override fun onStateChanged(source: LifecycleOwner, event: Event) {
+    master.onGroupLifecycleStateChanged()
+  }
+
   override fun onCreate(owner: LifecycleOwner) {
     master.onGroupCreated(this)
   }
@@ -139,6 +146,7 @@ class Group(
   }
 
   private fun refresh() {
+    "Group#refresh, $this".logDebug()
     val playbacks = this.playbacks // save a cache to prevent re-mapping
     playbacks.forEach { it.onRefresh() } // update token
 
@@ -156,7 +164,11 @@ class Group(
     }
 
     val oldSelection = selection
-    selection = if (lock) emptySet() else toPlay
+    selection =
+      if (lock || activity.lifecycle.currentState < master.groupsMaxLifecycleState)
+        emptySet()
+      else
+        toPlay
     val newSelection = selection
 
     // Next: as Playbacks are split into 2 collections, we then release unused resources and prepare
@@ -257,5 +269,11 @@ class Group(
 
   internal fun unstick(manager: Manager?) {
     if (manager == null || stickyManager === manager) stickyManager = null
+  }
+
+  internal fun notifyPlaybackChanged(playable: Playable, from: Playback?, to: Playback?) {
+    for (manager in managers) {
+      manager.notifyPlaybackChanged(playable, from, to)
+    }
   }
 }
