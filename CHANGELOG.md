@@ -7,7 +7,9 @@ _Under development_
 - Support _multiple playback_. Check out [docs](https://eneim.github.io/kohii/usage/advance/) for more information.
 - Experimental manual playback.
 - Introduce `PlayableObserver`.
-- Setting `activeLifecycleState` when registering new manager.
+- Introduce `activeLifecycleState` setting for registering new manager.
+- Introduce `PlayerParameters`, `NetworkTypeChangeListener`.
+- Deprecate the `VideoSize`. 
 
 ## 1.0.0.2010004
 
