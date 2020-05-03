@@ -22,6 +22,7 @@ import kohii.v1.core.Master.Companion.NO_TAG
 import kohii.v1.core.Playback.ArtworkHintListener
 import kohii.v1.core.Playback.Callback
 import kohii.v1.core.Playback.Controller
+import kohii.v1.core.Playback.NetworkTypeChangeListener
 import kohii.v1.core.Playback.TokenUpdateListener
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
@@ -41,6 +42,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
     var controller: Controller? = null
     var artworkHintListener: ArtworkHintListener? = null
     var tokenUpdateListener: TokenUpdateListener? = null
+    var networkTypeChangeListener: NetworkTypeChangeListener? = null
     val callbacks = mutableSetOf<Callback>()
   }
 
@@ -71,7 +73,9 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
         .firstOrNull { it.value == tag /* equals */ }
         ?.key
     master.bind(
-        requireNotNull(playable) { "Playable is null for tag $tag" }, tag, container,
+        requireNotNull(playable) { "Playable is null for tag $tag" },
+        tag,
+        container,
         Binder.Options().also {
           it.tag = tag
           it.threshold = options.threshold
@@ -80,6 +84,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
           it.controller = options.controller
           it.artworkHintListener = options.artworkHintListener
           it.tokenUpdateListener = options.tokenUpdateListener
+          it.networkTypeChangeListener = options.networkTypeChangeListener
           it.callbacks += options.callbacks
         }, callback
     )

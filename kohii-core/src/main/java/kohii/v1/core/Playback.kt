@@ -119,6 +119,7 @@ abstract class Playback(
     val controller: Controller? = null,
     val artworkHintListener: ArtworkHintListener? = null,
     val tokenUpdateListener: TokenUpdateListener? = null,
+    val networkTypeChangeListener: NetworkTypeChangeListener? = null,
     val callbacks: Set<Callback> = emptySet()
   )
 
@@ -161,6 +162,7 @@ abstract class Playback(
 
   private var artworkHintListener: ArtworkHintListener? = null
   private var tokenUpdateListener: TokenUpdateListener? = null
+  private var networkTypeChangeListener: NetworkTypeChangeListener? = null
 
   internal open fun acquireRenderer(): Any? {
     val playable = this.playable
@@ -213,6 +215,9 @@ abstract class Playback(
     callbacks.forEach { it.onAdded(this) }
     artworkHintListener = config.artworkHintListener
     tokenUpdateListener = config.tokenUpdateListener
+    networkTypeChangeListener = config.networkTypeChangeListener
+    playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(manager.master.networkType)
+        ?: playerParameters
     bucket.addContainer(this.container)
   }
 
@@ -222,6 +227,7 @@ abstract class Playback(
     bucket.removeContainer(this.container)
     tokenUpdateListener = null
     artworkHintListener = null
+    networkTypeChangeListener = null
     callbacks.onEach { it.onRemoved(this) }
         .clear()
     listeners.clear()
@@ -327,6 +333,7 @@ abstract class Playback(
   }
 
   internal var playable: Playable? = null
+  internal var playerParametersChangeListener: PlayerParametersChangeListener? = null
 
   internal fun compareWith(
     other: Playback,
@@ -352,6 +359,11 @@ abstract class Playback(
     return result
   }
 
+  internal fun onNetworkTypeChanged(networkType: NetworkType) {
+    this.playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(networkType)
+        ?: this.playerParameters
+  }
+
   // Public APIs
 
   val tag = config.tag
@@ -367,6 +379,14 @@ abstract class Playback(
 
   val containerRect: Rect
     get() = token.containerRect
+
+  var playerParameters: PlayerParameters = PlayerParameters.DEFAULT
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from != to) playerParametersChangeListener?.onPlayerParametersChanged(to)
+    }
 
   fun addCallback(callback: Callback) {
     "Playback#addCallback $callback, $this".logDebug()
@@ -565,5 +585,15 @@ abstract class Playback(
   interface TokenUpdateListener {
 
     fun onTokenUpdate(playback: Playback, token: Token)
+  }
+
+  interface NetworkTypeChangeListener {
+
+    fun onNetworkTypeChanged(networkType: NetworkType): PlayerParameters
+  }
+
+  internal interface PlayerParametersChangeListener {
+
+    fun onPlayerParametersChanged(parameters: PlayerParameters)
   }
 }

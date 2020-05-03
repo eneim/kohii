@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.metadata.MetadataOutput
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.text.Cue
 import com.google.android.exoplayer2.text.TextOutput
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.video.VideoListener
 import kohii.v1.media.VolumeInfo
@@ -173,16 +174,12 @@ interface VolumeInfoController {
   fun removeVolumeChangedListener(listener: VolumeChangedListener?)
 }
 
+// TODO(eneim): document about the usage of this interface.
+interface DefaultTrackSelectorHolder {
+
+  val trackSelector: DefaultTrackSelector
+}
+
 interface PlayableManager
 
 interface PlayableContainer
-
-/**
- * An observer to allow client to know when the [Playable] (defined by its tag)'s [Playback] has
- * changed. Client can use the [Manager.observe] method to register an observer.
- */
-typealias PlayableObserver = (
-  Any /* Playable Tag */,
-  Playback? /* Previous Playback */,
-  Playback? /* Next Playback */
-) -> Unit

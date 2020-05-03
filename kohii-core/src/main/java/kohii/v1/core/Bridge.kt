@@ -25,6 +25,7 @@ interface Bridge<RENDERER : Any> {
 
   var renderer: RENDERER?
 
+  @Deprecated("From 1.1.0+ this value should not be used anymore.")
   var videoSize: VideoSize
 
   var playbackInfo: PlaybackInfo
@@ -34,6 +35,8 @@ interface Bridge<RENDERER : Any> {
   var repeatMode: Int
 
   var volumeInfo: VolumeInfo
+
+  var playerParameters: PlayerParameters
 
   fun isPlaying(): Boolean
 

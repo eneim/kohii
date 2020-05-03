@@ -23,6 +23,7 @@ import kohii.v1.core.MemoryMode.INFINITE
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.MemoryMode.NORMAL
 import kohii.v1.core.Playback.Callback
+import kohii.v1.core.Playback.PlayerParametersChangeListener
 import kohii.v1.logInfo
 import kohii.v1.logWarn
 import kohii.v1.media.Media
@@ -34,9 +35,11 @@ abstract class AbstractPlayable<RENDERER : Any>(
   media: Media,
   config: Config,
   protected val bridge: Bridge<RENDERER>
-) : Playable(media, config), Callback {
+) : Playable(media, config), Callback, PlayerParametersChangeListener {
 
   override val tag: Any = config.tag
+
+  private var playRequested: Boolean = false
 
   override fun toString(): String {
     return "Playable([t=$tag][b=$bridge][h=${super.hashCode()}])"
@@ -62,8 +65,6 @@ abstract class AbstractPlayable<RENDERER : Any>(
     "Playable#onPrepare $loadSource $this".logInfo()
     bridge.prepare(loadSource)
   }
-
-  private var playRequested: Boolean = false
 
   override fun onPlay() {
     "Playable#onPlay $this".logWarn()
@@ -125,6 +126,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
         bridge.removeEventListener(from)
         from.removeCallback(this)
         if (from.playable === this) from.playable = null
+        if (from.playerParametersChangeListener === this) from.playerParametersChangeListener = null
       }
 
       this.manager = if (to != null) {
@@ -146,6 +148,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
 
       if (to != null) {
         to.playable = this
+        to.playerParametersChangeListener = this
         to.addCallback(this)
         to.config.callbacks.forEach { cb -> to.addCallback(cb) }
         bridge.addEventListener(to)
@@ -169,6 +172,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     require(playback === this.playback)
     master.tryRestorePlaybackInfo(this)
     master.preparePlayable(this, playback.config.preload)
+    bridge.playerParameters = playback.playerParameters
   }
 
   override fun onInActive(playback: Playback) {
@@ -202,7 +206,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun considerRequestRenderer(playback: Playback) {
     "Playable#considerRequestRenderer $playback, $this".logInfo()
     require(playback === this.playback)
-    if (bridge.renderer == null || manager !== playback.manager) { // Only request for Renderer if we do not have one.
+    if (this.renderer == null || manager !== playback.manager) {
+      // Only request for Renderer if we do not have one.
       val renderer = playback.acquireRenderer()
       if (playback.attachRenderer(renderer)) this.renderer = renderer
     }
@@ -211,8 +216,9 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun considerReleaseRenderer(playback: Playback) {
     "Playable#considerReleaseRenderer $playback, $this".logInfo()
     require(this.playback == null || this.playback === playback)
-    if (bridge.renderer != null) { // Only release the Renderer if we do have one to release.
-      val renderer = bridge.renderer
+    val renderer = this.renderer
+    if (renderer != null) {
+      // Only release the Renderer if we have one to release.
       if (playback.detachRenderer(renderer)) {
         playback.releaseRenderer(renderer)
         this.renderer = null
@@ -274,11 +280,15 @@ abstract class AbstractPlayable<RENDERER : Any>(
   }
 
   override fun onNetworkTypeChanged(
-    from: Int,
-    to: Int
+    from: NetworkType,
+    to: NetworkType
   ) {
     "Playable#onNetworkTypeChanged $playback, $this".logInfo()
-    val resolution = config.videoSize(to)
-    bridge.videoSize = resolution
+    playback?.onNetworkTypeChanged(to)
+  }
+
+  override fun onPlayerParametersChanged(parameters: PlayerParameters) {
+    "Playable#onPlayerParametersChanged $parameters, $this".logInfo()
+    bridge.playerParameters = parameters
   }
 }

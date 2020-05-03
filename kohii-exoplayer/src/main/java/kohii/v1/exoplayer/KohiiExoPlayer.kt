@@ -30,6 +30,7 @@ import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Clock
 import com.google.android.exoplayer2.util.Util
+import kohii.v1.core.DefaultTrackSelectorHolder
 import kohii.v1.core.VolumeChangedListener
 import kohii.v1.core.VolumeChangedListeners
 import kohii.v1.core.VolumeInfoController
@@ -49,7 +50,7 @@ open class KohiiExoPlayer(
     // TrackSelector is initialized at the same time a new Player instance is created.
     // This process will set the BandwidthMeter to the TrackSelector. Therefore we need to have
     // unique TrackSelector per Player instance.
-  val trackSelector: DefaultTrackSelector = DefaultTrackSelector(context.applicationContext),
+  override val trackSelector: DefaultTrackSelector = DefaultTrackSelector(context.applicationContext),
   loadControl: LoadControl = DefaultLoadControl(),
   bandwidthMeter: BandwidthMeter = DefaultBandwidthMeter.Builder(context.applicationContext)
       .build(),
@@ -63,7 +64,7 @@ open class KohiiExoPlayer(
     AnalyticsCollector(Clock.DEFAULT),
     Clock.DEFAULT,
     looper
-), VolumeInfoController {
+), VolumeInfoController, DefaultTrackSelectorHolder {
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
   private var playerVolumeInfo = VolumeInfo(false, 1.0F) // backing field.

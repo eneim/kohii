@@ -30,7 +30,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.You
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.Common
-import kohii.v1.core.VideoSize
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -102,8 +101,6 @@ internal class UnofficialYouTubePlayerBridge(
       }
     }
 
-  override var videoSize: VideoSize = VideoSize.ORIGINAL
-
   override var renderer: YouTubePlayerView? = null
     set(value) {
       if (field === value) return
@@ -158,7 +155,7 @@ internal class UnofficialYouTubePlayerBridge(
 
   override fun play() {
     super.play()
-    if (videoSize == VideoSize.NONE) return
+    if (!playerParameters.playerShouldStart()) return
     val videoId = media.uri.toString()
     if (tracker.state != PLAYING || tracker.videoId != videoId) {
       val player = this.player
