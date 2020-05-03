@@ -21,3 +21,7 @@
   font-weight: bold;
   color: #353535;
 }
+
+html {
+  font-size: 125%;
+}

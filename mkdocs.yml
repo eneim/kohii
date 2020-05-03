@@ -29,12 +29,47 @@ theme:
 # Customization
 extra:
   social:
-    - type: 'github'
-      link: 'https://github.com/eneim/kohii'
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/eneim/kohii
 
 google_analytics:
   - 'UA-72567780-9'
   - 'auto'
+
+# CSS
+extra_css:
+  - 'css/main.css'
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+      use_pygments: True
+      noclasses: True
+      pygments_style: perldoc
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - tables
+  - footnotes
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
 
 # Navigation
 nav:
@@ -63,38 +98,3 @@ nav:
       - 'kohii-androidx': api/kohii-androidx/index.md
       - 'kohii-ads': api/kohii-ads/index.md
   - 'Code of Conduct': code_of_conduct.md
-
-# CSS
-extra_css:
-  - 'css/main.css'
-
-# Extensions
-markdown_extensions:
-  - admonition
-  - codehilite:
-      guess_lang: false
-      use_pygments: True
-      noclasses: True
-      pygments_style: perldoc
-  - footnotes
-  - toc:
-      permalink: true
-  - pymdownx.betterem:
-      smart_enable: all
-  - pymdownx.caret
-  - pymdownx.inlinehilite
-  - pymdownx.magiclink
-  - pymdownx.smartsymbols
-  - pymdownx.superfences
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.tilde
-  - tables
-  - footnotes
-
-
-# Plugins
-plugins:
-  - search
-  - minify:
-      minify_html: true
