@@ -22,7 +22,7 @@ import androidx.media2.common.UriMediaItem
 import androidx.media2.player.MediaPlayer
 import androidx.media2.widget.VideoView
 import kohii.v1.core.AbstractBridge
-import kohii.v1.core.VideoSize
+import kohii.v1.core.PlayerParameters
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -70,6 +70,9 @@ class VideoViewBridge(
 
   override var volumeInfo: VolumeInfo = VolumeInfo()
 
+  // TODO(eneim): update the Player with new parameters.
+  override var playerParameters: PlayerParameters = PlayerParameters.DEFAULT
+
   override fun prepare(loadSource: Boolean) {
     if (loadSource) ready()
   }
@@ -108,12 +111,4 @@ class VideoViewBridge(
     }
     player = null
   }
-
-  override var videoSize: VideoSize = VideoSize.ORIGINAL
-    get() {
-      return player?.let {
-        val size = it.videoSize
-        VideoSize(size.width, size.height)
-      } ?: field
-    }
 }

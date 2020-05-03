@@ -44,6 +44,7 @@ import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.util.Util
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.MemoryMode.AUTO
@@ -188,13 +189,15 @@ class Master private constructor(context: Context) : PlayableManager {
     MasterNetworkCallback(this)
   }
 
-  private var networkType: Int = Util.getNetworkType(app)
+  @C.NetworkType
+  internal var networkType: NetworkType = Util.getNetworkType(app)
     set(value) {
       val from = field
       field = value
       val to = field
       if (from == to) return
-      playables.forEach { it.key.onNetworkTypeChanged(from, to) }
+      playables.filterKeys { it.playback?.isActive == true }
+          .forEach { it.key.onNetworkTypeChanged(from, to) }
     }
 
   internal fun onNetworkChanged() {
@@ -733,6 +736,7 @@ class Master private constructor(context: Context) : PlayableManager {
             controller = options.controller,
             artworkHintListener = options.artworkHintListener,
             tokenUpdateListener = options.tokenUpdateListener,
+            networkTypeChangeListener = options.networkTypeChangeListener,
             callbacks = options.callbacks
         )
 

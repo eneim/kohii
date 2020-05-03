@@ -34,8 +34,9 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.Common
+import kohii.v1.core.DefaultTrackSelectorHolder
 import kohii.v1.core.PlayerEventListener
-import kohii.v1.core.VideoSize
+import kohii.v1.core.PlayerParameters
 import kohii.v1.core.VolumeInfoController
 import kohii.v1.exoplayer.internal.addEventListener
 import kohii.v1.exoplayer.internal.getVolumeInfo
@@ -90,24 +91,6 @@ class PlayerViewBridge(
   override val playerState: Int
     get() = player?.playbackState ?: Common.STATE_IDLE
 
-  override var videoSize: VideoSize = VideoSize.ORIGINAL
-    set(value) {
-      val from = field
-      field = value
-      val to = field
-      if (from == to) return
-      if (to != VideoSize.NONE) {
-        val player = this.player
-        if (player is KohiiExoPlayer) {
-          val current = player.trackSelector.parameters
-          val next = current.buildUpon()
-              .setMaxVideoSize(to.maxWidth, to.maxHeight)
-              .build()
-          player.trackSelector.parameters = next
-        }
-      }
-    }
-
   override fun prepare(loadSource: Boolean) {
     super.addEventListener(this)
 
@@ -153,7 +136,7 @@ class PlayerViewBridge(
 
   override fun play() {
     super.play()
-    if (videoSize != VideoSize.NONE) {
+    if (playerParameters.playerShouldStart()) {
       requireNotNull(player).playWhenReady = true
     }
   }
@@ -230,6 +213,23 @@ class PlayerViewBridge(
       this.setPlaybackInfo(value, false)
     }
 
+  override var playerParameters: PlayerParameters = PlayerParameters()
+    set(value) {
+      field = value
+      applyPlayerParameters(value)
+    }
+
+  private fun applyPlayerParameters(parameters: PlayerParameters) {
+    val player = this.player
+    if (player is DefaultTrackSelectorHolder) {
+      player.trackSelector.parameters = player.trackSelector.parameters.buildUpon()
+          .setMaxVideoSize(parameters.maxVideoWidth, parameters.maxVideoHeight)
+          .setMaxVideoBitrate(parameters.maxVideoBitrate)
+          .setMaxAudioBitrate(parameters.maxAudioBitrate)
+          .build()
+    }
+  }
+
   private fun setPlaybackInfo(
     playbackInfo: PlaybackInfo,
     volumeOnly: Boolean
@@ -292,11 +292,7 @@ class PlayerViewBridge(
       sourcePrepared = false
       listenerApplied = false
       val player = playerProvider.acquirePlayer(this.media)
-      if (player is KohiiExoPlayer) {
-        player.trackSelector.parameters = player.trackSelector.parameters.buildUpon()
-            .setMaxVideoSize(videoSize.maxWidth, videoSize.maxHeight)
-            .build()
-      }
+      applyPlayerParameters(playerParameters)
       this.player = player
     }
 

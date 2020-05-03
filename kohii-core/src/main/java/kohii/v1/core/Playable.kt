@@ -51,8 +51,7 @@ abstract class Playable(
 
   data class Config(
     internal val tag: Any = Master.NO_TAG,
-    internal val rendererType: Class<*>,
-    internal val videoSize: (Int /* NetworkType */) -> VideoSize = { VideoSize.ORIGINAL }
+    internal val rendererType: Class<*>
   )
 
   abstract val tag: Any
@@ -174,7 +173,7 @@ abstract class Playable(
   )
 
   internal abstract fun onNetworkTypeChanged(
-    from: Int,
-    to: Int
+    from: NetworkType,
+    to: NetworkType
   )
 }

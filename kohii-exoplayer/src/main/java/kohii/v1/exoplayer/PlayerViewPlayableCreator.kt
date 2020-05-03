@@ -35,7 +35,7 @@ import kohii.v1.media.Media
 import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
-typealias PlayerViewBridgeCreatorFactory = Context.() -> BridgeCreator<PlayerView>
+typealias PlayerViewBridgeCreatorFactory = (Context) -> BridgeCreator<PlayerView>
 
 class PlayerViewPlayableCreator internal constructor(
   private val master: Master,
@@ -49,29 +49,26 @@ class PlayerViewPlayableCreator internal constructor(
     private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
 
     // Only pass Application to this method.
-    private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = {
-      val userAgent = Common.getUserAgent(this, BuildConfig.LIB_NAME)
+    private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { context ->
+      val userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
       val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
       // ExoPlayerProvider
       val playerProvider: ExoPlayerProvider = DefaultExoPlayerProvider(
-          this,
+          context,
           DefaultBandwidthMeterFactory()
       )
 
       // MediaSourceFactoryProvider
-      val fileDir = getExternalFilesDir(null) ?: filesDir
-      val contentDir = File(
-          fileDir,
-          CACHE_CONTENT_DIRECTORY
-      )
+      val fileDir = context.getExternalFilesDir(null) ?: context.filesDir
+      val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
       val mediaCache: Cache = SimpleCache(
           contentDir,
           LeastRecentlyUsedCacheEvictor(CACHE_SIZE),
-          ExoDatabaseProvider(this)
+          ExoDatabaseProvider(context)
       )
-      val upstreamFactory = DefaultDataSourceFactory(this, httpDataSource)
-      val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(this, httpDataSource)
+      val upstreamFactory = DefaultDataSourceFactory(context, httpDataSource)
+      val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(context, httpDataSource)
       val mediaSourceFactoryProvider: MediaSourceFactoryProvider =
         DefaultMediaSourceFactoryProvider(upstreamFactory, drmSessionManagerProvider, mediaCache)
       PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)

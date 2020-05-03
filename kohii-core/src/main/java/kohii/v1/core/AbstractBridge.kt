@@ -58,4 +58,9 @@ abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
   override fun pause() {
     "Bridge#pause $this".logInfo()
   }
+
+  override var videoSize: VideoSize = VideoSize.ORIGINAL
+
+  // For backward compatibility.
+  override var playerParameters: PlayerParameters = PlayerParameters.DEFAULT
 }

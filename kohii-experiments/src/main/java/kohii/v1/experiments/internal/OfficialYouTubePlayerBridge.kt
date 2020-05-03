@@ -29,7 +29,6 @@ import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.MINIMAL
 import com.google.android.youtube.player.YouTubePlayer.Provider
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.Common
-import kohii.v1.core.VideoSize
 import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.experiments.performRelease
 import kohii.v1.media.Media
@@ -140,8 +139,6 @@ internal class OfficialYouTubePlayerBridge(
   override val playerState: Int
     get() = _playbackState
 
-  override var videoSize: VideoSize = VideoSize.ORIGINAL
-
   override var renderer: YouTubePlayerFragment? = null
     set(value) {
       val from = field
@@ -161,7 +158,7 @@ internal class OfficialYouTubePlayerBridge(
 
   override fun play() {
     super.play()
-    if (videoSize == VideoSize.NONE) return
+    if (!playerParameters.playerShouldStart()) return
     if (!this.isPlaying() || _loadedVideoId != media.uri.toString()) {
       this._playWhenReady = true
       this.renderer?.let {
