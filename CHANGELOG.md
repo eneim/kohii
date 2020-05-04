@@ -9,7 +9,8 @@ _Under development_
 - Introduce `PlayableObserver`.
 - Introduce `activeLifecycleState` setting for registering new manager.
 - Introduce `PlayerParameters`, `NetworkTypeChangeListener`.
-- Deprecate the `VideoSize`. 
+- Deprecate the `VideoSize`.
+- Introduce the `initialPlaybackInfo` setting for the Binder. 
 
 ## 1.0.0.2010004
 
