@@ -737,6 +737,7 @@ class Master private constructor(context: Context) : PlayableManager {
             artworkHintListener = options.artworkHintListener,
             tokenUpdateListener = options.tokenUpdateListener,
             networkTypeChangeListener = options.networkTypeChangeListener,
+            initialPlaybackInfo = options.initialPlaybackInfo,
             callbacks = options.callbacks
         )
 

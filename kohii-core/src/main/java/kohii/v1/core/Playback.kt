@@ -120,6 +120,7 @@ abstract class Playback(
     val artworkHintListener: ArtworkHintListener? = null,
     val tokenUpdateListener: TokenUpdateListener? = null,
     val networkTypeChangeListener: NetworkTypeChangeListener? = null,
+    val initialPlaybackInfo: PlaybackInfo? = null,
     val callbacks: Set<Callback> = emptySet()
   )
 
@@ -333,6 +334,13 @@ abstract class Playback(
   }
 
   internal var playable: Playable? = null
+    set(value) {
+      field = value
+      if (value != null && config.initialPlaybackInfo != null) {
+        value.playbackInfo = config.initialPlaybackInfo
+      }
+    }
+
   internal var playerParametersChangeListener: PlayerParametersChangeListener? = null
 
   internal fun compareWith(
@@ -442,9 +450,11 @@ abstract class Playback(
         listeners.forEach { it.onEnded(this@Playback) }
       }
     }
+    val playable = this.playable
     artworkHintListener?.onArtworkHint(
-        playable?.run { !isPlaying() } ?: true,
-        playbackInfo.resumePosition, playerState
+        shouldShow = if (playable != null) !playable.isPlaying() else true,
+        position = playbackInfo.resumePosition,
+        state = playerState
     )
   }
 

@@ -116,23 +116,25 @@ abstract class AbstractPlayable<RENDERER : Any>(
 
   override var playback: Playback? = null
     set(value) {
-      val from = field
+      val oldPlayback = field
       field = value
-      val to = field
-      if (from === to) return
-      "Playable#playback $from --> $to, $this".logInfo()
-      if (from != null) {
-        bridge.removeErrorListener(from)
-        bridge.removeEventListener(from)
-        from.removeCallback(this)
-        if (from.playable === this) from.playable = null
-        if (from.playerParametersChangeListener === this) from.playerParametersChangeListener = null
+      val newPlayback = field
+      if (oldPlayback === newPlayback) return
+      "Playable#playback $oldPlayback --> $newPlayback, $this".logInfo()
+      if (oldPlayback != null) {
+        bridge.removeErrorListener(oldPlayback)
+        bridge.removeEventListener(oldPlayback)
+        oldPlayback.removeCallback(this)
+        if (oldPlayback.playable === this) oldPlayback.playable = null
+        if (oldPlayback.playerParametersChangeListener === this) {
+          oldPlayback.playerParametersChangeListener = null
+        }
       }
 
-      this.manager = if (to != null) {
-        to.manager
+      this.manager = if (newPlayback != null) {
+        newPlayback.manager
       } else {
-        val configChange = from?.manager?.isChangingConfigurations() == true
+        val configChange = oldPlayback?.manager?.isChangingConfigurations() == true
         if (!configChange) {
           // TODO need a better implementation.
           if (master.manuallyStartedPlayable.get() === this && isPlaying()) master
@@ -146,20 +148,25 @@ abstract class AbstractPlayable<RENDERER : Any>(
         }
       }
 
-      if (to != null) {
-        to.playable = this
-        to.playerParametersChangeListener = this
-        to.addCallback(this)
-        to.config.callbacks.forEach { cb -> to.addCallback(cb) }
-        bridge.addEventListener(to)
-        bridge.addErrorListener(to)
-        if (to.tag != Master.NO_TAG) {
-          if (to.config.controller != null) master.plannedManualPlayables.add(to.tag)
-          else master.plannedManualPlayables.remove(to.tag)
+      if (newPlayback != null) {
+        newPlayback.playable = this
+        newPlayback.playerParametersChangeListener = this
+        newPlayback.addCallback(this)
+        newPlayback.config.callbacks.forEach { callback -> newPlayback.addCallback(callback) }
+
+        bridge.addEventListener(newPlayback)
+        bridge.addErrorListener(newPlayback)
+
+        if (newPlayback.tag != Master.NO_TAG) {
+          if (newPlayback.config.controller != null) {
+            master.plannedManualPlayables.add(newPlayback.tag)
+          } else {
+            master.plannedManualPlayables.remove(newPlayback.tag)
+          }
         }
       }
 
-      master.notifyPlaybackChanged(this, from, to)
+      master.notifyPlaybackChanged(this, oldPlayback, newPlayback)
     }
 
   override val playerState: Int

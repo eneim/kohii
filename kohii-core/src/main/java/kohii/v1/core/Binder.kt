@@ -25,12 +25,19 @@ import kohii.v1.core.Playback.Controller
 import kohii.v1.core.Playback.NetworkTypeChangeListener
 import kohii.v1.core.Playback.TokenUpdateListener
 import kohii.v1.media.Media
+import kohii.v1.media.PlaybackInfo
 
 class Binder(
   private val engine: Engine<*>,
   internal val media: Media
 ) {
 
+  /**
+   * @property initialPlaybackInfo expected initial [PlaybackInfo] for a [Playable] to start when
+   * a new [Playback] is bound to it. If null, it will follow the default behavior: an existing
+   * [Playable] will keep its current state, a newly created [Playable] receives a new
+   * [PlaybackInfo]. This property is not available in the [Rebinder].
+   */
   class Options {
     var tag: Any = NO_TAG
     var threshold: Float = 0.65F
@@ -41,6 +48,7 @@ class Binder(
     var artworkHintListener: ArtworkHintListener? = null
     var tokenUpdateListener: TokenUpdateListener? = null
     var networkTypeChangeListener: NetworkTypeChangeListener? = null
+    var initialPlaybackInfo: PlaybackInfo? = null
     val callbacks = mutableSetOf<Callback>()
   }
 
@@ -75,7 +83,7 @@ class Binder(
 
     if (cache != null) {
       require(cache.media == media) // Playable of same tag must have the same Media data.
-      if (cache.config != config) {
+      if (cache.config != config /* equals */) {
         // Scenario: client bind a Video of same tag/media but different Renderer type or Config.
         cache.playback = null // will also set Manager to null
         engine.master.tearDown(cache, true)
