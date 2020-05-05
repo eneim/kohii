@@ -4,6 +4,7 @@
 
 _Under development_
 
+- ExoPlayer: 2.11.3
 - Support _multiple playback_. Check out [docs](https://eneim.github.io/kohii/usage/advance/) for more information.
 - Experimental manual playback.
 - Introduce `PlayableObserver`.
@@ -14,7 +15,7 @@ _Under development_
 
 ## 1.0.0.2010004
 
-_2020.03.015_
+_2020.03.15_
 
 - Open `Builder` for `Kohii` and `Latte`. Clients can now use custom implementations to construct
 those classes. Example usages:
