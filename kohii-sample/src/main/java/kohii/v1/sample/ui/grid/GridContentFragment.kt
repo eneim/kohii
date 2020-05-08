@@ -32,28 +32,28 @@ import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.databinding.FragmentRecyclerviewGridBinding
-import kotlin.LazyThreadSafetyMode.NONE
 
 class GridContentFragment : BaseFragment() {
 
-  private val kohii by lazy(NONE) { Kohii[this] }
-
-  private val binding: FragmentRecyclerviewGridBinding get() = requireNotNull(_binding)
-  private val selectionTracker: SelectionTracker<Rebinder> get() = requireNotNull(_selectionTracker)
+  private lateinit var kohii: Kohii
 
   private var _binding: FragmentRecyclerviewGridBinding? = null
-  private var _selectionTracker: SelectionTracker<Rebinder>? = null
+  private val binding: FragmentRecyclerviewGridBinding get() = requireNotNull(_binding)
 
-  private var callback: Callback? = null
+  private var _selectionTracker: SelectionTracker<Rebinder>? = null
+  private val selectionTracker: SelectionTracker<Rebinder> get() = requireNotNull(_selectionTracker)
+
+  private var videoGridCallback: VideoGridCallback? = null
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
-    callback = parentFragment as? Callback
+    kohii = Kohii[this]
+    videoGridCallback = parentFragment as? VideoGridCallback
   }
 
   override fun onDetach() {
     super.onDetach()
-    callback = null
+    videoGridCallback = null
   }
 
   override fun onCreateView(
@@ -83,7 +83,7 @@ class GridContentFragment : BaseFragment() {
     val adapter = ItemsAdapter(
         kohii,
         shouldBindVideo = { !selectionTracker.isSelected(it) },
-        onVideoClick = { callback?.onSelected(it) }
+        onVideoClick = { videoGridCallback?.onSelected(it) }
     )
 
     (binding.container.layoutManager as? GridLayoutManager)?.spanSizeLookup = spanSizeLookup
@@ -123,7 +123,7 @@ class GridContentFragment : BaseFragment() {
     selectionTracker.deselect(rebinder)
   }
 
-  interface Callback {
+  interface VideoGridCallback {
 
     fun onSelected(rebinder: Rebinder)
   }

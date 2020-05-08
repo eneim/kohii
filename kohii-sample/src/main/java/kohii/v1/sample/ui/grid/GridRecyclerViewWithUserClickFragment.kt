@@ -31,7 +31,7 @@ import timber.log.Timber
 import kotlin.properties.Delegates
 
 class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
-    GridContentFragment.Callback,
+    GridContentFragment.VideoGridCallback,
     SinglePlayerFragment.Callback {
 
   companion object {
