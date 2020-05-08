@@ -23,7 +23,7 @@ import kohii.v1.core.MemoryMode.INFINITE
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.MemoryMode.NORMAL
 import kohii.v1.core.Playback.Callback
-import kohii.v1.core.Playback.PlayerParametersChangeListener
+import kohii.v1.internal.PlayerParametersChangeListener
 import kohii.v1.logInfo
 import kohii.v1.logWarn
 import kohii.v1.media.Media

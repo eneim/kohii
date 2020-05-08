@@ -31,6 +31,7 @@ import kohii.v1.core.Bucket.Companion.NONE_AXIS
 import kohii.v1.core.Bucket.Companion.VERTICAL
 import kohii.v1.core.Common.STATE_ENDED
 import kohii.v1.core.Common.STATE_IDLE
+import kohii.v1.internal.PlayerParametersChangeListener
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -600,10 +601,5 @@ abstract class Playback(
   interface NetworkTypeChangeListener {
 
     fun onNetworkTypeChanged(networkType: NetworkType): PlayerParameters
-  }
-
-  internal interface PlayerParametersChangeListener {
-
-    fun onPlayerParametersChanged(parameters: PlayerParameters)
   }
 }
