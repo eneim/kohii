@@ -173,9 +173,7 @@ abstract class Playback(
     return provider.acquireRenderer(this, playable.media)
   }
 
-  internal open fun releaseRenderer(
-    renderer: Any?
-  ) {
+  internal open fun releaseRenderer(renderer: Any?) {
     val playable = this.playable
     requireNotNull(playable)
     val provider: RendererProvider = manager.findRendererProvider(playable)
@@ -334,8 +332,8 @@ abstract class Playback(
     playbackVolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
   }
 
-  internal var playable: Playable? = null
-    set(value) {
+  var playable: Playable? = null
+    internal set(value) {
       field = value
       if (value != null && config.initialPlaybackInfo != null) {
         value.playbackInfo = config.initialPlaybackInfo
