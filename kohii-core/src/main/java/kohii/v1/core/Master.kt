@@ -473,6 +473,12 @@ class Master private constructor(context: Context) : PlayableManager {
     engines.forEach { it.value.cleanUp() }
   }
 
+  internal fun findBucketForContainer(container: ViewGroup): Bucket? {
+    return groups.asSequence()
+        .mapNotNull { it.findBucketForContainer(container) }
+        .firstOrNull()
+  }
+
   internal fun preparePlayable(
     playable: Playable,
     loadSource: Boolean = false
@@ -720,9 +726,7 @@ class Master private constructor(context: Context) : PlayableManager {
     internal var bucket: Bucket? = null
 
     internal fun onBind() {
-      val bucket = master.groups.asSequence()
-          .mapNotNull { it.findBucketForContainer(container) }
-          .firstOrNull()
+      val bucket = master.findBucketForContainer(container)
 
       requireNotNull(bucket) { "No Manager and Bucket available for $container" }
 
