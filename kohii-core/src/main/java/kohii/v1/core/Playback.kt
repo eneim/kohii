@@ -409,12 +409,12 @@ abstract class Playback(
       if (from != to) playerParametersChangeListener?.onPlayerParametersChanged(to)
     }
 
-  fun addCallback(callback: Callback) {
+  internal fun addCallback(callback: Callback) {
     "Playback#addCallback $callback, $this".logDebug()
     this.callbacks.push(callback)
   }
 
-  fun removeCallback(callback: Callback?) {
+  internal fun removeCallback(callback: Callback?) {
     "Playback#removeCallback $callback, $this".logDebug()
     this.callbacks.remove(callback)
   }
@@ -436,6 +436,12 @@ abstract class Playback(
     }
   }
 
+  /**
+   * Resets the [playable] to its original state.
+   *
+   * @param refresh If `true`, also refresh everything.
+   */
+  @JvmOverloads
   fun rewind(refresh: Boolean = true) {
     playable?.onReset()
     if (refresh) manager.refresh()
@@ -500,8 +506,7 @@ abstract class Playback(
 
     /** Called when a Video is rendered on the Surface for the first time */
     @JvmDefault
-    fun onRendered(playback: Playback) {
-    }
+    fun onRendered(playback: Playback) = Unit
 
     /**
      * Called when buffering status of the playback is changed.
@@ -512,23 +517,19 @@ abstract class Playback(
     fun onBuffering(
       playback: Playback,
       playWhenReady: Boolean
-    ) {
-    } // ExoPlayer state: 2
+    ) = Unit // ExoPlayer state: 2
 
     /** Called when the Video starts playing */
     @JvmDefault
-    fun onPlaying(playback: Playback) {
-    } // ExoPlayer state: 3, play flag: true
+    fun onPlaying(playback: Playback) = Unit // ExoPlayer state: 3, play flag: true
 
     /** Called when the Video is paused */
     @JvmDefault
-    fun onPaused(playback: Playback) {
-    } // ExoPlayer state: 3, play flag: false
+    fun onPaused(playback: Playback) = Unit // ExoPlayer state: 3, play flag: false
 
     /** Called when the Video finishes its playback */
     @JvmDefault
-    fun onEnded(playback: Playback) {
-    } // ExoPlayer state: 4
+    fun onEnded(playback: Playback) = Unit // ExoPlayer state: 4
 
     @JvmDefault
     fun onVideoSizeChanged(
@@ -537,42 +538,34 @@ abstract class Playback(
       height: Int,
       unAppliedRotationDegrees: Int,
       pixelWidthHeightRatio: Float
-    ) {
-    }
+    ) = Unit
 
     @JvmDefault
     fun onError(
       playback: Playback,
       exception: Exception
-    ) {
-    }
+    ) = Unit
   }
 
   interface Callback {
 
     @JvmDefault
-    fun onActive(playback: Playback) {
-    }
+    fun onActive(playback: Playback) = Unit
 
     @JvmDefault
-    fun onInActive(playback: Playback) {
-    }
+    fun onInActive(playback: Playback) = Unit
 
     @JvmDefault
-    fun onAdded(playback: Playback) {
-    }
+    fun onAdded(playback: Playback) = Unit
 
     @JvmDefault
-    fun onRemoved(playback: Playback) {
-    }
+    fun onRemoved(playback: Playback) = Unit
 
     @JvmDefault
-    fun onAttached(playback: Playback) {
-    }
+    fun onAttached(playback: Playback) = Unit
 
     @JvmDefault
-    fun onDetached(playback: Playback) {
-    }
+    fun onDetached(playback: Playback) = Unit
   }
 
   interface Controller {
