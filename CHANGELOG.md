@@ -13,6 +13,10 @@ _Under development_
 - Deprecate the `VideoSize`.
 - Introduce the `initialPlaybackInfo` setting for the Binder.
 
+- [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
+- [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.
+- [Breaking] `RendererProvider#releaseRenderer` now needs to return a boolean.
+
 ## 1.0.0.2010004
 
 _2020.03.15_

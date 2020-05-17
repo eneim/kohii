@@ -107,7 +107,7 @@ abstract class Playable(
    * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
    * just right after the Playback pauses (onPause()).
    *
-   * Flow:  Playable#considerRequestRenderer(playback)
+   * Flow:  Playable#setupRenderer(playback)
    *          ↓
    *        If Bridge<RENDERER> needs a renderer
    *          ↓
@@ -122,7 +122,7 @@ abstract class Playable(
    * @see [DynamicViewRendererPlayback]
    * @see [DynamicFragmentRendererPlayback]
    */
-  abstract fun considerRequestRenderer(playback: Playback)
+  abstract fun setupRenderer(playback: Playback)
 
   /**
    * Once the Playback finds it is good time for the Playable to request/release the Renderer, it
@@ -141,7 +141,7 @@ abstract class Playable(
    * the Renderer just right before the Playback starts (onPlay()), and release the Renderer
    * just right after the Playback pauses (onPause()).
    *
-   * Flow:  Playable#considerRequestRenderer(playback)
+   * Flow:  Playable#teardownRenderer(playback)
    *          ↓
    *        If Bridge<RENDERER> has a renderer to release
    *          ↓
@@ -153,12 +153,12 @@ abstract class Playable(
    *          ↓
    *        If the renderer is managed by pool, it will now be released back to the pool for reuse.
    *          ↓
-   *        Update the renderer in Bridge<RENDERER>
+   *        Clear the renderer in Bridge<RENDERER>
    *
    * @see [DynamicViewRendererPlayback]
    * @see [DynamicFragmentRendererPlayback]
    */
-  abstract fun considerReleaseRenderer(playback: Playback)
+  abstract fun teardownRenderer(playback: Playback)
 
   internal abstract fun onDistanceChanged(
     playback: Playback,

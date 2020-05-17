@@ -33,13 +33,13 @@ internal class DynamicViewRendererPlayback(
 ) : Playback(manager, bucket, container, config) {
 
   override fun onPlay() {
+    playable?.setupRenderer(this)
     super.onPlay()
-    playable?.considerRequestRenderer(this)
   }
 
   override fun onPause() {
     super.onPause()
-    playable?.considerReleaseRenderer(this)
+    playable?.teardownRenderer(this)
   }
 
   override fun onAttachRenderer(renderer: Any?): Boolean {

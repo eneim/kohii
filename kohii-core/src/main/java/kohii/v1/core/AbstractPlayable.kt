@@ -22,7 +22,6 @@ import kohii.v1.core.MemoryMode.HIGH
 import kohii.v1.core.MemoryMode.INFINITE
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.MemoryMode.NORMAL
-import kohii.v1.core.Playback.Callback
 import kohii.v1.internal.PlayerParametersChangeListener
 import kohii.v1.logInfo
 import kohii.v1.logWarn
@@ -35,7 +34,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   media: Media,
   config: Config,
   protected val bridge: Bridge<RENDERER>
-) : Playable(media, config), Callback, PlayerParametersChangeListener {
+) : Playable(media, config), Playback.Callback, PlayerParametersChangeListener {
 
   override val tag: Any = config.tag
 
@@ -98,18 +97,18 @@ abstract class AbstractPlayable<RENDERER : Any>(
 
   override var manager: PlayableManager? = null
     set(value) {
-      val from = field
+      val oldManager = field
       field = value
-      val to = field
-      if (from === to) return
-      "Playable#manager $from --> $to, $this".logInfo()
-      if (to == null) {
+      val newManager = field
+      if (oldManager === newManager) return
+      "Playable#manager $oldManager --> $newManager, $this".logInfo()
+      if (newManager == null) {
         master.trySavePlaybackInfo(this)
         master.tearDown(
             playable = this,
-            clearState = if (from is Manager) !from.isChangingConfigurations() else true
+            clearState = if (oldManager is Manager) !oldManager.isChangingConfigurations() else true
         )
-      } else if (from === null) {
+      } else if (oldManager === null) {
         master.tryRestorePlaybackInfo(this)
       }
     }
@@ -134,17 +133,19 @@ abstract class AbstractPlayable<RENDERER : Any>(
       this.manager = if (newPlayback != null) {
         newPlayback.manager
       } else {
-        val configChange = oldPlayback?.manager?.isChangingConfigurations() == true
-        if (!configChange) {
+        val changingConfiguration = oldPlayback?.manager?.isChangingConfigurations() == true
+        if (changingConfiguration) {
+          if (!onConfigChange()) {
+            // On config change, if the Playable doesn't support, we need to pause the Video.
+            onPause()
+            null
+          } else {
+            master // to prevent the Playable from being destroyed when Manager is null.
+          }
+        } else {
           // TODO need a better implementation.
           if (master.manuallyStartedPlayable.get() === this && isPlaying()) master
           else null
-        } else if (!onConfigChange()) {
-          // On config change, if the Playable doesn't support, we need to pause the Video.
-          onPause()
-          null
-        } else {
-          master // to prevent the Playable from being destroyed when Manager is null.
         }
       }
 
@@ -186,7 +187,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
     "Playable#onInActive $playback, $this".logInfo()
     require(playback === this.playback)
     val configChange = playback.manager.isChangingConfigurations()
-    if (!configChange && !master.onPlaybackInActive(this, playback)) {
+    if (!configChange && master.releasePlaybackOnInActive(this, playback)) {
       master.trySavePlaybackInfo(this)
       master.releasePlayable(this)
     }
@@ -210,8 +211,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
     master.onPlaybackDetached(playback)
   }
 
-  override fun considerRequestRenderer(playback: Playback) {
-    "Playable#considerRequestRenderer $playback, $this".logInfo()
+  override fun setupRenderer(playback: Playback) {
+    "Playable#setupRenderer $playback, $this".logInfo()
     require(playback === this.playback)
     if (this.renderer == null || manager !== playback.manager) {
       // Only request for Renderer if we do not have one.
@@ -220,8 +221,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
     }
   }
 
-  override fun considerReleaseRenderer(playback: Playback) {
-    "Playable#considerReleaseRenderer $playback, $this".logInfo()
+  override fun teardownRenderer(playback: Playback) {
+    "Playable#teardownRenderer $playback, $this".logInfo()
     require(this.playback == null || this.playback === playback)
     val renderer = this.renderer
     if (renderer != null) {

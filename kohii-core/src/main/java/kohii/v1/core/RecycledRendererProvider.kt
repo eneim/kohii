@@ -28,18 +28,7 @@ abstract class RecycledRendererProvider @JvmOverloads constructor(
   private val poolSize: Int = 2
 ) : RendererProvider {
 
-  private val pools = SparseArrayCompat<SimplePool<Any>>(4 /* smallest multiple of 4 */)
-
-  open fun getRendererType(
-    container: ViewGroup,
-    media: Media
-  ): Int = 0
-
-  // Must always create new Renderer.
-  abstract fun createRenderer(
-    playback: Playback,
-    rendererType: Int
-  ): Any
+  private val pools = SparseArrayCompat<SimplePool<Any>>(2)
 
   @CallSuper
   override fun acquireRenderer(
@@ -51,26 +40,38 @@ abstract class RecycledRendererProvider @JvmOverloads constructor(
     return pool?.acquire() ?: createRenderer(playback, rendererType)
   }
 
+  // Test: releaseRenderer(any(), any(), null) must return true.
   @CallSuper
   override fun releaseRenderer(
     playback: Playback,
     media: Media,
     renderer: Any?
-  ) {
-    if (renderer == null) return
+  ): Boolean {
+    if (renderer == null) return true
     val rendererType = getRendererType(playback.container, media)
     val pool = pools.get(rendererType) ?: SimplePool<Any>(poolSize).also {
       pools.put(rendererType, it)
     }
-    pool.release(renderer)
+    return pool.release(renderer)
   }
 
   @CallSuper
   override fun clear() {
     pools.forEach { _, value ->
-      value.onEachAcquired { renderer -> onClear(renderer) }
+      value.onEachAcquired(::onClear)
     }
   }
 
-  protected open fun onClear(renderer: Any) {}
+  protected open fun getRendererType(
+    container: ViewGroup,
+    media: Media
+  ): Int = 0
+
+  // Must always create new Renderer.
+  protected abstract fun createRenderer(
+    playback: Playback,
+    rendererType: Int
+  ): Any
+
+  protected open fun onClear(renderer: Any) = Unit
 }

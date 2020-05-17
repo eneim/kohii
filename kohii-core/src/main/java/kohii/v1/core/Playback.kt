@@ -166,6 +166,12 @@ abstract class Playback(
   private var tokenUpdateListener: TokenUpdateListener? = null
   private var networkTypeChangeListener: NetworkTypeChangeListener? = null
 
+  /**
+   * Returns a usable renderer for the [playable], or `null` if no renderer is available or needed.
+   *
+   * @see [RendererProvider]
+   * @see [RendererProvider.acquireRenderer]
+   */
   internal open fun acquireRenderer(): Any? {
     val playable = this.playable
     requireNotNull(playable)
@@ -173,7 +179,15 @@ abstract class Playback(
     return provider.acquireRenderer(this, playable.media)
   }
 
-  internal open fun releaseRenderer(renderer: Any?) {
+  /**
+   * Releases the renderer back to the Provider as it is no longer used by this [Playback]. Return
+   * `true` if the renderer is null (so nothing need to be done) or the operation finishes
+   * successfully; `false` otherwise.
+   *
+   * @see [RendererProvider]
+   * @see [RendererProvider.releaseRenderer]
+   */
+  internal open fun releaseRenderer(renderer: Any?): Boolean {
     val playable = this.playable
     requireNotNull(playable)
     val provider: RendererProvider = manager.findRendererProvider(playable)
@@ -204,7 +218,7 @@ abstract class Playback(
 
   /**
    * Return `true` to indicate that the Renderer is safely detached from container and
-   * Playable should not use it any further. RendererProvider will then release the Renderer with
+   * Playable should not use it any longer. [RendererProvider] will then release the Renderer with
    * proper mechanism (eg: put it back to Pool for reuse).
    */
   protected abstract fun onDetachRenderer(renderer: Any?): Boolean
@@ -262,7 +276,7 @@ abstract class Playback(
     "Playback#onInActive $this".logDebug()
     playbackState = STATE_INACTIVE
     artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
-    playable?.considerReleaseRenderer(this)
+    playable?.teardownRenderer(this)
     callbacks.forEach { it.onInActive(this) }
   }
 

@@ -38,8 +38,8 @@ class PlayerViewPlayable(
       bridge.renderer = value
     }
 
-  override fun considerRequestRenderer(playback: Playback) {
-    super.considerRequestRenderer(playback)
+  override fun setupRenderer(playback: Playback) {
+    super.setupRenderer(playback)
     val renderer = bridge.renderer
     if (renderer != null) {
       val controller = playback.config.controller
@@ -53,12 +53,12 @@ class PlayerViewPlayable(
     }
   }
 
-  override fun considerReleaseRenderer(playback: Playback) {
+  override fun teardownRenderer(playback: Playback) {
     val renderer = bridge.renderer
     if (renderer is PlayerView) {
       renderer.setControlDispatcher(null)
       renderer.useController = false
     }
-    super.considerReleaseRenderer(playback)
+    super.teardownRenderer(playback)
   }
 }

@@ -38,8 +38,8 @@ internal class VideoViewPlayable(
       bridge.renderer = value
     }
 
-  override fun considerRequestRenderer(playback: Playback) {
-    super.considerRequestRenderer(playback)
+  override fun setupRenderer(playback: Playback) {
+    super.setupRenderer(playback)
     val renderer = bridge.renderer
     if (renderer is VideoView) {
       renderer.mediaControlView?.isVisible = playback.config.controller != null
