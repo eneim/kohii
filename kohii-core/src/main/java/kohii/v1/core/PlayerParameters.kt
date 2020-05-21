@@ -30,7 +30,5 @@ data class PlayerParameters(
 
   companion object {
     val DEFAULT = PlayerParameters()
-
-    val DISABLED = DEFAULT.copy(maxVideoWidth = 0, maxVideoHeight = 0)
   }
 }
