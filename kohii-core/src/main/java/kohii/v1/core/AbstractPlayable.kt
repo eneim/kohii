@@ -245,14 +245,13 @@ abstract class AbstractPlayable<RENDERER : Any>(
       master.preparePlayable(this, playback.config.preload)
     } else {
       val memoryMode = master.preferredMemoryMode(this.memoryMode)
-      val priorityToRelease =
-        when (memoryMode) {
-          AUTO, LOW -> 1
-          NORMAL -> 2
-          BALANCED -> 2 // Same as 'NORMAL', but will keep the 'relative' Playback alive.
-          HIGH -> 8
-          INFINITE -> Int.MAX_VALUE - 1
-        }
+      val priorityToRelease = when (memoryMode) {
+        AUTO, LOW -> 1
+        NORMAL -> 2
+        BALANCED -> 2 // Same as 'NORMAL', but will keep the 'relative' Playback alive.
+        HIGH -> 8
+        INFINITE -> Int.MAX_VALUE - 1
+      }
       if (newPriority >= priorityToRelease) {
         master.trySavePlaybackInfo(this)
         master.releasePlayable(this)
