@@ -16,7 +16,7 @@ _Under development_
 - [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
 - [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.
 - [Breaking] `RendererProvider#releaseRenderer` now needs to return a boolean.
-- [Breaking] `Playback#addCallback` and `Playback#removeCallback` are not internal.
+- [Breaking] `Playback#addCallback` and `Playback#removeCallback` are now internal.
 
 ## 1.0.0.2010004
 
