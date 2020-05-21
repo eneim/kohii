@@ -234,18 +234,18 @@ abstract class AbstractPlayable<RENDERER : Any>(
     }
   }
 
-  override fun onDistanceChanged(
+  override fun onPlaybackPriorityChanged(
     playback: Playback,
-    from: Int,
-    to: Int
+    oldPriority: Int,
+    newPriority: Int
   ) {
-    "Playable#onDistanceChanged $playback, $from --> $to, $this".logInfo()
-    if (to == 0) {
+    "Playable#onPlaybackPriorityChanged $playback, $oldPriority --> $newPriority, $this".logInfo()
+    if (newPriority == 0) {
       master.tryRestorePlaybackInfo(this)
       master.preparePlayable(this, playback.config.preload)
     } else {
       val memoryMode = master.preferredMemoryMode(this.memoryMode)
-      val distanceToRelease =
+      val priorityToRelease =
         when (memoryMode) {
           AUTO, LOW -> 1
           NORMAL -> 2
@@ -253,7 +253,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
           HIGH -> 8
           INFINITE -> Int.MAX_VALUE - 1
         }
-      if (to >= distanceToRelease) {
+      if (newPriority >= priorityToRelease) {
         master.trySavePlaybackInfo(this)
         master.releasePlayable(this)
       } else {

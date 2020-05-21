@@ -25,7 +25,7 @@ enum class MemoryMode {
 
   /**
    * In LOW mode, Kohii will always release resource of unselected Playables/Playbacks
-   * (whose distance to selected ones are from 1).
+   * (whose priority are >= 1).
    */
   LOW,
 
@@ -44,9 +44,9 @@ enum class MemoryMode {
   /**
    * HIGH mode must be specified by client.
    *
-   * In HIGH mode, any unselected Playables/Playbacks whose distance to selected ones is less
-   * than 8 will be reset. Others will be released. This mode is memory-intensive and can be
-   * used in many-videos-yet-low-memory-usage scenario like simple/short Videos.
+   * In HIGH mode, any unselected Playables/Playbacks whose priorities are less than 8 will be
+   * reset. Others will be released. This mode is memory-intensive and can be used in
+   * many-videos-yet-low-memory-usage scenario like simple/short Videos.
    */
   HIGH,
 
@@ -55,7 +55,7 @@ enum class MemoryMode {
    *
    * INFINITE mode must be specified by client.
    *
-   * In INFINITE mode, no unselected Playables/Playbacks will ever be released due to distance
+   * In INFINITE mode, no unselected Playables/Playbacks will ever be released due to priority
    * change (though Kohii will release the resource once they are inactive).
    */
   INFINITE

@@ -320,17 +320,18 @@ abstract class Playback(
 
   internal var lifecycleState: State = State.INITIALIZED
 
-  // The smaller, the closer it is to be selected to Play.
-  // Consider to prepare the underline Playable for low enough distance, and release it otherwise.
-  // This value is updated by Group. In active Playback always has Int.MAX_VALUE distance.
-  internal var distanceToPlay: Int = Int.MAX_VALUE
+  // Smaller value = higher priority. Priority 0 is the selected Playback. The higher priority, the
+  // closer it is to the selected Playback.
+  // Consider to prepare the underline Playable for high enough priority, and release it otherwise.
+  // This value is updated by Group. Inactive Playback always has Int.MAX_VALUE priority.
+  internal var playbackPriority: Int = Int.MAX_VALUE
     set(value) {
-      val from = field
+      val oldPriority = field
       field = value
-      val to = field
-      "Playback#distanceToPlay $from --> $to, $this".logDebug()
-      if (from == to) return
-      playable?.onDistanceChanged(this, from, to)
+      val newPriority = field
+      "Playback#playbackPriority $oldPriority --> $newPriority, $this".logDebug()
+      if (oldPriority == newPriority) return
+      playable?.onPlaybackPriorityChanged(this, oldPriority, newPriority)
     }
 
   internal var playbackVolumeInfo: VolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)

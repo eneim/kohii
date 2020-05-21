@@ -160,10 +160,10 @@ abstract class Playable(
    */
   abstract fun teardownRenderer(playback: Playback)
 
-  internal abstract fun onDistanceChanged(
+  internal abstract fun onPlaybackPriorityChanged(
     playback: Playback,
-    from: Int,
-    to: Int
+    oldPriority: Int,
+    newPriority: Int
   )
 
   internal abstract fun onVolumeInfoChanged(
