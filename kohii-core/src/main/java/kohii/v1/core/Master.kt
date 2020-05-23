@@ -230,9 +230,7 @@ class Master private constructor(context: Context) : PlayableManager {
     check(!activity.isDestroyed) {
       "Cannot register a destroyed Activity: $activity"
     }
-    val group = groups.find { it.activity === activity } ?: Group(
-        this, activity
-    ).also {
+    val group = groups.find { it.activity === activity } ?: Group(this, activity).also {
       onGroupCreated(it)
       activity.lifecycle.addObserver(it)
     }
@@ -742,6 +740,8 @@ class Master private constructor(context: Context) : PlayableManager {
             tokenUpdateListener = options.tokenUpdateListener,
             networkTypeChangeListener = options.networkTypeChangeListener,
             initialPlaybackInfo = options.initialPlaybackInfo,
+            rendererAttachedCallback = options.doOnRendererAttached,
+            rendererDetachedCallback = options.doOnRendererDetached,
             callbacks = options.callbacks
         )
 

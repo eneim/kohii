@@ -217,8 +217,15 @@ abstract class AbstractPlayable<RENDERER : Any>(
     if (this.renderer == null || manager !== playback.manager) {
       // Only request for Renderer if we do not have one.
       val renderer = playback.acquireRenderer()
-      if (playback.attachRenderer(renderer)) this.renderer = renderer
+      if (playback.attachRenderer(renderer)) {
+        this.renderer = renderer
+        onRendererAttached(playback, renderer)
+      }
     }
+  }
+
+  protected open fun onRendererAttached(playback: Playback, renderer: Any?) {
+    playback.onRendererAttached(renderer)
   }
 
   override fun teardownRenderer(playback: Playback) {
@@ -230,8 +237,13 @@ abstract class AbstractPlayable<RENDERER : Any>(
       if (playback.detachRenderer(renderer)) {
         playback.releaseRenderer(renderer)
         this.renderer = null
+        onRendererDetached(playback, renderer)
       }
     }
+  }
+
+  protected open fun onRendererDetached(playback: Playback, renderer: Any?) {
+    playback.onRendererDetached(renderer)
   }
 
   override fun onPlaybackPriorityChanged(

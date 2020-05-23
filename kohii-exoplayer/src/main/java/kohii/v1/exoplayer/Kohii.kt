@@ -18,11 +18,13 @@ package kohii.v1.exoplayer
 
 import android.content.Context
 import androidx.fragment.app.Fragment
+import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Engine
 import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
+import kohii.v1.core.Playback
 import kohii.v1.core.RendererProviderFactory
 import kohii.v1.utils.Capsule
 import java.net.CookieHandler
@@ -57,6 +59,19 @@ class Kohii private constructor(
 
   override fun prepare(manager: Manager) {
     manager.registerRendererProvider(PlayerView::class.java, rendererProviderFactory())
+  }
+
+  /**
+   * Creates a [ControlDispatcher] that can be used to setup the renderer when it is a [PlayerView].
+   * This method must be used for the [Playback] that supports manual playback control (the
+   * [Playback.Config.controller] is not null).
+   */
+  fun createControlDispatcher(playback: Playback): ControlDispatcher {
+    requireNotNull(playback.config.controller) {
+      "Playback needs to be setup with a Controller to use this method."
+    }
+
+    return DefaultControlDispatcher(playback)
   }
 
   class Builder(context: Context) {

@@ -38,11 +38,10 @@ internal class VideoViewPlayable(
       bridge.renderer = value
     }
 
-  override fun setupRenderer(playback: Playback) {
-    super.setupRenderer(playback)
-    val renderer = bridge.renderer
+  override fun onRendererAttached(playback: Playback, renderer: Any?) {
     if (renderer is VideoView) {
       renderer.mediaControlView?.isVisible = playback.config.controller != null
     }
+    super.onRendererAttached(playback, renderer)
   }
 }

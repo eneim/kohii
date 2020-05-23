@@ -46,7 +46,6 @@ import kohii.v1.logInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.PlaybackInfo.Companion.INDEX_UNSET
-import kohii.v1.media.PlaybackInfo.Companion.TIME_UNSET
 import kohii.v1.media.VolumeInfo
 import kotlin.math.max
 
@@ -258,7 +257,7 @@ class PlayerViewBridge(
       if (it.playbackState == Common.STATE_IDLE) return
       _playbackInfo = PlaybackInfo(
           it.currentWindowIndex,
-          if (it.isCurrentWindowSeekable) max(0, it.currentPosition) else TIME_UNSET
+          max(0, it.currentPosition)
       )
     }
   }

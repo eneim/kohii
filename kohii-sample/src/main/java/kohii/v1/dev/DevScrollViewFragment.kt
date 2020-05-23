@@ -22,10 +22,11 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.core.Common
 import kohii.v1.core.Manager
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.core.Playback
-import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.core.Playback.Controller
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.common.BaseFragment
@@ -58,21 +59,48 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
 
     kohii.setUp(DemoApp.assetVideoUri) {
       tag = "player::0"
-      controller = DefaultControlDispatcher(
-          manager, binding.playerView1,
-          kohiiCanStart = true,
-          kohiiCanPause = true
-      )
+      repeatMode = Common.REPEAT_MODE_ONE
+      controller = object : Controller {
+        override fun kohiiCanStart(): Boolean = true
+        override fun kohiiCanPause(): Boolean = true
+      }
+      doOnRendererAttached = { playback, renderer ->
+        if (renderer is PlayerView) {
+          val controller = kohii.createControlDispatcher(playback)
+          renderer.setControlDispatcher(controller)
+          renderer.useController = true
+          renderer.tag = controller
+        }
+      }
+      doOnRendererDetached = { _, renderer ->
+        if (renderer is PlayerView) {
+          val tag = renderer.tag
+          if (tag is Controller) renderer.tag = null
+        }
+      }
     }
         .bind(binding.playerView1)
 
     kohii.setUp("https://content.jwplatform.com/manifests/Cl6EVHgQ.m3u8") {
       tag = "player::1"
-      controller = DefaultControlDispatcher(
-          manager, binding.playerView2,
-          kohiiCanStart = true,
-          kohiiCanPause = true
-      )
+      controller = object : Controller {
+        override fun kohiiCanStart(): Boolean = true
+        override fun kohiiCanPause(): Boolean = true
+      }
+      doOnRendererAttached = { playback, renderer ->
+        if (renderer is PlayerView) {
+          val controller = kohii.createControlDispatcher(playback)
+          renderer.setControlDispatcher(controller)
+          renderer.useController = true
+          renderer.tag = controller
+        }
+      }
+      doOnRendererDetached = { _, renderer ->
+        if (renderer is PlayerView) {
+          val tag = renderer.tag
+          if (tag is Controller) renderer.tag = null
+        }
+      }
     }
         .bind(binding.playerView2)
   }
@@ -86,10 +114,10 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
       if (container is PlayerView) {
         container.useController = false // if you want to only use the global controller.
         binding.controlView.player = container.player
-      }
-      val controller = playback.config.controller
-      if (controller is ControlDispatcher) {
-        binding.controlView.setControlDispatcher(controller)
+        val controller = container.tag
+        if (controller is ControlDispatcher) {
+          binding.controlView.setControlDispatcher(controller)
+        }
       }
     } else {
       binding.controlView.setControlDispatcher(null)

@@ -25,8 +25,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.core.Playback.Controller
 import kohii.v1.core.Rebinder
-import kohii.v1.exoplayer.DefaultControlDispatcher
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -111,10 +112,19 @@ class LandscapeFullscreenFragment : BaseFragment() {
     container.setAspectRatio(initData.aspectRatio)
 
     val kohii = Kohii[this]
-    val manager = kohii.register(this)
+    kohii.register(this)
         .addBucket(playerContainer)
     rebinder.with {
-      controller = DefaultControlDispatcher(manager, playerView)
+      controller = object : Controller {
+        override fun kohiiCanStart(): Boolean = true
+        override fun kohiiCanPause(): Boolean = true
+      }
+      doOnRendererAttached = { playback, renderer ->
+        if (renderer is PlayerView) {
+          renderer.useController = true
+          renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+        }
+      }
     }
         .bind(kohii, playerView)
 
