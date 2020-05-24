@@ -582,7 +582,7 @@ abstract class Playback(
   }
 
   /**
-   * Provides necessary information and callback to setup a manual controller for a [Playback].
+   * Provides necessary information and callbacks to setup a manual controller for a [Playback].
    */
   interface Controller {
     /**
@@ -629,7 +629,7 @@ abstract class Playback(
     fun setupRenderer(playback: Playback, renderer: Any?) = Unit
 
     /**
-     * This method is called once the render of the [Playback] becomes unavailable to it. Client
+     * This method is called once the renderer of the [Playback] becomes unavailable to it. Client
      * should use this callback to clean up any manual controller mechanism set before. Note that
      * the library also does some cleanup by itself to ensure the sanity of the renderer.
      *
