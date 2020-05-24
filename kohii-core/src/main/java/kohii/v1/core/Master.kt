@@ -347,9 +347,10 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   // [Draft] return false if this [Master] wants to handle this step by itself, true to release.
-  internal fun releasePlaybackOnInActive(playable: Playable, playback: Playback): Boolean {
+  internal fun releasePlaybackOnInActive(playback: Playback): Boolean {
     "Master#onPlaybackInActive: $playback".logDebug()
-    return manuallyStartedPlayable.get() !== playable || playable.isPlaying()
+    val playable: Playable? = manuallyStartedPlayable.get()
+    return !(playable === playback.playable && playable?.isPlaying() == true)
   }
 
   internal fun onPlaybackDetached(playback: Playback) {
