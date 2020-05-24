@@ -609,6 +609,8 @@ abstract class Playback(
      * - Once the user interacts so that a paused [Playback]'s container is visible enough, the
      * library will: play it if it was not paused by the user, or pause it if it was paused by the
      * user before (this is equal to doing nothing).
+     *
+     * Default result is `true`.
      */
     @JvmDefault
     fun kohiiCanPause(): Boolean = true
@@ -620,6 +622,8 @@ abstract class Playback(
      * If this method returns `true`: the library can start a [Playback] automatically if it was
      * never be started or paused by the user. Once the user pauses it manually, only user can
      * resume it, the library should never start/resume the [Playback] automatically again.
+     *
+     * Default result is `false`.
      */
     @JvmDefault
     fun kohiiCanStart(): Boolean = false
@@ -628,6 +632,8 @@ abstract class Playback(
      * This method is called once the renderer of the [Playback] becomes available. Client should
      * use this callback to setup the manual controller mechanism for the renderer. For example:
      * provide a user interface for controlling the playback.
+     *
+     * @see [Playback.onRendererAttached]
      */
     @JvmDefault
     fun setupRenderer(playback: Playback, renderer: Any?) = Unit
@@ -636,6 +642,8 @@ abstract class Playback(
      * This method is called once the render of the [Playback] becomes unavailable to it. Client
      * should use this callback to clean up any manual controller mechanism set before. Note that
      * the library also does some cleanup by itself to ensure the sanity of the renderer.
+     *
+     * @see [Playback.onRendererDetached]
      */
     @JvmDefault
     fun teardownRenderer(playback: Playback, renderer: Any?) = Unit

@@ -25,6 +25,7 @@ import com.bumptech.glide.Glide
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.Common
 import kohii.v1.core.Playback
+import kohii.v1.core.Playback.Controller
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
@@ -62,6 +63,9 @@ internal class VideoViewHolder(
     get() = {
       tag = requireNotNull(videoTag)
       artworkHintListener = this@VideoViewHolder
+      controller = object : Controller {
+        override fun kohiiCanStart(): Boolean = true
+      }
     }
 
   // Trick here: we do not rely on the actual binding to have the Rebinder. This instance will
