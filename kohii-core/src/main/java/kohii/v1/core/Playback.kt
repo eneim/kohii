@@ -122,9 +122,7 @@ abstract class Playback(
     val initialPlaybackInfo: PlaybackInfo? = null,
     val artworkHintListener: ArtworkHintListener? = null,
     val tokenUpdateListener: TokenUpdateListener? = null,
-    val networkTypeChangeListener: NetworkTypeChangeListener? = null,
-    val rendererAttachedCallback: RendererAvailabilityCallback? = null,
-    val rendererDetachedCallback: RendererAvailabilityCallback? = null
+    val networkTypeChangeListener: NetworkTypeChangeListener? = null
   )
 
   override fun toString(): String {
@@ -169,8 +167,6 @@ abstract class Playback(
   private var artworkHintListener: ArtworkHintListener? = null
   private var tokenUpdateListener: TokenUpdateListener? = null
   private var networkTypeChangeListener: NetworkTypeChangeListener? = null
-  private var rendererAttachedCallback: RendererAvailabilityCallback? = null
-  private var rendererDetachedCallback: RendererAvailabilityCallback? = null
 
   /**
    * Returns a usable renderer for the [playable], or `null` if no renderer is available or needed.
@@ -230,12 +226,10 @@ abstract class Playback(
   protected abstract fun onDetachRenderer(renderer: Any?): Boolean
 
   internal fun onRendererAttached(renderer: Any?) {
-    rendererAttachedCallback?.invoke(this, renderer)
     controller?.setupRenderer(this, renderer)
   }
 
   internal fun onRendererDetached(renderer: Any?) {
-    rendererDetachedCallback?.invoke(this, renderer)
     controller?.teardownRenderer(this, renderer)
   }
 
@@ -247,8 +241,6 @@ abstract class Playback(
     artworkHintListener = config.artworkHintListener
     tokenUpdateListener = config.tokenUpdateListener
     networkTypeChangeListener = config.networkTypeChangeListener
-    rendererAttachedCallback = config.rendererAttachedCallback
-    rendererDetachedCallback = config.rendererDetachedCallback
     playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(manager.master.networkType)
         ?: playerParameters
     bucket.addContainer(this.container)
@@ -262,8 +254,6 @@ abstract class Playback(
     tokenUpdateListener = null
     artworkHintListener = null
     networkTypeChangeListener = null
-    rendererAttachedCallback = null
-    rendererDetachedCallback = null
     callbacks.onEach { it.onRemoved(this) }
         .clear()
     listeners.clear()

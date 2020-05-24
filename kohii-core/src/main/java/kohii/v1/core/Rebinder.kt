@@ -43,8 +43,6 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
     var artworkHintListener: ArtworkHintListener? = null
     var tokenUpdateListener: TokenUpdateListener? = null
     var networkTypeChangeListener: NetworkTypeChangeListener? = null
-    var doOnRendererAttached: RendererAvailabilityCallback? = null
-    var doOnRendererDetached: RendererAvailabilityCallback? = null
     val callbacks = mutableSetOf<Callback>()
   }
 
@@ -87,8 +85,6 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
           it.artworkHintListener = options.artworkHintListener
           it.tokenUpdateListener = options.tokenUpdateListener
           it.networkTypeChangeListener = options.networkTypeChangeListener
-          it.doOnRendererAttached = options.doOnRendererAttached
-          it.doOnRendererDetached = options.doOnRendererDetached
           it.callbacks += options.callbacks
         }, callback
     )

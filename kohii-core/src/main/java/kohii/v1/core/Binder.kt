@@ -49,8 +49,6 @@ class Binder(
     var artworkHintListener: ArtworkHintListener? = null
     var tokenUpdateListener: TokenUpdateListener? = null
     var networkTypeChangeListener: NetworkTypeChangeListener? = null
-    var doOnRendererAttached: RendererAvailabilityCallback? = null
-    var doOnRendererDetached: RendererAvailabilityCallback? = null
     val callbacks = mutableSetOf<Callback>()
   }
 

@@ -739,8 +739,6 @@ class Master private constructor(context: Context) : PlayableManager {
             artworkHintListener = options.artworkHintListener,
             tokenUpdateListener = options.tokenUpdateListener,
             networkTypeChangeListener = options.networkTypeChangeListener,
-            rendererAttachedCallback = options.doOnRendererAttached,
-            rendererDetachedCallback = options.doOnRendererDetached,
             callbacks = options.callbacks
         )
 
@@ -772,8 +770,6 @@ class Master private constructor(context: Context) : PlayableManager {
       options.artworkHintListener = null
       options.networkTypeChangeListener = null
       options.tokenUpdateListener = null
-      options.doOnRendererAttached = null
-      options.doOnRendererDetached = null
       options.callbacks.clear()
     }
 
