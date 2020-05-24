@@ -118,10 +118,10 @@ abstract class Playback(
     val preload: Boolean = false,
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val controller: Controller? = null,
+    val initialPlaybackInfo: PlaybackInfo? = null,
     val artworkHintListener: ArtworkHintListener? = null,
     val tokenUpdateListener: TokenUpdateListener? = null,
     val networkTypeChangeListener: NetworkTypeChangeListener? = null,
-    val initialPlaybackInfo: PlaybackInfo? = null,
     val callbacks: Set<Callback> = emptySet(),
     val rendererAttachedCallback: RendererAvailabilityCallback? = null,
     val rendererDetachedCallback: RendererAvailabilityCallback? = null

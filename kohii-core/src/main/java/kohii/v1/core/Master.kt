@@ -272,9 +272,7 @@ class Master private constructor(context: Context) : PlayableManager {
         .firstOrNull { it.value.tag == tag }
         ?.key
     if (sameTag != null) requests.remove(sameTag)?.onRemoved()
-    requests[container] = BindRequest(
-        this, playable, container, tag, options, callback
-    )
+    requests[container] = BindRequest(this, playable, container, tag, options, callback)
     // if (playable.manager == null) playable.manager = this
     dispatcher.obtainMessage(MSG_BIND_PLAYABLE, container)
         .sendToTarget()
@@ -737,10 +735,10 @@ class Master private constructor(context: Context) : PlayableManager {
             preload = options.preload,
             repeatMode = options.repeatMode,
             controller = options.controller,
+            initialPlaybackInfo = options.initialPlaybackInfo,
             artworkHintListener = options.artworkHintListener,
             tokenUpdateListener = options.tokenUpdateListener,
             networkTypeChangeListener = options.networkTypeChangeListener,
-            initialPlaybackInfo = options.initialPlaybackInfo,
             rendererAttachedCallback = options.doOnRendererAttached,
             rendererDetachedCallback = options.doOnRendererDetached,
             callbacks = options.callbacks
@@ -770,8 +768,12 @@ class Master private constructor(context: Context) : PlayableManager {
 
     internal fun onRemoved() {
       "Request removed: $tag, $container, $playable".logWarn()
-      options.artworkHintListener = null
       options.controller = null
+      options.artworkHintListener = null
+      options.networkTypeChangeListener = null
+      options.tokenUpdateListener = null
+      options.doOnRendererAttached = null
+      options.doOnRendererDetached = null
       options.callbacks.clear()
     }
 

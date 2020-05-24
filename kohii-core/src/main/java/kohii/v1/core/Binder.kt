@@ -45,10 +45,10 @@ class Binder(
     var preload: Boolean = false
     var repeatMode: Int = Common.REPEAT_MODE_OFF
     var controller: Controller? = null
+    var initialPlaybackInfo: PlaybackInfo? = null
     var artworkHintListener: ArtworkHintListener? = null
     var tokenUpdateListener: TokenUpdateListener? = null
     var networkTypeChangeListener: NetworkTypeChangeListener? = null
-    var initialPlaybackInfo: PlaybackInfo? = null
     var doOnRendererAttached: RendererAvailabilityCallback? = null
     var doOnRendererDetached: RendererAvailabilityCallback? = null
     val callbacks = mutableSetOf<Callback>()
