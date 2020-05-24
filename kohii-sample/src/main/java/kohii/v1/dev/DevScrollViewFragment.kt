@@ -62,20 +62,23 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
       repeatMode = Common.REPEAT_MODE_ONE
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
+
         override fun kohiiCanPause(): Boolean = true
-      }
-      doOnRendererAttached = { playback, renderer ->
-        if (renderer is PlayerView) {
-          val controller = kohii.createControlDispatcher(playback)
-          renderer.setControlDispatcher(controller)
-          renderer.useController = true
-          renderer.tag = controller
+
+        override fun setupRenderer(playback: Playback, renderer: Any?) {
+          if (renderer is PlayerView) {
+            val controller = kohii.createControlDispatcher(playback)
+            renderer.setControlDispatcher(controller)
+            renderer.useController = true
+            renderer.tag = controller
+          }
         }
-      }
-      doOnRendererDetached = { _, renderer ->
-        if (renderer is PlayerView) {
-          val tag = renderer.tag
-          if (tag is Controller) renderer.tag = null
+
+        override fun teardownRenderer(playback: Playback, renderer: Any?) {
+          if (renderer is PlayerView) {
+            val tag = renderer.tag
+            if (tag is ControlDispatcher) renderer.tag = null
+          }
         }
       }
     }
@@ -85,20 +88,23 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
       tag = "player::1"
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
+
         override fun kohiiCanPause(): Boolean = true
-      }
-      doOnRendererAttached = { playback, renderer ->
-        if (renderer is PlayerView) {
-          val controller = kohii.createControlDispatcher(playback)
-          renderer.setControlDispatcher(controller)
-          renderer.useController = true
-          renderer.tag = controller
+
+        override fun setupRenderer(playback: Playback, renderer: Any?) {
+          if (renderer is PlayerView) {
+            val controller = kohii.createControlDispatcher(playback)
+            renderer.setControlDispatcher(controller)
+            renderer.useController = true
+            renderer.tag = controller
+          }
         }
-      }
-      doOnRendererDetached = { _, renderer ->
-        if (renderer is PlayerView) {
-          val tag = renderer.tag
-          if (tag is Controller) renderer.tag = null
+
+        override fun teardownRenderer(playback: Playback, renderer: Any?) {
+          if (renderer is PlayerView) {
+            val tag = renderer.tag
+            if (tag is ControlDispatcher) renderer.tag = null
+          }
         }
       }
     }

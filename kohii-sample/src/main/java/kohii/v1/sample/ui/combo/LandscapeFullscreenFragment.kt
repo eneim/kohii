@@ -26,6 +26,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.core.Playback
 import kohii.v1.core.Playback.Controller
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
@@ -117,12 +118,14 @@ class LandscapeFullscreenFragment : BaseFragment() {
     rebinder.with {
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
+
         override fun kohiiCanPause(): Boolean = true
-      }
-      doOnRendererAttached = { playback, renderer ->
-        if (renderer is PlayerView) {
-          renderer.useController = true
-          renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+
+        override fun setupRenderer(playback: Playback, renderer: Any?) {
+          if (renderer is PlayerView) {
+            renderer.useController = true
+            renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+          }
         }
       }
     }

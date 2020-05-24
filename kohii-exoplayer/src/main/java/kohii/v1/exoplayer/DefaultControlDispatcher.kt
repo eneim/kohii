@@ -20,9 +20,7 @@ import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import kohii.v1.core.Playback
 
-internal class DefaultControlDispatcher(
-  private val playback: Playback
-) : ControlDispatcher {
+internal class DefaultControlDispatcher(private val playback: Playback) : ControlDispatcher {
 
   override fun dispatchSeekTo(
     player: Player,

@@ -15,6 +15,8 @@ _Under development_
 - Introduce the `RendererAvailabilityCallback` interface and the methods `doOnRendererAttached`/
 `doOnRendererDetached` when setting a new Playback.
 - Add method `Kohii.createControlDispatcher(Playback)`.
+- Add method `Playback.Controller.setupRenderer(Playback, Any?)`.
+- Add method `Playback.Controller.teardownRenderer(Playback, Any?)`.
 
 - [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
 - [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.

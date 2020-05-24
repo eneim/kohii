@@ -117,12 +117,12 @@ abstract class Playback(
     val threshold: Float = 0.65F,
     val preload: Boolean = false,
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
+    val callbacks: Set<Callback> = emptySet(),
     val controller: Controller? = null,
     val initialPlaybackInfo: PlaybackInfo? = null,
     val artworkHintListener: ArtworkHintListener? = null,
     val tokenUpdateListener: TokenUpdateListener? = null,
     val networkTypeChangeListener: NetworkTypeChangeListener? = null,
-    val callbacks: Set<Callback> = emptySet(),
     val rendererAttachedCallback: RendererAvailabilityCallback? = null,
     val rendererDetachedCallback: RendererAvailabilityCallback? = null
   )
@@ -164,6 +164,8 @@ abstract class Playback(
   private val callbacks = ArrayDeque<Callback>()
   private val listeners = ArrayDeque<StateListener>()
 
+  // Callbacks those will be setup when the Playback is added, and cleared when it is removed.
+  private var controller: Controller? = null
   private var artworkHintListener: ArtworkHintListener? = null
   private var tokenUpdateListener: TokenUpdateListener? = null
   private var networkTypeChangeListener: NetworkTypeChangeListener? = null
@@ -229,16 +231,19 @@ abstract class Playback(
 
   internal fun onRendererAttached(renderer: Any?) {
     rendererAttachedCallback?.invoke(this, renderer)
+    controller?.setupRenderer(this, renderer)
   }
 
   internal fun onRendererDetached(renderer: Any?) {
     rendererDetachedCallback?.invoke(this, renderer)
+    controller?.teardownRenderer(this, renderer)
   }
 
   internal fun onAdded() {
     "Playback#onAdded $this".logDebug()
     playbackState = STATE_ADDED
     callbacks.forEach { it.onAdded(this) }
+    controller = config.controller
     artworkHintListener = config.artworkHintListener
     tokenUpdateListener = config.tokenUpdateListener
     networkTypeChangeListener = config.networkTypeChangeListener
@@ -253,6 +258,7 @@ abstract class Playback(
     "Playback#onRemoved $this".logDebug()
     playbackState = STATE_REMOVED
     bucket.removeContainer(this.container)
+    controller = null
     tokenUpdateListener = null
     artworkHintListener = null
     networkTypeChangeListener = null
@@ -585,25 +591,54 @@ abstract class Playback(
     fun onDetached(playback: Playback) = Unit
   }
 
+  /**
+   * Provides necessary information and callback to setup a manual controller for a [Playback].
+   */
   interface Controller {
-    // false = full manual.
-    // true = half manual.
-    // When true:
-    // - If user starts a Playback, it will not be paused until Playback is not visible enough
-    // (controlled by Playback.Config), or user starts other Playback (priority overridden).
-    // - If user pauses a Playback, it will not be played until user resumes it.
-    // - If user scrolls a Playback so that a it is not visible enough, system will pause the Playback.
-    // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously played by User,
-    // or pause it if it was paused by User before (= do nothing).
+    /**
+     * Returns `true` if the library can automatically pause the [Playback], `false` otherwise.
+     *
+     * If this method returns `true`:
+     * - Once the user starts a [Playback], it will not be paused **until** its container is not
+     * visible enough (controlled by [Playback.Config.threshold]), or user starts other Playback
+     * (priority overridden).
+     * - Once the user pauses a [Playback], it will not be played until the user manually resumes
+     * it.
+     * - Once the user interacts so that the [Playback]'s container is not visible enough, the
+     * library will pause the it.
+     * - Once the user interacts so that a paused [Playback]'s container is visible enough, the
+     * library will: play it if it was not paused by the user, or pause it if it was paused by the
+     * user before (this is equal to doing nothing).
+     */
     @JvmDefault
     fun kohiiCanPause(): Boolean = true
 
-    // - Allow System to start a Playback.
-    // When true:
-    // - Kohii can start a Playback automatically. But once user pause it manually, Only user can resume it,
-    // Kohii should never start/resume the Playback automatically.
+    /**
+     * Returns `true` to tell if the library can start a [Playback] automatically for the first time
+     * , or `false` otherwise.
+     *
+     * If this method returns `true`: the library can start a [Playback] automatically if it was
+     * never be started or paused by the user. Once the user pauses it manually, only user can
+     * resume it, the library should never start/resume the [Playback] automatically again.
+     */
     @JvmDefault
     fun kohiiCanStart(): Boolean = false
+
+    /**
+     * This method is called once the renderer of the [Playback] becomes available. Client should
+     * use this callback to setup the manual controller mechanism for the renderer. For example:
+     * provide a user interface for controlling the playback.
+     */
+    @JvmDefault
+    fun setupRenderer(playback: Playback, renderer: Any?) = Unit
+
+    /**
+     * This method is called once the render of the [Playback] becomes unavailable to it. Client
+     * should use this callback to clean up any manual controller mechanism set before. Note that
+     * the library also does some cleanup by itself to ensure the sanity of the renderer.
+     */
+    @JvmDefault
+    fun teardownRenderer(playback: Playback, renderer: Any?) = Unit
   }
 
   interface ArtworkHintListener {

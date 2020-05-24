@@ -148,12 +148,14 @@ class BigPlayerDialog : InfinityDialogFragment(),
     rebinder.with {
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
+
         override fun kohiiCanPause(): Boolean = true
-      }
-      doOnRendererAttached = { playback, renderer ->
-        if (renderer is PlayerView) {
-          renderer.useController = true
-          renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+
+        override fun setupRenderer(playback: Playback, renderer: Any?) {
+          if (renderer is PlayerView) {
+            renderer.useController = true
+            renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+          }
         }
       }
       callbacks += this@BigPlayerDialog
