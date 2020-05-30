@@ -131,7 +131,6 @@ class Group(
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
-    check(ViewCompat.isAttachedToWindow(container))
     return managers.asSequence()
         .mapNotNull { it.findBucketForContainer(container) }
         .firstOrNull()
