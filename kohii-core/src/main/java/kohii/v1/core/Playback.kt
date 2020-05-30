@@ -20,7 +20,6 @@ import android.graphics.Rect
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.annotation.FloatRange
-import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
 import com.google.android.exoplayer2.Player
@@ -136,7 +135,7 @@ abstract class Playback(
       return Token(config.threshold, -1F, tmpRect, container.width, container.height)
     }
 
-    if (!ViewCompat.isAttachedToWindow(container)) {
+    if (!container.isAttachedToWindow) {
       return Token(config.threshold, -1F, tmpRect, container.width, container.height)
     }
 

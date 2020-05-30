@@ -19,7 +19,6 @@ package kohii.v1.internal
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -100,7 +99,7 @@ internal class DynamicFragmentRendererPlayback(
           ) {
             if (fragmentManager.isStateSaved) return
             source.lifecycle.removeObserver(this)
-            if (ViewCompat.isAttachedToWindow(container)) {
+            if (container.isAttachedToWindow) {
               onAttachRenderer(renderer)
             }
           }

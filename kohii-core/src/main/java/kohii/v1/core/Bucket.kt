@@ -23,7 +23,6 @@ import android.view.View.OnLayoutChangeListener
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.ViewCompat
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
@@ -116,7 +115,7 @@ abstract class Bucket constructor(
   @CallSuper
   open fun addContainer(container: ViewGroup) {
     if (containers.add(container)) {
-      if (ViewCompat.isAttachedToWindow(container)) {
+      if (container.isAttachedToWindow) {
         this.onViewAttachedToWindow(container)
       }
       container.addOnAttachStateChangeListener(this)

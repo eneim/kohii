@@ -18,7 +18,6 @@ package kohii.v1.internal
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
 import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -71,10 +70,10 @@ internal class RecyclerViewBucket(
 
   override fun onAttached() {
     super.onAttached()
-    root.doOnLayout {
-      if (ViewCompat.isAttachedToWindow(it)
-          && it is RecyclerView
-          && it.scrollState == RecyclerView.SCROLL_STATE_IDLE
+    root.doOnLayout { view ->
+      if (view.isAttachedToWindow
+          && view is RecyclerView
+          && view.scrollState == RecyclerView.SCROLL_STATE_IDLE
       ) {
         manager.refresh()
       }
@@ -88,7 +87,7 @@ internal class RecyclerViewBucket(
   }
 
   override fun accepts(container: ViewGroup): Boolean {
-    if (!ViewCompat.isAttachedToWindow(container)) return false
+    if (!container.isAttachedToWindow) return false
     val params = RecyclerViewUtils.fetchItemViewParams(container)
     return RecyclerViewUtils.accepts(root, params)
   }

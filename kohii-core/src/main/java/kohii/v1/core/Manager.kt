@@ -21,7 +21,6 @@ import android.view.ViewGroup
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
 import androidx.collection.arraySetOf
-import androidx.core.view.ViewCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -198,7 +197,7 @@ class Manager internal constructor(
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
-    if (!ViewCompat.isAttachedToWindow(container)) return null
+    if (!container.isAttachedToWindow) return null
     return buckets.find { it.accepts(container) }
   }
 
