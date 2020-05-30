@@ -33,12 +33,4 @@ internal class OfficialYouTubePlayerRendererProvider(
     val fragment = fragmentManager.findFragmentByTag(playback.tag.toString())
     return fragment ?: YouTubePlayerFragment.newInstance()
   }
-
-  override fun releaseRenderer(
-    playback: Playback,
-    media: Media,
-    renderer: Any?
-  ) {
-    // do nothing
-  }
 }

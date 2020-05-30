@@ -20,8 +20,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Manager
-import kohii.v1.exoplayer.DefaultControlDispatcher
+import kohii.v1.core.Playback
+import kohii.v1.core.Playback.Controller
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp
 
@@ -54,12 +56,18 @@ internal class DummyAdapter(
     kohii.setUp(DemoApp.assetVideoUri) {
       tag = "player::${holder.adapterPosition}"
       repeatMode = Player.REPEAT_MODE_ONE
-      controller = DefaultControlDispatcher(
-          manager,
-          holder.playerView,
-          kohiiCanStart = true,
-          kohiiCanPause = true
-      )
+      controller = object : Controller {
+        override fun kohiiCanStart(): Boolean = true
+
+        override fun kohiiCanPause(): Boolean = true
+
+        override fun setupRenderer(playback: Playback, renderer: Any?) {
+          if (renderer is PlayerView) {
+            renderer.useController = true
+            renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+          }
+        }
+      }
     }
         .bind(holder.playerView)
   }

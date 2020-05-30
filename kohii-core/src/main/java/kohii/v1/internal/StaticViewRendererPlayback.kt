@@ -33,11 +33,11 @@ internal class StaticViewRendererPlayback(
 
   override fun onActive() {
     super.onActive()
-    playable?.considerRequestRenderer(this)
+    playable?.setupRenderer(this)
   }
 
   override fun onInActive() {
-    playable?.considerReleaseRenderer(this)
+    playable?.teardownRenderer(this)
     super.onInActive()
   }
 
@@ -45,9 +45,11 @@ internal class StaticViewRendererPlayback(
     return this.container
   }
 
-  override fun releaseRenderer(renderer: Any?) {
-    // do nothing
-  }
+  /**
+   * This operation would always be false if the renderer is not null, since the renderer is never
+   * released to any pool.
+   */
+  override fun releaseRenderer(renderer: Any?) = renderer == null
 
   override fun onAttachRenderer(renderer: Any?): Boolean {
     require(renderer == null || renderer === container)

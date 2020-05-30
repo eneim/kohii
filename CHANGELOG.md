@@ -12,6 +12,15 @@ _Under development_
 - Introduce `PlayerParameters`, `NetworkTypeChangeListener`.
 - Deprecate the `VideoSize`.
 - Introduce the `initialPlaybackInfo` setting for the Binder.
+- Add method `Kohii.createControlDispatcher(Playback)`.
+- Add method `Playback.Controller.setupRenderer(Playback, Any?)`.
+- Add method `Playback.Controller.teardownRenderer(Playback, Any?)`.
+
+- [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
+- [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.
+- [Breaking] `RendererProvider#releaseRenderer` now needs to return a boolean.
+- [Breaking] `Playback#addCallback` and `Playback#removeCallback` are now internal.
+- [Breaking] The `DefaultControlDispatcher` is now internal.
 
 ## 1.0.0.2010004
 

@@ -76,6 +76,7 @@ internal class VideoItemHolder(
   override fun onRecycled(success: Boolean) {
     super.onRecycled(success)
     this.videoData = null
+    thumbnail.clearAnimation()
     thumbnail.isVisible = true
   }
 

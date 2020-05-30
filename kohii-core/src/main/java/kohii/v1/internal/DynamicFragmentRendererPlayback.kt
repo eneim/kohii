@@ -56,13 +56,13 @@ internal class DynamicFragmentRendererPlayback(
     }
 
   override fun onPlay() {
+    playable?.setupRenderer(this)
     super.onPlay()
-    playable?.considerRequestRenderer(this)
   }
 
   override fun onPause() {
     super.onPause()
-    playable?.considerReleaseRenderer(this)
+    playable?.teardownRenderer(this)
   }
 
   override fun onAttachRenderer(renderer: Any?): Boolean {
@@ -158,9 +158,7 @@ internal class DynamicFragmentRendererPlayback(
     if (view.parent === container) return
     if (container.childCount > 0) container.removeAllViews()
 
-    view.parent?.let {
-      if (it is ViewGroup) it.removeView(view)
-    }
+    (view.parent as? ViewGroup)?.removeView(view)
 
     container.addView(view)
   }

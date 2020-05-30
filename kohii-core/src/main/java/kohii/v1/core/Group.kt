@@ -131,7 +131,6 @@ class Group(
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
-    check(ViewCompat.isAttachedToWindow(container))
     return managers.asSequence()
         .mapNotNull { it.findBucketForContainer(container) }
         .firstOrNull()
@@ -172,8 +171,8 @@ class Group(
     val newSelection = selection
 
     // Next: as Playbacks are split into 2 collections, we then release unused resources and prepare
-    // the ones that need to. We do so by updating Playback's distance to candidate.
-    updatePlaybackDistances(playbacks, newSelection)
+    // the ones that need to. We do so by updating Playback's priority.
+    updatePlaybackPriorities(playbacks, newSelection)
 
     (toPause + toPlay + oldSelection - newSelection).mapNotNull { it.playable }
         .forEach { dispatcher.pause(it) }
@@ -191,32 +190,32 @@ class Group(
     }
   }
 
-  private fun updatePlaybackDistances(
+  private fun updatePlaybackPriorities(
     playbacks: Collection<Playback>,
     selection: Collection<Playback>
   ) {
-    // biggest Rect that covers all selected Playbacks
+    // The biggest Rect that covers all selected Playbacks
     val cover = selection.fold(Rect()) { acc, playback ->
       acc.union(playback.token.containerRect)
       return@fold acc
     }
 
-    // Update distanceToPlay
-    // calculate a target: Pair<Pair<Int, Int>, Pair<Int, Int>> to save information.
+    // Update playbackPriority
+    // Calculate a target coordinate: Pair<Pair<Int, Int>, Pair<Int, Int>> to save information.
     val target = (cover.centerX() to cover.width() / 2) to (cover.centerY() to cover.height() / 2)
     if (target.first.second > 0 && target.second.second > 0) {
-      // update distance of non-selected Playback first, so they can release unused/obsoleted
+      // Update priority of non-selected Playback first, so they can release unused/obsoleted
       // resource before the selected ones who consume a lot of resources.
       (playbacks - selection).partitionToMutableSets(
           predicate = { it.isActive },
           transform = { it }
       )
           .also { (active, inactive) ->
-            inactive.forEach { it.distanceToPlay = Int.MAX_VALUE }
+            inactive.forEach { it.playbackPriority = Int.MAX_VALUE }
             active.sortedBy { it.token.containerRect distanceTo target }
-                .forEachIndexed { index, playback -> playback.distanceToPlay = index + 1 }
+                .forEachIndexed { index, playback -> playback.playbackPriority = index + 1 }
           }
-      selection.forEach { it.distanceToPlay = 0 }
+      selection.forEach { it.playbackPriority = 0 }
     }
   }
 

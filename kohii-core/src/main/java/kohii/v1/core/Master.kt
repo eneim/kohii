@@ -230,9 +230,7 @@ class Master private constructor(context: Context) : PlayableManager {
     check(!activity.isDestroyed) {
       "Cannot register a destroyed Activity: $activity"
     }
-    val group = groups.find { it.activity === activity } ?: Group(
-        this, activity
-    ).also {
+    val group = groups.find { it.activity === activity } ?: Group(this, activity).also {
       onGroupCreated(it)
       activity.lifecycle.addObserver(it)
     }
@@ -274,9 +272,7 @@ class Master private constructor(context: Context) : PlayableManager {
         .firstOrNull { it.value.tag == tag }
         ?.key
     if (sameTag != null) requests.remove(sameTag)?.onRemoved()
-    requests[container] = BindRequest(
-        this, playable, container, tag, options, callback
-    )
+    requests[container] = BindRequest(this, playable, container, tag, options, callback)
     // if (playable.manager == null) playable.manager = this
     dispatcher.obtainMessage(MSG_BIND_PLAYABLE, container)
         .sendToTarget()
@@ -348,10 +344,11 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  // [Draft] return true if this [Master] wants to handle this step by itself, false otherwise.
-  internal fun onPlaybackInActive(playable: Playable, playback: Playback): Boolean {
+  // [Draft] return false if this [Master] wants to handle this step by itself, true to release.
+  internal fun releasePlaybackOnInActive(playback: Playback): Boolean {
     "Master#onPlaybackInActive: $playback".logDebug()
-    return manuallyStartedPlayable.get() === playable && playable.isPlaying()
+    val playable: Playable? = manuallyStartedPlayable.get()
+    return !(playable === playback.playable && playable?.isPlaying() == true)
   }
 
   internal fun onPlaybackDetached(playback: Playback) {
@@ -491,6 +488,21 @@ class Master private constructor(context: Context) : PlayableManager {
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
         .sendToTarget()
+  }
+
+  internal fun removeBinding(container: Any) {
+    requests.remove(container)
+        ?.also {
+          it.playable.playback = null
+        }?.onRemoved()
+
+    groups.asSequence()
+        .flatMap { it.managers.asSequence() }
+        .map { it.playbacks[container] }
+        .firstOrNull()
+        ?.also { playback ->
+          playback.manager.removePlayback(playback)
+        }
   }
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
@@ -738,10 +750,10 @@ class Master private constructor(context: Context) : PlayableManager {
             preload = options.preload,
             repeatMode = options.repeatMode,
             controller = options.controller,
+            initialPlaybackInfo = options.initialPlaybackInfo,
             artworkHintListener = options.artworkHintListener,
             tokenUpdateListener = options.tokenUpdateListener,
             networkTypeChangeListener = options.networkTypeChangeListener,
-            initialPlaybackInfo = options.initialPlaybackInfo,
             callbacks = options.callbacks
         )
 
@@ -769,8 +781,10 @@ class Master private constructor(context: Context) : PlayableManager {
 
     internal fun onRemoved() {
       "Request removed: $tag, $container, $playable".logWarn()
-      options.artworkHintListener = null
       options.controller = null
+      options.artworkHintListener = null
+      options.networkTypeChangeListener = null
+      options.tokenUpdateListener = null
       options.callbacks.clear()
     }
 

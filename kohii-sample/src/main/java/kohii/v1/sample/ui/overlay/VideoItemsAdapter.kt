@@ -50,13 +50,11 @@ internal class VideoItemsAdapter(
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
-  ): BaseViewHolder {
-    return VideoItemHolder(
-        from(parent.context),
-        parent,
-        this
-    )
-  }
+  ): BaseViewHolder = VideoItemHolder(
+      from(parent.context),
+      parent,
+      this
+  )
 
   override fun getItemId(position: Int): Long {
     return position.toLong()
@@ -111,6 +109,9 @@ internal class VideoItemsAdapter(
 
   override fun onFailedToRecycleView(holder: BaseViewHolder): Boolean {
     holder.onRecycled(false)
+    if (holder is VideoItemHolder) {
+      kohii.cancel(holder.playerViewContainer)
+    }
     return true
   }
 }

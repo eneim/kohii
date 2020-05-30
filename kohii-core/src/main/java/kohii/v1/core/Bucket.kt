@@ -96,7 +96,7 @@ abstract class Bucket constructor(
 
   private val containers = mutableSetOf<Any>()
 
-  private val behaviorHolder by lazy(NONE) {
+  private val behaviorHolder = lazy(NONE) {
     val container = manager.group.activity.window.peekDecorView()
         ?.findCoordinatorLayoutDirectChildContainer(root)
     val params = container?.layoutParams
@@ -166,7 +166,7 @@ abstract class Bucket constructor(
 
   @CallSuper
   open fun onAttached() {
-    behaviorHolder?.let {
+    behaviorHolder.value?.let {
       val behavior = it.behavior
       if (behavior != null) {
         val behaviorWrapper = BehaviorWrapper(behavior, manager)
@@ -177,11 +177,13 @@ abstract class Bucket constructor(
 
   @CallSuper
   open fun onDetached() {
-    behaviorHolder?.let {
-      val behavior = it.behavior
-      if (behavior is BehaviorWrapper) {
-        behavior.onDetach()
-        it.behavior = behavior.delegate
+    if (behaviorHolder.isInitialized()) {
+      behaviorHolder.value?.let {
+        val behavior = it.behavior
+        if (behavior is BehaviorWrapper) {
+          behavior.onDetach()
+          it.behavior = behavior.delegate
+        }
       }
     }
   }

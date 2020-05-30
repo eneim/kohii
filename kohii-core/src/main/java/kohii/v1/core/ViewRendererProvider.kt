@@ -28,12 +28,11 @@ abstract class ViewRendererProvider @JvmOverloads constructor(
     playback: Playback,
     media: Media,
     renderer: Any?
-  ) {
-    require(renderer is View?)
+  ): Boolean {
     if (renderer != null) {
       // View must be removed from its parent before this call.
-      require(renderer.parent == null && !ViewCompat.isAttachedToWindow(renderer))
+      require(renderer is View && (renderer.parent == null && !renderer.isAttachedToWindow))
     }
-    super.releaseRenderer(playback, media, renderer)
+    return super.releaseRenderer(playback, media, renderer)
   }
 }

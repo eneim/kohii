@@ -76,10 +76,7 @@ abstract class Engine<RENDERER : Any> constructor(
   }
 
   fun cancel(container: ViewGroup) {
-    master.requests.remove(container)
-        ?.also {
-          it.playable.playback = null
-        }?.onRemoved()
+    master.removeBinding(container)
   }
 
   @Deprecated(
@@ -147,7 +144,9 @@ abstract class Engine<RENDERER : Any> constructor(
 
   fun stick(lifecycleOwner: LifecycleOwner) {
     val manager = master.groups.asSequence()
-        .map { it.managers.find { m -> m.lifecycleOwner === lifecycleOwner } }
+        .map {
+          it.managers.find { m -> m.lifecycleOwner === lifecycleOwner }
+        }
         .firstOrNull()
     if (manager != null) {
       manager.group.stick(manager)

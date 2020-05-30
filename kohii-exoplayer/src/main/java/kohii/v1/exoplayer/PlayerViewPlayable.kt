@@ -38,11 +38,9 @@ class PlayerViewPlayable(
       bridge.renderer = value
     }
 
-  override fun considerRequestRenderer(playback: Playback) {
-    super.considerRequestRenderer(playback)
-    val renderer = bridge.renderer
-    if (renderer != null) {
-      val controller = playback.config.controller
+  override fun onRendererAttached(playback: Playback, renderer: Any?) {
+    val controller = playback.config.controller
+    if (renderer is PlayerView) {
       if (controller is ControlDispatcher) {
         renderer.setControlDispatcher(controller)
         renderer.useController = true
@@ -51,14 +49,19 @@ class PlayerViewPlayable(
         renderer.useController = false
       }
     }
+    super.onRendererAttached(playback, renderer)
+    if (renderer is PlayerView && renderer.useController && controller == null) {
+      throw IllegalStateException(
+          "To enable `useController`, Playback $playback must have a non-null Playback.Controller."
+      )
+    }
   }
 
-  override fun considerReleaseRenderer(playback: Playback) {
-    val renderer = bridge.renderer
+  override fun onRendererDetached(playback: Playback, renderer: Any?) {
     if (renderer is PlayerView) {
       renderer.setControlDispatcher(null)
       renderer.useController = false
     }
-    super.considerReleaseRenderer(playback)
+    super.onRendererDetached(playback, renderer)
   }
 }

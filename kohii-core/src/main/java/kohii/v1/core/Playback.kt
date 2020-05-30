@@ -117,12 +117,12 @@ abstract class Playback(
     val threshold: Float = 0.65F,
     val preload: Boolean = false,
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
+    val callbacks: Set<Callback> = emptySet(),
     val controller: Controller? = null,
+    val initialPlaybackInfo: PlaybackInfo? = null,
     val artworkHintListener: ArtworkHintListener? = null,
     val tokenUpdateListener: TokenUpdateListener? = null,
-    val networkTypeChangeListener: NetworkTypeChangeListener? = null,
-    val initialPlaybackInfo: PlaybackInfo? = null,
-    val callbacks: Set<Callback> = emptySet()
+    val networkTypeChangeListener: NetworkTypeChangeListener? = null
   )
 
   override fun toString(): String {
@@ -162,10 +162,18 @@ abstract class Playback(
   private val callbacks = ArrayDeque<Callback>()
   private val listeners = ArrayDeque<StateListener>()
 
+  // Callbacks those will be setup when the Playback is added, and cleared when it is removed.
+  private var controller: Controller? = null
   private var artworkHintListener: ArtworkHintListener? = null
   private var tokenUpdateListener: TokenUpdateListener? = null
   private var networkTypeChangeListener: NetworkTypeChangeListener? = null
 
+  /**
+   * Returns a usable renderer for the [playable], or `null` if no renderer is available or needed.
+   *
+   * @see [RendererProvider]
+   * @see [RendererProvider.acquireRenderer]
+   */
   internal open fun acquireRenderer(): Any? {
     val playable = this.playable
     requireNotNull(playable)
@@ -173,7 +181,15 @@ abstract class Playback(
     return provider.acquireRenderer(this, playable.media)
   }
 
-  internal open fun releaseRenderer(renderer: Any?) {
+  /**
+   * Releases the renderer back to the Provider as it is no longer used by this [Playback]. Return
+   * `true` if the renderer is null (so nothing need to be done) or the operation finishes
+   * successfully; `false` otherwise.
+   *
+   * @see [RendererProvider]
+   * @see [RendererProvider.releaseRenderer]
+   */
+  internal open fun releaseRenderer(renderer: Any?): Boolean {
     val playable = this.playable
     requireNotNull(playable)
     val provider: RendererProvider = manager.findRendererProvider(playable)
@@ -204,15 +220,24 @@ abstract class Playback(
 
   /**
    * Return `true` to indicate that the Renderer is safely detached from container and
-   * Playable should not use it any further. RendererProvider will then release the Renderer with
+   * Playable should not use it any longer. [RendererProvider] will then release the Renderer with
    * proper mechanism (eg: put it back to Pool for reuse).
    */
   protected abstract fun onDetachRenderer(renderer: Any?): Boolean
+
+  internal fun onRendererAttached(renderer: Any?) {
+    controller?.setupRenderer(this, renderer)
+  }
+
+  internal fun onRendererDetached(renderer: Any?) {
+    controller?.teardownRenderer(this, renderer)
+  }
 
   internal fun onAdded() {
     "Playback#onAdded $this".logDebug()
     playbackState = STATE_ADDED
     callbacks.forEach { it.onAdded(this) }
+    controller = config.controller
     artworkHintListener = config.artworkHintListener
     tokenUpdateListener = config.tokenUpdateListener
     networkTypeChangeListener = config.networkTypeChangeListener
@@ -225,6 +250,7 @@ abstract class Playback(
     "Playback#onRemoved $this".logDebug()
     playbackState = STATE_REMOVED
     bucket.removeContainer(this.container)
+    controller = null
     tokenUpdateListener = null
     artworkHintListener = null
     networkTypeChangeListener = null
@@ -262,7 +288,7 @@ abstract class Playback(
     "Playback#onInActive $this".logDebug()
     playbackState = STATE_INACTIVE
     artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
-    playable?.considerReleaseRenderer(this)
+    playable?.teardownRenderer(this)
     callbacks.forEach { it.onInActive(this) }
   }
 
@@ -306,17 +332,18 @@ abstract class Playback(
 
   internal var lifecycleState: State = State.INITIALIZED
 
-  // The smaller, the closer it is to be selected to Play.
-  // Consider to prepare the underline Playable for low enough distance, and release it otherwise.
-  // This value is updated by Group. In active Playback always has Int.MAX_VALUE distance.
-  internal var distanceToPlay: Int = Int.MAX_VALUE
+  // Smaller value = higher priority. Priority 0 is the selected Playback. The higher priority, the
+  // closer it is to the selected Playback.
+  // Consider to prepare the underline Playable for high enough priority, and release it otherwise.
+  // This value is updated by Group. Inactive Playback always has Int.MAX_VALUE priority.
+  internal var playbackPriority: Int = Int.MAX_VALUE
     set(value) {
-      val from = field
+      val oldPriority = field
       field = value
-      val to = field
-      "Playback#distanceToPlay $from --> $to, $this".logDebug()
-      if (from == to) return
-      playable?.onDistanceChanged(this, from, to)
+      val newPriority = field
+      "Playback#playbackPriority $oldPriority --> $newPriority, $this".logDebug()
+      if (oldPriority == newPriority) return
+      playable?.onPlaybackPriorityChanged(this, oldPriority, newPriority)
     }
 
   internal var playbackVolumeInfo: VolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
@@ -395,12 +422,12 @@ abstract class Playback(
       if (from != to) playerParametersChangeListener?.onPlayerParametersChanged(to)
     }
 
-  fun addCallback(callback: Callback) {
+  internal fun addCallback(callback: Callback) {
     "Playback#addCallback $callback, $this".logDebug()
     this.callbacks.push(callback)
   }
 
-  fun removeCallback(callback: Callback?) {
+  internal fun removeCallback(callback: Callback?) {
     "Playback#removeCallback $callback, $this".logDebug()
     this.callbacks.remove(callback)
   }
@@ -422,6 +449,12 @@ abstract class Playback(
     }
   }
 
+  /**
+   * Resets the [playable] to its original state.
+   *
+   * @param refresh If `true`, also refresh everything.
+   */
+  @JvmOverloads
   fun rewind(refresh: Boolean = true) {
     playable?.onReset()
     if (refresh) manager.refresh()
@@ -486,8 +519,7 @@ abstract class Playback(
 
     /** Called when a Video is rendered on the Surface for the first time */
     @JvmDefault
-    fun onRendered(playback: Playback) {
-    }
+    fun onRendered(playback: Playback) = Unit
 
     /**
      * Called when buffering status of the playback is changed.
@@ -498,23 +530,19 @@ abstract class Playback(
     fun onBuffering(
       playback: Playback,
       playWhenReady: Boolean
-    ) {
-    } // ExoPlayer state: 2
+    ) = Unit // ExoPlayer state: 2
 
     /** Called when the Video starts playing */
     @JvmDefault
-    fun onPlaying(playback: Playback) {
-    } // ExoPlayer state: 3, play flag: true
+    fun onPlaying(playback: Playback) = Unit // ExoPlayer state: 3, play flag: true
 
     /** Called when the Video is paused */
     @JvmDefault
-    fun onPaused(playback: Playback) {
-    } // ExoPlayer state: 3, play flag: false
+    fun onPaused(playback: Playback) = Unit // ExoPlayer state: 3, play flag: false
 
     /** Called when the Video finishes its playback */
     @JvmDefault
-    fun onEnded(playback: Playback) {
-    } // ExoPlayer state: 4
+    fun onEnded(playback: Playback) = Unit // ExoPlayer state: 4
 
     @JvmDefault
     fun onVideoSizeChanged(
@@ -523,63 +551,92 @@ abstract class Playback(
       height: Int,
       unAppliedRotationDegrees: Int,
       pixelWidthHeightRatio: Float
-    ) {
-    }
+    ) = Unit
 
     @JvmDefault
     fun onError(
       playback: Playback,
       exception: Exception
-    ) {
-    }
+    ) = Unit
   }
 
   interface Callback {
 
     @JvmDefault
-    fun onActive(playback: Playback) {
-    }
+    fun onActive(playback: Playback) = Unit
 
     @JvmDefault
-    fun onInActive(playback: Playback) {
-    }
+    fun onInActive(playback: Playback) = Unit
 
     @JvmDefault
-    fun onAdded(playback: Playback) {
-    }
+    fun onAdded(playback: Playback) = Unit
 
     @JvmDefault
-    fun onRemoved(playback: Playback) {
-    }
+    fun onRemoved(playback: Playback) = Unit
 
     @JvmDefault
-    fun onAttached(playback: Playback) {
-    }
+    fun onAttached(playback: Playback) = Unit
 
     @JvmDefault
-    fun onDetached(playback: Playback) {
-    }
+    fun onDetached(playback: Playback) = Unit
   }
 
+  /**
+   * Provides necessary information and callbacks to setup a manual controller for a [Playback].
+   */
   interface Controller {
-    // false = full manual.
-    // true = half manual.
-    // When true:
-    // - If user starts a Playback, it will not be paused until Playback is not visible enough
-    // (controlled by Playback.Config), or user starts other Playback (priority overridden).
-    // - If user pauses a Playback, it will not be played until user resumes it.
-    // - If user scrolls a Playback so that a it is not visible enough, system will pause the Playback.
-    // - If user scrolls a paused Playback so that it is visible enough, system will: play it if it was previously played by User,
-    // or pause it if it was paused by User before (= do nothing).
+    /**
+     * Returns `true` if the library can automatically pause the [Playback], `false` otherwise.
+     *
+     * If this method returns `true`:
+     * - Once the user starts a [Playback], it will not be paused **until** its container is not
+     * visible enough (controlled by [Playback.Config.threshold]), or user starts other Playback
+     * (priority overridden).
+     * - Once the user pauses a [Playback], it will not be played until the user manually resumes
+     * it.
+     * - Once the user interacts so that the [Playback]'s container is not visible enough, the
+     * library will pause the it.
+     * - Once the user interacts so that a paused [Playback]'s container is visible enough, the
+     * library will: play it if it was not paused by the user, or pause it if it was paused by the
+     * user before (this is equal to doing nothing).
+     *
+     * Default result is `true`.
+     */
     @JvmDefault
     fun kohiiCanPause(): Boolean = true
 
-    // - Allow System to start a Playback.
-    // When true:
-    // - Kohii can start a Playback automatically. But once user pause it manually, Only user can resume it,
-    // Kohii should never start/resume the Playback automatically.
+    /**
+     * Returns `true` to tell if the library can start a [Playback] automatically for the first time
+     * , or `false` otherwise.
+     *
+     * If this method returns `true`: the library can start a [Playback] automatically if it was
+     * never be started or paused by the user. Once the user pauses it manually, only user can
+     * resume it, the library should never start/resume the [Playback] automatically again.
+     *
+     * Default result is `false`.
+     */
     @JvmDefault
     fun kohiiCanStart(): Boolean = false
+
+    /**
+     * This method is called once the renderer of the [Playback] becomes available. Client should
+     * use this callback to setup the manual controller mechanism for the renderer. For example:
+     * provide a user interface for controlling the playback.
+     *
+     * @see [Playback.onRendererAttached]
+     */
+    @JvmDefault
+    fun setupRenderer(playback: Playback, renderer: Any?) = Unit
+
+    /**
+     * This method is called once the renderer of the [Playback] becomes unavailable to it. Client
+     * should use this callback to clean up any manual controller mechanism set before. Note that
+     * the library also does some cleanup by itself to ensure the sanity of the renderer.
+     *
+     * @see [Playback.onRendererDetached]
+     */
+    @JvmDefault
+    fun teardownRenderer(playback: Playback, renderer: Any?) = Unit
   }
 
   interface ArtworkHintListener {

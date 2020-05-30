@@ -25,12 +25,10 @@ data class PlayerParameters(
   val maxAudioBitrate: Int = Int.MAX_VALUE
 ) {
 
-  fun playerShouldStart() =
-    maxVideoWidth > 0 && maxVideoHeight > 0 && (maxVideoBitrate > 0 || maxAudioBitrate > 0)
+  fun playerShouldStart() = maxAudioBitrate > 0
+      || (maxVideoBitrate > 0 && maxVideoWidth > 0 && maxVideoHeight > 0)
 
   companion object {
     val DEFAULT = PlayerParameters()
-
-    val DISABLED = DEFAULT.copy(maxVideoWidth = 0, maxVideoHeight = 0)
   }
 }

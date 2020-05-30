@@ -16,22 +16,11 @@
 
 package kohii.v1.exoplayer
 
-import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
-import kohii.v1.core.Manager
-import kohii.v1.core.Playback.Controller
+import kohii.v1.core.Playback
 
-class DefaultControlDispatcher(
-  private val manager: Manager,
-  private val container: ViewGroup,
-  private val kohiiCanStart: Boolean = true,
-  private val kohiiCanPause: Boolean = true
-) : ControlDispatcher, Controller {
-
-  override fun kohiiCanPause() = kohiiCanPause
-
-  override fun kohiiCanStart() = kohiiCanStart
+internal class DefaultControlDispatcher(private val playback: Playback) : ControlDispatcher {
 
   override fun dispatchSeekTo(
     player: Player,
@@ -54,10 +43,10 @@ class DefaultControlDispatcher(
     player: Player,
     playWhenReady: Boolean
   ): Boolean {
-    val playable = manager.findPlayableForContainer(container)
+    val playable = playback.playable
     if (playable != null) {
-      if (playWhenReady) manager.play(playable)
-      else manager.pause(playable)
+      if (playWhenReady) playback.manager.play(playable)
+      else playback.manager.pause(playable)
     }
     return true
   }
@@ -74,8 +63,8 @@ class DefaultControlDispatcher(
     player: Player,
     reset: Boolean
   ): Boolean {
-    val playable = manager.findPlayableForContainer(container)
-    if (playable != null) manager.pause(playable)
+    val playable = playback.playable
+    if (playable != null) playback.manager.pause(playable)
     player.stop(reset)
     return true
   }

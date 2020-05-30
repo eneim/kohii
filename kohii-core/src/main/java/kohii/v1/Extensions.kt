@@ -88,7 +88,11 @@ internal infix fun Rect.distanceTo(target: Pair<Pair<Int, Int>, Pair<Int, Int>>)
 
 // Learn from Glide: com/bumptech/glide/manager/RequestManagerRetriever.java#L304
 internal fun Context.findActivity(): Activity? {
-  return if (this is Activity) this else if (this is ContextWrapper) baseContext.findActivity() else null
+  return when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+  }
 }
 
 /** Utility to help client to quickly fetch the original [Behavior] of a View if available */
@@ -127,6 +131,6 @@ fun String.logError(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   }
 }
 
-internal inline fun debugOnly(crossinline action: () -> Unit) {
+internal inline fun debugOnly(action: () -> Unit) {
   if (BuildConfig.DEBUG) action()
 }
