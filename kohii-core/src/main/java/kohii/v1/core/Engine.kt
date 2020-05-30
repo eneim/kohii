@@ -76,10 +76,7 @@ abstract class Engine<RENDERER : Any> constructor(
   }
 
   fun cancel(container: ViewGroup) {
-    master.requests.remove(container)
-        ?.also {
-          it.playable.playback = null
-        }?.onRemoved()
+    master.removeBinding(container)
   }
 
   @Deprecated(

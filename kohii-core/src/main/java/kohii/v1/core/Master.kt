@@ -490,6 +490,21 @@ class Master private constructor(context: Context) : PlayableManager {
         .sendToTarget()
   }
 
+  internal fun removeBinding(container: Any) {
+    requests.remove(container)
+        ?.also {
+          it.playable.playback = null
+        }?.onRemoved()
+
+    groups.asSequence()
+        .flatMap { it.managers.asSequence() }
+        .map { it.playbacks[container] }
+        .firstOrNull()
+        ?.also { playback ->
+          playback.manager.removePlayback(playback)
+        }
+  }
+
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
   internal fun play(playable: Playable) {
     val tag = playable.tag
