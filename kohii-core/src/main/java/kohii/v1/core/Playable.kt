@@ -57,6 +57,7 @@ abstract class Playable(
   abstract val tag: Any
 
   abstract var renderer: Any?
+    internal set
 
   internal abstract var playback: Playback?
 
