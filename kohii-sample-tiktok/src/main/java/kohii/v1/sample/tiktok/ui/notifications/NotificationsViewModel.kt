@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2020 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-include ':kohii-core'
-include ':kohii-exoplayer'
-include ':kohii-sample'
-include ':kohii-androidx'
-include ':kohii-ads'
-include ':kohii-experiments'
-include ':kohii-sample-tiktok'
+
+package kohii.v1.sample.tiktok.ui.notifications
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+
+class NotificationsViewModel : ViewModel() {
+
+  private val _text = MutableLiveData<String>().apply {
+    value = "This is notifications Fragment"
+  }
+  val text: LiveData<String> = _text
+}

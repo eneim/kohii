@@ -76,7 +76,7 @@ object Libs {
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
 
-    val junit = "junit:junit:4.12"
+    val junit = "junit:junit:4.13"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
     val robolectric = "org.robolectric:robolectric:4.3.1"
     val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
@@ -102,6 +102,8 @@ object Libs {
     val browser = "androidx.browser:browser:1.2.0"
     val palette = "androidx.palette:palette-ktx:1.0.0"
     val emoji = "androidx.emoji:emoji:1.0.0"
+
+    val vector = "androidx.vectordrawable:vectordrawable:1.1.0"
 
     val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
     val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-rc01"
@@ -131,24 +133,24 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.1"
+      private const val version = "1.2.4"
       val fragment = "androidx.fragment:fragment:$version"
       val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
 
     object Test {
-      private const val version = "1.2.0"
+      private const val version = "1.3.0-rc01"
       val core = "androidx.test:core:$version"
       val runner = "androidx.test:runner:$version"
       val rules = "androidx.test:rules:$version"
 
-      val espressoCore = "androidx.test.espresso:espresso-core:3.2.0-beta01"
+      val espressoCore = "androidx.test.espresso:espresso-core:3.3.0-rc01"
     }
 
     val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
 
     object Paging {
-      private const val version = "2.1.1"
+      private const val version = "2.1.2"
       val common = "androidx.paging:paging-common-ktx:$version"
       val runtime = "androidx.paging:paging-runtime-ktx:$version"
     }
@@ -158,8 +160,8 @@ object Libs {
     // beta4 breaks the overlay demo ...
     val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
 
-    val core = "androidx.core:core:1.2.0"
-    val coreKtx = "androidx.core:core-ktx:1.2.0"
+    val core = "androidx.core:core:1.3.0"
+    val coreKtx = "androidx.core:core-ktx:1.3.0"
 
     object Lifecycle {
       private const val version = "2.2.0"
@@ -174,7 +176,7 @@ object Libs {
     }
 
     object Room {
-      private const val version = "2.2.3"
+      private const val version = "2.2.5"
       val common = "androidx.room:room-common:$version"
       val runtime = "androidx.room:room-runtime:$version"
       val compiler = "androidx.room:room-compiler:$version"
