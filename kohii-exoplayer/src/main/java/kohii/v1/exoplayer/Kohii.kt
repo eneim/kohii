@@ -27,9 +27,6 @@ import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Playback
 import kohii.v1.core.RendererProviderFactory
 import kohii.v1.utils.Capsule
-import java.net.CookieHandler
-import java.net.CookieManager
-import java.net.CookiePolicy
 
 class Kohii private constructor(
   master: Master,
@@ -48,14 +45,14 @@ class Kohii private constructor(
     operator fun get(fragment: Fragment) = get(fragment.requireContext())
   }
 
-  init {
-    // Adapt from ExoPlayer demo app.
+  // Adapt from ExoPlayer demo app.
+  /* init {
     val cookieManager = CookieManager()
     cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER)
     if (CookieHandler.getDefault() !== cookieManager) {
       CookieHandler.setDefault(cookieManager)
     }
-  }
+  } */
 
   override fun prepare(manager: Manager) {
     manager.registerRendererProvider(PlayerView::class.java, rendererProviderFactory())
