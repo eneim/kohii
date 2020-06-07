@@ -29,9 +29,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.util.Util
 import kohii.v1.media.Media
 import kohii.v1.onEachAcquired
-import java.net.CookieHandler
-import java.net.CookieManager
-import java.net.CookiePolicy
 import kotlin.math.max
 
 /**
