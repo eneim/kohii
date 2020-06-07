@@ -21,6 +21,8 @@ _Under development_
 - [Breaking] `RendererProvider#releaseRenderer` now needs to return a boolean.
 - [Breaking] `Playback#addCallback` and `Playback#removeCallback` are now internal.
 - [Breaking] The `DefaultControlDispatcher` is now internal.
+- [Breaking] Include Playback in the `ArtworkHintListener#onArtworkHint`.
+- [Breaking] Remove default parameters of the `KohiiExoPlayer`.
 
 ## 1.0.0.2010004
 
