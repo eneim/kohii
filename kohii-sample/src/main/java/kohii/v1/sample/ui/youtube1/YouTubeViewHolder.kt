@@ -63,6 +63,7 @@ class YouTubeViewHolder(
   }
 
   override fun onArtworkHint(
+    playback: Playback,
     shouldShow: Boolean,
     position: Long,
     state: Int

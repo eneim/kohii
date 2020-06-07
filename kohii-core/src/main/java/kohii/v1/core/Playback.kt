@@ -276,6 +276,7 @@ abstract class Playback(
     playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
     artworkHintListener?.onArtworkHint(
+        this,
         playable?.isPlaying() == false,
         playbackInfo.resumePosition,
         playerState
@@ -286,7 +287,7 @@ abstract class Playback(
   internal open fun onInActive() {
     "Playback#onInActive $this".logDebug()
     playbackState = STATE_INACTIVE
-    artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
+    artworkHintListener?.onArtworkHint(this, true, playbackInfo.resumePosition, playerState)
     playable?.teardownRenderer(this)
     callbacks.forEach { it.onInActive(this) }
   }
@@ -296,7 +297,7 @@ abstract class Playback(
     "Playback#onPlay $this".logDebug()
     container.keepScreenOn = true
     artworkHintListener?.onArtworkHint(
-        playerState == STATE_ENDED, playbackInfo.resumePosition, playerState
+        this, playerState == STATE_ENDED, playbackInfo.resumePosition, playerState
     )
   }
 
@@ -304,7 +305,7 @@ abstract class Playback(
   internal open fun onPause() {
     container.keepScreenOn = false
     "Playback#onPause $this".logDebug()
-    artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
+    artworkHintListener?.onArtworkHint(this, true, playbackInfo.resumePosition, playerState)
   }
 
   // Will be updated everytime 'onRefresh' is called.
@@ -483,6 +484,7 @@ abstract class Playback(
     }
     val playable = this.playable
     artworkHintListener?.onArtworkHint(
+        playback = this,
         shouldShow = if (playable != null) !playable.isPlaying() else true,
         position = playbackInfo.resumePosition,
         state = playerState
@@ -640,7 +642,11 @@ abstract class Playback(
 
   interface ArtworkHintListener {
 
+    /**
+     * @param position current position of the playback in milliseconds.
+     */
     fun onArtworkHint(
+      playback: Playback,
       shouldShow: Boolean,
       position: Long,
       state: Int
