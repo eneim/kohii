@@ -21,7 +21,6 @@ import android.os.Handler
 import android.os.Message
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle.Event
@@ -178,7 +177,8 @@ class Group(
         .forEach { dispatcher.pause(it) }
 
     if (newSelection.isNotEmpty()) {
-      newSelection.mapNotNull { it.playable }
+      newSelection.filter { !it.lock }
+          .mapNotNull { it.playable }
           .forEach { dispatcher.play(it) }
 
       val grouped = newSelection.groupBy { it.manager }
