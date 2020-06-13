@@ -166,7 +166,7 @@ class Group(
       if (lock || activity.lifecycle.currentState < master.groupsMaxLifecycleState)
         emptySet()
       else
-        toPlay
+        toPlay.filterTo(mutableSetOf()) { !it.lock }
     val newSelection = selection
 
     // Next: as Playbacks are split into 2 collections, we then release unused resources and prepare
@@ -177,8 +177,7 @@ class Group(
         .forEach { dispatcher.pause(it) }
 
     if (newSelection.isNotEmpty()) {
-      newSelection.filter { !it.lock }
-          .mapNotNull { it.playable }
+      newSelection.mapNotNull { it.playable }
           .forEach { dispatcher.play(it) }
 
       val grouped = newSelection.groupBy { it.manager }
