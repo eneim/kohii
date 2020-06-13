@@ -281,17 +281,14 @@ class Manager internal constructor(
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
         .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
-        .map {
+        .map { /* Bucket --> List<Playback> */
           val candidates = bucketToPlaybacks.getValue(it).filter { playback ->
-            val kohiiCannotPause = master.manuallyStartedPlayable.get() === playback.playable
+            val cannotPause = master.manuallyStartedPlayable.get() === playback.playable
                 && master.plannedManualPlayables.contains(playback.tag)
                 && !requireNotNull(playback.config.controller).kohiiCanPause()
-            return@filter kohiiCannotPause || it.allowToPlay(playback)
+            return@filter cannotPause || it.allowToPlay(playback)
           }
-          return@map it to candidates
-        }
-        .map { (bucket, candidates) ->
-          bucket.strategy(bucket.selectToPlay(candidates))
+          return@map it.strategy(it.selectToPlay(candidates))
         }
         .find { it.isNotEmpty() }
         ?.also {
