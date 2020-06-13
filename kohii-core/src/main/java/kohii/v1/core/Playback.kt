@@ -30,6 +30,7 @@ import kohii.v1.core.Bucket.Companion.NONE_AXIS
 import kohii.v1.core.Bucket.Companion.VERTICAL
 import kohii.v1.core.Common.STATE_ENDED
 import kohii.v1.core.Common.STATE_IDLE
+import kohii.v1.core.Playback.Controller
 import kohii.v1.internal.PlayerParametersChangeListener
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
@@ -311,6 +312,8 @@ abstract class Playback(
   // Will be updated everytime 'onRefresh' is called.
   private var playbackToken: Token =
     Token(config.threshold, -1F, Rect(), 0, 0)
+
+  internal var lock: Boolean = bucket.lock
 
   internal val token: Token
     get() = playbackToken
@@ -662,4 +665,23 @@ abstract class Playback(
 
     fun onNetworkTypeChanged(networkType: NetworkType): PlayerParameters
   }
+}
+
+/** Extension functions for a Playback */
+
+/**
+ * Quickly setup the [Controller] that only needs to setup the renderer.
+ *
+ * @param kohiiCanStart same as [Controller.kohiiCanStart]
+ * @param kohiiCanPause same as [Controller.kohiiCanPause]
+ * @param setupRenderer same as [Controller.setupRenderer]
+ */
+inline fun controller(
+  kohiiCanStart: Boolean = true,
+  kohiiCanPause: Boolean = true,
+  crossinline setupRenderer: (playback: Playback, renderer: Any?) -> Unit
+): Controller = object : Controller {
+  override fun kohiiCanStart(): Boolean = kohiiCanStart
+  override fun kohiiCanPause(): Boolean = kohiiCanPause
+  override fun setupRenderer(playback: Playback, renderer: Any?) = setupRenderer(playback, renderer)
 }
