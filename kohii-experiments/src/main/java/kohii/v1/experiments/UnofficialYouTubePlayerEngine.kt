@@ -35,15 +35,16 @@ class UnofficialYouTubePlayerEngine private constructor(
 
   private constructor(context: Context) : this(Master[context])
 
-  companion object : Capsule<UnofficialYouTubePlayerEngine, Context>(
-      ::UnofficialYouTubePlayerEngine
-  ) {
+  companion object {
+
+    private val capsule =
+      Capsule<UnofficialYouTubePlayerEngine, Context>(::UnofficialYouTubePlayerEngine)
 
     @JvmStatic // convenient static call for Java
-    operator fun get(context: Context) = super.getInstance(context)
+    operator fun get(context: Context) = capsule.get(context)
 
     @JvmStatic // convenient static call for Java
-    operator fun get(fragment: Fragment) = get(fragment.requireContext())
+    operator fun get(fragment: Fragment) = capsule.get(fragment.requireContext())
   }
 
   override fun prepare(manager: Manager) {

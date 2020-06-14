@@ -39,13 +39,15 @@ class Latte private constructor(
 
   private constructor(context: Context) : this(Master[context])
 
-  companion object : Capsule<Latte, Context>(::Latte) {
+  companion object {
+
+    private val capsule = Capsule(::Latte)
 
     @JvmStatic
-    operator fun get(context: Context) = super.getInstance(context)
+    operator fun get(context: Context) = capsule.get(context)
 
     @JvmStatic
-    operator fun get(fragment: Fragment) = get(fragment.requireContext())
+    operator fun get(fragment: Fragment) = capsule.get(fragment.requireContext())
   }
 
   override fun prepare(manager: Manager) {
