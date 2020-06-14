@@ -123,7 +123,7 @@ object Libs {
     }
 
     object Navigation {
-      private const val version = "2.2.1"
+      private const val version = "2.3.0-rc01"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
