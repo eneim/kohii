@@ -19,6 +19,7 @@ _Under development_
 - Add `ExoPlayerCache` to the `kohii-exoplayer` package. It can be used to obtain a pre-built Cache easily.
 - Add `ExoPlayerConfig` to gather most of the detailed setting for a `SimpleExoPlayer` instance.
 - Add `createKohii` convenient methods to easily create `Kohii` instance with custom parameters.
+- Add `Engine.lock*` and `Engine.unlock*` methods to support manual lock/unlock an Activity/Manager/Bucket or Playback.
 
 - [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
 - [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.
