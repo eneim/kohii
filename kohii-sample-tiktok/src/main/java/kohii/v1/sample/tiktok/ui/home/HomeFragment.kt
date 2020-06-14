@@ -20,28 +20,43 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import kohii.v1.sample.tiktok.R
+import androidx.lifecycle.Lifecycle.State
+import androidx.recyclerview.widget.PagerSnapHelper
+import kohii.v1.core.MemoryMode.HIGH
+import kohii.v1.exoplayer.ExoPlayerConfig
+import kohii.v1.exoplayer.createKohii
+import kohii.v1.sample.tiktok.databinding.FragmentHomeBinding
+import kohii.v1.sample.tiktok.getApp
 
 class HomeFragment : Fragment() {
 
-  private lateinit var homeViewModel: HomeViewModel
+  private var _binding: FragmentHomeBinding? = null
+  private val binding: FragmentHomeBinding get() = requireNotNull(_binding)
+
+  private val pagerSnapHelper = PagerSnapHelper()
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    homeViewModel =
-      ViewModelProviders.of(this).get(HomeViewModel::class.java)
-    val root = inflater.inflate(R.layout.fragment_home, container, false)
-    val textView: TextView = root.findViewById(R.id.text_home)
-    homeViewModel.text.observe(viewLifecycleOwner, Observer {
-      textView.text = it
-    })
-    return root
+    _binding = FragmentHomeBinding.inflate(inflater, container, false)
+    return binding.root
+  }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+    val kohii = createKohii(requireContext(), ExoPlayerConfig.FAST_START)
+    kohii.register(this, memoryMode = HIGH, activeLifecycleState = State.RESUMED)
+        .addBucket(binding.videos)
+    binding.videos.adapter = VideoAdapters(getApp().videos, kohii)
+    pagerSnapHelper.attachToRecyclerView(binding.videos)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    pagerSnapHelper.attachToRecyclerView(null)
+    _binding = null
   }
 }

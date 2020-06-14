@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2020 Nam Nguyen, nam@ene.im
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +19,6 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="?attr/actionBarSize"
     >
 
   <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -39,8 +37,8 @@
   <fragment
       android:id="@+id/nav_host_fragment"
       android:name="androidx.navigation.fragment.NavHostFragment"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
       app:layout_constraintBottom_toTopOf="@id/nav_view"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"

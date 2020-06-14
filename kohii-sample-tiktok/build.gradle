@@ -13,23 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import kohii.BuildConfig
 import kohii.Libs
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-  compileSdkVersion 29
+  compileSdkVersion BuildConfig.compileSdkVersion
 
   defaultConfig {
     applicationId "kohii.v1.sample.tiktok"
-    minSdkVersion 19
-    targetSdkVersion 29
-    versionCode 1
-    versionName "1.0"
+    minSdkVersion 21 /* BuildConfig.minSdkVersion */
+    targetSdkVersion BuildConfig.targetSdkVersion
+    versionCode BuildConfig.releaseVersionCode
+    versionName BuildConfig.releaseVersionName
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    testApplicationId 'kohii.v1.sample.tiktok.test'
   }
 
   buildTypes {
@@ -38,12 +42,25 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
+
+  packagingOptions {
+    exclude 'META-INF/services/javax.annotation.processing.Processor'
+    exclude 'META-INF/DEPENDENCIES'
+  }
+
+  buildFeatures {
+    viewBinding true
+  }
+
+  productFlavors {}
+
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
+
   kotlinOptions {
-    jvmTarget = '1.8'
+    jvmTarget = "1.8"
   }
 }
 
@@ -75,6 +92,12 @@ dependencies {
   implementation Libs.AndroidX.Lifecycle.viewModel
   implementation Libs.AndroidX.Lifecycle.liveData
   implementation Libs.AndroidX.Lifecycle.java8
+
+  implementation Libs.Square.moshi
+  kapt Libs.Square.moshiCodegen
+  implementation Libs.Square.okio
+
+  implementation(Libs.Coil.coilBase)
 
   implementation(Libs.AndroidX.vector)
 
