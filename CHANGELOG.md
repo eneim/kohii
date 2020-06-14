@@ -16,6 +16,9 @@ _Under development_
 - Add method `Playback.Controller.setupRenderer(Playback, Any?)`.
 - Add method `Playback.Controller.teardownRenderer(Playback, Any?)`.
 - Support Playback locking: if a Playback is locked, it will still be selected but will not be played.
+- Add `ExoPlayerCache` to the `kohii-exoplayer` package. It can be used to obtain a pre-built Cache easily.
+- Add `ExoPlayerConfig` to gather most of the detailed setting for a `SimpleExoPlayer` instance.
+- Add `createKohii` convenient methods to easily create `Kohii` instance with custom parameters.
 
 - [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
 - [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.
