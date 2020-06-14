@@ -17,13 +17,10 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
-import com.google.android.exoplayer2.database.ExoDatabaseProvider
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.Cache
-import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
-import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import kohii.v1.BuildConfig
 import kohii.v1.core.BridgeCreator
 import kohii.v1.core.Common
@@ -31,8 +28,8 @@ import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
+import kohii.v1.exoplayer.ExoPlayerCache.lruCacheSingleton
 import kohii.v1.media.Media
-import java.io.File
 import kotlin.LazyThreadSafetyMode.NONE
 
 typealias PlayerViewBridgeCreatorFactory = (Context) -> BridgeCreator<PlayerView>
@@ -45,8 +42,6 @@ class PlayerViewPlayableCreator internal constructor(
   constructor(context: Context) : this(Master[context.applicationContext])
 
   companion object {
-    private const val CACHE_CONTENT_DIRECTORY = "kohii_content"
-    private const val CACHE_SIZE = 24 * 1024 * 1024L // 24 Megabytes
 
     // Only pass Application to this method.
     private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { context ->
@@ -56,17 +51,11 @@ class PlayerViewPlayableCreator internal constructor(
       // ExoPlayerProvider
       val playerProvider: ExoPlayerProvider = DefaultExoPlayerProvider(
           context,
-          DefaultBandwidthMeterFactory()
+          bandwidthMeterFactory = DefaultBandwidthMeterFactory()
       )
 
       // MediaSourceFactoryProvider
-      val fileDir = context.getExternalFilesDir(null) ?: context.filesDir
-      val contentDir = File(fileDir, CACHE_CONTENT_DIRECTORY)
-      val mediaCache: Cache = SimpleCache(
-          contentDir,
-          LeastRecentlyUsedCacheEvictor(CACHE_SIZE),
-          ExoDatabaseProvider(context)
-      )
+      val mediaCache: Cache = lruCacheSingleton.get(context)
       val upstreamFactory = DefaultDataSourceFactory(context, httpDataSource)
       val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(context, httpDataSource)
       val mediaSourceFactoryProvider: MediaSourceFactoryProvider =

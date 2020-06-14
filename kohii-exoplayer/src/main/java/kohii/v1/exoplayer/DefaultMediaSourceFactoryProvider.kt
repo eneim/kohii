@@ -16,6 +16,7 @@
 
 package kohii.v1.exoplayer
 
+import android.content.Context
 import android.net.Uri
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.drm.DrmSessionManager
@@ -26,11 +27,17 @@ import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.FileDataSource
+import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import kohii.v1.BuildConfig
+import kohii.v1.core.Common
+import kohii.v1.exoplayer.ExoPlayerCache.lruCacheSingleton
 import kohii.v1.media.Media
 
 /**
@@ -41,6 +48,17 @@ class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
   private val drmSessionManagerProvider: DrmSessionManagerProvider,
   mediaCache: Cache? = null
 ) : MediaSourceFactoryProvider {
+
+  constructor(context: Context, dataSourceFactory: HttpDataSource.Factory) : this(
+      dataSourceFactory = DefaultDataSourceFactory(context, dataSourceFactory),
+      drmSessionManagerProvider = DefaultDrmSessionManagerProvider(context, dataSourceFactory),
+      mediaCache = lruCacheSingleton.get(context)
+  )
+
+  constructor(context: Context) : this(
+      context,
+      DefaultHttpDataSourceFactory(Common.getUserAgent(context, BuildConfig.LIB_NAME))
+  )
 
   private val dataSourceFactory: DataSource.Factory = if (mediaCache != null) {
     CacheDataSourceFactory(
