@@ -15,6 +15,7 @@ _Under development_
 - Add method `Kohii.createControlDispatcher(Playback)`.
 - Add method `Playback.Controller.setupRenderer(Playback, Any?)`.
 - Add method `Playback.Controller.teardownRenderer(Playback, Any?)`.
+- Support Playback locking: if a Playback is locked, it will still be selected but will not be played.
 
 - [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
 - [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.
