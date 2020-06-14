@@ -72,7 +72,6 @@ class Manager internal constructor(
   internal var lock: Boolean = group.lock
     get() = field || group.lock
     set(value) {
-      if (field == value) return
       field = value
       buckets.forEach { it.lock = value }
       refresh()

@@ -179,8 +179,7 @@ abstract class Engine<RENDERER : Any> constructor(
    * @see [Master.lock]
    */
   fun lockActivity(activity: FragmentActivity) {
-    val group = master.groups.firstOrNull { it.activity === activity } ?: return
-    master.lock(group, GROUP)
+    master.lock(activity, GROUP)
   }
 
   /**
@@ -190,8 +189,7 @@ abstract class Engine<RENDERER : Any> constructor(
    * [Manager].
    */
   fun unlockActivity(activity: FragmentActivity) {
-    val group = master.groups.firstOrNull { it.activity === activity } ?: return
-    master.unlock(group, GROUP)
+    master.unlock(activity, GROUP)
   }
 
   /**

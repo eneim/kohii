@@ -51,6 +51,11 @@ import kohii.v1.core.MemoryMode.AUTO
 import kohii.v1.core.MemoryMode.BALANCED
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Playback.Config
+import kohii.v1.core.Scope.BUCKET
+import kohii.v1.core.Scope.GLOBAL
+import kohii.v1.core.Scope.GROUP
+import kohii.v1.core.Scope.MANAGER
+import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.debugOnly
 import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
@@ -144,7 +149,6 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal var lock: Boolean = false
     set(value) {
-      if (field == value) return
       field = value
       groups.forEach { it.lock = lock }
     }
@@ -168,9 +172,9 @@ class Master private constructor(context: Context) : PlayableManager {
         if (isInitialStickyBroadcast) return
         if (context != null && intent != null) {
           if (intent.action == Intent.ACTION_SCREEN_OFF) {
-            Master[context].lock(Scope.GLOBAL)
+            Master[context].lock(GLOBAL)
           } else if (intent.action == Intent.ACTION_USER_PRESENT) {
-            Master[context].unlock(Scope.GLOBAL)
+            Master[context].unlock(GLOBAL)
           }
         }
       }
@@ -549,47 +553,51 @@ class Master private constructor(context: Context) : PlayableManager {
    * - Lock all Playbacks in a Manager by using Scope.MANAGER --> a call to unlock(bucket, Scope.BUCKET)
    * will not resume anything, including Playbacks of containers inside that Bucket.
    *
-   * To be able to change the scope of Playbacks' lock, the client must:
+   * To change the lock scope of a Playback, the client must:
    * - Unlock all Playbacks of the same or higher priority scope.
    * - Call this method to lock Playbacks by the expected scope.
    */
   internal fun lock(
     target: Any? = null,
-    scope: Scope = Scope.GLOBAL
+    scope: Scope = GLOBAL
   ) {
     when (scope) {
-      Scope.GLOBAL -> this.lock = true
-      Scope.GROUP -> {
+      GLOBAL -> this.lock = true
+      GROUP -> {
         when (target) {
           is Group -> target.lock = true // will lock all managers
-          is Manager -> lock(target.group, Scope.GROUP)
+          is Manager -> lock(target.group, GROUP)
+          is FragmentActivity -> {
+            val group = groups.firstOrNull { it.activity === target }
+            if (group != null) lock(group, GROUP)
+          }
           else -> throw IllegalArgumentException(
               "Receiver for scope $scope must be a Manager or a Group"
           )
         }
       }
-      Scope.MANAGER -> {
+      MANAGER -> {
         when (target) {
           is Manager -> target.lock = true
-          is Bucket -> lock(target.manager, Scope.MANAGER)
-          is Playback -> lock(target.manager, Scope.MANAGER)
+          is Bucket -> lock(target.manager, MANAGER)
+          is Playback -> lock(target.manager, MANAGER)
           else -> throw IllegalArgumentException("Target for scope $scope must be a Manager")
         }
       }
-      Scope.BUCKET -> {
+      BUCKET -> {
         when (target) {
           is Bucket -> target.lock = true
-          is Playback -> lock(target.bucket, Scope.BUCKET)
+          is Playback -> lock(target.bucket, BUCKET)
           else -> {
             val bucket = groups.asSequence()
                 .flatMap { it.managers.asSequence() }
                 .flatMap { it.buckets.asSequence() }
                 .firstOrNull { it.root === target }
-            if (bucket != null) lock(bucket, Scope.BUCKET)
+            if (bucket != null) lock(bucket, BUCKET)
           }
         }
       }
-      Scope.PLAYBACK -> {
+      PLAYBACK -> {
         if (target is Playback) target.lock = true
         else throw IllegalArgumentException("Target for scope $scope must be a Playback")
       }
@@ -605,31 +613,35 @@ class Master private constructor(context: Context) : PlayableManager {
    */
   internal fun unlock(
     target: Any? = null,
-    scope: Scope = Scope.GLOBAL
+    scope: Scope = GLOBAL
   ) {
-    when {
-      scope === Scope.GLOBAL -> this.lock = false
-      scope === Scope.GROUP -> {
+    when (scope) {
+      GLOBAL -> this.lock = false
+      GROUP -> {
         when (target) {
           is Group -> if (!target.master.lock) target.lock = false // -> unlock managers internally
-          is Manager -> unlock(target.group, Scope.GROUP)
+          is Manager -> unlock(target.group, GROUP)
+          is FragmentActivity -> {
+            val group = groups.firstOrNull { it.activity === target }
+            if (group != null) unlock(group, GROUP)
+          }
           else -> throw IllegalArgumentException(
               "Receiver for scope $scope must be a Manager or a Group"
           )
         }
       }
-      scope === Scope.MANAGER -> {
+      MANAGER -> {
         when (target) {
           is Manager -> if (!target.group.lock) target.lock = false
-          is Bucket -> unlock(target.manager, Scope.MANAGER)
-          is Playback -> unlock(target.manager, Scope.MANAGER)
+          is Bucket -> unlock(target.manager, MANAGER)
+          is Playback -> unlock(target.manager, MANAGER)
           else -> throw IllegalArgumentException("Target for scope $scope must be a Manager")
         }
       }
-      scope === Scope.BUCKET -> {
+      BUCKET -> {
         when (target) {
           is Bucket -> if (!target.manager.lock) target.lock = false
-          is Playback -> unlock(target.bucket, Scope.BUCKET)
+          is Playback -> unlock(target.bucket, BUCKET)
           else -> {
             // Find the Bucket whose root is this receiver
             val bucket = groups.asSequence()
@@ -637,11 +649,11 @@ class Master private constructor(context: Context) : PlayableManager {
                 .flatMap { it.buckets.asSequence() }
                 .firstOrNull { it.root === target }
 
-            if (bucket != null) unlock(bucket, Scope.BUCKET)
+            if (bucket != null) unlock(bucket, BUCKET)
           }
         }
       }
-      scope === Scope.PLAYBACK -> {
+      PLAYBACK -> {
         if (target is Playback) if (!target.bucket.lock) target.lock = false
         else throw IllegalArgumentException("Target for scope $scope must be a Playback")
       }
@@ -798,10 +810,10 @@ class Master private constructor(context: Context) : PlayableManager {
   /**
    * Globally lock the behavior.
    */
-  fun lock() = lock(scope = Scope.GLOBAL)
+  fun lock() = lock(scope = GLOBAL)
 
   /**
    * Globally unlock the behavior.
    */
-  fun unlock() = unlock(scope = Scope.GLOBAL)
+  fun unlock() = unlock(scope = GLOBAL)
 }

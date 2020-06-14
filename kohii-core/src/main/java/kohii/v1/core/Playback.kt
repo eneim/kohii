@@ -316,7 +316,6 @@ abstract class Playback(
   internal var lock: Boolean = bucket.lock
     get() = field || bucket.lock
     set(value) {
-      if (field == value) return
       field = value
       manager.refresh()
     }

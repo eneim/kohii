@@ -79,7 +79,6 @@ class Group(
   internal var lock: Boolean = master.lock
     get() = field || master.lock
     set(value) {
-      if (field == value) return
       field = value
       managers.forEach { it.lock = value }
     }
