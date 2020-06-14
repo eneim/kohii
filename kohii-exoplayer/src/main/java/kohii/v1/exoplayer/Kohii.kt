@@ -19,13 +19,24 @@ package kohii.v1.exoplayer
 import android.content.Context
 import androidx.fragment.app.Fragment
 import com.google.android.exoplayer2.ControlDispatcher
+import com.google.android.exoplayer2.DefaultRenderersFactory
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.upstream.cache.Cache
+import kohii.v1.BuildConfig
+import kohii.v1.core.Common
 import kohii.v1.core.Engine
 import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Playback
 import kohii.v1.core.RendererProviderFactory
+import kohii.v1.exoplayer.ExoPlayerCache.lruCacheSingleton
+import kohii.v1.exoplayer.Kohii.Builder
+import kohii.v1.media.Media
 import kohii.v1.utils.Capsule
 
 class Kohii private constructor(
@@ -36,13 +47,15 @@ class Kohii private constructor(
 
   private constructor(context: Context) : this(Master[context])
 
-  companion object : Capsule<Kohii, Context>(::Kohii) {
+  companion object {
+
+    private val capsule = Capsule(::Kohii)
 
     @JvmStatic // convenient static call for Java
-    operator fun get(context: Context) = super.getInstance(context)
+    operator fun get(context: Context) = capsule.get(context)
 
     @JvmStatic // convenient static call for Java
-    operator fun get(fragment: Fragment) = get(fragment.requireContext())
+    operator fun get(fragment: Fragment) = capsule.get(fragment.requireContext())
   }
 
   // Adapt from ExoPlayer demo app.
@@ -96,4 +109,95 @@ class Kohii private constructor(
       master.registerEngine(it)
     }
   }
+}
+
+/**
+ * Creates a new [Kohii] instance using an [ExoPlayerConfig]. Note that an application should not
+ * hold many instance of [Kohii].
+ *
+ * @param context the [Context].
+ * @param config the [ExoPlayerConfig].
+ */
+fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
+  val bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { appContext ->
+    val userAgent = Common.getUserAgent(appContext, BuildConfig.LIB_NAME)
+    val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
+
+    val playerProvider = DefaultExoPlayerProvider(
+        appContext,
+        clock = config.clock,
+        bandwidthMeterFactory = config.createBandwidthMeterFactory(),
+        trackSelectorFactory = config.createTrackSelectorFactory(),
+        loadControl = config.createLoadControl(),
+        renderersFactory = DefaultRenderersFactory(appContext)
+            .setEnableDecoderFallback(config.enableDecoderFallback)
+            .setAllowedVideoJoiningTimeMs(config.allowedVideoJoiningTimeMs)
+            .setExtensionRendererMode(config.extensionRendererMode)
+            .setMediaCodecSelector(config.mediaCodecSelector)
+            .setPlayClearSamplesWithoutKeys(config.playClearSamplesWithoutKeys)
+    )
+    val mediaCache: Cache = config.cache ?: lruCacheSingleton.get(context)
+    val drmSessionManagerProvider =
+      config.drmSessionManagerProvider ?: DefaultDrmSessionManagerProvider(
+          appContext, httpDataSource
+      )
+    val upstreamFactory = DefaultDataSourceFactory(appContext, httpDataSource)
+    val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(
+        upstreamFactory, drmSessionManagerProvider, mediaCache
+    )
+    PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
+  }
+
+  val playableCreator = PlayerViewPlayableCreator.Builder(context.applicationContext)
+      .setBridgeCreatorFactory(bridgeCreatorFactory)
+      .build()
+
+  return Builder(context).setPlayableCreator(playableCreator).build()
+}
+
+/**
+ * Creates a new [Kohii] instance using a custom [playerCreator], [mediaSourceFactoryCreator] and
+ * [rendererProviderFactory]. Note that an application should not hold many instance of [Kohii].
+ *
+ * @param context the [Context].
+ * @param playerCreator the custom creator for the [Player]. If `null`, it will use the default one.
+ * @param mediaSourceFactoryCreator the custom creator for the [MediaSourceFactory]. If `null`, it
+ * will use the default one.
+ * @param rendererProviderFactory the custom [RendererProviderFactory].
+ */
+@JvmOverloads
+fun createKohii(
+  context: Context,
+  playerCreator: ((Context) -> Player)? = null,
+  mediaSourceFactoryCreator: ((Media) -> MediaSourceFactory)? = null,
+  rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
+): Kohii {
+  val playerProvider = if (playerCreator == null) {
+    DefaultExoPlayerProvider(context)
+  } else {
+    object : RecycledExoPlayerProvider(context) {
+      override fun createExoPlayer(context: Context): Player = playerCreator(context)
+    }
+  }
+
+  val mediaSourceFactoryProvider =
+    if (mediaSourceFactoryCreator == null) {
+      DefaultMediaSourceFactoryProvider(context)
+    } else {
+      object : MediaSourceFactoryProvider {
+        override fun provideMediaSourceFactory(media: Media): MediaSourceFactory =
+          mediaSourceFactoryCreator(media)
+      }
+    }
+
+  return Builder(context)
+      .setPlayableCreator(
+          PlayerViewPlayableCreator.Builder(context)
+              .setBridgeCreatorFactory {
+                PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
+              }
+              .build()
+      )
+      .setRendererProviderFactory(rendererProviderFactory)
+      .build()
 }
