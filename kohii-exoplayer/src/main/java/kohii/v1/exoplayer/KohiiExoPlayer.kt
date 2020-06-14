@@ -19,13 +19,17 @@ package kohii.v1.exoplayer
 import android.content.Context
 import android.os.Looper
 import androidx.annotation.CallSuper
+import com.google.android.exoplayer2.DefaultLoadControl
+import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.analytics.AnalyticsCollector
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.BandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Clock
+import com.google.android.exoplayer2.util.Util
 import kohii.v1.core.DefaultTrackSelectorHolder
 import kohii.v1.core.VolumeChangedListener
 import kohii.v1.core.VolumeChangedListeners
@@ -40,22 +44,25 @@ import kotlin.LazyThreadSafetyMode.NONE
  */
 open class KohiiExoPlayer(
   context: Context,
-  renderersFactory: RenderersFactory,
+  clock: Clock = Clock.DEFAULT,
+  renderersFactory: RenderersFactory = DefaultRenderersFactory(context.applicationContext),
     // TrackSelector is initialized at the same time a new Player instance is created.
     // This process will set the BandwidthMeter to the TrackSelector. Therefore we need to have
     // unique TrackSelector per Player instance.
-  override val trackSelector: DefaultTrackSelector,
-  loadControl: LoadControl,
-  bandwidthMeter: BandwidthMeter,
-  looper: Looper
+  override val trackSelector: DefaultTrackSelector =
+    DefaultTrackSelector(context.applicationContext),
+  loadControl: LoadControl = DefaultLoadControl.Builder().createDefaultLoadControl(),
+  bandwidthMeter: BandwidthMeter =
+    DefaultBandwidthMeter.Builder(context.applicationContext).build(),
+  looper: Looper = Util.getLooper()
 ) : SimpleExoPlayer(
     context,
     renderersFactory,
     trackSelector,
     loadControl,
     bandwidthMeter,
-    AnalyticsCollector(Clock.DEFAULT),
-    Clock.DEFAULT,
+    AnalyticsCollector(clock),
+    clock,
     looper
 ), VolumeInfoController, DefaultTrackSelectorHolder {
 
