@@ -142,6 +142,13 @@ class Master private constructor(context: Context) : PlayableManager {
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
 
+  internal var lock: Boolean = false
+    set(value) {
+      if (field == value) return
+      field = value
+      groups.forEach { it.lock = lock }
+    }
+
   internal var groupsMaxLifecycleState: State = DESTROYED
 
   private val componentCallbacks = object : ComponentCallbacks2 {
@@ -551,35 +558,40 @@ class Master private constructor(context: Context) : PlayableManager {
     scope: Scope = Scope.GLOBAL
   ) {
     when (scope) {
-      Scope.GLOBAL -> groups.forEach {
-        lock(it, Scope.GROUP)
-      }
-      Scope.GROUP -> when (target) {
-        is Group -> target.lock = true // will lock all managers
-        is Manager -> lock(target.group, Scope.GROUP)
-        else -> throw IllegalArgumentException(
-            "Receiver for scope $scope must be a Manager or a Group"
-        )
+      Scope.GLOBAL -> this.lock = true
+      Scope.GROUP -> {
+        when (target) {
+          is Group -> target.lock = true // will lock all managers
+          is Manager -> lock(target.group, Scope.GROUP)
+          else -> throw IllegalArgumentException(
+              "Receiver for scope $scope must be a Manager or a Group"
+          )
+        }
       }
       Scope.MANAGER -> {
-        require(target is Manager) { "Target for scope $scope must be a Manager" }
-        target.lock = true
+        when (target) {
+          is Manager -> target.lock = true
+          is Bucket -> lock(target.manager, Scope.MANAGER)
+          is Playback -> lock(target.manager, Scope.MANAGER)
+          else -> throw IllegalArgumentException("Target for scope $scope must be a Manager")
+        }
       }
-      Scope.BUCKET -> when (target) {
-        is Bucket -> target.lock = true
-        is Playback -> lock(target.bucket, Scope.BUCKET)
-        else -> {
-          val bucket = groups.asSequence()
-              .flatMap { it.managers.asSequence() }
-              .flatMap { it.buckets.asSequence() }
-              .firstOrNull { it.root === target }
-          if (bucket != null) lock(bucket, Scope.BUCKET)
+      Scope.BUCKET -> {
+        when (target) {
+          is Bucket -> target.lock = true
+          is Playback -> lock(target.bucket, Scope.BUCKET)
+          else -> {
+            val bucket = groups.asSequence()
+                .flatMap { it.managers.asSequence() }
+                .flatMap { it.buckets.asSequence() }
+                .firstOrNull { it.root === target }
+            if (bucket != null) lock(bucket, Scope.BUCKET)
+          }
         }
       }
       Scope.PLAYBACK -> {
-        require(target is Playback) { "Target for scope $scope must be a Playback" }
-        target.lock = true
-        target.manager.refresh()
+        if (target is Playback) target.lock = true
+        else throw IllegalArgumentException("Target for scope $scope must be a Playback")
       }
     }
   }
@@ -596,47 +608,42 @@ class Master private constructor(context: Context) : PlayableManager {
     scope: Scope = Scope.GLOBAL
   ) {
     when {
-      scope === Scope.GLOBAL -> groups.forEach {
-        unlock(it, Scope.GROUP)
+      scope === Scope.GLOBAL -> this.lock = false
+      scope === Scope.GROUP -> {
+        when (target) {
+          is Group -> if (!target.master.lock) target.lock = false // -> unlock managers internally
+          is Manager -> unlock(target.group, Scope.GROUP)
+          else -> throw IllegalArgumentException(
+              "Receiver for scope $scope must be a Manager or a Group"
+          )
+        }
       }
-      scope === Scope.GROUP -> when (target) {
-        is Group -> {
-          target.lock = false
-          target.managers.forEach {
-            unlock(it, Scope.MANAGER)
-          }
+      scope === Scope.MANAGER -> {
+        when (target) {
+          is Manager -> if (!target.group.lock) target.lock = false
+          is Bucket -> unlock(target.manager, Scope.MANAGER)
+          is Playback -> unlock(target.manager, Scope.MANAGER)
+          else -> throw IllegalArgumentException("Target for scope $scope must be a Manager")
         }
-        is Manager -> unlock(target.group, Scope.GROUP)
-        else -> throw IllegalArgumentException(
-            "Receiver for scope $scope must be a Manager or a Group"
-        )
       }
-      scope === Scope.MANAGER -> (target as? Manager)?.let {
-        it.lock = false
-        it.buckets.forEach { bucket ->
-          unlock(bucket, Scope.BUCKET)
-        }
-      } ?: throw IllegalArgumentException("Target for scope $scope must be a Manager")
-      scope === Scope.BUCKET -> when (target) {
-        is Bucket -> {
-          target.lock = false
-          target.manager.refresh()
-        }
-        is Playback -> unlock(target.bucket, Scope.BUCKET)
-        else -> {
-          // Find the Bucket whose root is this receiver
-          val bucket = groups.asSequence()
-              .flatMap { it.managers.asSequence() }
-              .flatMap { it.buckets.asSequence() }
-              .firstOrNull { it.root === target }
+      scope === Scope.BUCKET -> {
+        when (target) {
+          is Bucket -> if (!target.manager.lock) target.lock = false
+          is Playback -> unlock(target.bucket, Scope.BUCKET)
+          else -> {
+            // Find the Bucket whose root is this receiver
+            val bucket = groups.asSequence()
+                .flatMap { it.managers.asSequence() }
+                .flatMap { it.buckets.asSequence() }
+                .firstOrNull { it.root === target }
 
-          if (bucket != null) unlock(bucket, Scope.BUCKET)
+            if (bucket != null) unlock(bucket, Scope.BUCKET)
+          }
         }
       }
       scope === Scope.PLAYBACK -> {
-        require(target is Playback) { "Target for scope $scope must be a Playback" }
-        target.lock = false
-        target.manager.refresh()
+        if (target is Playback) if (!target.bucket.lock) target.lock = false
+        else throw IllegalArgumentException("Target for scope $scope must be a Playback")
       }
     }
   }

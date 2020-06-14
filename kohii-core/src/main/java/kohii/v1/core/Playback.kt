@@ -314,6 +314,12 @@ abstract class Playback(
     Token(config.threshold, -1F, Rect(), 0, 0)
 
   internal var lock: Boolean = bucket.lock
+    get() = field || bucket.lock
+    set(value) {
+      if (field == value) return
+      field = value
+      manager.refresh()
+    }
 
   internal val token: Token
     get() = playbackToken

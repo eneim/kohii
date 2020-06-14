@@ -87,9 +87,12 @@ abstract class Bucket constructor(
   }
 
   internal var lock: Boolean = manager.lock
+    get() = field || manager.lock
     set(value) {
       if (field == value) return
       field = value
+      manager.playbacks.filter { it.value.bucket === this }
+          .forEach { it.value.lock = value }
       manager.refresh()
     }
 
