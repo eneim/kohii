@@ -66,7 +66,7 @@ data class ExoPlayerConfig(
     // Other configurations
   internal val cache: Cache? = null,
   internal val drmSessionManagerProvider: DefaultDrmSessionManagerProvider? = null
-) {
+) : LoadControlFactory, BandwidthMeterFactory, TrackSelectorFactory {
 
   companion object {
     /**
@@ -87,45 +87,44 @@ data class ExoPlayerConfig(
     )
   }
 
-  internal fun createLoadControl(): LoadControl = DefaultLoadControl.Builder()
+  override fun createLoadControl(): LoadControl = DefaultLoadControl.Builder()
       .setAllocator(allocator)
+      .setBackBuffer(
+          backBufferDurationMs,
+          retainBackBufferFromKeyframe
+      )
       .setBufferDurationsMs(
           minBufferMs,
           maxBufferMs,
           bufferForPlaybackMs,
           bufferForPlaybackAfterRebufferMs
       )
+      .setPrioritizeTimeOverSizeThresholds(prioritizeTimeOverSizeThresholds)
+      .setTargetBufferBytes(targetBufferBytes)
       .createDefaultLoadControl()
 
-  internal fun createBandwidthMeterFactory(): BandwidthMeterFactory =
-    object : BandwidthMeterFactory {
-      override fun createBandwidthMeter(context: Context): BandwidthMeter {
-        return DefaultBandwidthMeter.Builder(context.applicationContext)
-            .setClock(clock)
-            .setResetOnNetworkTypeChange(resetOnNetworkTypeChange)
-            .setSlidingWindowMaxWeight(slidingWindowMaxWeight)
-            .apply {
-              if (overrideInitialBitrateEstimate > 0) {
-                setInitialBitrateEstimate(overrideInitialBitrateEstimate)
-              }
-            }
-            .build()
-      }
-    }
-
-  internal fun createTrackSelectorFactory(): TrackSelectorFactory =
-    object : TrackSelectorFactory {
-      override fun createDefaultTrackSelector(context: Context): DefaultTrackSelector {
-        val parameters: Parameters =
-          if (trackSelectorParameters === Parameters.DEFAULT_WITHOUT_CONTEXT) {
-            trackSelectorParameters.buildUpon()
-                .setViewportSizeToPhysicalDisplaySize(context, true)
-                .build()
-          } else {
-            trackSelectorParameters
+  override fun createBandwidthMeter(context: Context): BandwidthMeter =
+    DefaultBandwidthMeter.Builder(context.applicationContext)
+        .setClock(clock)
+        .setResetOnNetworkTypeChange(resetOnNetworkTypeChange)
+        .setSlidingWindowMaxWeight(slidingWindowMaxWeight)
+        .apply {
+          if (overrideInitialBitrateEstimate > 0) {
+            setInitialBitrateEstimate(overrideInitialBitrateEstimate)
           }
+        }
+        .build()
 
-        return DefaultTrackSelector(parameters, trackSelectionFactory)
+  override fun createDefaultTrackSelector(context: Context): DefaultTrackSelector {
+    val parameters: Parameters =
+      if (trackSelectorParameters === Parameters.DEFAULT_WITHOUT_CONTEXT) {
+        trackSelectorParameters.buildUpon()
+            .setViewportSizeToPhysicalDisplaySize(context, true)
+            .build()
+      } else {
+        trackSelectorParameters
       }
-    }
+
+    return DefaultTrackSelector(parameters, trackSelectionFactory)
+  }
 }
