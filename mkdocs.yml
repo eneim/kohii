@@ -74,6 +74,7 @@ plugins:
 # Navigation
 nav:
   - 'Overview': index.md
+  - 'Glossary': usage/glossary.md
   - 'Using Kohii':
       - 'Getting start': usage/start.md
       - 'Basic usages': usage/basic.md
@@ -89,7 +90,6 @@ nav:
           - 'Manual playback (experimental)': usage/advance/manual-playback.md
       - 'Demo app': usage/demos.md
   - 'Extending Kohii':
-      - 'Components': customize/terms.md
       - 'Custom Engine': customize/custom_engine.md
   - 'Changelog': changelog.md
   - 'API':
