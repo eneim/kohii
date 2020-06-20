@@ -193,11 +193,6 @@ class Manager internal constructor(
     return group.activity.isChangingConfigurations
   }
 
-  @RestrictTo(LIBRARY_GROUP)
-  fun findPlayableForContainer(container: ViewGroup): Playable? {
-    return playbacks[container]?.playable
-  }
-
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
     if (!container.isAttachedToWindow) return null
     return buckets.find { it.accepts(container) }
