@@ -16,12 +16,12 @@
 
 package kohii.v1.exoplayer
 
-import android.content.Context
-import com.google.android.exoplayer2.upstream.BandwidthMeter
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.LoadControl
 
-class DefaultBandwidthMeterFactory : BandwidthMeterFactory {
+interface LoadControlFactory {
 
-  override fun createBandwidthMeter(context: Context): BandwidthMeter =
-    DefaultBandwidthMeter.Builder(context.applicationContext).build()
+  /**
+   * Returns a [LoadControl].
+   */
+  fun createLoadControl(): LoadControl
 }

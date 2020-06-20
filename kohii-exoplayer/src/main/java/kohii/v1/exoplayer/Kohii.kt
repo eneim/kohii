@@ -126,9 +126,9 @@ fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
     val playerProvider = DefaultExoPlayerProvider(
         appContext,
         clock = config.clock,
-        bandwidthMeterFactory = config.createBandwidthMeterFactory(),
-        trackSelectorFactory = config.createTrackSelectorFactory(),
-        loadControl = config.createLoadControl(),
+        bandwidthMeterFactory = config,
+        trackSelectorFactory = config,
+        loadControlFactory = config,
         renderersFactory = DefaultRenderersFactory(appContext)
             .setEnableDecoderFallback(config.enableDecoderFallback)
             .setAllowedVideoJoiningTimeMs(config.allowedVideoJoiningTimeMs)

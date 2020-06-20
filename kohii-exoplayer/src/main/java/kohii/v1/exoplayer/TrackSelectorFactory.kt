@@ -30,11 +30,3 @@ interface TrackSelectorFactory {
    */
   fun createDefaultTrackSelector(context: Context): DefaultTrackSelector
 }
-
-/**
- * Default implementation of the [TrackSelectorFactory].
- */
-class DefaultTrackSelectorFactory : TrackSelectorFactory {
-  override fun createDefaultTrackSelector(context: Context): DefaultTrackSelector =
-    DefaultTrackSelector(context)
-}

@@ -49,10 +49,7 @@ class PlayerViewPlayableCreator internal constructor(
       val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
       // ExoPlayerProvider
-      val playerProvider: ExoPlayerProvider = DefaultExoPlayerProvider(
-          context,
-          bandwidthMeterFactory = DefaultBandwidthMeterFactory()
-      )
+      val playerProvider: ExoPlayerProvider = DefaultExoPlayerProvider(context)
 
       // MediaSourceFactoryProvider
       val mediaCache: Cache = lruCacheSingleton.get(context)

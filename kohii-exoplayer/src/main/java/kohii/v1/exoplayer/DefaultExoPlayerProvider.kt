@@ -17,9 +17,7 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
-import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
-import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.util.Clock
@@ -31,9 +29,9 @@ import com.google.android.exoplayer2.util.Util
 class DefaultExoPlayerProvider @JvmOverloads constructor(
   context: Context,
   private val clock: Clock = Clock.DEFAULT,
-  private val bandwidthMeterFactory: BandwidthMeterFactory = DefaultBandwidthMeterFactory(),
-  private val trackSelectorFactory: TrackSelectorFactory = DefaultTrackSelectorFactory(),
-  private val loadControl: LoadControl = DefaultLoadControl(),
+  private val bandwidthMeterFactory: BandwidthMeterFactory = ExoPlayerConfig.DEFAULT,
+  private val trackSelectorFactory: TrackSelectorFactory = ExoPlayerConfig.DEFAULT,
+  private val loadControlFactory: LoadControlFactory = ExoPlayerConfig.DEFAULT,
   private val renderersFactory: RenderersFactory =
     DefaultRenderersFactory(context.applicationContext)
 ) : RecycledExoPlayerProvider(context) {
@@ -43,7 +41,7 @@ class DefaultExoPlayerProvider @JvmOverloads constructor(
       clock,
       renderersFactory,
       trackSelectorFactory.createDefaultTrackSelector(context),
-      loadControl,
+      loadControlFactory.createLoadControl(),
       bandwidthMeterFactory.createBandwidthMeter(context),
       Util.getLooper()
   )
