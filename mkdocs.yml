@@ -23,7 +23,7 @@ theme:
     accent: 'cyan'
   font:
     # text: 'Open Sans'
-    text: 'Inter' # 'Karla', 'Noto Sans JP', 'Montserrat', 'Open Sans'
+    text: 'Noto Sans JP' # 'Inter', 'Karla', 'Noto Sans JP', 'Montserrat', 'Open Sans'
     code: 'Roboto Mono' # 'Oxygen Mono', 'Fira Code', 'Roboto Mono'
 
 # Customization
@@ -79,8 +79,8 @@ nav:
       - 'Getting start': usage/start.md
       - 'Basic usages': usage/basic.md
       - 'Advance usages':
-          - 'Advance Kohii': usage/advance.md
-          - 'Using Builder': usage/advance/builder.md
+          - 'Summary': usage/advance.md
+          - 'Using custom Kohii creators': usage/advance/builder.md
           - 'Using unique tag': usage/advance/unique-tag.md
           - 'Show/Hide thumbnail': usage/advance/thumbnail.md
           - 'Switching renderers': usage/advance/switch-renderer.md

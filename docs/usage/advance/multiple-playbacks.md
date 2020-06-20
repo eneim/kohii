@@ -6,7 +6,7 @@ _Available from v1.1.0.2011003_
 
 From v1.1.0.2011003, **Kohii** adds _Playback Selector_ and _Playback Strategy_ to support multiple playbacks. The _Selector_ is a _Single Abstract Method_ that accepts a collection of _candidate_ (= the Playbacks that can play the media) and returns a collection of Playback that should play the media.
 
-This feature is enabled at [Bucket](/customize/terms/#bucket-manager-and-group) level. Which means that: client can have multiple playbacks in a **Bucket** by using correct _Strategy_ and _Selector_. The setup is easy: you can set the _Strategy_ and _Selector_ at the time you add the **Bucket**.
+This feature is enabled at [Bucket](/usage/glossary/#bucket-manager-and-group) level. Which means that: client can have multiple playbacks in a **Bucket** by using correct _Strategy_ and _Selector_. The setup is easy: you can set the _Strategy_ and _Selector_ at the time you add the **Bucket**.
 
 ```Kotlin tab=
 kohii.register(this)
@@ -29,4 +29,4 @@ The available _Strategies_ are:
 - `SINGLE_PLAYER`: play the first available Playback from the list selected by the _Selector_.
 - `NO_PLAYER`: do not let the _Selector_ select anything.
 
-**NOTE**: Mutiple playbacks comes with a caveat. In Video playback, audio focus is an important aspect. The client needs to not only respect the audio focus given by system, but also to respect the audio focuses among a Video with the others in the same Application. Therefore, when the client enable `MULTI_PLAYER` _Strategy_, the library will forcefully mute the audio of all available Playbacks, regardless the number of Playbacks selected by the _Selector_. Changing to `SINGLE_PLAYER` or `NO_PLAYER` _Strategy_ will switch everything back to normal.
+**NOTE**: Multiple playbacks comes with a caveat. In Video playback, audio focus is an important aspect. The client needs to not only respect the audio focus given by system, but also to respect the audio focuses among a Video with the others in the same Application. Therefore, when the client enable `MULTI_PLAYER` _Strategy_, the library will forcefully mute the audio of all available Playbacks, regardless the number of Playbacks selected by the _Selector_. Changing to `SINGLE_PLAYER` or `NO_PLAYER` _Strategy_ will switch everything back to normal.

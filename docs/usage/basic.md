@@ -20,7 +20,7 @@ kohii.register(this)
 ```
 
 ```Java tab=
-Kohii kohii = Kohii[this];
+Kohii kohii = Kohii.get(this);
 kohii.register(this)
       .addBucket(recyclerView) // assume that you are using a RecyclerView
       .addBucket(anotherRecyclerView); // yeah, 2 RVs in one place, why not.
@@ -118,11 +118,11 @@ kohii.register(this@Fragment)
 kohii.register(this);
 ```
 
-The line above also return a [`Manager`](../../api/kohii-core/kohii.v1.core/-manager/) object. It is useful in some advance usages, but we don't need it for now.
+The line above also return a [`Manager`](/api/kohii-core/kohii.v1.core/-manager/) object. It is useful in some advance usages, but we don't need it for now.
 
 - Which ViewGroup contains Videos?
 
-We call that ViewGroup a [*bucket*](../../customize/terms/#bucket-manager-and-group). Because you may have more than one *bucket* in your `Fragment`, and not all of them need to be tracked by **Kohii**, you should only register ones you care about. Code for it is as below:
+We call that ViewGroup a [*bucket*](/customize/terms/#bucket-manager-and-group). Because you may have more than one *bucket* in your `Fragment`, and not all of them need to be tracked by **Kohii**, you should only register ones you care about. Code for it is as below:
 
 ```kotlin tab=
 kohii.register(this@Fragment) // or manager
@@ -156,6 +156,6 @@ kohii.setUp(videoUrl).bind(playerView);
 
 But let's understand the concept behind:
 
-In the one line above: `kohii.setUp(videoUrl)` turns the url to a [`Binder`](../../api/kohii-core/kohii.v1.core/-binder/) object which can be used to bind to a [`container`](../../customize/terms/#renderer-and-container). Once you finish the setup, you have the Video to be automatically played/paused once user scrolls the list such that the `container` is visible more (will play) or less (will pause) than 65% of its area.
+In the one line above: `kohii.setUp(videoUrl)` turns the url to a [`Binder`](/api/kohii-core/kohii.v1.core/-binder/) object which can be used to bind to a [`container`](../../customize/terms/#renderer-and-container). Once you finish the setup, you have the Video to be automatically played/paused once user scrolls the list such that the `container` is visible more (will play) or less (will pause) than 65% of its area.
 
 Also, to ensure the playback is automatic, if the [`renderer`](../../customize/terms/#renderer-and-container) is a `PlayerView` **Kohii** will forcefully disable the `PlayerView`'s `PlayerControlView` even if you set it before. To have manual playback control enabled, you need some additional configuration which will be discussed in other session.

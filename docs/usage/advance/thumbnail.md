@@ -1,6 +1,6 @@
 ## Show/Hide thumbnail
 
-**Kohii** provides a special interface called [`ArtworkHintListener`](../../api/kohii-core/kohii.v1.core/-playback/-artwork-hint-listener/). With this interface, **Kohii** can tell client when it should show/hide thumbnail (or _artwork_ in **Kohii**'s term). Sample code:
+**Kohii** provides a special interface called [`ArtworkHintListener`](/api/kohii-core/kohii.v1.core/-playback/-artwork-hint-listener/). With this interface, **Kohii** can tell client when it should show/hide thumbnail (or _artwork_ in **Kohii**'s term). Sample code:
 
 ```Kotlin
 // 1. Let ViewHolder implement ArtworkHintListener interface.
@@ -10,6 +10,7 @@ class VideoViewHolder(itemView: View): ViewHolder(itemView), ArtworkHintListener
 
   // Override this callback to show/hide thumbnail.
   override fun onArtworkHint(
+    playback: Playback,
     shouldShow: Boolean,
     position: Long,
     state: Int

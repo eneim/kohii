@@ -4,11 +4,11 @@ Advance usages session will focus on using **Kohii** with **ExoPlayer**. Using o
 
 Here, we assume that you are familiar with **ExoPlayer**, including its core components (Player, ExoPlayer, SimpleExoPlayer, MediaSource, etc) and UI system (PlayerView, PlayerControlView, ControlDispatcher, etc).
 
-This section may use some keywords about components in **Kohii** like **Container**, **Bucket**, etc. You can find their definitions here: [Components](../../customize/terms).
+This section may use some keywords about components in **Kohii** like **Container**, **Bucket**, etc. You can find their definitions here: [Glossary](/usage/glossary).
 
 Advance usages by **Kohii**:
 
-- [Using Builder](advance/builder.md)
+- [Using custom Kohii creators](advance/builder.md)
 - [Using unique tag](advance/unique-tag.md)
 - [Show/Hide thumbnail](advance/thumbnail.md)
 - [Switching a Video playback between renderers](advance/switch-renderer.md)

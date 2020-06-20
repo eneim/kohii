@@ -18,6 +18,7 @@ _Under development_
 - Support Playback locking: if a Playback is locked, it will still be selected but will not be played.
 - Add `ExoPlayerCache` to the `kohii-exoplayer` package. It can be used to obtain a pre-built Cache easily.
 - Add `ExoPlayerConfig` to gather most of the detailed setting for a `SimpleExoPlayer` instance.
+- Add `TrackSelectorFactory`, `LoadControlFactory`.
 - Add `createKohii` convenient methods to easily create `Kohii` instance with custom parameters.
 - Add `Engine.lock*` and `Engine.unlock*` methods to support manual lock/unlock an Activity/Manager/Bucket or Playback.
 - Add a simple demonstration that builds TikTok-alike UI/UX.
@@ -28,7 +29,7 @@ _Under development_
 - [Breaking] `Playback#addCallback` and `Playback#removeCallback` are now internal.
 - [Breaking] The `DefaultControlDispatcher` is now internal.
 - [Breaking] Include Playback in the `ArtworkHintListener#onArtworkHint`.
-- [Breaking] Remove default parameters of the `KohiiExoPlayer`.
+- [Breaking] Remove default implementations for `BandwidthMeterFactory`.
 
 ## 1.0.0.2010004
 
