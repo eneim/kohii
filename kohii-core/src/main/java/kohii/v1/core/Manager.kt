@@ -181,10 +181,12 @@ class Manager internal constructor(
     provider: RendererProvider
   ) {
     val prev = rendererProviders.put(type, provider)
-    if (prev !== provider) {
-      prev?.clear()
-      lifecycleOwner.lifecycle.addObserver(provider)
+    if (prev != null && prev !== provider) {
+      prev.clear()
+      lifecycleOwner.lifecycle.removeObserver(prev)
     }
+
+    lifecycleOwner.lifecycle.addObserver(provider)
   }
 
   internal fun isChangingConfigurations(): Boolean {
