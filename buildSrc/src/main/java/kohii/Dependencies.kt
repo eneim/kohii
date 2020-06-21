@@ -246,7 +246,8 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.2"
+    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.4"
+    val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.4"
     val okio = "com.squareup.okio:okio:2.4.3"
   }
 
