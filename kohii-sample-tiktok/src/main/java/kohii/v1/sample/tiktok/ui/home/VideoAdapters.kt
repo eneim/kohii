@@ -49,6 +49,7 @@ class VideoAdapters(
     kohii.setUp(videoFile) {
       tag = "video::$pos"
       threshold = 0.5F
+      preload = true
       repeatMode = Common.REPEAT_MODE_ONE
       artworkHintListener = object : ArtworkHintListener {
         override fun onArtworkHint(

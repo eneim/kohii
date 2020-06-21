@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle.State
-import androidx.recyclerview.widget.PagerSnapHelper
 import kohii.v1.core.MemoryMode.HIGH
 import kohii.v1.exoplayer.ExoPlayerConfig
 import kohii.v1.exoplayer.createKohii
@@ -33,8 +32,6 @@ class HomeFragment : Fragment() {
 
   private var _binding: FragmentHomeBinding? = null
   private val binding: FragmentHomeBinding get() = requireNotNull(_binding)
-
-  private val pagerSnapHelper = PagerSnapHelper()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -51,12 +48,11 @@ class HomeFragment : Fragment() {
     kohii.register(this, memoryMode = HIGH, activeLifecycleState = State.RESUMED)
         .addBucket(binding.videos)
     binding.videos.adapter = VideoAdapters(getApp().videos, kohii)
-    pagerSnapHelper.attachToRecyclerView(binding.videos)
+    binding.videos.offscreenPageLimit = 1
   }
 
   override fun onDestroyView() {
     super.onDestroyView()
-    pagerSnapHelper.attachToRecyclerView(null)
     _binding = null
   }
 }
