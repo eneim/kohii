@@ -54,7 +54,7 @@ val kohii = createKohii(
 )
 ```
 
-Where [ExoPlayerConfig](/api/kohii-exoplayer/kohii.v1.exoplayer/-exo-player-config/) is the combination of many base parameters to construct ExoPlayer's components like the `LoadControl`, `DefaultTrackSelector`, `DefaultBandwidthMeter`, etc. If you have existing parameter to reuse, you can use this convenient to build a **Kohii** instance using them. `ExoPlayerConfig.DEFAULT` is the default configuration where the parameters are the same as default ExoPlayer's setup.
+Where [ExoPlayerConfig](../api/kohii-exoplayer/kohii.v1.exoplayer/-exo-player-config/) is the combination of many base parameters to construct ExoPlayer's components like the `LoadControl`, `DefaultTrackSelector`, `DefaultBandwidthMeter`, etc. If you have existing parameter to reuse, you can use this convenient to build a **Kohii** instance using them. `ExoPlayerConfig.DEFAULT` is the default configuration where the parameters are the same as default ExoPlayer's setup.
 
 If you want to reuse the already-built ExoPlayer components (`LoadControl`, `DefaultTrackSelector`, `DefaultBandwidthMeter`, etc) instead, you can also use the second convenient creator below:
 
@@ -68,4 +68,4 @@ val kohii = createKohii(
 ```
 
 Using this method, you can pass your custom way of creating a new [Player](https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/Player.html) instance,
-[MediaSourceFactory](https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/source/MediaSourceFactory.html) instance and [RendererProvider](/api/kohii-core/kohii.v1.core/-renderer-provider/) instance. Each parameter comes with a default value.
+[MediaSourceFactory](https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/source/MediaSourceFactory.html) instance and [RendererProvider](../api/kohii-core/kohii.v1.core/-renderer-provider/) instance. Each parameter comes with a default value.
