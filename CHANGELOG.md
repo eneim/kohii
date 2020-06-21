@@ -21,6 +21,7 @@ _Under development_
 - Add `TrackSelectorFactory`, `LoadControlFactory`.
 - Add `createKohii` convenient methods to easily create `Kohii` instance with custom parameters.
 - Add `Engine.lock*` and `Engine.unlock*` methods to support manual lock/unlock an Activity/Manager/Bucket or Playback.
+- Add `releaseOnInActive` Playback Config parameter, still experimental.
 - Add a simple demonstration that builds TikTok-alike UI/UX.
 
 - [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
