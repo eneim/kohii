@@ -209,12 +209,12 @@ class Group(
       // Update priority of non-selected Playback first, so they can release unused/obsoleted
       // resource before the selected ones who consume a lot of resources.
       (playbacks - selection).partitionToMutableSets(
-          predicate = { it.isActive },
+          predicate = { it.isAttached },
           transform = { it }
       )
-          .also { (active, inactive) ->
-            inactive.forEach { it.playbackPriority = Int.MAX_VALUE }
-            active.sortedBy { it.token.containerRect distanceTo target }
+          .also { (attached, detached) ->
+            detached.forEach { it.playbackPriority = Int.MAX_VALUE }
+            attached.sortedBy { it.token.containerRect distanceTo target }
                 .forEachIndexed { index, playback -> playback.playbackPriority = index + 1 }
           }
       selection.forEach { it.playbackPriority = 0 }
