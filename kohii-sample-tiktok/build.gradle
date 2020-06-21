@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) 2020 Nam Nguyen, nam@ene.im
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import kohii.BuildConfig
+import kohii.Libs
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+  compileSdkVersion BuildConfig.compileSdkVersion
+
+  defaultConfig {
+    applicationId "kohii.v1.sample.tiktok"
+    minSdkVersion 21 /* BuildConfig.minSdkVersion */
+    targetSdkVersion BuildConfig.targetSdkVersion
+    versionCode BuildConfig.releaseVersionCode
+    versionName BuildConfig.releaseVersionName
+
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    testApplicationId 'kohii.v1.sample.tiktok.test'
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  packagingOptions {
+    exclude 'META-INF/services/javax.annotation.processing.Processor'
+    exclude 'META-INF/DEPENDENCIES'
+  }
+
+  buildFeatures {
+    viewBinding true
+  }
+
+  productFlavors {}
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
+}
+
+dependencies {
+  implementation fileTree(dir: "libs", include: ["*.jar"])
+  implementation project(':kohii-core')
+  implementation project(':kohii-exoplayer')
+
+  implementation Libs.ExoPlayer.all
+  implementation Libs.AndroidX.Media.widget
+
+  implementation Libs.Kotlin.stdlibJdk8
+
+  implementation Libs.AndroidX.coreKtx
+  implementation Libs.AndroidX.Fragment.fragmentKtx
+  implementation Libs.AndroidX.appcompat
+  implementation Libs.AndroidX.recyclerView
+  implementation Libs.AndroidX.recyclerViewSelection
+  implementation Libs.AndroidX.constraintLayout
+  implementation Libs.Google.material
+
+  implementation(Libs.AndroidX.Navigation.uiKtx)
+  implementation(Libs.AndroidX.Navigation.commonKtx)
+  implementation(Libs.AndroidX.Navigation.runtimeKtx)
+  implementation(Libs.AndroidX.Navigation.fragmentKtx)
+
+  implementation Libs.AndroidX.Lifecycle.extensions
+  implementation Libs.AndroidX.Lifecycle.runtime
+  implementation Libs.AndroidX.Lifecycle.viewModel
+  implementation Libs.AndroidX.Lifecycle.liveData
+  implementation Libs.AndroidX.Lifecycle.java8
+
+  implementation Libs.Square.moshi
+  kapt Libs.Square.moshiCodegen
+  implementation Libs.Square.okio
+
+  implementation(Libs.Coil.coilBase)
+
+  implementation(Libs.AndroidX.vector)
+
+  testImplementation(Libs.Common.junit)
+  androidTestImplementation(Libs.Common.junitExt)
+  androidTestImplementation(Libs.AndroidX.Test.espressoCore)
+}

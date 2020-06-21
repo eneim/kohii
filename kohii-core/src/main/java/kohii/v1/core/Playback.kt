@@ -30,6 +30,7 @@ import kohii.v1.core.Bucket.Companion.NONE_AXIS
 import kohii.v1.core.Bucket.Companion.VERTICAL
 import kohii.v1.core.Common.STATE_ENDED
 import kohii.v1.core.Common.STATE_IDLE
+import kohii.v1.core.Playback.Controller
 import kohii.v1.internal.PlayerParametersChangeListener
 import kohii.v1.logDebug
 import kohii.v1.media.PlaybackInfo
@@ -276,6 +277,7 @@ abstract class Playback(
     playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
     artworkHintListener?.onArtworkHint(
+        this,
         playable?.isPlaying() == false,
         playbackInfo.resumePosition,
         playerState
@@ -286,7 +288,7 @@ abstract class Playback(
   internal open fun onInActive() {
     "Playback#onInActive $this".logDebug()
     playbackState = STATE_INACTIVE
-    artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
+    artworkHintListener?.onArtworkHint(this, true, playbackInfo.resumePosition, playerState)
     playable?.teardownRenderer(this)
     callbacks.forEach { it.onInActive(this) }
   }
@@ -296,7 +298,7 @@ abstract class Playback(
     "Playback#onPlay $this".logDebug()
     container.keepScreenOn = true
     artworkHintListener?.onArtworkHint(
-        playerState == STATE_ENDED, playbackInfo.resumePosition, playerState
+        this, playerState == STATE_ENDED, playbackInfo.resumePosition, playerState
     )
   }
 
@@ -304,12 +306,19 @@ abstract class Playback(
   internal open fun onPause() {
     container.keepScreenOn = false
     "Playback#onPause $this".logDebug()
-    artworkHintListener?.onArtworkHint(true, playbackInfo.resumePosition, playerState)
+    artworkHintListener?.onArtworkHint(this, true, playbackInfo.resumePosition, playerState)
   }
 
   // Will be updated everytime 'onRefresh' is called.
   private var playbackToken: Token =
     Token(config.threshold, -1F, Rect(), 0, 0)
+
+  internal var lock: Boolean = bucket.lock
+    get() = field || bucket.lock
+    set(value) {
+      field = value
+      manager.refresh()
+    }
 
   internal val token: Token
     get() = playbackToken
@@ -483,6 +492,7 @@ abstract class Playback(
     }
     val playable = this.playable
     artworkHintListener?.onArtworkHint(
+        playback = this,
         shouldShow = if (playable != null) !playable.isPlaying() else true,
         position = playbackInfo.resumePosition,
         state = playerState
@@ -640,7 +650,11 @@ abstract class Playback(
 
   interface ArtworkHintListener {
 
+    /**
+     * @param position current position of the playback in milliseconds.
+     */
     fun onArtworkHint(
+      playback: Playback,
       shouldShow: Boolean,
       position: Long,
       state: Int
@@ -656,4 +670,23 @@ abstract class Playback(
 
     fun onNetworkTypeChanged(networkType: NetworkType): PlayerParameters
   }
+}
+
+/** Extension functions for a Playback */
+
+/**
+ * Quickly setup the [Controller] that only needs to setup the renderer.
+ *
+ * @param kohiiCanStart same as [Controller.kohiiCanStart]
+ * @param kohiiCanPause same as [Controller.kohiiCanPause]
+ * @param setupRenderer same as [Controller.setupRenderer]
+ */
+inline fun controller(
+  kohiiCanStart: Boolean = true,
+  kohiiCanPause: Boolean = true,
+  crossinline setupRenderer: (playback: Playback, renderer: Any?) -> Unit
+): Controller = object : Controller {
+  override fun kohiiCanStart(): Boolean = kohiiCanStart
+  override fun kohiiCanPause(): Boolean = kohiiCanPause
+  override fun setupRenderer(playback: Playback, renderer: Any?) = setupRenderer(playback, renderer)
 }

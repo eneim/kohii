@@ -18,6 +18,7 @@ package kohii.v1.core
 
 import android.content.Context
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.core.net.toUri
@@ -28,6 +29,10 @@ import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.LifecycleOwner
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.MemoryMode.LOW
+import kohii.v1.core.Scope.BUCKET
+import kohii.v1.core.Scope.GROUP
+import kohii.v1.core.Scope.MANAGER
+import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.media.Media
 import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
@@ -116,6 +121,9 @@ abstract class Engine<RENDERER : Any> constructor(
       activeLifecycleState = activeLifecycleState
   )
 
+  /**
+   * @see Manager.applyVolumeInfo
+   */
   fun applyVolumeInfo(
     volumeInfo: VolumeInfo,
     target: Any,
@@ -162,6 +170,81 @@ abstract class Engine<RENDERER : Any> constructor(
       manager.group.unstick(manager)
       manager.refresh()
     }
+  }
+
+  /**
+   * Locks all the Playbacks of a [FragmentActivity]. The locking [Scope] is equal to [Scope.GROUP].
+   * Any call to unlock of smaller [Scope] (like [Scope.MANAGER]) will not unlock the Playbacks.
+   *
+   * @see [Master.lock]
+   */
+  fun lockActivity(activity: FragmentActivity) {
+    master.lock(activity, GROUP)
+  }
+
+  /**
+   * Unlock all the Playbacks of an [FragmentActivity]. The effective scope is [Scope.GROUP]. If it
+   * was locked by a call to higher [Scope] like [Scope.GLOBAL], this method does nothing. Once
+   * unlocked, it will unlock all locked objects within [Scope.GROUP]: [Playback], [Bucket],
+   * [Manager].
+   */
+  fun unlockActivity(activity: FragmentActivity) {
+    master.unlock(activity, GROUP)
+  }
+
+  /**
+   * Locks all the Playbacks of a [Manager]. The locking [Scope] is equal to [Scope.MANAGER].
+   * Any call to unlock of smaller [Scope] (like [Scope.BUCKET]) will not unlock the Playbacks.
+   *
+   * @see [Master.lock]
+   */
+  fun lockManager(manager: Manager) {
+    master.lock(manager, MANAGER)
+  }
+
+  /**
+   * Unlock all the Playbacks of a [Manager]. The effective scope is [Scope.MANAGER]. If it was
+   * locked by a call to higher [Scope] like [Scope.GROUP], this method does nothing. Once unlocked,
+   * it will unlock all locked objects within [Scope.MANAGER]: [Playback], [Bucket].
+   */
+  fun unlockManager(manager: Manager) {
+    master.unlock(manager, MANAGER)
+  }
+
+  /**
+   * Locks all the Playbacks of a [Bucket] whose [Bucket.root] is [view]. The locking [Scope] is
+   * equal to [Scope.BUCKET]. Any call to unlock of smaller [Scope] (like [Scope.PLAYBACK]) will
+   * not unlock the Playbacks.
+   *
+   * @see [Master.lock]
+   */
+  fun lockBucket(view: View) {
+    master.lock(view, BUCKET)
+  }
+
+  /**
+   * Unlock all the Playbacks of a [Bucket] whose [Bucket.root] is [view]. The effective scope is
+   * [Scope.BUCKET]. If it was locked by a call to higher [Scope] like [Scope.MANAGER], this method
+   * does nothing. Once unlocked, it will unlock all locked objects within [Scope.BUCKET]:
+   * [Playback].
+   */
+  fun unlockBucket(view: View) {
+    master.unlock(view, BUCKET)
+  }
+
+  /**
+   * Locks all the Playbacks of a [Playback]. The locking [Scope] is equal to [Scope.PLAYBACK].
+   */
+  fun lockPlayback(playback: Playback) {
+    master.lock(playback, PLAYBACK)
+  }
+
+  /**
+   * Unlock all the Playbacks of a [Playback]. The effective scope is [Scope.PLAYBACK]. If it was
+   * locked by a call to higher [Scope] like [Scope.BUCKET], this method does nothing.
+   */
+  fun unlockPlayback(playback: Playback) {
+    master.unlock(playback, PLAYBACK)
   }
 
   @CallSuper

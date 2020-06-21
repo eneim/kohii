@@ -53,4 +53,6 @@ open class Capsule<T : Any, in A>(
       }
     }
   }
+
+  fun get(arg: A): T = getInstance(arg)
 }

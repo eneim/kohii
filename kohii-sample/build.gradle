@@ -88,10 +88,9 @@ android {
     exclude 'META-INF/DEPENDENCIES'
   }
 
-  dataBinding.enabled = true
-
-  viewBinding {
-    enabled = true
+  buildFeatures {
+    viewBinding true
+    dataBinding true
   }
 
   productFlavors {}

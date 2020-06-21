@@ -43,6 +43,7 @@ internal class VideoViewHolder(
     get() = videoUrl?.let { "GRID::$pagePos::〜$adapterPosition" }
 
   override fun onArtworkHint(
+    playback: Playback,
     shouldShow: Boolean,
     position: Long,
     state: Int

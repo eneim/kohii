@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 include ':kohii-core'
 include ':kohii-exoplayer'
 include ':kohii-sample'
 include ':kohii-androidx'
 include ':kohii-ads'
 include ':kohii-experiments'
+include ':kohii-sample-tiktok'

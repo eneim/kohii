@@ -44,16 +44,16 @@ import kotlin.LazyThreadSafetyMode.NONE
  */
 open class KohiiExoPlayer(
   context: Context,
-  renderersFactory: RenderersFactory = DefaultRenderersFactory(
-      context.applicationContext
-  ).setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF),
+  clock: Clock = Clock.DEFAULT,
+  renderersFactory: RenderersFactory = DefaultRenderersFactory(context.applicationContext),
     // TrackSelector is initialized at the same time a new Player instance is created.
     // This process will set the BandwidthMeter to the TrackSelector. Therefore we need to have
     // unique TrackSelector per Player instance.
-  override val trackSelector: DefaultTrackSelector = DefaultTrackSelector(context.applicationContext),
-  loadControl: LoadControl = DefaultLoadControl(),
-  bandwidthMeter: BandwidthMeter = DefaultBandwidthMeter.Builder(context.applicationContext)
-      .build(),
+  override val trackSelector: DefaultTrackSelector =
+    DefaultTrackSelector(context.applicationContext),
+  loadControl: LoadControl = DefaultLoadControl.Builder().createDefaultLoadControl(),
+  bandwidthMeter: BandwidthMeter =
+    DefaultBandwidthMeter.Builder(context.applicationContext).build(),
   looper: Looper = Util.getLooper()
 ) : SimpleExoPlayer(
     context,
@@ -61,8 +61,8 @@ open class KohiiExoPlayer(
     trackSelector,
     loadControl,
     bandwidthMeter,
-    AnalyticsCollector(Clock.DEFAULT),
-    Clock.DEFAULT,
+    AnalyticsCollector(clock),
+    clock,
     looper
 ), VolumeInfoController, DefaultTrackSelectorHolder {
 

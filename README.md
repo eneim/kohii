@@ -45,6 +45,18 @@ implementation "im.ene.kohii:kohii-exoplayer:1.0.0.2010004" // default support f
 implementation "com.google.android.exoplayer:exoplayer:2.10.4" // required ExoPlayer implementation.
 ```
 
+You will need to set this flag to your build.gradle too: `-Xjvm-default=enable`.
+
+```groovy
+android {
+  kotlinOptions {
+    freeCompilerArgs += [
+        '-Xjvm-default=enable'
+    ]
+  }
+}
+```
+
 ## Start a playback
 
 ```Kotlin tab=

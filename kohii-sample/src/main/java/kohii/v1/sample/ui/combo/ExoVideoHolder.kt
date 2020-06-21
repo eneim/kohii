@@ -69,7 +69,7 @@ class ExoVideoHolder(
         .show()
   }
 
-  override fun onArtworkHint(shouldShow: Boolean, position: Long, state: Int) {
+  override fun onArtworkHint(playback: Playback, shouldShow: Boolean, position: Long, state: Int) {
     thumbnail.isVisible = shouldShow
   }
 }

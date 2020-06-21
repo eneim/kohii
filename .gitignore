@@ -80,3 +80,7 @@
 /.idea/markdown-navigator-enh.xml
 /.idea/jarRepositories.xml
 /.idea/render.experimental.xml
+/.idea/navEditor.xml
+/kohii-sample-tiktok/libs/
+/kohii-sample-tiktok/src/androidTest/
+/kohii-sample-tiktok/src/test/

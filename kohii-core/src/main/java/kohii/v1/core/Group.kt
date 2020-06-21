@@ -21,7 +21,6 @@ import android.os.Handler
 import android.os.Message
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle.Event
@@ -77,9 +76,9 @@ class Group(
   internal val volumeInfo: VolumeInfo
     get() = groupVolumeInfo
 
-  internal var lock: Boolean = false
+  internal var lock: Boolean = master.lock
+    get() = field || master.lock
     set(value) {
-      if (field == value) return
       field = value
       managers.forEach { it.lock = value }
     }
@@ -163,11 +162,14 @@ class Group(
     }
 
     val oldSelection = selection
-    selection =
-      if (lock || activity.lifecycle.currentState < master.groupsMaxLifecycleState)
-        emptySet()
-      else
-        toPlay
+    selection = if (master.lock ||
+        this.lock ||
+        activity.lifecycle.currentState < master.groupsMaxLifecycleState
+    ) {
+      emptySet()
+    } else {
+      toPlay.filterTo(mutableSetOf()) { !it.lock }
+    }
     val newSelection = selection
 
     // Next: as Playbacks are split into 2 collections, we then release unused resources and prepare

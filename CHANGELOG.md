@@ -15,12 +15,21 @@ _Under development_
 - Add method `Kohii.createControlDispatcher(Playback)`.
 - Add method `Playback.Controller.setupRenderer(Playback, Any?)`.
 - Add method `Playback.Controller.teardownRenderer(Playback, Any?)`.
+- Support Playback locking: if a Playback is locked, it will still be selected but will not be played.
+- Add `ExoPlayerCache` to the `kohii-exoplayer` package. It can be used to obtain a pre-built Cache easily.
+- Add `ExoPlayerConfig` to gather most of the detailed setting for a `SimpleExoPlayer` instance.
+- Add `TrackSelectorFactory`, `LoadControlFactory`.
+- Add `createKohii` convenient methods to easily create `Kohii` instance with custom parameters.
+- Add `Engine.lock*` and `Engine.unlock*` methods to support manual lock/unlock an Activity/Manager/Bucket or Playback.
+- Add a simple demonstration that builds TikTok-alike UI/UX.
 
 - [Breaking] Rename `Playable#considerRequestRenderer` -> `Playable#setupRenderer`.
 - [Breaking] Rename `Playable#considerReleaseRenderer` -> `Playable#teardownRenderer`.
 - [Breaking] `RendererProvider#releaseRenderer` now needs to return a boolean.
 - [Breaking] `Playback#addCallback` and `Playback#removeCallback` are now internal.
 - [Breaking] The `DefaultControlDispatcher` is now internal.
+- [Breaking] Include Playback in the `ArtworkHintListener#onArtworkHint`.
+- [Breaking] Remove default implementations for `BandwidthMeterFactory`.
 
 ## 1.0.0.2010004
 

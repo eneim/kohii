@@ -87,9 +87,11 @@ abstract class Bucket constructor(
   }
 
   internal var lock: Boolean = manager.lock
+    get() = field || manager.lock
     set(value) {
-      if (field == value) return
       field = value
+      manager.playbacks.filter { it.value.bucket === this }
+          .forEach { it.value.lock = value }
       manager.refresh()
     }
 
@@ -240,19 +242,21 @@ abstract class Bucket constructor(
     if (lock) return emptyList()
     if (strategy == NO_PLAYER) return emptyList()
 
-    val comparator = playbackComparators.getValue(orientation)
-    val grouped = candidates.sortedWith(comparator)
+    val playbackComparator = playbackComparators.getValue(orientation)
+    val manualToAutoPlaybackGroups = candidates.sortedWith(playbackComparator)
         .groupBy { it.tag != Master.NO_TAG && it.config.controller != null }
         .withDefault { emptyList() }
 
-    val manualCandidate = with(grouped.getValue(true)) {
-      val started = find {
-        manager.master.manuallyStartedPlayable.get() === it.playable
-      }
+    val manualCandidate = with(manualToAutoPlaybackGroups.getValue(true)) {
+      val started = find { manager.master.manuallyStartedPlayable.get() === it.playable }
       return@with listOfNotNull(started ?: this@with.firstOrNull())
     }
 
-    return if (manualCandidate.isNotEmpty()) manualCandidate else selector(grouped.getValue(false))
+    return if (manualCandidate.isNotEmpty()) {
+      manualCandidate
+    } else {
+      selector(manualToAutoPlaybackGroups.getValue(false))
+    }
   }
 
   override fun equals(other: Any?): Boolean {

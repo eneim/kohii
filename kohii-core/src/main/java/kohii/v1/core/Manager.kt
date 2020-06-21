@@ -70,8 +70,8 @@ class Manager internal constructor(
   }
 
   internal var lock: Boolean = group.lock
+    get() = field || group.lock
     set(value) {
-      if (field == value) return
       field = value
       buckets.forEach { it.lock = value }
       refresh()
@@ -181,19 +181,16 @@ class Manager internal constructor(
     provider: RendererProvider
   ) {
     val prev = rendererProviders.put(type, provider)
-    if (prev !== provider) {
-      prev?.clear()
-      lifecycleOwner.lifecycle.addObserver(provider)
+    if (prev != null && prev !== provider) {
+      prev.clear()
+      lifecycleOwner.lifecycle.removeObserver(prev)
     }
+
+    lifecycleOwner.lifecycle.addObserver(provider)
   }
 
   internal fun isChangingConfigurations(): Boolean {
     return group.activity.isChangingConfigurations
-  }
-
-  @RestrictTo(LIBRARY_GROUP)
-  fun findPlayableForContainer(container: ViewGroup): Playable? {
-    return playbacks[container]?.playable
   }
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
@@ -281,17 +278,14 @@ class Manager internal constructor(
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
         .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
-        .map {
+        .map { /* Bucket --> List<Playback> */
           val candidates = bucketToPlaybacks.getValue(it).filter { playback ->
-            val kohiiCannotPause = master.manuallyStartedPlayable.get() === playback.playable
+            val cannotPause = master.manuallyStartedPlayable.get() === playback.playable
                 && master.plannedManualPlayables.contains(playback.tag)
                 && !requireNotNull(playback.config.controller).kohiiCanPause()
-            return@filter kohiiCannotPause || it.allowToPlay(playback)
+            return@filter cannotPause || it.allowToPlay(playback)
           }
-          return@map it to candidates
-        }
-        .map { (bucket, candidates) ->
-          bucket.strategy(bucket.selectToPlay(candidates))
+          return@map it.strategy(it.selectToPlay(candidates))
         }
         .find { it.isNotEmpty() }
         ?.also {
