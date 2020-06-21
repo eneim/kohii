@@ -5,14 +5,14 @@
 _Under development_
 
 - ExoPlayer: 2.11.3
-- Support _multiple playback_. Check out [docs](https://eneim.github.io/kohii/usage/advance/) for more information.
+- Support _multiple playback_. Check out [docs](https://eneim.github.io/kohii/usage/advance/) and [recipe](https://www.notion.so/00ea153b5378454dbc7a104733cd01d9) for more information.
 - Experimental manual playback.
-- Introduce `PlayableObserver`.
+- Add method `Kohii.createControlDispatcher(Playback)`.
+- Introduce `PlayableObserver`, recipe: [Observe Playback switched event](https://www.notion.so/8ebea74d5e3347c580209652f374247c)
 - Introduce `activeLifecycleState` setting for registering new manager.
 - Introduce `PlayerParameters`, `NetworkTypeChangeListener`.
 - Deprecate the `VideoSize`.
 - Introduce the `initialPlaybackInfo` setting for the Binder.
-- Add method `Kohii.createControlDispatcher(Playback)`.
 - Add method `Playback.Controller.setupRenderer(Playback, Any?)`.
 - Add method `Playback.Controller.teardownRenderer(Playback, Any?)`.
 - Support Playback locking: if a Playback is locked, it will still be selected but will not be played.
