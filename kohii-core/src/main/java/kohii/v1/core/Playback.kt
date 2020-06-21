@@ -116,6 +116,7 @@ abstract class Playback(
     val delay: Int = 0,
     val threshold: Float = 0.65F,
     val preload: Boolean = false,
+    val releaseOnInActive: Boolean = false,
     val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val callbacks: Set<Callback> = emptySet(),
     val controller: Controller? = null,
@@ -476,8 +477,7 @@ abstract class Playback(
   ) {
     "Playback#onPlayerStateChanged $playWhenReady - $playbackState, $this".logDebug()
     when (playbackState) {
-      Player.STATE_IDLE -> {
-      }
+      Player.STATE_IDLE -> Unit
       Player.STATE_BUFFERING -> {
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       }
