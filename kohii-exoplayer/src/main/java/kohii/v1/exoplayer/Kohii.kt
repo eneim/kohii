@@ -180,15 +180,14 @@ fun createKohii(
     }
   }
 
-  val mediaSourceFactoryProvider =
-    if (mediaSourceFactoryCreator == null) {
-      DefaultMediaSourceFactoryProvider(context)
-    } else {
-      object : MediaSourceFactoryProvider {
-        override fun provideMediaSourceFactory(media: Media): MediaSourceFactory =
-          mediaSourceFactoryCreator(media)
-      }
+  val mediaSourceFactoryProvider = if (mediaSourceFactoryCreator == null) {
+    DefaultMediaSourceFactoryProvider(context)
+  } else {
+    object : MediaSourceFactoryProvider {
+      override fun provideMediaSourceFactory(media: Media): MediaSourceFactory =
+        mediaSourceFactoryCreator(media)
     }
+  }
 
   return Builder(context)
       .setPlayableCreator(
