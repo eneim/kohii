@@ -45,11 +45,17 @@ implementation "im.ene.kohii:kohii-exoplayer:1.0.0.2010004" // default support f
 implementation "com.google.android.exoplayer:exoplayer:2.10.4" // required ExoPlayer implementation.
 ```
 
-You will need to set this flag to your build.gradle too: `-Xjvm-default=enable`.
+Kohii uses Kotlin language with some Java 8 features so you will need to include the following options to your module's build.gradle:
 
 ```groovy
 android {
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
   kotlinOptions {
+    jvmTarget = "1.8"
     freeCompilerArgs += [
         '-Xjvm-default=enable'
     ]
