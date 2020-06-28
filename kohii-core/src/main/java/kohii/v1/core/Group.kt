@@ -162,10 +162,7 @@ class Group(
     }
 
     val oldSelection = selection
-    selection = if (master.lock ||
-        this.lock ||
-        activity.lifecycle.currentState < master.groupsMaxLifecycleState
-    ) {
+    selection = if (lock || activity.lifecycle.currentState < master.groupsMaxLifecycleState) {
       emptySet()
     } else {
       toPlay.filterTo(mutableSetOf()) { !it.lock }
