@@ -23,8 +23,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle.State
 import kohii.v1.core.MemoryMode.HIGH
-import kohii.v1.exoplayer.ExoPlayerConfig
-import kohii.v1.exoplayer.createKohii
+import kohii.v1.sample.tiktok.KohiiProvider
 import kohii.v1.sample.tiktok.databinding.FragmentHomeBinding
 import kohii.v1.sample.tiktok.getApp
 
@@ -44,7 +43,7 @@ class HomeFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val kohii = createKohii(requireContext(), ExoPlayerConfig.FAST_START)
+    val kohii = KohiiProvider[requireContext()]
     kohii.register(this, memoryMode = HIGH, activeLifecycleState = State.RESUMED)
         .addBucket(binding.videos)
     binding.videos.adapter = VideoAdapters(getApp().videos, kohii)
