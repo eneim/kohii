@@ -241,7 +241,7 @@ class FbookFragment : BaseFragment(), DemoContainer,
     }
   }
 
-  // Playback.PlaybackListener
+  // Playback.StateListener
 
   override fun onEnded(playback: Playback) {
     super.onEnded(playback)

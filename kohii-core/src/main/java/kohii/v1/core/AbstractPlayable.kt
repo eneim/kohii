@@ -208,6 +208,11 @@ abstract class AbstractPlayable<RENDERER : Any>(
   override fun onDetached(playback: Playback) {
     "Playable#onDetached $playback, $this".logInfo()
     require(playback === this.playback)
+    val configChange = playback.manager.isChangingConfigurations()
+    if (!configChange && !master.releasePlaybackOnInActive(playback)) {
+      master.trySavePlaybackInfo(this)
+      master.releasePlayable(this)
+    }
     master.onPlaybackDetached(playback)
   }
 
@@ -262,13 +267,15 @@ abstract class AbstractPlayable<RENDERER : Any>(
         NORMAL -> 2
         BALANCED -> 2 // Same as 'NORMAL', but will keep the 'relative' Playback alive.
         HIGH -> 8
-        INFINITE -> Int.MAX_VALUE - 1
+        INFINITE -> Int.MAX_VALUE
       }
       if (newPriority >= priorityToRelease) {
         master.trySavePlaybackInfo(this)
         master.releasePlayable(this)
       } else {
-        if (memoryMode !== BALANCED) {
+        master.tryRestorePlaybackInfo(this)
+        master.preparePlayable(this, playback.config.preload)
+        if (memoryMode < BALANCED) {
           bridge.reset(false)
         }
       }

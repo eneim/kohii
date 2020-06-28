@@ -30,7 +30,7 @@ import kohii.v1.sample.data.Video
 import kohii.v1.sample.tiktok.R
 import kohii.v1.sample.tiktok.databinding.HolderVerticalVideoBinding
 
-class VideoAdapters(
+class VideosAdapter(
   private val videos: List<Video>,
   val kohii: Kohii
 ) : Adapter<VideoViewHolder>() {
@@ -49,6 +49,7 @@ class VideoAdapters(
     kohii.setUp(videoFile) {
       tag = "video::$pos"
       threshold = 0.5F
+      preload = true
       repeatMode = Common.REPEAT_MODE_ONE
       artworkHintListener = object : ArtworkHintListener {
         override fun onArtworkHint(

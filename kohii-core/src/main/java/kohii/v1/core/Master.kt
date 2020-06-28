@@ -147,7 +147,15 @@ class Master private constructor(context: Context) : PlayableManager {
   // TODO LruStore (temporary, short term), SqLiteStore (eternal, manual clean up), etc?
   private val playbackInfoStore = mutableMapOf<Any /* Playable tag */, PlaybackInfo>()
 
+  private var systemLock: Boolean = false
+    set(value) {
+      val prev = field
+      field = value
+      groups.forEach { it.onRefresh() }
+    }
+
   internal var lock: Boolean = false
+    get() = field || systemLock
     set(value) {
       field = value
       groups.forEach { it.lock = lock }
@@ -172,9 +180,9 @@ class Master private constructor(context: Context) : PlayableManager {
         if (isInitialStickyBroadcast) return
         if (context != null && intent != null) {
           if (intent.action == Intent.ACTION_SCREEN_OFF) {
-            Master[context].lock(GLOBAL)
+            Master[context].systemLock = true
           } else if (intent.action == Intent.ACTION_USER_PRESENT) {
-            Master[context].unlock(GLOBAL)
+            Master[context].systemLock = false
           }
         }
       }
@@ -358,6 +366,7 @@ class Master private constructor(context: Context) : PlayableManager {
   // [Draft] return false if this [Master] wants to handle this step by itself, true to release.
   internal fun releasePlaybackOnInActive(playback: Playback): Boolean {
     "Master#releasePlaybackOnInActive: $playback".logDebug()
+    if (!playback.config.releaseOnInActive) return false
     val playable: Playable? = manuallyStartedPlayable.get()
     return !(playable === playback.playable && playable?.isPlaying() == true)
   }

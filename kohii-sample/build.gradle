@@ -163,6 +163,7 @@ dependencies {
 
   implementation(Libs.Other.timber)
 
+  implementation Libs.Square.leakCanaryPlumber
   debugImplementation Libs.Square.leakCanary
 
   testImplementation Libs.Common.junit
