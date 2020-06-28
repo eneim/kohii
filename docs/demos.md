@@ -6,6 +6,10 @@
 
 _COMING SOON_
 
+## Kohii + TikTok
+
+https://www.notion.so/Clone-TikTok-using-Kohii-dc0c254d74544561950ff6309212c183
+
 ## Kohii + Facebook
 
 _COMING SOON_
