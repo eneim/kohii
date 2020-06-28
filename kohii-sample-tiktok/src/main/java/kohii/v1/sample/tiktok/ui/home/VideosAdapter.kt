@@ -30,7 +30,7 @@ import kohii.v1.sample.data.Video
 import kohii.v1.sample.tiktok.R
 import kohii.v1.sample.tiktok.databinding.HolderVerticalVideoBinding
 
-class VideoAdapters(
+class VideosAdapter(
   private val videos: List<Video>,
   val kohii: Kohii
 ) : Adapter<VideoViewHolder>() {
