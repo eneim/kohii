@@ -62,7 +62,7 @@ object BuildConfig {
   }
 
   val releaseVersionCode = gitCommitCount
-  val releaseVersionName = "1.1.0.${Versions.exoPlayerCode}-RC2"
+  val releaseVersionName = "1.1.0.${Versions.exoPlayerCode}"
 }
 
 @Suppress("MayBeConstant", "unused")
