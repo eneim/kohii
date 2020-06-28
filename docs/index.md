@@ -39,8 +39,8 @@ allprojects {
 
 ```groovy
 // Add these to app level build.gradle (or to module that will use Kohii)
-def kohiiVersion = '1.0.0.2010004'
-def exoPlayerVersion = '2.10.4'
+def kohiiVersion = '1.1.0.2011003'
+def exoPlayerVersion = '2.11.3'
 
 implementation "im.ene.kohii:kohii-core:${kohiiVersion}"
 implementation "im.ene.kohii:kohii-exoplayer:${kohiiVersion}"
