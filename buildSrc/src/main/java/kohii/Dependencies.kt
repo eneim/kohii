@@ -41,7 +41,7 @@ object BuildConfig {
   const val minSdkVersion = 19
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
-  private val gitCommitHash = try {
+  private fun gitCommitHash() = try {
     Runtime.getRuntime()
         .exec("git rev-parse --short HEAD")
         .inputStream.reader()
@@ -51,17 +51,17 @@ object BuildConfig {
     "1.0.0"
   }
 
-  private val gitCommitCount = 100 + try {
+  private fun gitCommitCount() = 100 + try {
     Runtime.getRuntime()
         .exec("git rev-list --count HEAD")
         .inputStream.reader()
         .use { it.readText() }
         .trim().toInt()
   } catch (er: Exception) {
-    0
+    99
   }
 
-  val releaseVersionCode = gitCommitCount
+  val releaseVersionCode = gitCommitCount()
   val releaseVersionName = "1.1.0.${Versions.exoPlayerCode}"
 }
 
@@ -70,9 +70,9 @@ object Libs {
 
   object Common {
     const val androidGradlePlugin = "com.android.tools.build:gradle:4.0.0"
-    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.2"
+    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.3"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
-    const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+    const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
 
@@ -123,7 +123,7 @@ object Libs {
     }
 
     object Navigation {
-      private const val version = "2.3.0-rc01"
+      private const val version = "2.3.0"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
@@ -222,19 +222,19 @@ object Libs {
 
   object Google {
     val material = "com.google.android.material:material:1.1.0"
-    val gmsGoogleServices = "com.google.gms:google-services:4.3.2"
-    val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.2.2"
-    val fabricPlugin = "io.fabric.tools:gradle:1.31.1"
+    val gmsGoogleServices = "com.google.gms:google-services:4.3.3"
+    val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.4.3"
+    val fabricPlugin = "io.fabric.tools:gradle:1.31.2"
     val crashlytics = "com.crashlytics.sdk.android:crashlytics:2.10.1"
 
-    val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20190827-1.30.1"
-    val httpClientAndroid = "com.google.http-client:google-http-client-android:1.34.1"
-    val apiClientAndroid = "com.google.api-client:google-api-client-android:1.30.8"
-    val apiClientGson = "com.google.api-client:google-api-client-gson:1.30.8"
+    val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20200618-1.30.9"
+    val httpClientAndroid = "com.google.http-client:google-http-client-android:1.35.0"
+    val apiClientAndroid = "com.google.api-client:google-api-client-android:1.30.9"
+    val apiClientGson = "com.google.api-client:google-api-client-gson:1.30.9"
   }
 
   object Dagger {
-    private const val version = "2.26"
+    private const val version = "2.28.1"
     val dagger = "com.google.dagger:dagger:$version"
     val androidSupport = "com.google.dagger:dagger-android-support:$version"
     val compiler = "com.google.dagger:dagger-compiler:$version"
@@ -242,13 +242,13 @@ object Libs {
   }
 
   object Square {
-    private const val moshiVersion = "1.9.2"
+    private const val moshiVersion = "1.9.3"
     val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
     val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.4"
     val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.4"
-    val okio = "com.squareup.okio:okio:2.4.3"
+    val okio = "com.squareup.okio:okio:2.6.0"
   }
 
   object Glide {
