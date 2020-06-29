@@ -75,6 +75,7 @@ object Libs {
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
+    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.2.3"
 
     val junit = "junit:junit:4.13"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"

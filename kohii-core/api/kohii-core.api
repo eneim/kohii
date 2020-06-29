@@ -1,0 +1,802 @@
+public abstract interface annotation class kohii/v1/Beta : java/lang/annotation/Annotation {
+	public abstract fun message ()Ljava/lang/String;
+}
+
+public final class kohii/v1/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public static final field LIB_NAME Ljava/lang/String;
+	public static final field VERSION_CODE I
+	public static final field VERSION_NAME Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public abstract interface annotation class kohii/v1/Draft : java/lang/annotation/Annotation {
+	public abstract fun message ()Ljava/lang/String;
+}
+
+public abstract interface annotation class kohii/v1/Experiment : java/lang/annotation/Annotation {
+}
+
+public final class kohii/v1/ExtensionsKt {
+	public static final fun logDebug (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun logDebug$default (Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static final fun logError (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun logError$default (Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static final fun logInfo (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun logInfo$default (Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static final fun logWarn (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun logWarn$default (Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static final fun onEachAcquired (Landroidx/core/util/Pools$Pool;Lkotlin/jvm/functions/Function1;)V
+	public static final fun viewBehavior (Landroid/view/View;)Landroidx/coordinatorlayout/widget/CoordinatorLayout$Behavior;
+}
+
+public abstract interface annotation class kohii/v1/Stable : java/lang/annotation/Annotation {
+}
+
+public abstract class kohii/v1/core/AbstractBridge : kohii/v1/core/Bridge {
+	public fun <init> ()V
+	public fun addErrorListener (Lkohii/v1/core/ErrorListener;)V
+	public fun addEventListener (Lkohii/v1/core/PlayerEventListener;)V
+	public fun addVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
+	protected final fun getErrorListeners ()Lkohii/v1/core/ErrorListeners;
+	protected final fun getEventListeners ()Lkohii/v1/core/PlayerEventListeners;
+	public fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
+	public fun getVideoSize ()Lkohii/v1/core/VideoSize;
+	protected final fun getVolumeListeners ()Lkohii/v1/core/VolumeChangedListeners;
+	public fun pause ()V
+	public fun play ()V
+	public fun removeErrorListener (Lkohii/v1/core/ErrorListener;)V
+	public fun removeEventListener (Lkohii/v1/core/PlayerEventListener;)V
+	public fun removeVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public fun setPlayerParameters (Lkohii/v1/core/PlayerParameters;)V
+	public fun setVideoSize (Lkohii/v1/core/VideoSize;)V
+}
+
+public abstract class kohii/v1/core/AbstractPlayable : kohii/v1/core/Playable, kohii/v1/core/Playback$Callback, kohii/v1/internal/PlayerParametersChangeListener {
+	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/media/Media;Lkohii/v1/core/Playable$Config;Lkohii/v1/core/Bridge;)V
+	protected final fun getBridge ()Lkohii/v1/core/Bridge;
+	protected final fun getMaster ()Lkohii/v1/core/Master;
+	public fun getTag ()Ljava/lang/Object;
+	public fun isPlaying ()Z
+	public fun onActive (Lkohii/v1/core/Playback;)V
+	public fun onAdded (Lkohii/v1/core/Playback;)V
+	public fun onConfigChange ()Z
+	public fun onDetached (Lkohii/v1/core/Playback;)V
+	public fun onInActive (Lkohii/v1/core/Playback;)V
+	public fun onPause ()V
+	public fun onPlay ()V
+	public fun onPlayerParametersChanged (Lkohii/v1/core/PlayerParameters;)V
+	public fun onPrepare (Z)V
+	public fun onReady ()V
+	public fun onRelease ()V
+	public fun onRemoved (Lkohii/v1/core/Playback;)V
+	protected fun onRendererAttached (Lkohii/v1/core/Playback;Ljava/lang/Object;)V
+	protected fun onRendererDetached (Lkohii/v1/core/Playback;Ljava/lang/Object;)V
+	public fun onReset ()V
+	public fun onUnbind (Lkohii/v1/core/Playback;)V
+	public fun setupRenderer (Lkohii/v1/core/Playback;)V
+	public fun teardownRenderer (Lkohii/v1/core/Playback;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kohii/v1/core/Binder {
+	public fun <init> (Lkohii/v1/core/Engine;Lkohii/v1/media/Media;)V
+	public final fun bind (Landroid/view/ViewGroup;)Lkohii/v1/core/Rebinder;
+	public final fun bind (Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;)Lkohii/v1/core/Rebinder;
+	public static synthetic fun bind$default (Lkohii/v1/core/Binder;Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkohii/v1/core/Rebinder;
+}
+
+public final class kohii/v1/core/Binder$Options {
+	public fun <init> ()V
+	public final fun getArtworkHintListener ()Lkohii/v1/core/Playback$ArtworkHintListener;
+	public final fun getCallbacks ()Ljava/util/Set;
+	public final fun getController ()Lkohii/v1/core/Playback$Controller;
+	public final fun getDelay ()I
+	public final fun getInitialPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
+	public final fun getNetworkTypeChangeListener ()Lkohii/v1/core/Playback$NetworkTypeChangeListener;
+	public final fun getPreload ()Z
+	public final fun getRepeatMode ()I
+	public final fun getTag ()Ljava/lang/Object;
+	public final fun getThreshold ()F
+	public final fun getTokenUpdateListener ()Lkohii/v1/core/Playback$TokenUpdateListener;
+	public final fun setArtworkHintListener (Lkohii/v1/core/Playback$ArtworkHintListener;)V
+	public final fun setController (Lkohii/v1/core/Playback$Controller;)V
+	public final fun setDelay (I)V
+	public final fun setInitialPlaybackInfo (Lkohii/v1/media/PlaybackInfo;)V
+	public final fun setNetworkTypeChangeListener (Lkohii/v1/core/Playback$NetworkTypeChangeListener;)V
+	public final fun setPreload (Z)V
+	public final fun setRepeatMode (I)V
+	public final fun setTag (Ljava/lang/Object;)V
+	public final fun setThreshold (F)V
+	public final fun setTokenUpdateListener (Lkohii/v1/core/Playback$TokenUpdateListener;)V
+}
+
+public abstract interface class kohii/v1/core/Bridge {
+	public abstract fun addErrorListener (Lkohii/v1/core/ErrorListener;)V
+	public abstract fun addEventListener (Lkohii/v1/core/PlayerEventListener;)V
+	public abstract fun addVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public abstract fun getPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
+	public abstract fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
+	public abstract fun getPlayerState ()I
+	public abstract fun getRenderer ()Ljava/lang/Object;
+	public abstract fun getRepeatMode ()I
+	public abstract fun getVideoSize ()Lkohii/v1/core/VideoSize;
+	public abstract fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
+	public abstract fun isPlaying ()Z
+	public abstract fun pause ()V
+	public abstract fun play ()V
+	public abstract fun prepare (Z)V
+	public abstract fun ready ()V
+	public abstract fun release ()V
+	public abstract fun removeErrorListener (Lkohii/v1/core/ErrorListener;)V
+	public abstract fun removeEventListener (Lkohii/v1/core/PlayerEventListener;)V
+	public abstract fun removeVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public abstract fun reset (Z)V
+	public abstract fun seekTo (J)V
+	public abstract fun setPlaybackInfo (Lkohii/v1/media/PlaybackInfo;)V
+	public abstract fun setPlayerParameters (Lkohii/v1/core/PlayerParameters;)V
+	public abstract fun setRenderer (Ljava/lang/Object;)V
+	public abstract fun setRepeatMode (I)V
+	public abstract fun setVideoSize (Lkohii/v1/core/VideoSize;)V
+	public abstract fun setVolumeInfo (Lkohii/v1/media/VolumeInfo;)V
+}
+
+public final class kohii/v1/core/Bridge$DefaultImpls {
+	public static synthetic fun reset$default (Lkohii/v1/core/Bridge;ZILjava/lang/Object;)V
+}
+
+public abstract interface class kohii/v1/core/BridgeCreator {
+	public abstract fun cleanUp ()V
+	public abstract fun createBridge (Landroid/content/Context;Lkohii/v1/media/Media;)Lkohii/v1/core/Bridge;
+}
+
+public abstract class kohii/v1/core/Bucket : android/view/View$OnAttachStateChangeListener, android/view/View$OnLayoutChangeListener {
+	public static final field BOTH_AXIS I
+	public static final field Companion Lkohii/v1/core/Bucket$Companion;
+	public static final field HORIZONTAL I
+	public static final field NONE_AXIS I
+	public static final field VERTICAL I
+	public fun <init> (Lkohii/v1/core/Manager;Landroid/view/View;Lkohii/v1/core/Strategy;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun accepts (Landroid/view/ViewGroup;)Z
+	public fun addContainer (Landroid/view/ViewGroup;)V
+	public fun allowToPlay (Lkohii/v1/core/Playback;)Z
+	public fun equals (Ljava/lang/Object;)Z
+	public static final fun get$kohii_core_release (Lkohii/v1/core/Manager;Landroid/view/View;Lkohii/v1/core/Strategy;Lkotlin/jvm/functions/Function1;)Lkohii/v1/core/Bucket;
+	public final fun getManager ()Lkohii/v1/core/Manager;
+	public fun getRoot ()Landroid/view/View;
+	public fun hashCode ()I
+	public fun onAdded ()V
+	public fun onAttached ()V
+	public fun onDetached ()V
+	public fun onLayoutChange (Landroid/view/View;IIIIIIII)V
+	public fun onRemoved ()V
+	public fun onViewAttachedToWindow (Landroid/view/View;)V
+	public fun onViewDetachedFromWindow (Landroid/view/View;)V
+	public fun removeContainer (Landroid/view/ViewGroup;)V
+	protected final fun selectByOrientation (Ljava/util/Collection;I)Ljava/util/Collection;
+	public abstract fun selectToPlay (Ljava/util/Collection;)Ljava/util/Collection;
+}
+
+public final class kohii/v1/core/Bucket$Companion {
+}
+
+public final class kohii/v1/core/Common {
+	public static final field INSTANCE Lkohii/v1/core/Common;
+	public static final field REPEAT_MODE_ALL I
+	public static final field REPEAT_MODE_GROUP I
+	public static final field REPEAT_MODE_OFF I
+	public static final field REPEAT_MODE_ONE I
+	public static final field STATE_BUFFERING I
+	public static final field STATE_ENDED I
+	public static final field STATE_IDLE I
+	public static final field STATE_READY I
+	public final fun getUserAgent (Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public abstract interface class kohii/v1/core/DefaultTrackSelectorHolder {
+	public abstract fun getTrackSelector ()Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;
+}
+
+public abstract class kohii/v1/core/Engine {
+	public fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayableCreator;)V
+	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;)V
+	public final fun applyVolumeInfo (Lkohii/v1/media/VolumeInfo;Ljava/lang/Object;Lkohii/v1/core/Scope;)V
+	public final fun cancel (Landroid/view/ViewGroup;)V
+	public final fun cancel (Ljava/lang/Object;)V
+	public fun cleanUp ()V
+	public final fun fetchRebinder (Ljava/lang/Object;)Lkohii/v1/core/Rebinder;
+	public final fun getMaster ()Lkohii/v1/core/Master;
+	public final fun getPlayableCreator ()Lkohii/v1/core/PlayableCreator;
+	public final fun lockActivity (Landroidx/fragment/app/FragmentActivity;)V
+	public final fun lockBucket (Landroid/view/View;)V
+	public final fun lockManager (Lkohii/v1/core/Manager;)V
+	public final fun lockPlayback (Lkohii/v1/core/Playback;)V
+	public abstract fun prepare (Lkohii/v1/core/Manager;)V
+	public final fun register (Landroidx/fragment/app/Fragment;)Lkohii/v1/core/Manager;
+	public final fun register (Landroidx/fragment/app/Fragment;Lkohii/v1/core/MemoryMode;)Lkohii/v1/core/Manager;
+	public final fun register (Landroidx/fragment/app/Fragment;Lkohii/v1/core/MemoryMode;Landroidx/lifecycle/Lifecycle$State;)Lkohii/v1/core/Manager;
+	public final fun register (Landroidx/fragment/app/FragmentActivity;)Lkohii/v1/core/Manager;
+	public final fun register (Landroidx/fragment/app/FragmentActivity;Lkohii/v1/core/MemoryMode;)Lkohii/v1/core/Manager;
+	public final fun register (Landroidx/fragment/app/FragmentActivity;Lkohii/v1/core/MemoryMode;Landroidx/lifecycle/Lifecycle$State;)Lkohii/v1/core/Manager;
+	public static synthetic fun register$default (Lkohii/v1/core/Engine;Landroidx/fragment/app/Fragment;Lkohii/v1/core/MemoryMode;Landroidx/lifecycle/Lifecycle$State;ILjava/lang/Object;)Lkohii/v1/core/Manager;
+	public static synthetic fun register$default (Lkohii/v1/core/Engine;Landroidx/fragment/app/FragmentActivity;Lkohii/v1/core/MemoryMode;Landroidx/lifecycle/Lifecycle$State;ILjava/lang/Object;)Lkohii/v1/core/Manager;
+	public final fun setUp (Landroid/net/Uri;)Lkohii/v1/core/Binder;
+	public final fun setUp (Landroid/net/Uri;Lkotlin/jvm/functions/Function1;)Lkohii/v1/core/Binder;
+	public final fun setUp (Ljava/lang/String;)Lkohii/v1/core/Binder;
+	public final fun setUp (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkohii/v1/core/Binder;
+	public final fun setUp (Lkohii/v1/media/Media;)Lkohii/v1/core/Binder;
+	public final fun setUp (Lkohii/v1/media/Media;Lkotlin/jvm/functions/Function1;)Lkohii/v1/core/Binder;
+	public static synthetic fun setUp$default (Lkohii/v1/core/Engine;Landroid/net/Uri;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkohii/v1/core/Binder;
+	public static synthetic fun setUp$default (Lkohii/v1/core/Engine;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkohii/v1/core/Binder;
+	public static synthetic fun setUp$default (Lkohii/v1/core/Engine;Lkohii/v1/media/Media;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkohii/v1/core/Binder;
+	public final fun stick (Landroidx/lifecycle/LifecycleOwner;)V
+	public final fun stick (Lkohii/v1/core/Playback;)V
+	public final fun unlockActivity (Landroidx/fragment/app/FragmentActivity;)V
+	public final fun unlockBucket (Landroid/view/View;)V
+	public final fun unlockManager (Lkohii/v1/core/Manager;)V
+	public final fun unlockPlayback (Lkohii/v1/core/Playback;)V
+	public final fun unstick (Landroidx/lifecycle/LifecycleOwner;)V
+	public final fun unstick (Lkohii/v1/core/Playback;)V
+}
+
+public abstract interface class kohii/v1/core/ErrorListener {
+	public abstract fun onError (Ljava/lang/Exception;)V
+}
+
+public final class kohii/v1/core/ErrorListeners : java/util/concurrent/CopyOnWriteArraySet, kohii/v1/core/ErrorListener {
+	public fun <init> ()V
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun contains (Lkohii/v1/core/ErrorListener;)Z
+	public fun getSize ()I
+	public fun onError (Ljava/lang/Exception;)V
+	public final fun remove (Ljava/lang/Object;)Z
+	public fun remove (Lkohii/v1/core/ErrorListener;)Z
+	public final fun size ()I
+}
+
+public final class kohii/v1/core/Group : android/os/Handler$Callback, androidx/lifecycle/DefaultLifecycleObserver, androidx/lifecycle/LifecycleEventObserver {
+	public static final field Companion Lkohii/v1/core/Group$Companion;
+	public static final field DELAY J
+	public static final field MSG_REFRESH I
+	public fun <init> (Lkohii/v1/core/Master;Landroidx/fragment/app/FragmentActivity;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun handleMessage (Landroid/os/Message;)Z
+	public fun hashCode ()I
+	public fun onCreate (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun onDestroy (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun onStart (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun onStateChanged (Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$Event;)V
+	public fun onStop (Landroidx/lifecycle/LifecycleOwner;)V
+}
+
+public final class kohii/v1/core/Group$Companion {
+}
+
+public final class kohii/v1/core/Manager : androidx/lifecycle/DefaultLifecycleObserver, androidx/lifecycle/LifecycleEventObserver, java/lang/Comparable, kohii/v1/core/PlayableManager {
+	public static final field Companion Lkohii/v1/core/Manager$Companion;
+	public final fun addBucket (Landroid/view/View;)Lkohii/v1/core/Manager;
+	public final fun addBucket (Landroid/view/View;Lkohii/v1/core/Strategy;)Lkohii/v1/core/Manager;
+	public final fun addBucket (Landroid/view/View;Lkohii/v1/core/Strategy;Lkotlin/jvm/functions/Function1;)Lkohii/v1/core/Manager;
+	public final fun addBucket ([Landroid/view/View;)Lkohii/v1/core/Manager;
+	public static synthetic fun addBucket$default (Lkohii/v1/core/Manager;Landroid/view/View;Lkohii/v1/core/Strategy;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkohii/v1/core/Manager;
+	public final fun applyVolumeInfo (Lkohii/v1/media/VolumeInfo;Ljava/lang/Object;Lkohii/v1/core/Scope;)V
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public fun compareTo (Lkohii/v1/core/Manager;)I
+	public final fun getHost ()Ljava/lang/Object;
+	public final fun observe (Ljava/lang/Object;Lkotlin/jvm/functions/Function3;)Z
+	public fun onDestroy (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun onStart (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun onStateChanged (Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$Event;)V
+	public fun onStop (Landroidx/lifecycle/LifecycleOwner;)V
+	public final fun pause (Lkohii/v1/core/Playable;)V
+	public final fun play (Lkohii/v1/core/Playable;)V
+	public final fun registerRendererProvider (Ljava/lang/Class;Lkohii/v1/core/RendererProvider;)V
+	public final fun removeBucket ([Landroid/view/View;)Lkohii/v1/core/Manager;
+}
+
+public final class kohii/v1/core/Manager$Companion {
+}
+
+public abstract interface class kohii/v1/core/Manager$OnSelectionListener {
+	public abstract fun onSelection (Ljava/util/Collection;)V
+}
+
+public final class kohii/v1/core/Master : kohii/v1/core/PlayableManager {
+	public static final field Companion Lkohii/v1/core/Master$Companion;
+	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun get (Landroid/content/Context;)Lkohii/v1/core/Master;
+	public final fun getApp ()Landroid/app/Application;
+	public final fun lock ()V
+	public final fun registerEngine (Lkohii/v1/core/Engine;)V
+	public final fun unlock ()V
+}
+
+public final class kohii/v1/core/Master$Companion {
+	public final fun get (Landroid/content/Context;)Lkohii/v1/core/Master;
+}
+
+public final class kohii/v1/core/MemoryMode : java/lang/Enum {
+	public static final field AUTO Lkohii/v1/core/MemoryMode;
+	public static final field BALANCED Lkohii/v1/core/MemoryMode;
+	public static final field HIGH Lkohii/v1/core/MemoryMode;
+	public static final field INFINITE Lkohii/v1/core/MemoryMode;
+	public static final field LOW Lkohii/v1/core/MemoryMode;
+	public static final field NORMAL Lkohii/v1/core/MemoryMode;
+	public static fun valueOf (Ljava/lang/String;)Lkohii/v1/core/MemoryMode;
+	public static fun values ()[Lkohii/v1/core/MemoryMode;
+}
+
+public abstract class kohii/v1/core/Playable {
+	public fun <init> (Lkohii/v1/media/Media;Lkohii/v1/core/Playable$Config;)V
+	public final fun getMedia ()Lkohii/v1/media/Media;
+	public abstract fun getRenderer ()Ljava/lang/Object;
+	public abstract fun getTag ()Ljava/lang/Object;
+	public abstract fun isPlaying ()Z
+	public abstract fun onConfigChange ()Z
+	public abstract fun onPause ()V
+	public abstract fun onPlay ()V
+	public abstract fun onPrepare (Z)V
+	public abstract fun onReady ()V
+	public abstract fun onRelease ()V
+	public abstract fun onReset ()V
+	public abstract fun onUnbind (Lkohii/v1/core/Playback;)V
+	public abstract fun setupRenderer (Lkohii/v1/core/Playback;)V
+	public abstract fun teardownRenderer (Lkohii/v1/core/Playback;)V
+}
+
+public final class kohii/v1/core/Playable$Config {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Class;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Class;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Class;)Lkohii/v1/core/Playable$Config;
+	public static synthetic fun copy$default (Lkohii/v1/core/Playable$Config;Ljava/lang/Object;Ljava/lang/Class;ILjava/lang/Object;)Lkohii/v1/core/Playable$Config;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class kohii/v1/core/PlayableContainer {
+}
+
+public abstract class kohii/v1/core/PlayableCreator {
+	public fun <init> (Ljava/lang/Class;)V
+	public abstract fun cleanUp ()V
+	public abstract fun createPlayable (Lkohii/v1/core/Playable$Config;Lkohii/v1/media/Media;)Lkohii/v1/core/Playable;
+	public final fun getRendererType ()Ljava/lang/Class;
+}
+
+public abstract interface class kohii/v1/core/PlayableManager {
+}
+
+public abstract class kohii/v1/core/Playback : kohii/v1/core/ErrorListener, kohii/v1/core/PlayableContainer, kohii/v1/core/PlayerEventListener {
+	public static final field Companion Lkohii/v1/core/Playback$Companion;
+	public static final field DELAY_INFINITE J
+	public fun <init> (Lkohii/v1/core/Manager;Lkohii/v1/core/Bucket;Landroid/view/ViewGroup;Lkohii/v1/core/Playback$Config;)V
+	public synthetic fun <init> (Lkohii/v1/core/Manager;Lkohii/v1/core/Bucket;Landroid/view/ViewGroup;Lkohii/v1/core/Playback$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addStateListener (Lkohii/v1/core/Playback$StateListener;)V
+	public final fun getBucket ()Lkohii/v1/core/Bucket;
+	public final fun getConfig ()Lkohii/v1/core/Playback$Config;
+	public final fun getContainer ()Landroid/view/ViewGroup;
+	public final fun getContainerRect ()Landroid/graphics/Rect;
+	public final fun getManager ()Lkohii/v1/core/Manager;
+	public final fun getPlayable ()Lkohii/v1/core/Playable;
+	public final fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
+	public final fun getTag ()Ljava/lang/Object;
+	public final fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
+	protected abstract fun onAttachRenderer (Ljava/lang/Object;)Z
+	protected abstract fun onDetachRenderer (Ljava/lang/Object;)Z
+	public fun onError (Ljava/lang/Exception;)V
+	public fun onPlayerStateChanged (ZI)V
+	public fun onRenderedFirstFrame ()V
+	public fun onVideoSizeChanged (IIIF)V
+	public final fun removeStateListener (Lkohii/v1/core/Playback$StateListener;)V
+	public final fun rewind ()V
+	public final fun rewind (Z)V
+	public static synthetic fun rewind$default (Lkohii/v1/core/Playback;ZILjava/lang/Object;)V
+	public final fun setPlayerParameters (Lkohii/v1/core/PlayerParameters;)V
+	public fun toString ()Ljava/lang/String;
+	public final fun unbind ()V
+	protected fun updateToken ()Lkohii/v1/core/Playback$Token;
+}
+
+public abstract interface class kohii/v1/core/Playback$ArtworkHintListener {
+	public abstract fun onArtworkHint (Lkohii/v1/core/Playback;ZJI)V
+}
+
+public abstract interface class kohii/v1/core/Playback$Callback {
+	public fun onActive (Lkohii/v1/core/Playback;)V
+	public fun onAdded (Lkohii/v1/core/Playback;)V
+	public fun onAttached (Lkohii/v1/core/Playback;)V
+	public fun onDetached (Lkohii/v1/core/Playback;)V
+	public fun onInActive (Lkohii/v1/core/Playback;)V
+	public fun onRemoved (Lkohii/v1/core/Playback;)V
+}
+
+public final class kohii/v1/core/Playback$Companion {
+}
+
+public final class kohii/v1/core/Playback$Config {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Object;IFZZILjava/util/Set;Lkohii/v1/core/Playback$Controller;Lkohii/v1/media/PlaybackInfo;Lkohii/v1/core/Playback$ArtworkHintListener;Lkohii/v1/core/Playback$TokenUpdateListener;Lkohii/v1/core/Playback$NetworkTypeChangeListener;)V
+	public synthetic fun <init> (Ljava/lang/Object;IFZZILjava/util/Set;Lkohii/v1/core/Playback$Controller;Lkohii/v1/media/PlaybackInfo;Lkohii/v1/core/Playback$ArtworkHintListener;Lkohii/v1/core/Playback$TokenUpdateListener;Lkohii/v1/core/Playback$NetworkTypeChangeListener;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component10 ()Lkohii/v1/core/Playback$ArtworkHintListener;
+	public final fun component11 ()Lkohii/v1/core/Playback$TokenUpdateListener;
+	public final fun component12 ()Lkohii/v1/core/Playback$NetworkTypeChangeListener;
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun component6 ()I
+	public final fun component7 ()Ljava/util/Set;
+	public final fun component8 ()Lkohii/v1/core/Playback$Controller;
+	public final fun component9 ()Lkohii/v1/media/PlaybackInfo;
+	public final fun copy (Ljava/lang/Object;IFZZILjava/util/Set;Lkohii/v1/core/Playback$Controller;Lkohii/v1/media/PlaybackInfo;Lkohii/v1/core/Playback$ArtworkHintListener;Lkohii/v1/core/Playback$TokenUpdateListener;Lkohii/v1/core/Playback$NetworkTypeChangeListener;)Lkohii/v1/core/Playback$Config;
+	public static synthetic fun copy$default (Lkohii/v1/core/Playback$Config;Ljava/lang/Object;IFZZILjava/util/Set;Lkohii/v1/core/Playback$Controller;Lkohii/v1/media/PlaybackInfo;Lkohii/v1/core/Playback$ArtworkHintListener;Lkohii/v1/core/Playback$TokenUpdateListener;Lkohii/v1/core/Playback$NetworkTypeChangeListener;ILjava/lang/Object;)Lkohii/v1/core/Playback$Config;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getArtworkHintListener ()Lkohii/v1/core/Playback$ArtworkHintListener;
+	public final fun getCallbacks ()Ljava/util/Set;
+	public final fun getController ()Lkohii/v1/core/Playback$Controller;
+	public final fun getDelay ()I
+	public final fun getInitialPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
+	public final fun getNetworkTypeChangeListener ()Lkohii/v1/core/Playback$NetworkTypeChangeListener;
+	public final fun getPreload ()Z
+	public final fun getReleaseOnInActive ()Z
+	public final fun getRepeatMode ()I
+	public final fun getTag ()Ljava/lang/Object;
+	public final fun getThreshold ()F
+	public final fun getTokenUpdateListener ()Lkohii/v1/core/Playback$TokenUpdateListener;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class kohii/v1/core/Playback$Controller {
+	public fun kohiiCanPause ()Z
+	public fun kohiiCanStart ()Z
+	public fun setupRenderer (Lkohii/v1/core/Playback;Ljava/lang/Object;)V
+	public fun teardownRenderer (Lkohii/v1/core/Playback;Ljava/lang/Object;)V
+}
+
+public abstract interface class kohii/v1/core/Playback$NetworkTypeChangeListener {
+	public abstract fun onNetworkTypeChanged (I)Lkohii/v1/core/PlayerParameters;
+}
+
+public abstract interface class kohii/v1/core/Playback$StateListener {
+	public fun onBuffering (Lkohii/v1/core/Playback;Z)V
+	public fun onEnded (Lkohii/v1/core/Playback;)V
+	public fun onError (Lkohii/v1/core/Playback;Ljava/lang/Exception;)V
+	public fun onPaused (Lkohii/v1/core/Playback;)V
+	public fun onPlaying (Lkohii/v1/core/Playback;)V
+	public fun onRendered (Lkohii/v1/core/Playback;)V
+	public fun onVideoSizeChanged (Lkohii/v1/core/Playback;IIIF)V
+}
+
+public final class kohii/v1/core/Playback$Token {
+	public fun <init> (FFLandroid/graphics/Rect;II)V
+	public synthetic fun <init> (FFLandroid/graphics/Rect;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAreaOffset ()F
+	public final fun getContainerHeight ()I
+	public final fun getContainerRect ()Landroid/graphics/Rect;
+	public final fun getContainerWidth ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class kohii/v1/core/Playback$TokenUpdateListener {
+	public abstract fun onTokenUpdate (Lkohii/v1/core/Playback;Lkohii/v1/core/Playback$Token;)V
+}
+
+public final class kohii/v1/core/PlaybackKt {
+	public static final fun controller (ZZLkotlin/jvm/functions/Function2;)Lkohii/v1/core/Playback$Controller;
+	public static synthetic fun controller$default (ZZLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkohii/v1/core/Playback$Controller;
+}
+
+public abstract interface class kohii/v1/core/PlayerEventListener : com/google/android/exoplayer2/Player$EventListener, com/google/android/exoplayer2/audio/AudioListener, com/google/android/exoplayer2/metadata/MetadataOutput, com/google/android/exoplayer2/text/TextOutput, com/google/android/exoplayer2/video/VideoListener {
+	public fun onCues (Ljava/util/List;)V
+	public fun onMetadata (Lcom/google/android/exoplayer2/metadata/Metadata;)V
+}
+
+public final class kohii/v1/core/PlayerEventListeners : java/util/concurrent/CopyOnWriteArraySet, kohii/v1/core/PlayerEventListener {
+	public fun <init> ()V
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun contains (Lkohii/v1/core/PlayerEventListener;)Z
+	public fun getSize ()I
+	public fun onAudioAttributesChanged (Lcom/google/android/exoplayer2/audio/AudioAttributes;)V
+	public fun onAudioSessionId (I)V
+	public fun onCues (Ljava/util/List;)V
+	public fun onLoadingChanged (Z)V
+	public fun onMetadata (Lcom/google/android/exoplayer2/metadata/Metadata;)V
+	public fun onPlaybackParametersChanged (Lcom/google/android/exoplayer2/PlaybackParameters;)V
+	public fun onPlayerError (Lcom/google/android/exoplayer2/ExoPlaybackException;)V
+	public fun onPlayerStateChanged (ZI)V
+	public fun onPositionDiscontinuity (I)V
+	public fun onRenderedFirstFrame ()V
+	public fun onRepeatModeChanged (I)V
+	public fun onSeekProcessed ()V
+	public fun onShuffleModeEnabledChanged (Z)V
+	public fun onTimelineChanged (Lcom/google/android/exoplayer2/Timeline;I)V
+	public fun onTracksChanged (Lcom/google/android/exoplayer2/source/TrackGroupArray;Lcom/google/android/exoplayer2/trackselection/TrackSelectionArray;)V
+	public fun onVideoSizeChanged (IIIF)V
+	public fun onVolumeChanged (F)V
+	public final fun remove (Ljava/lang/Object;)Z
+	public fun remove (Lkohii/v1/core/PlayerEventListener;)Z
+	public final fun size ()I
+}
+
+public final class kohii/v1/core/PlayerParameters {
+	public static final field Companion Lkohii/v1/core/PlayerParameters$Companion;
+	public fun <init> ()V
+	public fun <init> (IIII)V
+	public synthetic fun <init> (IIIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (IIII)Lkohii/v1/core/PlayerParameters;
+	public static synthetic fun copy$default (Lkohii/v1/core/PlayerParameters;IIIIILjava/lang/Object;)Lkohii/v1/core/PlayerParameters;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMaxAudioBitrate ()I
+	public final fun getMaxVideoBitrate ()I
+	public final fun getMaxVideoHeight ()I
+	public final fun getMaxVideoWidth ()I
+	public fun hashCode ()I
+	public final fun playerShouldStart ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kohii/v1/core/PlayerParameters$Companion {
+	public final fun getDEFAULT ()Lkohii/v1/core/PlayerParameters;
+}
+
+public abstract interface class kohii/v1/core/Prioritized : java/lang/Comparable {
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public fun compareTo (Lkohii/v1/core/Prioritized;)I
+}
+
+public final class kohii/v1/core/Rebinder : android/os/Parcelable {
+	public static final field CREATOR Landroid/os/Parcelable$Creator;
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun bind (Lkohii/v1/core/Engine;Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun bind$default (Lkohii/v1/core/Rebinder;Lkohii/v1/core/Engine;Landroid/view/ViewGroup;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;)Lkohii/v1/core/Rebinder;
+	public static synthetic fun copy$default (Lkohii/v1/core/Rebinder;Ljava/lang/Object;ILjava/lang/Object;)Lkohii/v1/core/Rebinder;
+	public fun describeContents ()I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTag ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public final fun with (Lkotlin/jvm/functions/Function1;)Lkohii/v1/core/Rebinder;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public class kohii/v1/core/Rebinder$Creator : android/os/Parcelable$Creator {
+	public fun <init> ()V
+	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class kohii/v1/core/Rebinder$Options {
+	public fun <init> ()V
+	public final fun getArtworkHintListener ()Lkohii/v1/core/Playback$ArtworkHintListener;
+	public final fun getCallbacks ()Ljava/util/Set;
+	public final fun getController ()Lkohii/v1/core/Playback$Controller;
+	public final fun getNetworkTypeChangeListener ()Lkohii/v1/core/Playback$NetworkTypeChangeListener;
+	public final fun getPreload ()Z
+	public final fun getRepeatMode ()I
+	public final fun getThreshold ()F
+	public final fun getTokenUpdateListener ()Lkohii/v1/core/Playback$TokenUpdateListener;
+	public final fun setArtworkHintListener (Lkohii/v1/core/Playback$ArtworkHintListener;)V
+	public final fun setController (Lkohii/v1/core/Playback$Controller;)V
+	public final fun setNetworkTypeChangeListener (Lkohii/v1/core/Playback$NetworkTypeChangeListener;)V
+	public final fun setPreload (Z)V
+	public final fun setRepeatMode (I)V
+	public final fun setThreshold (F)V
+	public final fun setTokenUpdateListener (Lkohii/v1/core/Playback$TokenUpdateListener;)V
+}
+
+public abstract class kohii/v1/core/RecycledRendererProvider : kohii/v1/core/RendererProvider {
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun acquireRenderer (Lkohii/v1/core/Playback;Lkohii/v1/media/Media;)Ljava/lang/Object;
+	public fun clear ()V
+	protected abstract fun createRenderer (Lkohii/v1/core/Playback;I)Ljava/lang/Object;
+	protected fun getRendererType (Landroid/view/ViewGroup;Lkohii/v1/media/Media;)I
+	protected fun onClear (Ljava/lang/Object;)V
+	public fun releaseRenderer (Lkohii/v1/core/Playback;Lkohii/v1/media/Media;Ljava/lang/Object;)Z
+}
+
+public abstract interface class kohii/v1/core/RendererProvider : androidx/lifecycle/DefaultLifecycleObserver {
+	public fun acquireRenderer (Lkohii/v1/core/Playback;Lkohii/v1/media/Media;)Ljava/lang/Object;
+	public fun clear ()V
+	public fun onDestroy (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun releaseRenderer (Lkohii/v1/core/Playback;Lkohii/v1/media/Media;Ljava/lang/Object;)Z
+}
+
+public final class kohii/v1/core/Scope : java/lang/Enum {
+	public static final field BUCKET Lkohii/v1/core/Scope;
+	public static final field GLOBAL Lkohii/v1/core/Scope;
+	public static final field GROUP Lkohii/v1/core/Scope;
+	public static final field MANAGER Lkohii/v1/core/Scope;
+	public static final field PLAYBACK Lkohii/v1/core/Scope;
+	public static fun valueOf (Ljava/lang/String;)Lkohii/v1/core/Scope;
+	public static fun values ()[Lkohii/v1/core/Scope;
+}
+
+public abstract class kohii/v1/core/Strategy : kotlin/jvm/functions/Function1 {
+}
+
+public final class kohii/v1/core/Strategy$MULTI_PLAYER : kohii/v1/core/Strategy {
+	public static final field INSTANCE Lkohii/v1/core/Strategy$MULTI_PLAYER;
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun invoke (Ljava/util/Collection;)Ljava/util/Collection;
+}
+
+public final class kohii/v1/core/Strategy$NO_PLAYER : kohii/v1/core/Strategy {
+	public static final field INSTANCE Lkohii/v1/core/Strategy$NO_PLAYER;
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun invoke (Ljava/util/Collection;)Ljava/util/Collection;
+}
+
+public final class kohii/v1/core/Strategy$SINGLE_PLAYER : kohii/v1/core/Strategy {
+	public static final field INSTANCE Lkohii/v1/core/Strategy$SINGLE_PLAYER;
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun invoke (Ljava/util/Collection;)Ljava/util/Collection;
+}
+
+public final class kohii/v1/core/VideoSize {
+	public static final field Companion Lkohii/v1/core/VideoSize$Companion;
+	public fun <init> (II)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun copy (II)Lkohii/v1/core/VideoSize;
+	public static synthetic fun copy$default (Lkohii/v1/core/VideoSize;IIILjava/lang/Object;)Lkohii/v1/core/VideoSize;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMaxHeight ()I
+	public final fun getMaxWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kohii/v1/core/VideoSize$Companion {
+	public final fun getFHD ()Lkohii/v1/core/VideoSize;
+	public final fun getHD ()Lkohii/v1/core/VideoSize;
+	public final fun getNONE ()Lkohii/v1/core/VideoSize;
+	public final fun getORIGINAL ()Lkohii/v1/core/VideoSize;
+	public final fun getSD ()Lkohii/v1/core/VideoSize;
+	public final fun getUHD ()Lkohii/v1/core/VideoSize;
+}
+
+public abstract class kohii/v1/core/ViewRendererProvider : kohii/v1/core/RecycledRendererProvider {
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun releaseRenderer (Lkohii/v1/core/Playback;Lkohii/v1/media/Media;Ljava/lang/Object;)Z
+}
+
+public abstract interface class kohii/v1/core/VolumeChangedListener {
+	public abstract fun onVolumeChanged (Lkohii/v1/media/VolumeInfo;)V
+}
+
+public final class kohii/v1/core/VolumeChangedListeners : java/util/concurrent/CopyOnWriteArraySet, kohii/v1/core/VolumeChangedListener {
+	public fun <init> ()V
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun contains (Lkohii/v1/core/VolumeChangedListener;)Z
+	public fun getSize ()I
+	public fun onVolumeChanged (Lkohii/v1/media/VolumeInfo;)V
+	public final fun remove (Ljava/lang/Object;)Z
+	public fun remove (Lkohii/v1/core/VolumeChangedListener;)Z
+	public final fun size ()I
+}
+
+public abstract interface class kohii/v1/core/VolumeInfoController {
+	public abstract fun addVolumeChangedListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public abstract fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
+	public abstract fun removeVolumeChangedListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public abstract fun setVolumeInfo (Lkohii/v1/media/VolumeInfo;)Z
+}
+
+public abstract interface class kohii/v1/media/Media {
+	public abstract fun getMediaDrm ()Lkohii/v1/media/MediaDrm;
+	public abstract fun getType ()Ljava/lang/String;
+	public abstract fun getUri ()Landroid/net/Uri;
+}
+
+public abstract interface class kohii/v1/media/MediaDrm : android/os/Parcelable, java/lang/Comparable {
+	public abstract fun compareTo (Lkohii/v1/media/MediaDrm;)I
+	public abstract fun getKeyRequestPropertiesArray ()[Ljava/lang/String;
+	public abstract fun getLicenseUrl ()Ljava/lang/String;
+	public abstract fun getMultiSession ()Z
+	public abstract fun getType ()Ljava/lang/String;
+}
+
+public final class kohii/v1/media/MediaDrm$DefaultImpls {
+	public static fun compareTo (Lkohii/v1/media/MediaDrm;Lkohii/v1/media/MediaDrm;)I
+}
+
+public class kohii/v1/media/MediaItem : android/os/Parcelable, kohii/v1/media/Media {
+	public static final field CREATOR Landroid/os/Parcelable$Creator;
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;Lkohii/v1/media/MediaDrm;)V
+	public synthetic fun <init> (Landroid/net/Uri;Ljava/lang/String;Lkohii/v1/media/MediaDrm;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lkohii/v1/media/MediaDrm;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lkohii/v1/media/MediaDrm;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun describeContents ()I
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMediaDrm ()Lkohii/v1/media/MediaDrm;
+	public fun getType ()Ljava/lang/String;
+	public fun getUri ()Landroid/net/Uri;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public class kohii/v1/media/MediaItem$Creator : android/os/Parcelable$Creator {
+	public fun <init> ()V
+	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class kohii/v1/media/PlaybackInfo : android/os/Parcelable {
+	public static final field CREATOR Landroid/os/Parcelable$Creator;
+	public static final field Companion Lkohii/v1/media/PlaybackInfo$Companion;
+	public static final field INDEX_UNSET I
+	public static final field TIME_UNSET J
+	public fun <init> ()V
+	public fun <init> (IJ)V
+	public final fun component1 ()I
+	public final fun component2 ()J
+	public final fun copy (IJ)Lkohii/v1/media/PlaybackInfo;
+	public static synthetic fun copy$default (Lkohii/v1/media/PlaybackInfo;IJILjava/lang/Object;)Lkohii/v1/media/PlaybackInfo;
+	public fun describeContents ()I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getResumePosition ()J
+	public final fun getResumeWindow ()I
+	public fun hashCode ()I
+	public final fun setResumePosition (J)V
+	public final fun setResumeWindow (I)V
+	public fun toString ()Ljava/lang/String;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class kohii/v1/media/PlaybackInfo$Companion {
+}
+
+public class kohii/v1/media/PlaybackInfo$Creator : android/os/Parcelable$Creator {
+	public fun <init> ()V
+	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun newArray (I)[Ljava/lang/Object;
+}
+
+public final class kohii/v1/media/VolumeInfo : android/os/Parcelable {
+	public static final field CREATOR Landroid/os/Parcelable$Creator;
+	public fun <init> ()V
+	public fun <init> (Lkohii/v1/media/VolumeInfo;)V
+	public fun <init> (ZF)V
+	public synthetic fun <init> (ZFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()F
+	public final fun copy (ZF)Lkohii/v1/media/VolumeInfo;
+	public static synthetic fun copy$default (Lkohii/v1/media/VolumeInfo;ZFILjava/lang/Object;)Lkohii/v1/media/VolumeInfo;
+	public fun describeContents ()I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMute ()Z
+	public final fun getVolume ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public class kohii/v1/media/VolumeInfo$Creator : android/os/Parcelable$Creator {
+	public fun <init> ()V
+	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun newArray (I)[Ljava/lang/Object;
+}
+
+public class kohii/v1/utils/Capsule {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	protected final fun getInstance (Ljava/lang/Object;)Ljava/lang/Object;
+}
+
