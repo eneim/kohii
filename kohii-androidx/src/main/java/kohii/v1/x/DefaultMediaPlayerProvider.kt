@@ -46,9 +46,7 @@ internal class DefaultMediaPlayerProvider(
     media: Media,
     player: MediaPlayer
   ) {
-    if (media.mediaDrm == null) {
-      playerPool.release(player)
-    } else {
+    if (media.mediaDrm != null || !playerPool.release(player)) {
       player.close()
     }
   }
