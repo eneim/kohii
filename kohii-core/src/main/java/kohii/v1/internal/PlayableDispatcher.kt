@@ -49,9 +49,9 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     "Dispatcher#play: $playable".logWarn()
     val manuallyStartedPlayable = master.manuallyStartedPlayable.get()
     // Has manual controller
-    if (manuallyStartedPlayable != null /* has Playable started by client */
-        && manuallyStartedPlayable.isPlaying() /* the Playable is playing */
-        && manuallyStartedPlayable !== playable /* but not this one */
+    if (manuallyStartedPlayable != null && /* has Playable started by client */
+        manuallyStartedPlayable.isPlaying() && /* the Playable is playing */
+        manuallyStartedPlayable !== playable /* but not this one */
     ) {
       // Pause due to lower priority.
       justPause(playable)
@@ -80,9 +80,9 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     "Dispatcher#pause: $playable".logWarn()
     val manuallyStartedPlayable = master.manuallyStartedPlayable.get()
     // Has manual controller
-    if (manuallyStartedPlayable != null /* has Playable started by client */
-        && manuallyStartedPlayable.isPlaying() /* the Playable is playing */
-        && manuallyStartedPlayable !== playable /* but not this one */
+    if (manuallyStartedPlayable != null && /* has Playable started by client */
+        manuallyStartedPlayable.isPlaying() && /* the Playable is playing */
+        manuallyStartedPlayable !== playable /* but not this one */
     ) {
       justPause(playable)
       return

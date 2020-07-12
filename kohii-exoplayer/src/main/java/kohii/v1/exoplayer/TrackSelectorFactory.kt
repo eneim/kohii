@@ -20,7 +20,7 @@ import android.content.Context
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 
 /**
- * An interface that is used by the [DefaultExoPlayerProvider] to create a new
+ * An interface that is used by the [ExoPlayerPool] to create a new
  * [DefaultTrackSelector] when needed.
  */
 interface TrackSelectorFactory {

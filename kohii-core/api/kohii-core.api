@@ -548,6 +548,24 @@ public final class kohii/v1/core/PlayerParameters$Companion {
 	public final fun getDEFAULT ()Lkohii/v1/core/PlayerParameters;
 }
 
+public abstract class kohii/v1/core/PlayerPool {
+	public static final field Companion Lkohii/v1/core/PlayerPool$Companion;
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun clear ()V
+	public abstract fun createPlayer (Lkohii/v1/media/Media;)Ljava/lang/Object;
+	public abstract fun destroyPlayer (Ljava/lang/Object;)V
+	public final fun getPlayer (Lkohii/v1/media/Media;)Ljava/lang/Object;
+	public final fun putPlayer (Lkohii/v1/media/Media;Ljava/lang/Object;)Z
+	protected fun recyclePlayerForMedia (Lkohii/v1/media/Media;)Z
+	public fun resetPlayer (Ljava/lang/Object;)V
+}
+
+public final class kohii/v1/core/PlayerPool$Companion {
+	public final fun getDEFAULT_POOL_SIZE ()I
+}
+
 public abstract interface class kohii/v1/core/Prioritized : java/lang/Comparable {
 	public synthetic fun compareTo (Ljava/lang/Object;)I
 	public fun compareTo (Lkohii/v1/core/Prioritized;)I

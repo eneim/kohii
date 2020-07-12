@@ -16,11 +16,13 @@
 
 package kohii.v1.x
 
+import androidx.media2.player.MediaPlayer
 import androidx.media2.widget.VideoView
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
+import kohii.v1.core.PlayerPool
 import kohii.v1.media.Media
 
 /**
@@ -28,7 +30,7 @@ import kohii.v1.media.Media
  */
 class VideoViewPlayableCreator @JvmOverloads constructor(
   private val master: Master,
-  private val playerProvider: MediaPlayerProvider = DefaultMediaPlayerProvider(master.app)
+  private val playerPool: PlayerPool<MediaPlayer> = MediaPlayerPool(master.app)
 ) : PlayableCreator<VideoView>(VideoView::class.java) {
 
   override fun createPlayable(
@@ -39,11 +41,11 @@ class VideoViewPlayableCreator @JvmOverloads constructor(
         master,
         media,
         config,
-        VideoViewBridge(media, playerProvider)
+        VideoViewBridge(media, playerPool)
     )
   }
 
   override fun cleanUp() {
-    playerProvider.cleanUp()
+    playerPool.clear()
   }
 }

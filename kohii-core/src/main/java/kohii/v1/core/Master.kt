@@ -435,8 +435,8 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun onGroupUpdated(group: Group) {
     requests.values.filter {
       val bucket = it.bucket
-      return@filter bucket != null && bucket.manager.group === group
-          && bucket.manager.lifecycleOwner.lifecycle.currentState < CREATED
+      return@filter bucket != null && bucket.manager.group === group &&
+          bucket.manager.lifecycleOwner.lifecycle.currentState < CREATED
     }
         .forEach {
           it.playable.playback = null

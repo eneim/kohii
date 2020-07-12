@@ -99,7 +99,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
             playback?.also {
               val vh = binding.recyclerView.findViewHolderForAdapterPosition(oldPos)
               if (vh == null) it.unbind() // the VH is out of viewport.
-              else binding.recyclerView.adapter?.notifyItemChanged(vh.adapterPosition)
+              binding.recyclerView.adapter?.notifyItemChanged(oldPos)
             }
             playback = null
           }

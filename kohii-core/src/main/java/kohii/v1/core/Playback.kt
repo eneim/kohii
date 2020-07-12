@@ -127,7 +127,7 @@ abstract class Playback(
   )
 
   override fun toString(): String {
-    return "${super.toString()}, [$playable], [${token}]"
+    return "${super.toString()}, [$playable], [$token]"
   }
 
   protected open fun updateToken(): Token {

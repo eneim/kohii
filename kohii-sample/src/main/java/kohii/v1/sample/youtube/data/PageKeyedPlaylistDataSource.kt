@@ -45,7 +45,7 @@ class PageKeyedPlaylistDataSource(
   val initialLoad = MutableLiveData<NetworkState>()
 
   private val request = youtube.playlistItems()
-      .list(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_PART)
+      .list(listOf(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_PART))
       .setPlaylistId(playlistId)
       .setFields(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_FIELDS)
       .setMaxResults(pageSize)
@@ -73,10 +73,10 @@ class PageKeyedPlaylistDataSource(
     val videoIds = result.items.map<PlaylistItem, String> { it.snippet.resourceId.videoId }
         .toList()
     val videos = youtube.videos()
-        .list(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART)
+        .list(listOf(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART))
         .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
         .setKey(apiKey)
-        .setId(videoIds.joinToString(","))
+        .setId(videoIds)
         .execute()
 
     callback.onResult(videos.items, result.prevPageToken, result.nextPageToken)
@@ -95,10 +95,10 @@ class PageKeyedPlaylistDataSource(
     val videoIds = result.items.map<PlaylistItem, String> { it.snippet.resourceId.videoId }
         .toList()
     val videos = youtube.videos()
-        .list(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART)
+        .list(listOf(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART))
         .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
         .setKey(apiKey)
-        .setId(videoIds.joinToString(","))
+        .setId(videoIds)
         .execute()
 
     callback.onResult(videos.items, result.nextPageToken)

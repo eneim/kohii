@@ -100,7 +100,11 @@ internal class OfficialYouTubePlayerBridge(
   private fun updatePlaybackInfo() {
     player?.let {
       if (_playbackState != Common.STATE_IDLE) {
-        _playbackInfo = _playbackInfo.copy(resumePosition = it.currentTimeMillis.toLong())
+        _playbackInfo = try {
+          _playbackInfo.copy(resumePosition = it.currentTimeMillis.toLong())
+        } catch (er: IllegalStateException) {
+          PlaybackInfo()
+        }
       }
     }
   }

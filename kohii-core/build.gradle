@@ -79,18 +79,17 @@ dependencies {
   implementation Libs.AndroidX.viewPager
   implementation Libs.AndroidX.viewPager2
   implementation Libs.AndroidX.coordinatorLayout
-  // implementation Libs.Google.material
   implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.service
   api Libs.AndroidX.Lifecycle.java8
-  // kapt Libs.AndroidX.Lifecycle.compiler
 
-  // Required -- JUnit 4 framework
-  testImplementation Libs.Common.junit
-  // Optional -- Mockito framework
-  // testImplementation 'org.mockito:mockito-core:2.24.0'
-  testImplementation Libs.Common.robolectric
-  testImplementation Libs.Common.mockitoKotlin
+  testImplementation(Libs.Common.junit)
+  testImplementation(Libs.Common.junitExt)
+  testImplementation(Libs.Common.robolectric)
+  testImplementation(Libs.Common.mockitoKotlin)
+  testImplementation(Libs.AndroidX.Test.core)
+  testImplementation(Libs.AndroidX.Test.rules)
+  testImplementation(Libs.AndroidX.Test.runner)
 
   // Common library
   androidTestImplementation Libs.Kotlin.stdlibJdk7
