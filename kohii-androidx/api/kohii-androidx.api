@@ -29,14 +29,19 @@ public final class kohii/v1/x/Latte$Companion {
 	public final fun get (Landroidx/fragment/app/Fragment;)Lkohii/v1/x/Latte;
 }
 
-public abstract interface class kohii/v1/x/MediaPlayerProvider {
-	public abstract fun acquirePlayer (Lkohii/v1/media/Media;)Landroidx/media2/player/MediaPlayer;
-	public abstract fun cleanUp ()V
-	public abstract fun releasePlayer (Lkohii/v1/media/Media;Landroidx/media2/player/MediaPlayer;)V
+public class kohii/v1/x/MediaPlayerPool : kohii/v1/core/PlayerPool {
+	public fun <init> (Landroid/content/Context;)V
+	public fun createPlayer (Lkohii/v1/media/Media;)Landroidx/media2/player/MediaPlayer;
+	public synthetic fun createPlayer (Lkohii/v1/media/Media;)Ljava/lang/Object;
+	public fun destroyPlayer (Landroidx/media2/player/MediaPlayer;)V
+	public synthetic fun destroyPlayer (Ljava/lang/Object;)V
+	protected fun recyclePlayerForMedia (Lkohii/v1/media/Media;)Z
+	public fun resetPlayer (Landroidx/media2/player/MediaPlayer;)V
+	public synthetic fun resetPlayer (Ljava/lang/Object;)V
 }
 
 public final class kohii/v1/x/VideoViewBridge : kohii/v1/core/AbstractBridge {
-	public fun <init> (Lkohii/v1/media/Media;Lkohii/v1/x/MediaPlayerProvider;)V
+	public fun <init> (Lkohii/v1/media/Media;Lkohii/v1/core/PlayerPool;)V
 	public fun getPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
 	public fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
 	public fun getPlayerState ()I
@@ -62,8 +67,8 @@ public final class kohii/v1/x/VideoViewBridge : kohii/v1/core/AbstractBridge {
 
 public final class kohii/v1/x/VideoViewPlayableCreator : kohii/v1/core/PlayableCreator {
 	public fun <init> (Lkohii/v1/core/Master;)V
-	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/x/MediaPlayerProvider;)V
-	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/x/MediaPlayerProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayerPool;)V
+	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayerPool;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun cleanUp ()V
 	public fun createPlayable (Lkohii/v1/core/Playable$Config;Lkohii/v1/media/Media;)Lkohii/v1/core/Playable;
 }
