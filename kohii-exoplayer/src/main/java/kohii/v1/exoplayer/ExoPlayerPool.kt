@@ -19,24 +19,32 @@ package kohii.v1.exoplayer
 import android.content.Context
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.AudioComponent
 import com.google.android.exoplayer2.RenderersFactory
+import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.util.Clock
 import com.google.android.exoplayer2.util.Util
+import kohii.v1.core.PlayerPool
+import kohii.v1.media.Media
 
 /**
- * @author eneim (2018/10/27).
+ * A [PlayerPool] for the [Player] implementation. By default it uses the [KohiiExoPlayer]
+ * implementation.
+ *
+ * @see [KohiiExoPlayer]
  */
-class DefaultExoPlayerProvider @JvmOverloads constructor(
-  context: Context,
+class ExoPlayerPool(
+  poolSize: Int = DEFAULT_POOL_SIZE,
+  private val context: Context,
   private val clock: Clock = Clock.DEFAULT,
   private val bandwidthMeterFactory: BandwidthMeterFactory = ExoPlayerConfig.DEFAULT,
   private val trackSelectorFactory: TrackSelectorFactory = ExoPlayerConfig.DEFAULT,
   private val loadControlFactory: LoadControlFactory = ExoPlayerConfig.DEFAULT,
   private val renderersFactory: RenderersFactory =
     DefaultRenderersFactory(context.applicationContext)
-) : RecycledExoPlayerProvider(context) {
+) : PlayerPool<Player>(poolSize) {
 
-  override fun createExoPlayer(context: Context): Player = KohiiExoPlayer(
+  override fun createPlayer(media: Media): Player = KohiiExoPlayer(
       context,
       clock,
       renderersFactory,
@@ -45,4 +53,14 @@ class DefaultExoPlayerProvider @JvmOverloads constructor(
       bandwidthMeterFactory.createBandwidthMeter(context),
       Util.getLooper()
   )
+
+  override fun resetPlayer(player: Player) {
+    super.resetPlayer(player)
+    player.stop(true)
+    if (player is AudioComponent) {
+      player.setAudioAttributes(AudioAttributes.DEFAULT, true)
+    }
+  }
+
+  override fun destroyPlayer(player: Player) = player.release()
 }

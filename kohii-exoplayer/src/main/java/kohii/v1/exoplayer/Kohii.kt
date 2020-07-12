@@ -33,6 +33,7 @@ import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Playback
+import kohii.v1.core.PlayerPool
 import kohii.v1.core.RendererProviderFactory
 import kohii.v1.exoplayer.ExoPlayerCache.lruCacheSingleton
 import kohii.v1.exoplayer.Kohii.Builder
@@ -123,8 +124,8 @@ fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
     val userAgent = Common.getUserAgent(appContext, BuildConfig.LIB_NAME)
     val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
-    val playerProvider = DefaultExoPlayerProvider(
-        appContext,
+    val playerPool = ExoPlayerPool(
+        context = appContext,
         clock = config.clock,
         bandwidthMeterFactory = config,
         trackSelectorFactory = config,
@@ -145,7 +146,7 @@ fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
     val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(
         upstreamFactory, drmSessionManagerProvider, mediaCache
     )
-    PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
+    PlayerViewBridgeCreator(playerPool, mediaSourceFactoryProvider)
   }
 
   val playableCreator = PlayerViewPlayableCreator.Builder(context.applicationContext)
@@ -172,11 +173,13 @@ fun createKohii(
   mediaSourceFactoryCreator: ((Media) -> MediaSourceFactory)? = null,
   rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
 ): Kohii {
-  val playerProvider = if (playerCreator == null) {
-    DefaultExoPlayerProvider(context)
+  val playerPool = if (playerCreator == null) {
+    ExoPlayerPool(context = context)
   } else {
-    object : RecycledExoPlayerProvider(context) {
-      override fun createExoPlayer(context: Context): Player = playerCreator(context)
+    object : PlayerPool<Player>() {
+      override fun recyclePlayerForMedia(media: Media): Boolean = false
+      override fun createPlayer(media: Media): Player = playerCreator(context)
+      override fun destroyPlayer(player: Player) = player.release()
     }
   }
 
@@ -193,7 +196,7 @@ fun createKohii(
       .setPlayableCreator(
           PlayerViewPlayableCreator.Builder(context)
               .setBridgeCreatorFactory {
-                PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
+                PlayerViewBridgeCreator(playerPool, mediaSourceFactoryProvider)
               }
               .build()
       )
