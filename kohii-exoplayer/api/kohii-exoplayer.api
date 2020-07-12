@@ -69,12 +69,6 @@ public final class kohii/v1/exoplayer/ExoPlayerPool : kohii/v1/core/PlayerPool {
 	public synthetic fun resetPlayer (Ljava/lang/Object;)V
 }
 
-public abstract interface class kohii/v1/exoplayer/ExoPlayerProvider {
-	public abstract fun acquirePlayer (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/Player;
-	public abstract fun cleanUp ()V
-	public abstract fun releasePlayer (Lkohii/v1/media/Media;Lcom/google/android/exoplayer2/Player;)V
-}
-
 public final class kohii/v1/exoplayer/HybridMediaItem : com/google/android/exoplayer2/source/MediaSource, kohii/v1/media/Media {
 	public fun <init> (Lkohii/v1/media/Media;Lcom/google/android/exoplayer2/source/MediaSource;)V
 	public fun addEventListener (Landroid/os/Handler;Lcom/google/android/exoplayer2/source/MediaSourceEventListener;)V
