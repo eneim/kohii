@@ -18,8 +18,6 @@ package kohii.v1.core
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.RestrictTo
-import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
 import androidx.collection.arraySetOf
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
@@ -280,9 +278,9 @@ class Manager internal constructor(
         .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
         .map { /* Bucket --> List<Playback> */
           val candidates = bucketToPlaybacks.getValue(it).filter { playback ->
-            val cannotPause = master.manuallyStartedPlayable.get() === playback.playable
-                && master.plannedManualPlayables.contains(playback.tag)
-                && !requireNotNull(playback.config.controller).kohiiCanPause()
+            val cannotPause = master.manuallyStartedPlayable.get() === playback.playable &&
+                master.plannedManualPlayables.contains(playback.tag) &&
+                !requireNotNull(playback.config.controller).kohiiCanPause()
             return@filter cannotPause || it.allowToPlay(playback)
           }
           return@map it.strategy(it.selectToPlay(candidates))

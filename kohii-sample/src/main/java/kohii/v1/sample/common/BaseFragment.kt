@@ -24,7 +24,6 @@ import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import kohii.v1.sample.DemoApp
-import timber.log.Timber
 
 /**
  * @author eneim (2018/07/27).
