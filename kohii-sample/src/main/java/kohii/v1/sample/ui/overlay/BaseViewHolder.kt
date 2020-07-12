@@ -32,7 +32,9 @@ abstract class BaseViewHolder(
 
   open fun bind(item: Any?) {}
 
-  open fun onRecycled(success: Boolean) {}
+  open fun onRecycled() {}
+
+  open fun clearTransientStates() {}
 
   interface OnClickListener {
 

@@ -104,14 +104,11 @@ internal class VideoItemsAdapter(
     if (holder is VideoItemHolder) {
       kohii.cancel(holder.playerViewContainer)
     }
-    holder.onRecycled(true)
+    holder.onRecycled()
   }
 
   override fun onFailedToRecycleView(holder: BaseViewHolder): Boolean {
-    holder.onRecycled(false)
-    if (holder is VideoItemHolder) {
-      kohii.cancel(holder.playerViewContainer)
-    }
+    holder.clearTransientStates()
     return true
   }
 }
