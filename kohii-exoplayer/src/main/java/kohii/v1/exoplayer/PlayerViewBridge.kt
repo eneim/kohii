@@ -37,6 +37,7 @@ import kohii.v1.core.Common
 import kohii.v1.core.DefaultTrackSelectorHolder
 import kohii.v1.core.PlayerEventListener
 import kohii.v1.core.PlayerParameters
+import kohii.v1.core.PlayerPool
 import kohii.v1.core.VolumeInfoController
 import kohii.v1.exoplayer.internal.addEventListener
 import kohii.v1.exoplayer.internal.getVolumeInfo
@@ -55,7 +56,7 @@ import kotlin.math.max
 class PlayerViewBridge(
   context: Context,
   private val media: Media,
-  private val playerProvider: ExoPlayerProvider,
+  private val playerPool: PlayerPool<Player>,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
 ) : AbstractBridge<PlayerView>(), PlayerEventListener {
 
@@ -170,7 +171,7 @@ class PlayerViewBridge(
       }
       (it as? VolumeInfoController)?.removeVolumeChangedListener(volumeListeners)
       it.stop(true)
-      playerProvider.releasePlayer(this.media, it)
+      playerPool.putPlayer(this.media, it)
     }
 
     this.player = null
@@ -290,7 +291,7 @@ class PlayerViewBridge(
     if (player == null) {
       sourcePrepared = false
       listenerApplied = false
-      val player = playerProvider.acquirePlayer(this.media)
+      val player = playerPool.getPlayer(this.media)
       applyPlayerParameters(playerParameters)
       this.player = player
     }

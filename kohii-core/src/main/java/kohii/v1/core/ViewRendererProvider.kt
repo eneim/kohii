@@ -17,7 +17,6 @@
 package kohii.v1.core
 
 import android.view.View
-import androidx.core.view.ViewCompat
 import kohii.v1.media.Media
 
 abstract class ViewRendererProvider @JvmOverloads constructor(

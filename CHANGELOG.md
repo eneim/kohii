@@ -1,12 +1,27 @@
 # Change Log
 
+## [Unreleased]
+
+### Added
+
+- (kohii-core) Add `PlayerPool` implementation.
+- (kohii-exoplayer) Add `ExoPlayerPool` that extends `PlayerPool` and replace the `ExoPlayerProvider`.
+- (kohii-androidx) Add `MediaPlayerPool` that extends `PlayerPool` and replace the `MediaPlayerProvider`.
+
+### Changed
+- ExoPlayer: 2.11.7
+
+### Removed
+- (kohii-exoplayer) Remove `ExoPlayerProvider` and its default implementation.
+- (kohii-androidx) Remove `MediaPlayerProvider` and its default implementation.
+
 ## [1.1.1.2011003]
 
 ### Added
 
 - Fix an issue that cause cache doesn't write to file (https://github.com/eneim/kohii/pull/91);
 
-## 1.1.0.2011003
+## [1.1.0.2011003]
 
 - ExoPlayer: 2.11.3
 - Support _multiple playback_. Check out [docs](https://eneim.github.io/kohii/usage/advance/) and [recipe](https://www.notion.so/00ea153b5378454dbc7a104733cd01d9) for more information.
@@ -36,7 +51,7 @@
 - **[Breaking]** Include Playback in the `ArtworkHintListener#onArtworkHint`.
 - **[Breaking]** Remove default implementations for `BandwidthMeterFactory`.
 
-## 1.0.0.2010004
+## [1.0.0.2010004]
 
 _2020.03.15_
 

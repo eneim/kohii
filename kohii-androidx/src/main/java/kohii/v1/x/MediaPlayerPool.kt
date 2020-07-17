@@ -16,17 +16,21 @@
 
 package kohii.v1.x
 
+import android.content.Context
 import androidx.media2.player.MediaPlayer
+import kohii.v1.core.PlayerPool
 import kohii.v1.media.Media
 
-interface MediaPlayerProvider {
+/**
+ * A [PlayerPool] for the [MediaPlayer].
+ */
+open class MediaPlayerPool(private val context: Context) : PlayerPool<MediaPlayer>() {
 
-  fun acquirePlayer(media: Media): MediaPlayer
+  override fun recyclePlayerForMedia(media: Media): Boolean = media.mediaDrm == null
 
-  fun releasePlayer(
-    media: Media,
-    player: MediaPlayer
-  )
+  override fun createPlayer(media: Media): MediaPlayer = MediaPlayer(context)
 
-  fun cleanUp()
+  override fun resetPlayer(player: MediaPlayer) = player.reset()
+
+  override fun destroyPlayer(player: MediaPlayer) = player.close()
 }

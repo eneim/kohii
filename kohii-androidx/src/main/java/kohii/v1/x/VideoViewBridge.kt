@@ -23,6 +23,7 @@ import androidx.media2.player.MediaPlayer
 import androidx.media2.widget.VideoView
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.PlayerParameters
+import kohii.v1.core.PlayerPool
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -34,7 +35,7 @@ import kohii.v1.media.VolumeInfo
 // Not production-ready.
 class VideoViewBridge(
   private val media: Media,
-  private val playerProvider: MediaPlayerProvider
+  private val playerPool: PlayerPool<MediaPlayer>
 ) : AbstractBridge<VideoView>() {
 
   private val mediaItem: MediaItem = UriMediaItem.Builder(media.uri)
@@ -79,7 +80,7 @@ class VideoViewBridge(
 
   override fun ready() {
     if (player == null) {
-      player = playerProvider.acquirePlayer(media)
+      player = playerPool.getPlayer(media)
           .also {
             it.setMediaItem(mediaItem)
             it.repeatMode = repeatMode
@@ -107,7 +108,7 @@ class VideoViewBridge(
     player?.let {
       // TODO any other local clean up?
       it.reset()
-      playerProvider.releasePlayer(media, it)
+      playerPool.putPlayer(media, it)
     }
     player = null
   }

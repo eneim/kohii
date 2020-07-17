@@ -17,6 +17,7 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
@@ -28,6 +29,7 @@ import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
+import kohii.v1.core.PlayerPool
 import kohii.v1.exoplayer.ExoPlayerCache.lruCacheSingleton
 import kohii.v1.media.Media
 import kotlin.LazyThreadSafetyMode.NONE
@@ -49,7 +51,7 @@ class PlayerViewPlayableCreator internal constructor(
       val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
 
       // ExoPlayerProvider
-      val playerProvider: ExoPlayerProvider = DefaultExoPlayerProvider(context)
+      val playerPool: PlayerPool<Player> = ExoPlayerPool(context = context)
 
       // MediaSourceFactoryProvider
       val mediaCache: Cache = lruCacheSingleton.get(context)
@@ -57,7 +59,7 @@ class PlayerViewPlayableCreator internal constructor(
       val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(context, httpDataSource)
       val mediaSourceFactoryProvider: MediaSourceFactoryProvider =
         DefaultMediaSourceFactoryProvider(upstreamFactory, drmSessionManagerProvider, mediaCache)
-      PlayerViewBridgeCreator(playerProvider, mediaSourceFactoryProvider)
+      PlayerViewBridgeCreator(playerPool, mediaSourceFactoryProvider)
     }
   }
 

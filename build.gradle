@@ -37,7 +37,14 @@ buildscript {
     classpath Libs.Common.ktLintPlugin
     classpath Libs.Common.bintrayPlugin
     classpath Libs.Common.dokkaPlugin
+    classpath Libs.Common.binaryValidator
   }
+}
+
+apply plugin: 'binary-compatibility-validator'
+
+apiValidation {
+  ignoredProjects += ["kohii-sample", "kohii-sample-tiktok"]
 }
 
 allprojects {
@@ -61,12 +68,14 @@ allprojects {
     task.targetCompatibility = JavaVersion.VERSION_1_8
   }
 
+  //noinspection UnnecessaryQualifiedReference
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach { task ->
     task.kotlinOptions {
       jvmTarget = "1.8"
     }
   }
 
+  //noinspection UnnecessaryQualifiedReference
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile).configureEach { task ->
     task.kotlinOptions {
       freeCompilerArgs += [

@@ -71,9 +71,9 @@ internal class RecyclerViewBucket(
   override fun onAttached() {
     super.onAttached()
     root.doOnLayout { view ->
-      if (view.isAttachedToWindow
-          && view is RecyclerView
-          && view.scrollState == RecyclerView.SCROLL_STATE_IDLE
+      if (view.isAttachedToWindow &&
+          view is RecyclerView &&
+          view.scrollState == RecyclerView.SCROLL_STATE_IDLE
       ) {
         manager.refresh()
       }

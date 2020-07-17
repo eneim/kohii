@@ -73,11 +73,15 @@ internal class VideoItemHolder(
   internal val rebinder: Rebinder?
     get() = this.videoTag?.let { Rebinder(it) }
 
-  override fun onRecycled(success: Boolean) {
-    super.onRecycled(success)
+  override fun onRecycled() {
+    super.onRecycled()
     this.videoData = null
-    thumbnail.clearAnimation()
     thumbnail.isVisible = true
+  }
+
+  override fun clearTransientStates() {
+    super.clearTransientStates()
+    thumbnail.clearAnimation()
   }
 
   override fun onAttached() {
