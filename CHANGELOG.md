@@ -15,7 +15,11 @@
 - (kohii-exoplayer) Remove `ExoPlayerProvider` and its default implementation.
 - (kohii-androidx) Remove `MediaPlayerProvider` and its default implementation.
 
-## [1.2.0]
+## [1.1.1.2011003]
+
+### Added
+
+- Fix an issue that cause cache doesn't write to file (https://github.com/eneim/kohii/pull/91);
 
 ## [1.1.0.2011003]
 
