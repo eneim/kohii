@@ -32,7 +32,6 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.FileDataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
-import com.google.android.exoplayer2.upstream.cache.CacheDataSinkFactory
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
 import com.google.android.exoplayer2.util.Util
@@ -50,10 +49,6 @@ class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
   mediaCache: Cache? = null
 ) : MediaSourceFactoryProvider {
 
-  companion object {
-    private const val CACHE_FRAGMENT_SIZE = 2 * 1024 * 1024L /* 2 Megabyte */
-  }
-
   constructor(context: Context, dataSourceFactory: HttpDataSource.Factory) : this(
       dataSourceFactory = DefaultDataSourceFactory(context, dataSourceFactory),
       drmSessionManagerProvider = DefaultDrmSessionManagerProvider(context, dataSourceFactory),
@@ -69,8 +64,7 @@ class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
     CacheDataSourceFactory(
         mediaCache,
         dataSourceFactory,
-        FileDataSource.Factory(),
-        CacheDataSinkFactory(mediaCache, CACHE_FRAGMENT_SIZE),
+        FileDataSource.Factory(), null,
         CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null
     )
   } else {
