@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.1.1.2011003]
+
+### Added
+
+- Fix an issue that cause cache doesn't write to file (https://github.com/eneim/kohii/pull/91);
+
 ## 1.1.0.2011003
 
 - ExoPlayer: 2.11.3
