@@ -10,6 +10,7 @@
 
 ### Changed
 - ExoPlayer: 2.11.7
+- (kohii-exoplayer): Use default CacheDataSourceFactory, which uses default fragment size of 5MB.
 
 ### Removed
 - (kohii-exoplayer) Remove `ExoPlayerProvider` and its default implementation.
