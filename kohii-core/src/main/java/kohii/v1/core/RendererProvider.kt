@@ -57,5 +57,3 @@ interface RendererProvider : DefaultLifecycleObserver {
     clear()
   }
 }
-
-typealias RendererProviderFactory = () -> RendererProvider

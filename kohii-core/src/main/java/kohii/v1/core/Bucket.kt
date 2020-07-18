@@ -41,8 +41,6 @@ import kohii.v1.logDebug
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 
-typealias Selector = (Collection<Playback>) -> Collection<Playback>
-
 abstract class Bucket constructor(
   val manager: Manager,
   open val root: View,

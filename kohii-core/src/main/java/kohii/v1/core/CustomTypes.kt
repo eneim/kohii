@@ -30,3 +30,7 @@ typealias PlayableObserver = (
  * Refer to values of [com.google.android.exoplayer2.C.NetworkType]
  */
 typealias NetworkType = Int
+
+typealias Selector = (Collection<Playback>) -> Collection<Playback>
+
+typealias RendererProviderFactory = () -> RendererProvider
