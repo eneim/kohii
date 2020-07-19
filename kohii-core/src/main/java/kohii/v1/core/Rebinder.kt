@@ -86,7 +86,8 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
           it.tokenUpdateListener = options.tokenUpdateListener
           it.networkTypeChangeListener = options.networkTypeChangeListener
           it.callbacks += options.callbacks
-        }, callback
+        },
+        callback
     )
     options = Options() // reset.
   }

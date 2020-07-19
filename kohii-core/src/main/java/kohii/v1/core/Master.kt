@@ -275,22 +275,22 @@ class Master private constructor(context: Context) : PlayableManager {
     callback: ((Playback) -> Unit)? = null
   ) {
     "Request queue: $tag, $container, $playable".logDebug()
-    // Remove any queued bind requests for the same container.
+    // Remove any queued binding requests for the same container.
     dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
-    // Remove any queued releasing for the same Playable, as we are binding it now.
+    // Remove any queued releasing request for the same Playable, since we are binding it now.
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
-    // Remove any queued destruction for the same Playable, as we are binding it now.
+    // Remove any queued destroying request for the same Playable, since we are binding it now.
     dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     // Keep track of which Playable will be bound to which Container.
     // Scenario: in RecyclerView, binding a Video in 'onBindViewHolder' will not immediately
     // trigger the binding, because we wait for the Container to be attached to the Window first.
     // So if a Playable is registered to be bound, but then another Playable is registered to the
     // same Container, we need to kick the previous Playable.
-    val sameTag = requests.asSequence()
+    val requestForSameTag = requests.asSequence()
         .filter { it.value.tag !== NO_TAG }
         .firstOrNull { it.value.tag == tag }
         ?.key
-    if (sameTag != null) requests.remove(sameTag)?.onRemoved()
+    if (requestForSameTag != null) requests.remove(requestForSameTag)?.onRemoved()
     requests[container] = BindRequest(this, playable, container, tag, options, callback)
     // if (playable.manager == null) playable.manager = this
     dispatcher.obtainMessage(MSG_BIND_PLAYABLE, container)
