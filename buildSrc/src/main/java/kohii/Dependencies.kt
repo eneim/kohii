@@ -226,7 +226,8 @@ object Libs {
     val gmsGoogleServices = "com.google.gms:google-services:4.3.3"
     val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.4.3"
     val fabricPlugin = "io.fabric.tools:gradle:1.31.2"
-    val crashlytics = "com.crashlytics.sdk.android:crashlytics:2.10.1"
+    val firebaseCrashlyticsPlugin = "com.google.firebase:firebase-crashlytics-gradle:2.2.0"
+    val crashlytics = "com.google.firebase:firebase-crashlytics-ktx:17.2.1"
 
     val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20200618-1.30.9"
     val httpClientAndroid = "com.google.http-client:google-http-client-android:1.35.0"

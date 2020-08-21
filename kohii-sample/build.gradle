@@ -26,7 +26,7 @@ apply plugin: 'com.getkeepsafe.dexcount'
 if (file("google-services.json").exists()) {
   System.out.println("google-services.json found!")
   apply plugin: 'com.google.gms.google-services'
-  apply plugin: 'io.fabric'
+  apply plugin: 'com.google.firebase.crashlytics'
 } else {
   System.out.println("google-services.json not found.")
 }
