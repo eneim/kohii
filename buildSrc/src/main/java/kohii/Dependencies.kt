@@ -69,7 +69,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:4.0.1"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:4.1.0-rc01"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.3"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
@@ -225,7 +225,6 @@ object Libs {
     val material = "com.google.android.material:material:1.1.0"
     val gmsGoogleServices = "com.google.gms:google-services:4.3.3"
     val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.4.3"
-    val fabricPlugin = "io.fabric.tools:gradle:1.31.2"
     val firebaseCrashlyticsPlugin = "com.google.firebase:firebase-crashlytics-gradle:2.2.0"
     val crashlytics = "com.google.firebase:firebase-crashlytics-ktx:17.2.1"
 
