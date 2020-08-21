@@ -26,15 +26,18 @@ class VideoViewHolder(
 
   var videoItem: Video? = null
     set(value) {
+      field = value
       if (value != null) {
-        val firstItem = value.playlist.first()
-        videoThumbnail = firstItem.image
-        videoFile = firstItem.sources.first().file
+        val firstPlaylist = value.playlist.first()
+        videoThumbnail = firstPlaylist.image
+        videoFile = firstPlaylist.sources
+            .firstOrNull {
+              it.file.endsWith("m3u8")
+            }?.file ?: firstPlaylist.sources.first().file
       } else {
         videoThumbnail = null
         videoFile = null
       }
-      field = value
     }
 
   internal var videoFile: String? = null
