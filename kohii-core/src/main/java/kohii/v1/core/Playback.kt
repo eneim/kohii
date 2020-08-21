@@ -133,7 +133,7 @@ abstract class Playback(
   protected open fun updateToken(): Token {
     "Playback#updateToken $this".logDebug()
     tmpRect.setEmpty()
-    if (!lifecycleState.isAtLeast(STARTED)) {
+    if (!lifecycleState.isAtLeast(manager.activeLifecycleState)) {
       return Token(config.threshold, -1F, tmpRect, container.width, container.height)
     }
 
@@ -147,9 +147,7 @@ abstract class Playback(
 
     val drawArea = with(Rect()) {
       container.getDrawingRect(this)
-      container.clipBounds?.let {
-        this.intersect(it)
-      }
+      container.clipBounds?.let(::intersect)
       width() * height()
     }
 
@@ -524,6 +522,9 @@ abstract class Playback(
     if (BuildConfig.DEBUG) error.printStackTrace()
   }
 
+  /**
+   * Callbacks for events triggered by the underlying [Playable].
+   */
   interface StateListener {
 
     /** Called when a Video is rendered on the Surface for the first time */
@@ -569,6 +570,9 @@ abstract class Playback(
     ) = Unit
   }
 
+  /**
+   * Callbacks for lifecycle events of a [Playback].
+   */
   interface Callback {
 
     @JvmDefault

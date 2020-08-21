@@ -49,7 +49,7 @@ class Manager internal constructor(
   val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
   internal val memoryMode: MemoryMode = LOW,
-  private val activeLifecycleState: State = State.STARTED
+  internal val activeLifecycleState: State = State.STARTED
 ) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
 
   companion object {
