@@ -269,6 +269,11 @@ class Manager internal constructor(
         )
   }
 
+  /**
+   * This method does the following things:
+   * - Refreshes the state of all managed [Playback].
+   * - Splits the [Playback]s into 2 buckets: those can be played and those can not.
+   */
   internal fun splitPlaybacks(): Pair<Set<Playback> /* toPlay */, Set<Playback> /* toPause */> {
     val (activePlaybacks, inactivePlaybacks) = refreshPlaybackStates()
     val toPlay = arraySetOf<Playback>()
@@ -276,13 +281,15 @@ class Manager internal constructor(
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
         .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
-        .map { /* Bucket --> List<Playback> */
-          val candidates = bucketToPlaybacks.getValue(it).filter { playback ->
-            val cannotPause = master.manuallyStartedPlayable.get() === playback.playable &&
-                master.plannedManualPlayables.contains(playback.tag) &&
-                !requireNotNull(playback.config.controller).kohiiCanPause()
-            return@filter cannotPause || it.allowToPlay(playback)
-          }
+        .map { /* Bucket --> Collection<Playback> */
+          val candidates = bucketToPlaybacks
+              .getValue(it)
+              .filter { playback ->
+                val cannotPause = master.manuallyStartedPlayable.get() === playback.playable &&
+                    master.plannedManualPlayables.contains(playback.tag) &&
+                    !requireNotNull(playback.config.controller).kohiiCanPause()
+                return@filter cannotPause || it.allowToPlay(playback)
+              }
           return@map it.strategy(it.selectToPlay(candidates))
         }
         .find { it.isNotEmpty() }

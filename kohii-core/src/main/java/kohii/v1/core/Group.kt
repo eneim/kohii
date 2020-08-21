@@ -173,7 +173,8 @@ class Group(
     // the ones that need to. We do so by updating Playback's priority.
     updatePlaybackPriorities(playbacks, newSelection)
 
-    (toPause + toPlay + oldSelection - newSelection).mapNotNull { it.playable }
+    (toPause + toPlay + oldSelection - newSelection)
+        .mapNotNull { it.playable }
         .forEach { dispatcher.pause(it) }
 
     if (newSelection.isNotEmpty()) {
@@ -205,10 +206,11 @@ class Group(
     if (target.first.second > 0 && target.second.second > 0) {
       // Update priority of non-selected Playback first, so they can release unused/obsoleted
       // resource before the selected ones who consume a lot of resources.
-      (playbacks - selection).partitionToMutableSets(
-          predicate = { it.isAttached },
-          transform = { it }
-      )
+      (playbacks - selection)
+          .partitionToMutableSets(
+              predicate = { it.isAttached },
+              transform = { it }
+          )
           .also { (attached, detached) ->
             detached.forEach { it.playbackPriority = Int.MAX_VALUE }
             attached.sortedBy { it.token.containerRect distanceTo target }
