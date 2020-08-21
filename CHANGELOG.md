@@ -11,6 +11,7 @@
 ### Changed
 - ExoPlayer: 2.11.7
 - (kohii-exoplayer): Use default CacheDataSourceFactory, which uses default fragment size of 5MB.
+- (kohii-exoplayer): DefaultMediaSourceFactoryProvider now accepts nullable DrmSessionManagerProvider.
 
 ### Removed
 - (kohii-exoplayer) Remove `ExoPlayerProvider` and its default implementation.
