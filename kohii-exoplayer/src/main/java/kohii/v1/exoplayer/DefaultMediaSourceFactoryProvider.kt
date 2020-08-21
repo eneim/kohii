@@ -44,7 +44,7 @@ import kohii.v1.media.Media
  */
 class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
   dataSourceFactory: DataSource.Factory,
-  private val drmSessionManagerProvider: DrmSessionManagerProvider,
+  private val drmSessionManagerProvider: DrmSessionManagerProvider? = null,
   mediaCache: Cache? = null
 ) : MediaSourceFactoryProvider {
 
@@ -97,7 +97,7 @@ class DefaultMediaSourceFactoryProvider @JvmOverloads constructor(
         throw IllegalStateException("Unsupported type: $type")
       }
     }
-    val drmSessionManager = drmSessionManagerProvider.provideDrmSessionManager(media)
+    val drmSessionManager = drmSessionManagerProvider?.provideDrmSessionManager(media)
     if (drmSessionManager != null) factory.setDrmSessionManager(drmSessionManager)
     return factory
   }
