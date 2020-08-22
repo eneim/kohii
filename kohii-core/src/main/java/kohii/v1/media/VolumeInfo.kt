@@ -17,6 +17,7 @@
 package kohii.v1.media
 
 import android.os.Parcelable
+import androidx.annotation.FloatRange
 import kotlinx.android.parcel.Parcelize
 
 /**
@@ -25,8 +26,14 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class VolumeInfo(
   val mute: Boolean = false,
+  @FloatRange(from = 0.0, to = 1.0)
   val volume: Float = 1F
 ) : Parcelable {
+
+  companion object {
+    val DEFAULT_ACTIVE = VolumeInfo(false, 1F)
+    val DEFAULT_INACTIVE = VolumeInfo(false, 0F)
+  }
 
   constructor(original: VolumeInfo) : this(original.mute, original.volume)
 }

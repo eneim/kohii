@@ -67,7 +67,7 @@ open class KohiiExoPlayer(
 ), VolumeInfoController, DefaultTrackSelectorHolder {
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
-  private var playerVolumeInfo = VolumeInfo(false, 1.0F) // backing field.
+  private var playerVolumeInfo = VolumeInfo.DEFAULT_ACTIVE // backing field.
 
   override val volumeInfo
     get() = playerVolumeInfo

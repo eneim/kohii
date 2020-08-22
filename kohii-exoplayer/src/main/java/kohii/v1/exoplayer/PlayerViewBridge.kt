@@ -150,7 +150,7 @@ class PlayerViewBridge(
     if (resetPlayer) _playbackInfo = PlaybackInfo()
     else updatePlaybackInfo()
     player?.also {
-      it.setVolumeInfo(VolumeInfo(false, 1.0F))
+      it.setVolumeInfo(VolumeInfo.DEFAULT_ACTIVE)
       it.stop(resetPlayer)
     }
     this.mediaSource = null // So it will be re-prepared later.
@@ -189,7 +189,7 @@ class PlayerViewBridge(
     } ?: false
   }
 
-  override var volumeInfo: VolumeInfo = player?.getVolumeInfo() ?: VolumeInfo()
+  override var volumeInfo: VolumeInfo = player?.getVolumeInfo() ?: VolumeInfo.DEFAULT_ACTIVE
     set(value) {
       "Bridge#volumeInfo: $field -> $value, $this".logInfo()
       if (field == value) return

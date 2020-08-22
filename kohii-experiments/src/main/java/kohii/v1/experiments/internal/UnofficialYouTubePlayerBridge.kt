@@ -135,7 +135,7 @@ internal class UnofficialYouTubePlayerBridge(
     return tracker.state == PLAYING
   }
 
-  override var volumeInfo: VolumeInfo = VolumeInfo()
+  override var volumeInfo: VolumeInfo = VolumeInfo.DEFAULT_ACTIVE
 
   override fun seekTo(positionMs: Long) {
     val playbackInfo = this.playbackInfo

@@ -69,7 +69,7 @@ class VideoViewBridge(
 
   override var playbackInfo: PlaybackInfo = PlaybackInfo()
 
-  override var volumeInfo: VolumeInfo = VolumeInfo()
+  override var volumeInfo: VolumeInfo = VolumeInfo.DEFAULT_ACTIVE
 
   // TODO(eneim): update the Player with new parameters.
   override var playerParameters: PlayerParameters = PlayerParameters.DEFAULT

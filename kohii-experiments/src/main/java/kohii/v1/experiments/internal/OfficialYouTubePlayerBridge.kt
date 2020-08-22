@@ -138,7 +138,7 @@ internal class OfficialYouTubePlayerBridge(
       _playbackInfo = value
     }
 
-  override var volumeInfo: VolumeInfo = VolumeInfo()
+  override var volumeInfo: VolumeInfo = VolumeInfo.DEFAULT_ACTIVE
 
   override val playerState: Int
     get() = _playbackState
