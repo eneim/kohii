@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018 Nam Nguyen, nam@ene.im
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="kohii.v1.sample">
+
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+  <application
+      android:name=".DemoApp"
+      android:allowBackup="false"
+      android:icon="@mipmap/ic_launcher"
+      android:label="@string/app_name"
+      android:networkSecurityConfig="@xml/network_security_config"
+      android:supportsRtl="true"
+      tools:ignore="GoogleAppIndexingWarning"
+      tools:targetApi="n">
+    <activity
+        android:name=".MainActivity"
+        android:exported="true"
+        android:supportsPictureInPicture="true"
+        android:theme="@style/AppTheme.Light"
+        android:uiOptions="splitActionBarWhenNarrow" />
+
+    <activity
+        android:name=".ui.motion.PlayerActivity"
+        android:theme="@style/AppTheme.Dark" />
+
+    <activity
+        android:name="kohii.v1.dev.DevActivity"
+        android:label="@string/app_name"
+        android:supportsPictureInPicture="true"
+        android:theme="@style/AppTheme.Dev" />
+
+    <activity
+        android:name="kohii.v1.dev.PlayerActivity"
+        android:theme="@style/AppTheme.Dark" />
+
+    <activity-alias
+        android:name="Home"
+        android:targetActivity=".MainActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+  </application>
+
+</manifest>
