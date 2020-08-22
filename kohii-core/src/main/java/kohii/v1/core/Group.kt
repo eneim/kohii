@@ -67,7 +67,7 @@ class Group(
       }
     }
 
-  internal var groupVolumeInfo: VolumeInfo = VolumeInfo()
+  internal var groupVolumeInfo: VolumeInfo = VolumeInfo.DEFAULT_ACTIVE
     set(value) {
       field = value
       managers.forEach { it.managerVolumeInfo = value }
