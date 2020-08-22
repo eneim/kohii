@@ -37,7 +37,7 @@ import kohii.v1.internal.ViewGroupBucket
 import kohii.v1.internal.ViewGroupV23Bucket
 import kohii.v1.internal.ViewPager2Bucket
 import kohii.v1.internal.ViewPagerBucket
-import kohii.v1.logDebug
+import kohii.v1.logInfo
 import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -46,7 +46,7 @@ abstract class Bucket constructor(
   open val root: View,
   strategy: Strategy,
   internal val selector: Selector
-) : OnAttachStateChangeListener, OnLayoutChangeListener {
+) : OnLayoutChangeListener {
 
   companion object {
     const val VERTICAL = RecyclerView.VERTICAL
@@ -84,14 +84,27 @@ abstract class Bucket constructor(
     }
   }
 
-  internal var lock: Boolean = manager.lock
-    get() = field || manager.lock
-    set(value) {
-      field = value
-      manager.playbacks.filter { it.value.bucket === this }
-          .forEach { it.value.lock = value }
-      manager.refresh()
+  private val containerAttachStateChangeListener = object : OnAttachStateChangeListener {
+    override fun onViewAttachedToWindow(v: View?) {
+      "Bucket# container is attached: $v, $this".logInfo()
+      manager.onContainerAttachedToWindow(v)
     }
+
+    override fun onViewDetachedFromWindow(v: View?) {
+      "Bucket# container is detached: $v, $this".logInfo()
+      manager.onContainerDetachedFromWindow(v)
+    }
+  }
+
+  private val rootAttachStateChangeListener = object : OnAttachStateChangeListener {
+    override fun onViewAttachedToWindow(v: View?) {
+      onAttached()
+    }
+
+    override fun onViewDetachedFromWindow(v: View?) {
+      onDetached()
+    }
+  }
 
   private val containers = mutableSetOf<Any>()
 
@@ -102,13 +115,49 @@ abstract class Bucket constructor(
     return@lazy if (params is CoordinatorLayout.LayoutParams) params else null
   }
 
+  private val volumeConstraint: VolumeInfo
+    get() = when (strategy) {
+      MULTI_PLAYER -> VolumeInfo.DEFAULT_INACTIVE
+      else -> VolumeInfo.DEFAULT_ACTIVE
+    }
+
+  internal val volumeInfo: VolumeInfo
+    get() = bucketVolumeInfo
+
+  internal var bucketVolumeInfo: VolumeInfo = VolumeInfo.DEFAULT_ACTIVE
+    set(value) {
+      field = value
+      manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+    }
+
+  internal var strategy: Strategy = strategy
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from !== to) {
+        manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
+        manager.refresh()
+      }
+    }
+
+  internal var lock: Boolean = manager.lock
+    get() = field || manager.lock
+    set(value) {
+      field = value
+      manager.playbacks
+          .filter { it.value.bucket === this }
+          .forEach { it.value.lock = value }
+      manager.refresh()
+    }
+
+  init {
+    bucketVolumeInfo = manager.volumeInfo
+  }
+
   abstract fun accepts(container: ViewGroup): Boolean
 
-  open fun allowToPlay(playback: Playback): Boolean {
-    // Default judgement.
-    return playback.token
-        .shouldPlay()
-  }
+  open fun allowToPlay(playback: Playback): Boolean = playback.token.shouldPlay()
 
   abstract fun selectToPlay(candidates: Collection<Playback>): Collection<Playback>
 
@@ -116,30 +165,22 @@ abstract class Bucket constructor(
   open fun addContainer(container: ViewGroup) {
     if (containers.add(container)) {
       if (container.isAttachedToWindow) {
-        this.onViewAttachedToWindow(container)
+        containerAttachStateChangeListener.onViewAttachedToWindow(container)
       }
-      container.addOnAttachStateChangeListener(this)
+      container.addOnAttachStateChangeListener(
+          containerAttachStateChangeListener
+      )
     }
   }
 
   @CallSuper
   open fun removeContainer(container: ViewGroup) {
     if (containers.remove(container)) {
-      container.removeOnAttachStateChangeListener(this)
+      container.removeOnAttachStateChangeListener(
+          containerAttachStateChangeListener
+      )
       container.removeOnLayoutChangeListener(this)
     }
-  }
-
-  @CallSuper
-  override fun onViewAttachedToWindow(v: View?) {
-    "Bucket#onViewAttachedToWindow: $v".logDebug()
-    manager.onContainerAttachedToWindow(v)
-  }
-
-  @CallSuper
-  override fun onViewDetachedFromWindow(v: View?) {
-    "Bucket#onViewDetachedFromWindow: $v".logDebug()
-    manager.onContainerDetachedFromWindow(v)
   }
 
   @CallSuper
@@ -161,10 +202,16 @@ abstract class Bucket constructor(
 
   @CallSuper
   open fun onAdded() {
+    "Bucket is added: $this".logInfo()
+    if (root.isAttachedToWindow) {
+      rootAttachStateChangeListener.onViewAttachedToWindow(root)
+    }
+    root.addOnAttachStateChangeListener(rootAttachStateChangeListener)
   }
 
   @CallSuper
   open fun onAttached() {
+    "Bucket is attached: $this".logInfo()
     behaviorHolder.value?.let {
       val behavior = it.behavior
       if (behavior != null) {
@@ -176,6 +223,7 @@ abstract class Bucket constructor(
 
   @CallSuper
   open fun onDetached() {
+    "Bucket is detached: $this".logInfo()
     if (behaviorHolder.isInitialized()) {
       behaviorHolder.value?.let {
         val behavior = it.behavior
@@ -189,40 +237,11 @@ abstract class Bucket constructor(
 
   @CallSuper
   open fun onRemoved() {
-    mutableListOf(containers).onEach {
-      manager.onRemoveContainer(it)
-    }
+    "Bucket is removed: $this".logInfo()
+    root.removeOnAttachStateChangeListener(rootAttachStateChangeListener)
+    mutableListOf(containers)
+        .onEach(manager::onRemoveContainer)
         .clear()
-  }
-
-  internal val volumeInfo: VolumeInfo
-    get() = bucketVolumeInfo
-
-  internal var bucketVolumeInfo: VolumeInfo = VolumeInfo()
-    set(value) {
-      field = value
-      manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
-    }
-
-  private val volumeConstraint: VolumeInfo
-    get() = when (strategy) {
-      MULTI_PLAYER -> VolumeInfo(false, 0F)
-      else -> VolumeInfo()
-    }
-
-  internal var strategy: Strategy = strategy
-    set(value) {
-      val from = field
-      field = value
-      val to = field
-      if (from !== to) {
-        manager.onBucketVolumeInfoUpdated(this, effectiveVolumeInfo(this.volumeInfo))
-        manager.refresh()
-      }
-    }
-
-  init {
-    bucketVolumeInfo = manager.volumeInfo
   }
 
   internal fun effectiveVolumeInfo(origin: VolumeInfo): VolumeInfo {
@@ -241,13 +260,14 @@ abstract class Bucket constructor(
     if (strategy == NO_PLAYER) return emptyList()
 
     val playbackComparator = playbackComparators.getValue(orientation)
-    val manualToAutoPlaybackGroups = candidates.sortedWith(playbackComparator)
+    val manualToAutoPlaybackGroups = candidates
+        .sortedWith(playbackComparator)
         .groupBy { it.tag != Master.NO_TAG && it.config.controller != null }
         .withDefault { emptyList() }
 
     val manualCandidate = with(manualToAutoPlaybackGroups.getValue(true)) {
       val started = find { manager.master.manuallyStartedPlayable.get() === it.playable }
-      return@with listOfNotNull(started ?: this@with.firstOrNull())
+      listOfNotNull(started ?: firstOrNull())
     }
 
     return if (manualCandidate.isNotEmpty()) {

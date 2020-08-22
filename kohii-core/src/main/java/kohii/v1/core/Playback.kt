@@ -21,7 +21,6 @@ import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.annotation.FloatRange
 import androidx.lifecycle.Lifecycle.State
-import androidx.lifecycle.Lifecycle.State.STARTED
 import com.google.android.exoplayer2.Player
 import kohii.v1.BuildConfig
 import kohii.v1.core.Bucket.Companion.BOTH_AXIS
@@ -126,6 +125,100 @@ abstract class Playback(
     val networkTypeChangeListener: NetworkTypeChangeListener? = null
   )
 
+  private val tmpRect = Rect()
+  private val callbacks = ArrayDeque<Callback>()
+  private val listeners = ArrayDeque<StateListener>()
+
+  // Callbacks those will be setup when the Playback is added, and cleared when it is removed.
+  private var controller: Controller? = null
+  private var artworkHintListener: ArtworkHintListener? = null
+  private var tokenUpdateListener: TokenUpdateListener? = null
+  private var networkTypeChangeListener: NetworkTypeChangeListener? = null
+
+  // Will be updated everytime 'onRefresh' is called.
+  private var playbackToken: Token =
+    Token(config.threshold, -1F, Rect(), 0, 0)
+
+  internal var lock: Boolean = bucket.lock
+    get() = field || bucket.lock
+    set(value) {
+      field = value
+      manager.refresh()
+    }
+
+  internal val token: Token
+    get() = playbackToken
+
+  private var playbackState: Int
+
+  internal val isAttached: Boolean
+    get() = playbackState >= STATE_ATTACHED
+
+  internal val isActive: Boolean
+    get() = playbackState >= STATE_ACTIVE
+
+  internal var lifecycleState: State = State.INITIALIZED
+
+  // Smaller value = higher priority. Priority 0 is the selected Playback. The higher priority, the
+  // closer it is to the selected Playback.
+  // Consider to prepare the underline Playable for high enough priority, and release it otherwise.
+  // This value is updated by Group. Inactive Playback always has Int.MAX_VALUE priority.
+  internal var playbackPriority: Int = Int.MAX_VALUE
+    set(value) {
+      val oldPriority = field
+      field = value
+      val newPriority = field
+      "Playback#playbackPriority $oldPriority --> $newPriority, $this".logDebug()
+      if (oldPriority == newPriority) return
+      playable?.onPlaybackPriorityChanged(this, oldPriority, newPriority)
+    }
+
+  internal var playbackVolumeInfo: VolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      "Playback#volumeInfo $from --> $to, $this".logDebug()
+      playable?.onVolumeInfoChanged(this, from, to)
+    }
+
+  var playable: Playable? = null
+    internal set(value) {
+      field = value
+      if (value != null && config.initialPlaybackInfo != null) {
+        value.playbackInfo = config.initialPlaybackInfo
+      }
+    }
+
+  internal var playerParametersChangeListener: PlayerParametersChangeListener? = null
+
+  private val playerState: Int
+    get() = playable?.playerState ?: STATE_IDLE
+
+  val tag = config.tag
+
+  val volumeInfo: VolumeInfo
+    get() = playbackVolumeInfo
+
+  private val playbackInfo: PlaybackInfo
+    get() = playable?.playbackInfo ?: PlaybackInfo()
+
+  val containerRect: Rect
+    get() = token.containerRect
+
+  var playerParameters: PlayerParameters = PlayerParameters.DEFAULT
+    set(value) {
+      val from = field
+      field = value
+      val to = field
+      if (from != to) playerParametersChangeListener?.onPlayerParametersChanged(to)
+    }
+
+  init {
+    playbackState = STATE_CREATED
+    playbackVolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
+  }
+
   override fun toString(): String {
     return "${super.toString()}, [$playable], [$token]"
   }
@@ -156,16 +249,6 @@ abstract class Playback(
       else 0F
     return Token(config.threshold, offset, tmpRect, container.width, container.height)
   }
-
-  private val tmpRect = Rect()
-  private val callbacks = ArrayDeque<Callback>()
-  private val listeners = ArrayDeque<StateListener>()
-
-  // Callbacks those will be setup when the Playback is added, and cleared when it is removed.
-  private var controller: Controller? = null
-  private var artworkHintListener: ArtworkHintListener? = null
-  private var tokenUpdateListener: TokenUpdateListener? = null
-  private var networkTypeChangeListener: NetworkTypeChangeListener? = null
 
   /**
    * Returns a usable renderer for the [playable], or `null` if no renderer is available or needed.
@@ -242,13 +325,11 @@ abstract class Playback(
     networkTypeChangeListener = config.networkTypeChangeListener
     playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(manager.master.networkType)
         ?: playerParameters
-    bucket.addContainer(this.container)
   }
 
   internal fun onRemoved() {
     "Playback#onRemoved $this".logDebug()
     playbackState = STATE_REMOVED
-    bucket.removeContainer(this.container)
     controller = null
     tokenUpdateListener = null
     artworkHintListener = null
@@ -308,73 +389,12 @@ abstract class Playback(
     artworkHintListener?.onArtworkHint(this, true, playbackInfo.resumePosition, playerState)
   }
 
-  // Will be updated everytime 'onRefresh' is called.
-  private var playbackToken: Token =
-    Token(config.threshold, -1F, Rect(), 0, 0)
-
-  internal var lock: Boolean = bucket.lock
-    get() = field || bucket.lock
-    set(value) {
-      field = value
-      manager.refresh()
-    }
-
-  internal val token: Token
-    get() = playbackToken
-
   internal fun onRefresh() {
     "Playback#onRefresh $this".logDebug()
     playbackToken = updateToken()
     tokenUpdateListener?.onTokenUpdate(this, token)
     "Playback#onRefresh token updated -> $this".logDebug()
   }
-
-  private var playbackState: Int = STATE_CREATED
-
-  internal val isAttached: Boolean
-    get() = playbackState >= STATE_ATTACHED
-
-  internal val isActive: Boolean
-    get() = playbackState >= STATE_ACTIVE
-
-  internal var lifecycleState: State = State.INITIALIZED
-
-  // Smaller value = higher priority. Priority 0 is the selected Playback. The higher priority, the
-  // closer it is to the selected Playback.
-  // Consider to prepare the underline Playable for high enough priority, and release it otherwise.
-  // This value is updated by Group. Inactive Playback always has Int.MAX_VALUE priority.
-  internal var playbackPriority: Int = Int.MAX_VALUE
-    set(value) {
-      val oldPriority = field
-      field = value
-      val newPriority = field
-      "Playback#playbackPriority $oldPriority --> $newPriority, $this".logDebug()
-      if (oldPriority == newPriority) return
-      playable?.onPlaybackPriorityChanged(this, oldPriority, newPriority)
-    }
-
-  internal var playbackVolumeInfo: VolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
-    set(value) {
-      val from = field
-      field = value
-      val to = field
-      "Playback#volumeInfo $from --> $to, $this".logDebug()
-      playable?.onVolumeInfoChanged(this, from, to)
-    }
-
-  init {
-    playbackVolumeInfo = bucket.effectiveVolumeInfo(bucket.volumeInfo)
-  }
-
-  var playable: Playable? = null
-    internal set(value) {
-      field = value
-      if (value != null && config.initialPlaybackInfo != null) {
-        value.playbackInfo = config.initialPlaybackInfo
-      }
-    }
-
-  internal var playerParametersChangeListener: PlayerParametersChangeListener? = null
 
   internal fun compareWith(
     other: Playback,
@@ -404,30 +424,6 @@ abstract class Playback(
     this.playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(networkType)
         ?: this.playerParameters
   }
-
-  // Public APIs
-
-  val tag = config.tag
-
-  private val playerState: Int
-    get() = playable?.playerState ?: STATE_IDLE
-
-  val volumeInfo: VolumeInfo
-    get() = playbackVolumeInfo
-
-  private val playbackInfo: PlaybackInfo
-    get() = playable?.playbackInfo ?: PlaybackInfo()
-
-  val containerRect: Rect
-    get() = token.containerRect
-
-  var playerParameters: PlayerParameters = PlayerParameters.DEFAULT
-    set(value) {
-      val from = field
-      field = value
-      val to = field
-      if (from != to) playerParametersChangeListener?.onPlayerParametersChanged(to)
-    }
 
   internal fun addCallback(callback: Callback) {
     "Playback#addCallback $callback, $this".logDebug()

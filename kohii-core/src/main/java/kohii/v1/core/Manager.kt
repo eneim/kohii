@@ -16,11 +16,11 @@
 
 package kohii.v1.core
 
+import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
-import androidx.core.view.doOnAttach
-import androidx.core.view.doOnDetach
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event
@@ -41,6 +41,22 @@ import kohii.v1.partitionToMutableSets
 import java.util.ArrayDeque
 
 /**
+ * Manager is a component designed to manage a [Fragment] or an [Activity] which contains *big
+ * View*s like RecyclerView or ViewPager. Manager creates and manages Buckets for Views on demand.
+ * You only need to create Bucket for the View whose manages Videos. For example, your app has
+ * 2 RecyclerViews A and B, but only B contains Videos. You can ask the Manager to create and
+ * manage a Bucket for the RecyclerView B only. That way, the library doesn't need to observe and
+ * handle the changes of the RecyclerView A.
+ *
+ * Creating a Manager can be done as below:
+ *
+ * ```Kotlin
+ * // Currently we are in the scope of a Fragment's onViewCreated.
+ * val engine = // Get an Engine instance.
+ * val manager = engine.register(this)
+ * ```
+ *
+ * @param memoryMode The [MemoryMode] used in this Manager.
  * @param activeLifecycleState the minimum [Lifecycle.State] where the [Playback] can be playing.
  */
 class Manager internal constructor(
@@ -105,7 +121,7 @@ class Manager internal constructor(
 
   internal var sticky: Boolean = false
 
-  internal var managerVolumeInfo: VolumeInfo = VolumeInfo()
+  internal var managerVolumeInfo: VolumeInfo = VolumeInfo.DEFAULT_ACTIVE
     set(value) {
       field = value
       // Update VolumeInfo of all Buckets. This operation will then callback to this #applyVolumeInfo
@@ -138,27 +154,32 @@ class Manager internal constructor(
   }
 
   override fun onDestroy(owner: LifecycleOwner) {
-    playbacks.values.toMutableList()
+    playbacks.values
+        .toMutableList()
         .also { group.selection -= it }
         .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
-    buckets.toMutableList()
+
+    buckets
+        .toMutableList()
         .onEach { onRemoveBucket(it.root) }
         .clear()
-    rendererProviders.onEach {
-      owner.lifecycle.removeObserver(it.value)
-      it.value.clear()
-    }
+
+    rendererProviders
+        .onEach {
+          owner.lifecycle.removeObserver(it.value)
+          it.value.clear()
+        }
         .clear()
+
     playableObservers.clear()
     owner.lifecycle.removeObserver(this)
     group.onManagerDestroyed(this)
   }
 
-  override fun onStart(owner: LifecycleOwner) {
-    refresh() // This will also update active/inactive Playbacks accordingly.
-  }
+  // This will also update active/inactive Playbacks accordingly.
+  override fun onStart(owner: LifecycleOwner): Unit = refresh()
 
   override fun onStop(owner: LifecycleOwner) {
     playbacks.forEach { if (it.value.isActive) onPlaybackInActive(it.value) }
@@ -167,7 +188,7 @@ class Manager internal constructor(
 
   internal fun findRendererProvider(playable: Playable): RendererProvider {
     val cache = rendererProviders[playable.config.rendererType]
-        ?: rendererProviders.asSequence().firstOrNull {
+        ?: rendererProviders.entries.firstOrNull {
           // If there is a RendererProvider of subclass, we can use it.
           playable.config.rendererType.isAssignableFrom(it.key)
         }?.value
@@ -193,7 +214,7 @@ class Manager internal constructor(
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
     if (!container.isAttachedToWindow) return null
-    return buckets.find { it.accepts(container) }
+    return buckets.firstOrNull { it.accepts(container) }
   }
 
   internal fun onContainerAttachedToWindow(container: Any?) {
@@ -234,13 +255,6 @@ class Manager internal constructor(
     val bucket = Bucket[this@Manager, view, strategy, selector]
     if (buckets.add(bucket)) {
       bucket.onAdded()
-      view.doOnAttach { v ->
-        bucket.onAttached()
-        v.doOnDetach {
-          buckets.firstOrNull { bucket -> bucket.root === it }
-              ?.onDetached()
-        }
-      }
     }
   }
 
@@ -249,9 +263,7 @@ class Manager internal constructor(
         ?.onRemoved()
   }
 
-  internal fun refresh() {
-    group.onRefresh()
-  }
+  internal fun refresh(): Unit = group.onRefresh()
 
   private fun refreshPlaybackStates(): Pair<MutableSet<Playback> /* Active */, MutableSet<Playback> /* InActive */> {
     val toActive = playbacks.filterValues { !it.isActive && it.token.shouldPrepare() }
@@ -310,6 +322,7 @@ class Manager internal constructor(
     val prev = playbacks.put(playback.container, playback)
     require(prev == null)
     playback.lifecycleState = lifecycleOwner.lifecycle.currentState
+    playback.bucket.addContainer(playback.container)
     playback.onAdded()
   }
 
@@ -319,13 +332,14 @@ class Manager internal constructor(
         if (playback.isActive) onPlaybackInActive(playback)
         onPlaybackDetached(playback)
       }
+      playback.bucket.removeContainer(playback.container)
       playback.onRemoved()
       refresh()
     }
   }
 
   internal fun onRemoveContainer(container: Any) {
-    playbacks[container]?.let { removePlayback(it) }
+    playbacks[container]?.let(::removePlayback)
   }
 
   internal fun notifyPlaybackChanged(playable: Playable, from: Playback?, to: Playback?) {
@@ -333,21 +347,13 @@ class Manager internal constructor(
     playableObservers[playable.tag]?.invoke(playable.tag, from, to)
   }
 
-  private fun onPlaybackAttached(playback: Playback) {
-    playback.onAttached()
-  }
+  private fun onPlaybackAttached(playback: Playback): Unit = playback.onAttached()
 
-  private fun onPlaybackDetached(playback: Playback) {
-    playback.onDetached()
-  }
+  private fun onPlaybackDetached(playback: Playback): Unit = playback.onDetached()
 
-  private fun onPlaybackActive(playback: Playback) {
-    playback.onActive()
-  }
+  private fun onPlaybackActive(playback: Playback): Unit = playback.onActive()
 
-  private fun onPlaybackInActive(playback: Playback) {
-    playback.onInActive()
-  }
+  private fun onPlaybackInActive(playback: Playback): Unit = playback.onInActive()
 
   // Public APIs
 
@@ -398,10 +404,8 @@ class Manager internal constructor(
   internal fun onBucketVolumeInfoUpdated(
     bucket: Bucket,
     effectiveVolumeInfo: VolumeInfo
-  ) {
-    playbacks.forEach {
-      if (it.value.bucket === bucket) it.value.playbackVolumeInfo = effectiveVolumeInfo
-    }
+  ) = playbacks.forEach {
+    if (it.value.bucket === bucket) it.value.playbackVolumeInfo = effectiveVolumeInfo
   }
 
   /**
@@ -451,13 +455,9 @@ class Manager internal constructor(
     }
   }
 
-  fun play(playable: Playable) {
-    master.play(playable)
-  }
+  fun play(playable: Playable): Unit = master.play(playable)
 
-  fun pause(playable: Playable) {
-    master.pause(playable)
-  }
+  fun pause(playable: Playable): Unit = master.pause(playable)
 
   interface OnSelectionListener {
 
