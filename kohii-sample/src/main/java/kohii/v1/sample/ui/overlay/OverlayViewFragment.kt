@@ -44,6 +44,7 @@ import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.TransitionListenerAdapter
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.databinding.FragmentRecyclerViewMotionBinding
+import kohii.v1.sample.databinding.OverlayVideoContainerBinding
 import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.viewBehavior
 import kotlin.properties.Delegates
@@ -69,7 +70,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
       bottomSheet: View,
       slideOffset: Float
     ) {
-      binding.motionLayout.progress = 1F - slideOffset.coerceIn(0F, 1F)
+      overlayBinding.container.progress = 1F - slideOffset.coerceIn(0F, 1F)
     }
 
     override fun onStateChanged(
@@ -89,7 +90,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         val (newPos, newRebinder) = to
         if (newRebinder != null) {
           if (overlaySheet.state == STATE_HIDDEN) overlaySheet.state = STATE_EXPANDED
-          newRebinder.bind(kohii, binding.overlayPlayerView) {
+          newRebinder.bind(kohii, overlayBinding.overlayPlayerView) {
             kohii.stick(it)
             playback = it
           }
@@ -110,6 +111,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
   private lateinit var kohii: Kohii
   private lateinit var manager: Manager
   private lateinit var binding: FragmentRecyclerViewMotionBinding
+  private lateinit var overlayBinding: OverlayVideoContainerBinding
   private lateinit var overlaySheet: BottomSheetBehavior<*>
   private lateinit var adapter: VideoItemsAdapter
 
@@ -119,6 +121,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     state: Bundle?
   ): View? {
     binding = FragmentRecyclerViewMotionBinding.inflate(inflater, parent, false)
+    overlayBinding = binding.motionLayout
     return binding.root
   }
 
@@ -131,7 +134,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     kohii = Kohii[this]
     manager = kohii.register(this)
         .addBucket(binding.recyclerView)
-        .addBucket(binding.videoPlayerContainer)
+        .addBucket(overlayBinding.videoPlayerContainer)
 
     adapter = VideoItemsAdapter(getApp().videos, kohii,
         shouldBindVideo = { /* the Rebinder is not selected */ it != selection.second },
@@ -153,7 +156,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     // We will fetch the behavior manually ...
     // overlaySheet = BottomSheetBehavior.from(binding.motionLayout) // don't do this :(
     overlaySheet = run {
-      val behavior = binding.motionLayout.viewBehavior()
+      val behavior = overlayBinding.container.viewBehavior()
       check(behavior is BottomSheetBehavior)
       behavior
     }
@@ -162,15 +165,15 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     overlaySheet.addBottomSheetCallback(sheetCallback)
 
     // Update overlay view's max width on collapse mode/landscape mode.
-    val constraintSet = binding.motionLayout.getConstraintSet(R.id.end)
+    val constraintSet = overlayBinding.container.getConstraintSet(R.id.end)
     val collapseWidth = resources.getDimensionPixelSize(R.dimen.overlay_collapse_max_width)
     constraintSet.constrainMaxWidth(R.id.dummy_frame, collapseWidth)
-    constraintSet.applyTo(binding.motionLayout)
-    binding.motionLayout.setTransitionListener(this)
+    constraintSet.applyTo(overlayBinding.container)
+    overlayBinding.container.setTransitionListener(this)
 
     overlayViewModel.apply {
       overlayVolume.observe(viewLifecycleOwner) {
-        manager.applyVolumeInfo(it, binding.videoPlayerContainer, Scope.BUCKET)
+        manager.applyVolumeInfo(it, overlayBinding.videoPlayerContainer, Scope.BUCKET)
       }
 
       recyclerViewVolume.observe(viewLifecycleOwner) {
@@ -197,12 +200,12 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
   private fun restoreState() {
     if (overlaySheet.state == STATE_COLLAPSED) {
-      binding.motionLayout.progress = 1F
+      overlayBinding.container.progress = 1F
     } else if (overlaySheet.state == STATE_EXPANDED) {
-      binding.motionLayout.progress = 0F
+      overlayBinding.container.progress = 0F
     }
 
-    selection.second?.bind(kohii, binding.overlayPlayerView) {
+    selection.second?.bind(kohii, overlayBinding.overlayPlayerView) {
       kohii.stick(it)
       playback = it
     }
@@ -216,7 +219,7 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     endId: Int,
     progress: Float
   ) {
-    binding.overlayPlayerView.useController = progress < 0.2
+    overlayBinding.overlayPlayerView.useController = progress < 0.2
   }
 
   override fun consumeBackPress(): Boolean {

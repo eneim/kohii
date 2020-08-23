@@ -53,10 +53,12 @@ internal class VideoItemHolder(
       initialValue = null,
       onChange = { _, _, value ->
         if (value != null) {
-          val firstItem = value.playlist.first()
-          videoImage = firstItem.image
-          videoFile = firstItem.sources.first()
-              .file
+          val firstPlaylist = value.playlist.first()
+          videoImage = firstPlaylist.image
+          videoFile = firstPlaylist.sources
+              .firstOrNull {
+                it.file.endsWith("m3u8")
+              }?.file ?: firstPlaylist.sources.first().file
         } else {
           videoImage = null
           videoFile = null
