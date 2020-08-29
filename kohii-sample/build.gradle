@@ -117,8 +117,10 @@ dependencies {
   implementation project(':kohii-exoplayer')
   implementation project(':kohii-androidx')
   implementation project(':kohii-experiments')
+  implementation project(':kohii-ads')
 
   implementation Libs.ExoPlayer.all
+  implementation Libs.ExoPlayer.imaExtension
   implementation Libs.AndroidX.Media.widget
 
   implementation Libs.Kotlin.stdlibJdk8
