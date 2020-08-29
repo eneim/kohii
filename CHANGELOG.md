@@ -9,7 +9,7 @@
 - (kohii-androidx) Add `MediaPlayerPool` that extends `PlayerPool` and replace the `MediaPlayerProvider`.
 
 ### Changed
-- ExoPlayer: 2.11.7
+- ExoPlayer: 2.11.8
 - (kohii-exoplayer): Use default CacheDataSourceFactory, which uses default fragment size of 5MB.
 - (kohii-exoplayer): DefaultMediaSourceFactoryProvider now accepts nullable DrmSessionManagerProvider.
 
