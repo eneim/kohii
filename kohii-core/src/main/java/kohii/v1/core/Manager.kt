@@ -322,8 +322,8 @@ class Manager internal constructor(
     val prev = playbacks.put(playback.container, playback)
     require(prev == null)
     playback.lifecycleState = lifecycleOwner.lifecycle.currentState
-    playback.bucket.addContainer(playback.container)
     playback.onAdded()
+    playback.bucket.addContainer(playback.container)
   }
 
   internal fun removePlayback(playback: Playback) {
