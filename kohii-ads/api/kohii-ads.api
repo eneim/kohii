@@ -1,14 +1,84 @@
+public abstract interface class kohii/v1/ads/AdMedia : kohii/v1/media/Media {
+	public abstract fun getAdTagUri ()Landroid/net/Uri;
+}
+
+public final class kohii/v1/ads/AdMediaItem : kohii/v1/media/MediaItem, kohii/v1/ads/AdMedia {
+	public static final field CREATOR Landroid/os/Parcelable$Creator;
+	public fun <init> (Landroid/net/Uri;Landroid/net/Uri;Ljava/lang/String;Lkohii/v1/media/MediaDrm;)V
+	public synthetic fun <init> (Landroid/net/Uri;Landroid/net/Uri;Ljava/lang/String;Lkohii/v1/media/MediaDrm;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Landroid/net/Uri;
+	public final fun component2 ()Landroid/net/Uri;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Lkohii/v1/media/MediaDrm;
+	public final fun copy (Landroid/net/Uri;Landroid/net/Uri;Ljava/lang/String;Lkohii/v1/media/MediaDrm;)Lkohii/v1/ads/AdMediaItem;
+	public static synthetic fun copy$default (Lkohii/v1/ads/AdMediaItem;Landroid/net/Uri;Landroid/net/Uri;Ljava/lang/String;Lkohii/v1/media/MediaDrm;ILjava/lang/Object;)Lkohii/v1/ads/AdMediaItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getAdTagUri ()Landroid/net/Uri;
+	public fun getMediaDrm ()Lkohii/v1/media/MediaDrm;
+	public fun getType ()Ljava/lang/String;
+	public fun getUri ()Landroid/net/Uri;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public class kohii/v1/ads/AdMediaItem$Creator : android/os/Parcelable$Creator {
+	public fun <init> ()V
+	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun newArray (I)[Ljava/lang/Object;
+}
+
 public final class kohii/v1/ads/BuildConfig {
 	public static final field BUILD_TYPE Ljava/lang/String;
 	public static final field DEBUG Z
 	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
 	public static final field LIB_NAME Ljava/lang/String;
-	public static final field VERSION_CODE I
-	public static final field VERSION_NAME Ljava/lang/String;
 	public fun <init> ()V
 }
 
-public final class kohii/v1/ads/Manilo {
-	public fun <init> ()V
+public final class kohii/v1/ads/Manilo : kohii/v1/exoplayer/Kohii, com/google/ads/interactivemedia/v3/api/AdEvent$AdEventListener {
+	public static final field Companion Lkohii/v1/ads/Manilo$Companion;
+	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;)V
+	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun onAdEvent (Lcom/google/ads/interactivemedia/v3/api/AdEvent;)V
+}
+
+public final class kohii/v1/ads/Manilo$Companion {
+	public final fun get (Landroid/content/Context;)Lkohii/v1/ads/Manilo;
+	public final fun get (Landroidx/fragment/app/Fragment;)Lkohii/v1/ads/Manilo;
+}
+
+public final class kohii/v1/ads/exoplayer/ImaBridgeConfig {
+	public fun <init> (Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)V
+	public final fun component1 ()Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;
+	public final fun component2 ()Lcom/google/android/exoplayer2/source/MediaSourceFactory;
+	public final fun copy (Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)Lkohii/v1/ads/exoplayer/ImaBridgeConfig;
+	public static synthetic fun copy$default (Lkohii/v1/ads/exoplayer/ImaBridgeConfig;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;Lcom/google/android/exoplayer2/source/MediaSourceFactory;ILjava/lang/Object;)Lkohii/v1/ads/exoplayer/ImaBridgeConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAdsLoader ()Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;
+	public final fun getAdsMediaSourceFactory ()Lcom/google/android/exoplayer2/source/MediaSourceFactory;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kohii/v1/ads/exoplayer/PlayerViewImaBridge : kohii/v1/exoplayer/PlayerViewBridge, com/google/android/exoplayer2/source/ads/AdsLoader$AdViewProvider {
+	public fun <init> (Landroid/content/Context;Lkohii/v1/ads/AdMedia;Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lkohii/v1/ads/exoplayer/ImaBridgeConfig;)V
+	public fun getAdOverlayViews ()[Landroid/view/View;
+	public fun getAdViewGroup ()Landroid/view/ViewGroup;
+	public fun getRenderer ()Lcom/google/android/exoplayer2/ui/PlayerView;
+	public synthetic fun getRenderer ()Ljava/lang/Object;
+	public fun ready ()V
+	public fun release ()V
+	public fun reset (Z)V
+	public fun setRenderer (Lcom/google/android/exoplayer2/ui/PlayerView;)V
+	public synthetic fun setRenderer (Ljava/lang/Object;)V
+}
+
+public final class kohii/v1/ads/exoplayer/PlayerViewImaBridgeCreator : kohii/v1/core/BridgeCreator {
+	public fun <init> (Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;)V
+	public synthetic fun <init> (Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun cleanUp ()V
+	public fun createBridge (Landroid/content/Context;Lkohii/v1/media/Media;)Lkohii/v1/core/Bridge;
 }
 
