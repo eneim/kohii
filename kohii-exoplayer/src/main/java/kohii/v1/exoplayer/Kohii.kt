@@ -40,7 +40,7 @@ import kohii.v1.exoplayer.Kohii.Builder
 import kohii.v1.media.Media
 import kohii.v1.utils.Capsule
 
-class Kohii private constructor(
+open class Kohii constructor(
   master: Master,
   playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master),
   private val rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
