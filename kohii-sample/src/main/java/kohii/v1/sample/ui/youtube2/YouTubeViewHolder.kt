@@ -17,7 +17,6 @@
 package kohii.v1.sample.ui.youtube2
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -29,6 +28,7 @@ import kohii.v1.core.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.svg.GlideApp
+import timber.log.Timber
 
 class YouTubeViewHolder(
   parent: ViewGroup,
@@ -70,7 +70,7 @@ class YouTubeViewHolder(
     state: Int
   ) {
     thumbnail.isVisible = shouldShow
-    Log.d("Kohii::Art", "${playback?.tag} art: $shouldShow, $position, $state")
+    Timber.tag("Kohii::Art").d("${playback.tag} art: $shouldShow, $position, $state")
   }
 
   override fun onRecycled(success: Boolean) {
