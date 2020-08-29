@@ -53,10 +53,11 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
-class PlayerViewBridge(
+open class PlayerViewBridge(
   context: Context,
-  private val media: Media,
-  private val playerPool: PlayerPool<Player>,
+  protected val media: Media,
+  @Suppress("MemberVisibilityCanBePrivate")
+  protected val playerPool: PlayerPool<Player>,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
 ) : AbstractBridge<PlayerView>(), PlayerEventListener {
 
@@ -86,7 +87,7 @@ class PlayerViewBridge(
   private var lastSeenTrackGroupArray: TrackGroupArray? = null
   private var inErrorState = false
 
-  internal var player: Player? = null
+  protected var player: Player? = null
 
   override val playerState: Int
     get() = player?.playbackState ?: Common.STATE_IDLE
@@ -270,7 +271,7 @@ class PlayerViewBridge(
   private fun prepareMediaSource() {
     val mediaSource: MediaSource = this.mediaSource ?: run {
       sourcePrepared = false
-      mediaSourceFactory.createMediaSource(this.media.uri).also { this.mediaSource = it }
+      createMediaSource().also { this.mediaSource = it }
     }
 
     // Player was reset, need to prepare again.
@@ -286,6 +287,9 @@ class PlayerViewBridge(
       }
     }
   }
+
+  protected open fun createMediaSource(): MediaSource =
+    mediaSourceFactory.createMediaSource(media.uri)
 
   private fun ensurePlayer() {
     if (player == null) {
