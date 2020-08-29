@@ -17,8 +17,14 @@
 package kohii.v1.sample
 
 import android.app.Application
+import android.net.Uri
+import androidx.core.net.toUri
+import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.ToJson
 import com.squareup.moshi.Types
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
@@ -63,6 +69,17 @@ class DemoApp : Application() {
   }
 
   internal val moshi: Moshi = Moshi.Builder()
+      .add(object : JsonAdapter<Uri>() {
+        @FromJson
+        override fun fromJson(reader: JsonReader): Uri? = reader.nextString().toUri()
+
+        @ToJson
+        override fun toJson(writer: JsonWriter, value: Uri?) {
+          writer.value(value.toString())
+        }
+
+        override fun toString(): String = "JsonAdapter(Uri)"
+      })
       .build()
 
   val videos by lazy(NONE) {
