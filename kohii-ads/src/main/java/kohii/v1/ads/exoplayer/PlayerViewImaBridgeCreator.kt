@@ -27,6 +27,7 @@ import kohii.v1.core.Bridge
 import kohii.v1.core.BridgeCreator
 import kohii.v1.core.PlayerPool
 import kohii.v1.exoplayer.MediaSourceFactoryProvider
+import kohii.v1.exoplayer.PlayerViewBridge
 import kohii.v1.media.Media
 
 class PlayerViewImaBridgeCreator(
@@ -37,17 +38,26 @@ class PlayerViewImaBridgeCreator(
 ) : BridgeCreator<PlayerView> {
 
   override fun createBridge(context: Context, media: Media): Bridge<PlayerView> {
-    require(media is AdMedia)
-    val adsLoaderBuilder = this.imaAdsLoaderBuilder ?: ImaAdsLoader.Builder(context)
-        .setAdEventListener(Manilo[context])
-    val adsLoader = adsLoaderBuilder.buildForAdTag(media.adTagUri)
-    return PlayerViewImaBridge(
-        context,
-        media,
-        playerPool,
-        mediaSourceFactoryProvider,
-        ImaBridgeConfig(adsLoader, adsMediaSourceFactory)
-    )
+    val adTagUri = (media as? AdMedia)?.adTagUri
+    return if (adTagUri != null) {
+      val adsLoaderBuilder = this.imaAdsLoaderBuilder ?: ImaAdsLoader.Builder(context)
+          .setAdEventListener(Manilo[context])
+      val adsLoader = adsLoaderBuilder.buildForAdTag(adTagUri)
+      PlayerViewImaBridge(
+          context,
+          media,
+          playerPool,
+          mediaSourceFactoryProvider,
+          ImaBridgeConfig(adsLoader, adsMediaSourceFactory)
+      )
+    } else {
+      PlayerViewBridge(
+          context,
+          media,
+          playerPool,
+          mediaSourceFactoryProvider
+      )
+    }
   }
 
   override fun cleanUp(): Unit = playerPool.clear()
