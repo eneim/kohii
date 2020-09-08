@@ -21,5 +21,5 @@ import kohii.v1.media.Media
 
 interface AdMedia : Media {
 
-  val adTagUri: Uri
+  val adTagUri: Uri?
 }
