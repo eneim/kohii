@@ -45,12 +45,12 @@ class ExoPlayerPool(
 ) : PlayerPool<Player>(poolSize) {
 
   override fun createPlayer(media: Media): Player = KohiiExoPlayer(
-      context,
+      context.applicationContext,
       clock,
       renderersFactory,
-      trackSelectorFactory.createDefaultTrackSelector(context),
+      trackSelectorFactory.createDefaultTrackSelector(context.applicationContext),
       loadControlFactory.createLoadControl(),
-      bandwidthMeterFactory.createBandwidthMeter(context),
+      bandwidthMeterFactory.createBandwidthMeter(context.applicationContext),
       Util.getLooper()
   )
 

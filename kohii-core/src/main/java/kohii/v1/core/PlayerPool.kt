@@ -71,7 +71,7 @@ abstract class PlayerPool<PLAYER> @JvmOverloads constructor(
   abstract fun createPlayer(media: Media): PLAYER
 
   /**
-   * Destroy the [PLAYER] instance.
+   * Destroy the [PLAYER] instance. After this, the [player] must not be reused.
    *
    * @param player The [PLAYER] instance.
    */
