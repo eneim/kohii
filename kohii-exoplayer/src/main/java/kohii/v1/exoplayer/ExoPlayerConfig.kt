@@ -29,6 +29,8 @@ import com.google.android.exoplayer2.trackselection.TrackSelection
 import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.util.Clock
 
@@ -127,4 +129,33 @@ data class ExoPlayerConfig(
 
     return DefaultTrackSelector(parameters, trackSelectionFactory)
   }
+}
+
+// For internal use only
+fun ExoPlayerConfig.createDefaultPlayerPool(context: Context) = ExoPlayerPool(
+    context = context.applicationContext,
+    clock = clock,
+    bandwidthMeterFactory = this,
+    trackSelectorFactory = this,
+    loadControlFactory = this,
+    renderersFactory = DefaultRenderersFactory(context.applicationContext)
+        .setEnableDecoderFallback(enableDecoderFallback)
+        .setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs)
+        .setExtensionRendererMode(extensionRendererMode)
+        .setMediaCodecSelector(mediaCodecSelector)
+        .setPlayClearSamplesWithoutKeys(playClearSamplesWithoutKeys)
+)
+
+// For internal use only.
+fun ExoPlayerConfig.createDefaultMediaSourceFactoryProvider(
+  context: Context,
+  dataSourceFactory: HttpDataSource.Factory
+) = run {
+  val mediaCache: Cache = cache ?: ExoPlayerCache.lruCacheSingleton.get(context.applicationContext)
+  val drmSessionManagerProvider =
+    drmSessionManagerProvider ?: DefaultDrmSessionManagerProvider(
+        context.applicationContext, dataSourceFactory
+    )
+  val upstreamFactory = DefaultDataSourceFactory(context.applicationContext, dataSourceFactory)
+  DefaultMediaSourceFactoryProvider(upstreamFactory, drmSessionManagerProvider, mediaCache)
 }
