@@ -81,6 +81,7 @@ class DevAdsContainerFragment : BaseFragment(R.layout.fragment_dev_ad_list) {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val app = (requireContext().applicationContext as DemoApp)
+    manilo = app.manilo
     adSamples = app.moshi.adapter(AdSamples::class.java)
         .fromJson(
             app.assets.open("ads.json").source().buffer()
@@ -91,7 +92,6 @@ class DevAdsContainerFragment : BaseFragment(R.layout.fragment_dev_ad_list) {
     super.onViewCreated(view, savedInstanceState)
     binding = FragmentDevAdListBinding.bind(view)
 
-    manilo = Manilo[this]
     manilo.register(this).addBucket(binding.playerContainer)
 
     val layoutManager = LinearLayoutManager(view.context)
