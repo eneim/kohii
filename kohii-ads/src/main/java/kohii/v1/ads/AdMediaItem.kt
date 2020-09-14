@@ -21,6 +21,9 @@ import kohii.v1.media.MediaDrm
 import kohii.v1.media.MediaItem
 import kotlinx.android.parcel.Parcelize
 
+/**
+ * A default implementation of [AdMedia].
+ */
 @Parcelize
 data class AdMediaItem(
   override val uri: Uri,

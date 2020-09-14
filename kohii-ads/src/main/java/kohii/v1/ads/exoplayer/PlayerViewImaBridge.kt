@@ -34,28 +34,27 @@ import kohii.v1.exoplayer.MediaSourceFactoryProvider
 import kohii.v1.exoplayer.PlayerViewBridge
 
 /**
- * Configuration for a [PlayerViewImaBridge].
+ * A [PlayerViewBridge] that supports ad media using [ImaAdsLoader].
  */
-data class ImaBridgeConfig(
-  val adsLoader: ImaAdsLoader,
-  val adsMediaSourceFactory: MediaSourceFactory
-)
-
 class PlayerViewImaBridge(
   context: Context,
   media: AdMedia,
   playerPool: PlayerPool<Player>,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider,
   imaBridgeConfig: ImaBridgeConfig
-) : PlayerViewBridge(context, media, playerPool, mediaSourceFactoryProvider),
-    AdsLoader.AdViewProvider {
+) : PlayerViewBridge(
+    context,
+    media,
+    playerPool,
+    mediaSourceFactoryProvider
+), AdsLoader.AdViewProvider {
 
   private val adsLoader: ImaAdsLoader = imaBridgeConfig.adsLoader
   private val adsMediaSourceFactory: MediaSourceFactory = imaBridgeConfig.adsMediaSourceFactory
   private val mediaSourceFactory: MediaSourceFactory =
     mediaSourceFactoryProvider.provideMediaSourceFactory(media)
 
-  // Using Application Context so this View can survive configuration changes.
+  // Using Application Context so this View instance can survive configuration changes.
   private val adViewGroup: ViewGroup = FrameLayout(context.applicationContext)
   private val adDisplayContainer: AdDisplayContainer = adsLoader.adDisplayContainer
 
@@ -101,7 +100,11 @@ class PlayerViewImaBridge(
     adsLoader.release()
   }
 
+  /* [BEGIN] AdsLoader.AdViewProvider */
+
   override fun getAdViewGroup(): ViewGroup = adViewGroup
 
   override fun getAdOverlayViews(): Array<View> = arrayOf()
+
+  /* [END] AdsLoader.AdViewProvider */
 }
