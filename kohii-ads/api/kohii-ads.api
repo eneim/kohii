@@ -57,15 +57,8 @@ public final class kohii/v1/ads/Manilo$Companion {
 
 public final class kohii/v1/ads/exoplayer/ImaBridgeConfig {
 	public fun <init> (Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)V
-	public final fun component1 ()Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;
-	public final fun component2 ()Lcom/google/android/exoplayer2/source/MediaSourceFactory;
-	public final fun copy (Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)Lkohii/v1/ads/exoplayer/ImaBridgeConfig;
-	public static synthetic fun copy$default (Lkohii/v1/ads/exoplayer/ImaBridgeConfig;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;Lcom/google/android/exoplayer2/source/MediaSourceFactory;ILjava/lang/Object;)Lkohii/v1/ads/exoplayer/ImaBridgeConfig;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAdsLoader ()Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;
 	public final fun getAdsMediaSourceFactory ()Lcom/google/android/exoplayer2/source/MediaSourceFactory;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class kohii/v1/ads/exoplayer/PlayerViewImaBridge : kohii/v1/exoplayer/PlayerViewBridge, com/google/android/exoplayer2/source/ads/AdsLoader$AdViewProvider {
