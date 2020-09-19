@@ -69,7 +69,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:4.1.0-rc02"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:4.1.0-rc03"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.3"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
@@ -84,14 +84,14 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.3.72"
+    private const val version = "1.4.10"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$version"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$version"
     const val extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$version"
-    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5"
+    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9"
   }
 
   object AndroidX {
@@ -107,7 +107,7 @@ object Libs {
     val vector = "androidx.vectordrawable:vectordrawable:1.1.0"
 
     val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
-    val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-rc01"
+    val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-rc02"
 
     val viewPager = "androidx.viewpager:viewpager:1.0.0"
     val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
@@ -140,12 +140,12 @@ object Libs {
     }
 
     object Test {
-      private const val version = "1.3.0-rc01"
+      private const val version = "1.3.0"
       val core = "androidx.test:core:$version"
       val runner = "androidx.test:runner:$version"
       val rules = "androidx.test:rules:$version"
 
-      val espressoCore = "androidx.test.espresso:espresso-core:3.3.0-rc01"
+      val espressoCore = "androidx.test.espresso:espresso-core:3.3.0"
     }
 
     val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
