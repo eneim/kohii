@@ -7,6 +7,7 @@
 - (kohii-core) Add `PlayerPool` implementation.
 - (kohii-exoplayer) Add `ExoPlayerPool` that extends `PlayerPool` and replace the `ExoPlayerProvider`.
 - (kohii-androidx) Add `MediaPlayerPool` that extends `PlayerPool` and replace the `MediaPlayerProvider`.
+- (kohii-ads) Initial implementation using ExoPlayer and Ima Extension API.
 
 ### Changed
 - ExoPlayer: 2.11.8
