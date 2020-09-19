@@ -26,7 +26,7 @@ import com.google.android.exoplayer2.source.MediaSourceFactory
  * @param adsLoader The [ImaAdsLoader] to construct a [PlayerViewImaBridge].
  * @param adsMediaSourceFactory The [MediaSourceFactory] to create the [MediaSource] for an Ad.
  */
-data class ImaBridgeConfig(
+class ImaBridgeConfig(
   val adsLoader: ImaAdsLoader,
   val adsMediaSourceFactory: MediaSourceFactory
 )
