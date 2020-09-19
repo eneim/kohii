@@ -45,6 +45,7 @@
     <activity
         android:name="kohii.v1.dev.DevActivity"
         android:label="@string/app_name"
+        android:exported="true"
         android:supportsPictureInPicture="true"
         android:theme="@style/AppTheme.Dev" />
 
@@ -54,7 +55,7 @@
 
     <activity-alias
         android:name="Home"
-        android:targetActivity=".MainActivity">
+        android:targetActivity="kohii.v1.dev.DevActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
 

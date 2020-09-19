@@ -7,8 +7,6 @@ public final class kohii/v1/BuildConfig {
 	public static final field DEBUG Z
 	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
 	public static final field LIB_NAME Ljava/lang/String;
-	public static final field VERSION_CODE I
-	public static final field VERSION_NAME Ljava/lang/String;
 	public fun <init> ()V
 }
 
@@ -152,7 +150,7 @@ public abstract interface class kohii/v1/core/BridgeCreator {
 	public abstract fun createBridge (Landroid/content/Context;Lkohii/v1/media/Media;)Lkohii/v1/core/Bridge;
 }
 
-public abstract class kohii/v1/core/Bucket : android/view/View$OnAttachStateChangeListener, android/view/View$OnLayoutChangeListener {
+public abstract class kohii/v1/core/Bucket : android/view/View$OnLayoutChangeListener {
 	public static final field BOTH_AXIS I
 	public static final field Companion Lkohii/v1/core/Bucket$Companion;
 	public static final field HORIZONTAL I
@@ -172,8 +170,6 @@ public abstract class kohii/v1/core/Bucket : android/view/View$OnAttachStateChan
 	public fun onDetached ()V
 	public fun onLayoutChange (Landroid/view/View;IIIIIIII)V
 	public fun onRemoved ()V
-	public fun onViewAttachedToWindow (Landroid/view/View;)V
-	public fun onViewDetachedFromWindow (Landroid/view/View;)V
 	public fun removeContainer (Landroid/view/ViewGroup;)V
 	protected final fun selectByOrientation (Ljava/util/Collection;I)Ljava/util/Collection;
 	public abstract fun selectToPlay (Ljava/util/Collection;)Ljava/util/Collection;
@@ -788,6 +784,7 @@ public class kohii/v1/media/PlaybackInfo$Creator : android/os/Parcelable$Creator
 
 public final class kohii/v1/media/VolumeInfo : android/os/Parcelable {
 	public static final field CREATOR Landroid/os/Parcelable$Creator;
+	public static final field Companion Lkohii/v1/media/VolumeInfo$Companion;
 	public fun <init> ()V
 	public fun <init> (Lkohii/v1/media/VolumeInfo;)V
 	public fun <init> (ZF)V
@@ -803,6 +800,11 @@ public final class kohii/v1/media/VolumeInfo : android/os/Parcelable {
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 	public fun writeToParcel (Landroid/os/Parcel;I)V
+}
+
+public final class kohii/v1/media/VolumeInfo$Companion {
+	public final fun getDEFAULT_ACTIVE ()Lkohii/v1/media/VolumeInfo;
+	public final fun getDEFAULT_INACTIVE ()Lkohii/v1/media/VolumeInfo;
 }
 
 public class kohii/v1/media/VolumeInfo$Creator : android/os/Parcelable$Creator {

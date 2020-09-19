@@ -77,6 +77,10 @@ dependencies {
   implementation Libs.AndroidX.coreKtx
   implementation Libs.AndroidX.collectionKtx
 
+  implementation Libs.ExoPlayer.core
+  implementation Libs.ExoPlayer.ui
+  implementation Libs.ExoPlayer.imaExtension
+
   testImplementation Libs.Common.junit
   androidTestImplementation Libs.Common.junitExt
   androidTestImplementation Libs.AndroidX.Test.espressoCore
