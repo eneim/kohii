@@ -57,6 +57,11 @@ public final class kohii/v1/exoplayer/ExoPlayerConfig$Companion {
 	public final fun getFAST_START ()Lkohii/v1/exoplayer/ExoPlayerConfig;
 }
 
+public final class kohii/v1/exoplayer/ExoPlayerConfigKt {
+	public static final fun createDefaultMediaSourceFactoryProvider (Lkohii/v1/exoplayer/ExoPlayerConfig;Landroid/content/Context;Lcom/google/android/exoplayer2/upstream/HttpDataSource$Factory;)Lkohii/v1/exoplayer/DefaultMediaSourceFactoryProvider;
+	public static final fun createDefaultPlayerPool (Lkohii/v1/exoplayer/ExoPlayerConfig;Landroid/content/Context;)Lkohii/v1/exoplayer/ExoPlayerPool;
+}
+
 public final class kohii/v1/exoplayer/ExoPlayerPool : kohii/v1/core/PlayerPool {
 	public fun <init> (ILandroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;)V
 	public synthetic fun <init> (ILandroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

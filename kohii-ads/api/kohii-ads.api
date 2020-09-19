@@ -38,9 +38,15 @@ public final class kohii/v1/ads/BuildConfig {
 
 public final class kohii/v1/ads/Manilo : kohii/v1/exoplayer/Kohii, com/google/ads/interactivemedia/v3/api/AdEvent$AdEventListener {
 	public static final field Companion Lkohii/v1/ads/Manilo$Companion;
+	public fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;)V
-	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun onAdEvent (Lcom/google/ads/interactivemedia/v3/api/AdEvent;)V
 }
 
