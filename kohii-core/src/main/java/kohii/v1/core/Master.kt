@@ -274,7 +274,7 @@ class Master private constructor(context: Context) : PlayableManager {
     options: Options,
     callback: ((Playback) -> Unit)? = null
   ) {
-    "Request queue: $tag, $container, $playable".logDebug()
+    "Master#bind tag=$tag, playable=$playable, container=$container, options=$options".logInfo()
     // Remove any queued binding requests for the same container.
     dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
     // Remove any queued releasing request for the same Playable, since we are binding it now.
@@ -500,11 +500,13 @@ class Master private constructor(context: Context) : PlayableManager {
     playable: Playable,
     loadSource: Boolean = false
   ) {
+    "Master#preparePlayable playable=$playable, loadSource=$loadSource".logInfo()
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     playable.onPrepare(loadSource)
   }
 
   internal fun releasePlayable(playable: Playable) {
+    "Master#releasePlayable playable=$playable".logInfo()
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
         .sendToTarget()
