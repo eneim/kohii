@@ -52,7 +52,7 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
           val tag = to.tag.toString()
           childFragmentManager.findFragmentByTag(tag)
               ?: SinglePlayerFragment.newInstance(to)
-                  .show(childFragmentManager, tag)
+                  .showNow(childFragmentManager, tag)
         } else {
           if (from != null) videoFragment.deselect(from)
         }
