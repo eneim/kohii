@@ -47,9 +47,17 @@ internal class VideoViewHolder(
   internal val rebinder: Rebinder?
     get() = videoTag?.let { Rebinder(it) }
 
-  internal val itemDetails: ItemDetails<Rebinder>
-    get() = object : ItemDetails<Rebinder>() {
-      override fun getSelectionKey() = rebinder
+  internal val itemDetails: ItemDetails<SelectionKey>
+    get() = object : ItemDetails<SelectionKey>() {
+      override fun getSelectionKey(): SelectionKey? {
+        val rebinder = this@VideoViewHolder.rebinder
+        return if (rebinder != null) {
+          SelectionKey(adapterPosition, rebinder)
+        } else {
+          null
+        }
+      }
+
       override fun getPosition() = adapterPosition
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2020 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 
 package kohii.v1.sample.ui.grid
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.os.Parcelable
 import kohii.v1.core.Rebinder
+import kotlinx.android.parcel.Parcelize
 
-class VideosViewModel : ViewModel() {
-
-  val selectedRebinder = MutableLiveData<SelectionKey>(null)
-}
+@Parcelize
+data class SelectionKey(
+  val position: Int,
+  val rebinder: Rebinder
+) : Parcelable

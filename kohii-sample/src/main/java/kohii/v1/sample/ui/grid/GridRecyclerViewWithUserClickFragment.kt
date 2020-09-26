@@ -21,14 +21,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.observe
-import kohii.v1.core.Rebinder
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.ui.main.DemoItem
 import timber.log.Timber
-import kotlin.properties.Delegates
 
 class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
     GridContentFragment.VideoGridCallback,
@@ -43,20 +40,21 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
   private val viewModel: VideosViewModel by viewModels()
 
   private lateinit var videoFragment: GridContentFragment
-  private var selected: Rebinder? by Delegates.observable<Rebinder?>(
-      null,
-      onChange = { _, from, to ->
-        if (from == to /* equals */) return@observable
-        if (to != null) {
-          videoFragment.select(to)
-          val tag = to.tag.toString()
-          childFragmentManager.findFragmentByTag(tag)
-              ?: SinglePlayerFragment.newInstance(to)
-                  .showNow(childFragmentManager, tag)
-        } else {
-          if (from != null) videoFragment.deselect(from)
-        }
-      })
+  private var selected: SelectionKey? = null
+    set(value) {
+      val from = field
+      field = value
+      if (from == value /* equals */) return
+      if (value != null) {
+        videoFragment.select(value)
+        val tag = value.rebinder.tag.toString()
+        childFragmentManager.findFragmentByTag(tag)
+            ?: SinglePlayerFragment.newInstance(value)
+                .showNow(childFragmentManager, tag)
+      } else {
+        if (from != null) videoFragment.deselect(from)
+      }
+    }
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -79,20 +77,20 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
 
   // GridContentFragment.Callback
 
-  override fun onSelected(rebinder: Rebinder) {
-    viewModel.selectedRebinder.value = rebinder
-    Timber.i("Selected: $rebinder")
+  override fun onSelected(selectionKey: SelectionKey) {
+    viewModel.selectedRebinder.value = selectionKey
+    Timber.i("Selected: $selectionKey")
   }
 
   // SinglePlayerFragment.Callback
 
-  override fun onShown(rebinder: Rebinder) {
-    viewModel.selectedRebinder.value = rebinder
-    Timber.i("Shown: $rebinder")
+  override fun onShown(selectionKey: SelectionKey) {
+    viewModel.selectedRebinder.value = selectionKey
+    Timber.i("Shown: $selectionKey")
   }
 
-  override fun onDismiss(rebinder: Rebinder) {
+  override fun onDismiss(selectionKey: SelectionKey) {
     viewModel.selectedRebinder.value = null
-    Timber.i("Dismiss: $rebinder")
+    Timber.i("Dismiss: $selectionKey")
   }
 }

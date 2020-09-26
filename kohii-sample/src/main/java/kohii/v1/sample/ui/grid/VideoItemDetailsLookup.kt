@@ -23,8 +23,8 @@ import kohii.v1.core.Rebinder
 
 internal class VideoItemDetailsLookup(
   val recyclerView: RecyclerView
-) : ItemDetailsLookup<Rebinder>() {
-  override fun getItemDetails(event: MotionEvent): ItemDetails<Rebinder>? {
+) : ItemDetailsLookup<SelectionKey>() {
+  override fun getItemDetails(event: MotionEvent): ItemDetails<SelectionKey>? {
     val view = recyclerView.findChildViewUnder(event.x, event.y) ?: return null
     val holder = recyclerView.findContainingViewHolder(view) as? VideoViewHolder ?: return null
     return holder.itemDetails

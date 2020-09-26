@@ -23,7 +23,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
 import kohii.v1.core.Playback
-import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.databinding.HolderPlayerViewBinding
@@ -35,17 +34,17 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
 
     private const val EXTRA_REBINDER = "${BuildConfig.APPLICATION_ID}::debug::rebinder"
 
-    fun newInstance(rebinder: Rebinder) = SinglePlayerFragment().also {
+    fun newInstance(selectionKey: SelectionKey) = SinglePlayerFragment().also {
       val args = Bundle()
-      args.putParcelable(EXTRA_REBINDER, rebinder)
+      args.putParcelable(EXTRA_REBINDER, selectionKey)
       it.arguments = args
     }
   }
 
   private val kohii: Kohii by lazy(NONE) { Kohii[this] }
   private val binding: HolderPlayerViewBinding get() = requireNotNull(_binding)
-  private val rebinder: Rebinder by lazy(NONE) {
-    requireNotNull(arguments?.getParcelable<Rebinder>(EXTRA_REBINDER))
+  private val selectionKey: SelectionKey by lazy(NONE) {
+    requireNotNull(arguments?.getParcelable(EXTRA_REBINDER))
   }
 
   private var _binding: HolderPlayerViewBinding? = null
@@ -88,7 +87,7 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
   override fun onStart() {
     super.onStart()
     binding.root.post { // Use `post`, so that it will be executed _late_ enough.
-      rebinder.with {
+      selectionKey.rebinder.with {
         callbacks += this@SinglePlayerFragment
       }.bind(kohii, binding.playerView) {
         kohii.stick(it)
@@ -98,19 +97,19 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
 
   override fun onActive(playback: Playback) {
     super.onActive(playback)
-    callback?.onShown(rebinder)
+    callback?.onShown(selectionKey)
   }
 
   override fun onInActive(playback: Playback) {
     super.onInActive(playback)
     kohii.unstick(playback)
-    callback?.onDismiss(rebinder)
+    callback?.onDismiss(selectionKey)
   }
 
   interface Callback {
 
-    fun onShown(rebinder: Rebinder)
+    fun onShown(selectionKey: SelectionKey)
 
-    fun onDismiss(rebinder: Rebinder)
+    fun onDismiss(selectionKey: SelectionKey)
   }
 }

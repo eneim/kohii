@@ -18,15 +18,15 @@ package kohii.v1.sample.ui.grid
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseViewHolder
+import timber.log.Timber
 
 internal class ItemsAdapter(
   private val kohii: Kohii,
-  val shouldBindVideo: (Rebinder?) -> Boolean,
-  val onVideoClick: (Rebinder) -> Unit
+  val shouldBindVideo: (SelectionKey?) -> Boolean,
+  val onVideoClick: (SelectionKey) -> Unit
 ) : Adapter<BaseViewHolder>() {
 
   companion object {
@@ -54,7 +54,7 @@ internal class ItemsAdapter(
   }
 
   override fun getItemViewType(position: Int): Int {
-    return if (position % 6 == 3) TYPE_VIDEO else TYPE_TEXT
+    return if (position == 3) TYPE_VIDEO else TYPE_TEXT
   }
 
   override fun onBindViewHolder(
@@ -63,8 +63,11 @@ internal class ItemsAdapter(
   ) {
     if (holder is VideoViewHolder) {
       holder.videoUrl = assetVideoUri
-      val videoTag = holder.videoTag
-      if (shouldBindVideo(holder.rebinder)) {
+      val videoTag = holder.videoTag // This will also set the Rebinder.
+      val rebinder = holder.rebinder
+      val selectionKey = if (rebinder != null) SelectionKey(position, rebinder) else null
+      if (shouldBindVideo(selectionKey)) {
+        Timber.w("Bind VH: rebinder=${rebinder}")
         kohii.setUp(assetVideoUri) {
           tag = requireNotNull(videoTag)
           artworkHintListener = holder
@@ -78,7 +81,9 @@ internal class ItemsAdapter(
     super.onViewAttachedToWindow(holder)
     if (holder is VideoViewHolder) {
       holder.itemView.setOnClickListener {
-        holder.rebinder?.let(onVideoClick)
+        holder.rebinder?.let { rebinder ->
+          onVideoClick(SelectionKey(holder.adapterPosition, rebinder))
+        }
       }
     }
   }

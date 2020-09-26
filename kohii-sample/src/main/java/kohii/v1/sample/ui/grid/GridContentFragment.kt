@@ -23,10 +23,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.SelectionTracker.Builder
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
 import kohii.v1.core.MemoryMode
-import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
@@ -40,8 +40,9 @@ class GridContentFragment : BaseFragment() {
   private var _binding: FragmentRecyclerviewGridBinding? = null
   private val binding: FragmentRecyclerviewGridBinding get() = requireNotNull(_binding)
 
-  private var _selectionTracker: SelectionTracker<Rebinder>? = null
-  private val selectionTracker: SelectionTracker<Rebinder> get() = requireNotNull(_selectionTracker)
+  private var _selectionTracker: SelectionTracker<SelectionKey>? = null
+  private val selectionTracker: SelectionTracker<SelectionKey>
+    get() = requireNotNull(_selectionTracker)
 
   private var videoGridCallback: VideoGridCallback? = null
 
@@ -92,12 +93,12 @@ class GridContentFragment : BaseFragment() {
     val videoKeyProvider = VideoTagKeyProvider(binding.container)
     val videoItemDetailsLookup = VideoItemDetailsLookup(binding.container)
 
-    _selectionTracker = SelectionTracker.Builder(
+    _selectionTracker = Builder(
         "${BuildConfig.APPLICATION_ID}::sample::grid",
         binding.container,
         videoKeyProvider,
         videoItemDetailsLookup,
-        StorageStrategy.createParcelableStorage(Rebinder::class.java)
+        StorageStrategy.createParcelableStorage(SelectionKey::class.java)
     )
         .withSelectionPredicate(SelectionPredicates.createSelectSingleAnything())
         .build()
@@ -115,16 +116,17 @@ class GridContentFragment : BaseFragment() {
     selectionTracker.onSaveInstanceState(outState)
   }
 
-  internal fun select(rebinder: Rebinder) {
-    selectionTracker.select(rebinder)
+  internal fun select(selectionKey: SelectionKey) {
+    selectionTracker.select(selectionKey)
   }
 
-  internal fun deselect(rebinder: Rebinder) {
-    selectionTracker.deselect(rebinder)
+  internal fun deselect(selectionKey: SelectionKey) {
+    selectionTracker.deselect(selectionKey)
+    binding.container.adapter?.notifyItemChanged(selectionKey.position)
   }
 
   interface VideoGridCallback {
 
-    fun onSelected(rebinder: Rebinder)
+    fun onSelected(selectionKey: SelectionKey)
   }
 }
