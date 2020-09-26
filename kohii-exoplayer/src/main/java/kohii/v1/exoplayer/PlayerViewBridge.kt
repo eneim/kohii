@@ -17,7 +17,6 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
@@ -43,6 +42,7 @@ import kohii.v1.exoplayer.internal.addEventListener
 import kohii.v1.exoplayer.internal.getVolumeInfo
 import kohii.v1.exoplayer.internal.removeEventListener
 import kohii.v1.exoplayer.internal.setVolumeInfo
+import kohii.v1.logError
 import kohii.v1.logInfo
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
@@ -93,6 +93,7 @@ open class PlayerViewBridge(
     get() = player?.playbackState ?: Common.STATE_IDLE
 
   override fun prepare(loadSource: Boolean) {
+    "Bridge#prepare loadSource=$loadSource, $this".logInfo()
     super.addEventListener(this)
 
     if (player == null) {
@@ -112,6 +113,7 @@ open class PlayerViewBridge(
   override var renderer: PlayerView? = null
     set(value) {
       if (field === value) return // same reference
+      "Bridge#renderer $field -> $value, $this".logInfo()
       this.lastSeenTrackGroupArray = null
       this.inErrorState = false
       if (value == null) {
@@ -130,6 +132,7 @@ open class PlayerViewBridge(
     }
 
   override fun ready() {
+    "Bridge#ready, $this".logInfo()
     prepareMediaSource()
     requireNotNull(player) { "Player must be available." }
     ensurePlayerView()
@@ -148,6 +151,7 @@ open class PlayerViewBridge(
   }
 
   override fun reset(resetPlayer: Boolean) {
+    "Bridge#reset resetPlayer=$resetPlayer, $this".logInfo()
     if (resetPlayer) _playbackInfo = PlaybackInfo()
     else updatePlaybackInfo()
     player?.also {
@@ -161,6 +165,7 @@ open class PlayerViewBridge(
   }
 
   override fun release() {
+    "Bridge#release, $this".logInfo()
     this.removeEventListener(this)
     // this.playerView = null // Bridge's owner must do this.
     this.renderer?.player = null
@@ -192,7 +197,7 @@ open class PlayerViewBridge(
 
   override var volumeInfo: VolumeInfo = player?.getVolumeInfo() ?: VolumeInfo.DEFAULT_ACTIVE
     set(value) {
-      "Bridge#volumeInfo: $field -> $value, $this".logInfo()
+      "Bridge#volumeInfo $field -> $value, $this".logInfo()
       if (field == value) return
       field = value
       player?.setVolumeInfo(value)
@@ -334,7 +339,7 @@ open class PlayerViewBridge(
   // DefaultEventListener ⬇︎
 
   override fun onPlayerError(error: ExoPlaybackException) {
-    Log.e("Kohii::Bridge", "Error: ${error.cause}")
+    "Bridge#onPlayerError error=${error.cause}, $this".logError()
     if (renderer == null) {
       var errorString: String? = null
       if (error.type == ExoPlaybackException.TYPE_RENDERER) {
