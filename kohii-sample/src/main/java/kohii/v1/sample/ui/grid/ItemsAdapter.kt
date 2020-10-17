@@ -54,7 +54,7 @@ internal class ItemsAdapter(
   }
 
   override fun getItemViewType(position: Int): Int {
-    return if (position == 3) TYPE_VIDEO else TYPE_TEXT
+    return if (position % 6 == 3) TYPE_VIDEO else TYPE_TEXT
   }
 
   override fun onBindViewHolder(
