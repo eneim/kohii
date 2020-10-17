@@ -259,21 +259,42 @@ abstract class Bucket constructor(
     if (lock) return emptyList()
     if (strategy == NO_PLAYER) return emptyList()
 
-    val playbackComparator = playbackComparators.getValue(orientation)
-    val manualToAutoPlaybackGroups = candidates
+    // Logic before 1.2.0
+    // - Sort the candidates using the proper Comparator for the orientation.
+    // - Split the candidates into 2 groups: one with manual Controller (A) and one without (B).
+    // - If the group A has a Playback that is manually started, send that one to the Selector.
+    // - Else, if group A is not empty, send it to the Selector.
+    // - Else, send group B to the Selector.
+
+    // Logic from 1.2.0
+    // - Sort the candidates using the proper Comparator for the orientation.
+    // - If there is a Playback among the candidates that is manually started, send it to the
+    // Selector.
+    // - Else, send all the candidates to the Selector.
+    val manuallyStartedPlayable = candidates.find {
+      manager.master.manuallyStartedPlayable.get() === it.playable
+    }
+
+    // Comment out the code of 1.1.x
+    /* val manualToAutoPlaybackGroups = candidates
         .sortedWith(playbackComparator)
         .groupBy { it.tag != Master.NO_TAG && it.config.controller != null }
         .withDefault { emptyList() }
 
-    val manualCandidate = with(manualToAutoPlaybackGroups.getValue(true)) {
+    val manualCandidates: Collection<Playback> = with(manualToAutoPlaybackGroups.getValue(true)) {
       val started = find { manager.master.manuallyStartedPlayable.get() === it.playable }
-      listOfNotNull(started ?: firstOrNull())
-    }
+      return@with if (started == null) {
+        this
+      } else {
+        listOf(started)
+      }
+    } */
 
-    return if (manualCandidate.isNotEmpty()) {
-      manualCandidate
+    return if (manuallyStartedPlayable != null) {
+      selector(listOf(manuallyStartedPlayable))
     } else {
-      selector(manualToAutoPlaybackGroups.getValue(false))
+      val playbackComparator = playbackComparators.getValue(orientation)
+      selector(candidates.sortedWith(playbackComparator))
     }
   }
 
