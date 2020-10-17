@@ -339,7 +339,7 @@ open class PlayerViewBridge(
   // DefaultEventListener ⬇︎
 
   override fun onPlayerError(error: ExoPlaybackException) {
-    "Bridge#onPlayerError error=${error.cause}, $this".logError()
+    "Bridge#onPlayerError error=${error.cause}, message=${error.cause?.message}, $this".logError()
     if (renderer == null) {
       var errorString: String? = null
       if (error.type == ExoPlaybackException.TYPE_RENDERER) {
