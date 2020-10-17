@@ -78,12 +78,12 @@ open class KohiiExoPlayer(
   }
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
+    val mute = volumeInfo.mute || volumeInfo.volume == 0F
+    super.setAudioAttributes(super.getAudioAttributes(), !mute)
     val changed = this.playerVolumeInfo != volumeInfo // Compare equality, not reference.
     if (changed) {
       this.playerVolumeInfo = volumeInfo
       super.setVolume(if (volumeInfo.mute) 0F else volumeInfo.volume)
-      val mute = volumeInfo.mute || volumeInfo.volume == 0F
-      super.setAudioAttributes(super.getAudioAttributes(), !mute)
       this.volumeChangedListeners.onVolumeChanged(volumeInfo)
     }
     return changed
