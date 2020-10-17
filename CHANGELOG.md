@@ -13,6 +13,10 @@
 - ExoPlayer: 2.11.8
 - (kohii-exoplayer): Use default CacheDataSourceFactory, which uses default fragment size of 5MB.
 - (kohii-exoplayer): DefaultMediaSourceFactoryProvider now accepts nullable DrmSessionManagerProvider.
+- (kohii-core): Update selection logic. If there is a Playback started manually, the Selector will
+receive that Playback, otherwise it receives the default candidates.
+- (kohii-exoplayer): Default ExoPlayer implementation will always update the AudioAttributes when
+the Volume setting is called.
 
 ### Removed
 - (kohii-exoplayer) Remove `ExoPlayerProvider` and its default implementation.
