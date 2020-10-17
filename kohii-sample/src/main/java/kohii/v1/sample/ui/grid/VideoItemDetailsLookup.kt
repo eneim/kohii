@@ -19,7 +19,6 @@ package kohii.v1.sample.ui.grid
 import android.view.MotionEvent
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.widget.RecyclerView
-import kohii.v1.core.Rebinder
 
 internal class VideoItemDetailsLookup(
   val recyclerView: RecyclerView

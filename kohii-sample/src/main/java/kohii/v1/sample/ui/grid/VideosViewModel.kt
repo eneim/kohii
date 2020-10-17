@@ -18,7 +18,6 @@ package kohii.v1.sample.ui.grid
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kohii.v1.core.Rebinder
 
 class VideosViewModel : ViewModel() {
 

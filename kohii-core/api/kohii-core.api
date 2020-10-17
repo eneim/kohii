@@ -375,6 +375,7 @@ public abstract class kohii/v1/core/Playback : kohii/v1/core/ErrorListener, kohi
 	public final fun getConfig ()Lkohii/v1/core/Playback$Config;
 	public final fun getContainer ()Landroid/view/ViewGroup;
 	public final fun getContainerRect ()Landroid/graphics/Rect;
+	public final fun getLock ()Z
 	public final fun getManager ()Lkohii/v1/core/Manager;
 	public final fun getPlayable ()Lkohii/v1/core/Playable;
 	public final fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;

@@ -4,23 +4,26 @@
 
 ### Added
 
-- (kohii-core) Add `PlayerPool` implementation.
-- (kohii-exoplayer) Add `ExoPlayerPool` that extends `PlayerPool` and replace the `ExoPlayerProvider`.
-- (kohii-androidx) Add `MediaPlayerPool` that extends `PlayerPool` and replace the `MediaPlayerProvider`.
-- (kohii-ads) Initial implementation using ExoPlayer and Ima Extension API.
+- (kohii-core): Add `PlayerPool` implementation.
+- (kohii-core): Expose `Playback.lock` flag.
+- (kohii-exoplayer): Add `ExoPlayerPool` that extends `PlayerPool` and replace the `ExoPlayerProvider`.
+- (kohii-androidx): Add `MediaPlayerPool` that extends `PlayerPool` and replace the `MediaPlayerProvider`.
+- (kohii-ads): Initial implementation using ExoPlayer and Ima Extension API.
 
 ### Changed
-- ExoPlayer: 2.11.8
-- (kohii-exoplayer): Use default CacheDataSourceFactory, which uses default fragment size of 5MB.
-- (kohii-exoplayer): DefaultMediaSourceFactoryProvider now accepts nullable DrmSessionManagerProvider.
+
 - (kohii-core): Update selection logic. If there is a Playback started manually, the Selector will
 receive that Playback, otherwise it receives the default candidates.
+- (kohii-exoplayer): ExoPlayer is updated to 2.11.8.
+- (kohii-exoplayer): Use default CacheDataSourceFactory, which uses default fragment size of 5MB.
+- (kohii-exoplayer): DefaultMediaSourceFactoryProvider now accepts nullable DrmSessionManagerProvider.
 - (kohii-exoplayer): Default ExoPlayer implementation will always update the AudioAttributes when
 the Volume setting is called.
 
 ### Removed
-- (kohii-exoplayer) Remove `ExoPlayerProvider` and its default implementation.
-- (kohii-androidx) Remove `MediaPlayerProvider` and its default implementation.
+
+- (kohii-exoplayer): Remove `ExoPlayerProvider` and its default implementation.
+- (kohii-androidx): Remove `MediaPlayerProvider` and its default implementation.
 
 ## [1.1.1.2011003]
 

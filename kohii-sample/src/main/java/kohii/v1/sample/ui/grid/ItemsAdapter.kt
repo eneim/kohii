@@ -67,7 +67,7 @@ internal class ItemsAdapter(
       val rebinder = holder.rebinder
       val selectionKey = if (rebinder != null) SelectionKey(position, rebinder) else null
       if (shouldBindVideo(selectionKey)) {
-        Timber.w("Bind VH: rebinder=${rebinder}")
+        Timber.w("Bind VH: rebinder=$rebinder")
         kohii.setUp(assetVideoUri) {
           tag = requireNotNull(videoTag)
           artworkHintListener = holder
