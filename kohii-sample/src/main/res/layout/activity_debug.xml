@@ -24,7 +24,7 @@
 
   <fragment
       android:id="@+id/fragmentContainer"
-      android:name="kohii.v1.dev.ads.DevAdsContainerFragment"
+      android:name="kohii.v1.dev.DevRecyclerViewFragment"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       tools:ignore="FragmentTagUsage"
