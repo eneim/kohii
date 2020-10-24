@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.dev.ads
+package kohii.v1.sample.ui.ads
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -31,20 +31,19 @@ import kohii.v1.ads.Manilo
 import kohii.v1.core.Common
 import kohii.v1.core.controller
 import kohii.v1.sample.DemoApp
-import kohii.v1.sample.R
-import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.databinding.FragmentDevAdListBinding
+import kohii.v1.sample.common.ViewBindingFragment
+import kohii.v1.sample.databinding.FragmentAdsListBinding
 import okio.buffer
 import okio.source
 
-class DevAdsContainerFragment : BaseFragment(R.layout.fragment_dev_ad_list) {
+class AdsContainerFragment :
+    ViewBindingFragment<FragmentAdsListBinding>(FragmentAdsListBinding::inflate) {
 
   private companion object {
     const val STATE_AD_SAMPLE = "dev_ad_sample"
   }
 
   private lateinit var manilo: Manilo
-  private lateinit var binding: FragmentDevAdListBinding
   private lateinit var adSamples: AdSamples
 
   private var selectedAdSample: AdSample? = null
@@ -56,7 +55,7 @@ class DevAdsContainerFragment : BaseFragment(R.layout.fragment_dev_ad_list) {
         if (current != null) {
           manilo.cancel("$current")
         }
-        binding.adInfo.text = "No sample selected."
+        requireBinding().adInfo.text = "No sample selected."
       } else {
         if (value != current) {
           val adMedia = AdMediaItem(
@@ -72,8 +71,8 @@ class DevAdsContainerFragment : BaseFragment(R.layout.fragment_dev_ad_list) {
                 renderer.useController = true
               }
             }
-          }.bind(binding.playerView)
-          binding.adInfo.text = value.name
+          }.bind(requireBinding().playerView)
+          requireBinding().adInfo.text = value.name
         }
       }
     }
@@ -82,7 +81,8 @@ class DevAdsContainerFragment : BaseFragment(R.layout.fragment_dev_ad_list) {
     super.onCreate(savedInstanceState)
     val app = (requireContext().applicationContext as DemoApp)
     manilo = app.manilo
-    adSamples = app.moshi.adapter(AdSamples::class.java)
+    adSamples = app.moshi
+        .adapter(AdSamples::class.java)
         .fromJson(
             app.assets.open("ads.json").source().buffer()
         ) ?: AdSamples("No Ads", emptyList())
@@ -90,13 +90,12 @@ class DevAdsContainerFragment : BaseFragment(R.layout.fragment_dev_ad_list) {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    binding = FragmentDevAdListBinding.bind(view)
 
-    manilo.register(this).addBucket(binding.playerContainer)
+    manilo.register(this).addBucket(requireBinding().playerContainer)
 
     val layoutManager = LinearLayoutManager(view.context)
-    binding.adsContainer.layoutManager = layoutManager
-    binding.adsContainer.adapter = object : Adapter<ViewHolder>() {
+    requireBinding().adsContainer.layoutManager = layoutManager
+    requireBinding().adsContainer.adapter = object : Adapter<ViewHolder>() {
       override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView = LayoutInflater.from(parent.context)
             .inflate(android.R.layout.simple_list_item_activated_1, parent, false)

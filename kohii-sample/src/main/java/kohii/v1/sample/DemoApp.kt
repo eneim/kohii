@@ -29,6 +29,7 @@ import com.squareup.moshi.Types
 import kohii.v1.ads.Manilo
 import kohii.v1.sample.data.Item
 import kohii.v1.sample.data.Video
+import kohii.v1.sample.ui.ads.AdsContainerFragment
 import kohii.v1.sample.ui.combo.ExoPlayerVideosFragment
 import kohii.v1.sample.ui.echo.EchoFragment
 import kohii.v1.sample.ui.fbook.FbookFragment
@@ -120,7 +121,7 @@ class DemoApp : Application() {
       emptyList()
     }
 
-    listOf(
+    (setOf(
         DemoItem(
             R.string.demo_title_recycler_view_0,
             R.string.demo_desc_recycler_view_0,
@@ -132,11 +133,16 @@ class DemoApp : Application() {
             ManualRecyclerViewFragment::class.java
         ),
         DemoItem(
+            R.string.demo_title_ads_1,
+            R.string.demo_desc_ads_1,
+            AdsContainerFragment::class.java
+        ),
+        DemoItem(
             R.string.demo_title_fbook,
             R.string.demo_desc_fbook,
             FbookFragment::class.java
         )
-    ) + youtubeDemos + listOf(
+    ) + youtubeDemos + setOf(
         DemoItem(
             R.string.demo_title_recycler_view_1,
             R.string.demo_desc_recycler_view_1,
@@ -217,7 +223,7 @@ class DemoApp : Application() {
             R.string.demo_desc_master_detail,
             MasterDetailFragment::class.java
         )
-    )
+    )).toList()
   }
 
   val manilo: Manilo by lazy(NONE) {
