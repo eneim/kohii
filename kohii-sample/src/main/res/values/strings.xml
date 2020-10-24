@@ -293,4 +293,12 @@
   <string name="demo_desc_manual_1">
     Videos with manual controller to play/pause or open the Video in fullscreen.
   </string>
+
+  <string name="demo_title_ads_1">
+    Kohii + Videos with Ads
+  </string>
+
+  <string name="demo_desc_ads_1">
+    Videos with Ads using ExoPlayer &amp; IMA Extension.
+  </string>
 </resources>
