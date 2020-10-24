@@ -17,28 +17,15 @@
 package kohii.v1.dev
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
-import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
+import kohii.v1.sample.common.ViewBindingFragment
 import kohii.v1.sample.databinding.ActivityDevRecyclerviewBinding
 
-class DevRecyclerViewFragment : BaseFragment() {
-
-  private var _binding: ActivityDevRecyclerviewBinding? = null
-  private val binding: ActivityDevRecyclerviewBinding get() = requireNotNull(_binding)
-
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?
-  ): View? {
-    _binding = ActivityDevRecyclerviewBinding.inflate(inflater, container, false)
-    return binding.root
-  }
+class DevRecyclerViewFragment :
+    ViewBindingFragment<ActivityDevRecyclerviewBinding>(ActivityDevRecyclerviewBinding::inflate) {
 
   override fun onViewCreated(
     view: View,
@@ -47,25 +34,22 @@ class DevRecyclerViewFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     val manager = kohii.register(this)
-        .addBucket(binding.recyclerView)
+        .addBucket(requireBinding().recyclerView)
 
-    binding.recyclerView.adapter =
-      DummyAdapter(kohii, manager, enterFullscreenListener = { adapter, holder, _, tag ->
-        manager.observe(tag) { _, from, to ->
-          if (from?.bucket?.root !== binding.recyclerView && to == null) {
-            adapter.bindVideo(holder)
+    requireBinding().recyclerView.adapter = DummyAdapter(
+        kohii,
+        manager,
+        enterFullscreenListener = { adapter, holder, _, tag ->
+          manager.observe(tag) { _, from, to ->
+            if (from?.bucket?.root !== requireBinding().recyclerView && to == null) {
+              adapter.bindVideo(holder)
+            }
           }
-        }
 
-        val intent = PlayerActivity.createIntent(
-            requireContext(), InitData(tag.toString(), 16 / 9F), Rebinder(tag)
-        )
-        startActivity(intent)
-      })
-  }
-
-  override fun onDestroyView() {
-    super.onDestroyView()
-    _binding = null
+          val intent = PlayerActivity.createIntent(
+              requireContext(), InitData(tag.toString(), 16 / 9F), Rebinder(tag)
+          )
+          startActivity(intent)
+        })
   }
 }
