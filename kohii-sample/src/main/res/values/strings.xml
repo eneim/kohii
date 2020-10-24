@@ -285,4 +285,12 @@
   <string name="demo_desc_debug">
     Debug Kohii
   </string>
+
+  <string name="demo_title_manual_1">
+    Kohii + Videos with manual controller
+  </string>
+
+  <string name="demo_desc_manual_1">
+    Videos with manual controller to play/pause or open the Video in fullscreen.
+  </string>
 </resources>
