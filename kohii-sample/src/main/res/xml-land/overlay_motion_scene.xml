@@ -73,10 +73,8 @@
     <Constraint
         android:id="@+id/dummy_frame"
         android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:layout_marginStart="8dp"
+        android:layout_height="56dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         motion:layout_constraintEnd_toEndOf="parent"
         motion:layout_constraintStart_toStartOf="parent"
         motion:layout_constraintTop_toTopOf="parent" />
@@ -94,9 +92,6 @@
         android:id="@id/video_player_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="2dp"
         motion:layout_constraintBottom_toBottomOf="@id/video_player_frame"
         motion:layout_constraintEnd_toEndOf="@id/video_player_frame"
         motion:layout_constraintStart_toStartOf="@id/video_player_frame"
@@ -106,9 +101,6 @@
         android:id="@id/video_title_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         motion:layout_constraintEnd_toEndOf="@id/dummy_frame"
         motion:layout_constraintStart_toStartOf="@id/dummy_frame"
         motion:layout_constraintTop_toBottomOf="@id/video_player_frame" />
@@ -169,7 +161,7 @@
 
       <KeyAttribute
           android:alpha="0"
-          motion:framePosition="75"
+          motion:framePosition="100"
           motion:motionTarget="@id/video_overlay_title" />
 
       <!--<KeyAttribute-->
