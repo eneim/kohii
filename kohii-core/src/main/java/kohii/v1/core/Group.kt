@@ -198,16 +198,15 @@ class Group(
     playbacks: Collection<Playback>,
     selection: Collection<Playback>
   ) {
-    // The biggest Rect that covers all selected Playbacks
+    // The smallest Rect that covers all selected Playbacks
     val cover = selection.fold(Rect()) { acc, playback ->
       acc.union(playback.token.containerRect)
       return@fold acc
     }
 
     // Update playbackPriority
-    // Calculate a target coordinate: Pair<Pair<Int, Int>, Pair<Int, Int>> to save information.
-    val target = (cover.centerX() to cover.width() / 2) to (cover.centerY() to cover.height() / 2)
-    if (target.first.second > 0 && target.second.second > 0) {
+    val target = Pair(cover.exactCenterX(), cover.exactCenterY())
+    if (target.first > 0 && target.second > 0) {
       // Update priority of non-selected Playback first, so they can release unused/obsoleted
       // resource before the selected ones who consume a lot of resources.
       (playbacks - selection)

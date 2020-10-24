@@ -78,11 +78,14 @@ internal inline fun <T, R> Iterable<T>.partitionToMutableSets(
   return Pair(first, second)
 }
 
-internal infix fun Rect.distanceTo(target: Pair<Pair<Int, Int>, Pair<Int, Int>>): Int {
-  val (targetCenterX, targetHalfWidth) = target.first
-  val (targetCenterY, targetHalfHeight) = target.second
-  val distanceX = abs(this.centerX() - targetCenterX) / targetHalfWidth
-  val distanceY = abs(this.centerY() - targetCenterY) / targetHalfHeight
+/**
+ * Formula:
+ * > distance = distanceX + distanceY, where distanceX is the diff between the X coordinate of the
+ * Rect center and distanceY is the diff between the Y coordinate of the Rect center.
+ */
+internal infix fun Rect.distanceTo(target: Pair<Float, Float>): Float {
+  val distanceX = abs(this.centerX() - target.first)
+  val distanceY = abs(this.centerY() - target.second)
   return distanceX + distanceY // no need to be the fancy Euclid sqrt distance.
 }
 
