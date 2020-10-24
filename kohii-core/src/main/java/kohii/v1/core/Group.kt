@@ -174,18 +174,22 @@ class Group(
     updatePlaybackPriorities(playbacks, newSelection)
 
     (toPause + toPlay + oldSelection - newSelection)
-        .mapNotNull { it.playable }
-        .forEach { dispatcher.pause(it) }
+        .mapNotNull(Playback::playable)
+        .forEach(dispatcher::pause)
 
     if (newSelection.isNotEmpty()) {
-      newSelection.mapNotNull { it.playable }
-          .forEach { dispatcher.play(it) }
+      newSelection.mapNotNull(Playback::playable)
+          .forEach(dispatcher::play)
 
-      val grouped = newSelection.groupBy { it.manager }
+      val grouped = newSelection.groupBy(Playback::manager)
       this.managers.asSequence()
-          .filter { it.host is OnSelectionListener }
-          .forEach {
-            (it.host as OnSelectionListener).onSelection(grouped[it] ?: emptyList())
+          .mapNotNull { /* Manager -> Pair<OnSelectionListener, List<Playback>> */
+            if (it.host is OnSelectionListener) {
+              it.host to (grouped[it] ?: emptyList())
+            } else null
+          }
+          .forEach { (onSelectionListener, playbacks) ->
+            onSelectionListener.onSelection(playbacks)
           }
     }
   }
@@ -239,9 +243,7 @@ class Group(
     if (manager.host is Prioritized) {
       if (!managers.contains(manager)) {
         updated = managers.add(manager)
-        val temp = managers.sortedWith(
-            managerComparator
-        )
+        val temp = managers.sortedWith(managerComparator)
         managers.clear()
         managers.addAll(temp)
       } else
