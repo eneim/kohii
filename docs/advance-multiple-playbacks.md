@@ -8,16 +8,17 @@ From v1.1.0.2011003, **Kohii** adds _Playback Selector_ and _Playback Strategy_ 
 
 This feature is enabled at [Bucket](glossary.md#bucket-manager-and-group) level. Which means that: client can have multiple playbacks in a **Bucket** by using correct _Strategy_ and _Selector_. The setup is easy: you can set the _Strategy_ and _Selector_ at the time you add the **Bucket**.
 
-```Kotlin tab=
-kohii.register(this)
-    .addBucket(
-        view = recyclerView,
-        strategy = Strategy.MULTI_PLAYER,
-        selector = { candidates ->
-          candidates.take(2)
-        }
-    )
-```
+=== "Kotlin"
+    ```Kotlin
+    kohii.register(this)
+        .addBucket(
+            view = recyclerView,
+            strategy = Strategy.MULTI_PLAYER,
+            selector = { candidates ->
+              candidates.take(2)
+            }
+        )
+    ```
 
 The code above will: add a new **Bucket** for the `recyclerView`, with `MULTI_PLAYER` Strategy and using a Selector that will select up to 2 Playbacks from the candidates to play.
 
