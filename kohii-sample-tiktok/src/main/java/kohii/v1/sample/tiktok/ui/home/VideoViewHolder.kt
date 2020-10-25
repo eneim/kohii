@@ -17,12 +17,13 @@
 package kohii.v1.sample.tiktok.ui.home
 
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import kohii.v1.core.Playback
 import kohii.v1.sample.data.Video
 import kohii.v1.sample.tiktok.databinding.HolderVerticalVideoBinding
 
 class VideoViewHolder(
   val binding: HolderVerticalVideoBinding
-) : ViewHolder(binding.root) {
+) : ViewHolder(binding.root), Playback.StateListener {
 
   var videoItem: Video? = null
     set(value) {
@@ -42,4 +43,24 @@ class VideoViewHolder(
 
   internal var videoFile: String? = null
   internal var videoThumbnail: String? = null
+
+  override fun onBuffering(playback: Playback, playWhenReady: Boolean) {
+    binding.status.text = "Buffering"
+  }
+
+  override fun onPlaying(playback: Playback) {
+    binding.status.text = "Playing"
+  }
+
+  override fun onPaused(playback: Playback) {
+    binding.status.text = "Paused"
+  }
+
+  override fun onError(playback: Playback, exception: Exception) {
+    binding.status.text = "Error: ${exception.message}"
+  }
+
+  override fun onEnded(playback: Playback) {
+    binding.status.text = "Ended"
+  }
 }
