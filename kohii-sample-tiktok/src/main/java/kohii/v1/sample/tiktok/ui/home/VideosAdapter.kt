@@ -69,13 +69,15 @@ class VideosAdapter(
           else playback.manager.play(playable)
         }
       }
-    }.bind(holder.binding.playerView)
+    }.bind(holder.binding.playerView) {
+      it.addStateListener(holder)
+    }
 
     val videoStaticThumb = holder.videoThumbnail ?: return
     holder.binding.thumbnail.load(videoStaticThumb) {
       crossfade(true)
-      placeholder(R.drawable.ic_launcher_foreground)
-      error(R.drawable.ic_launcher_foreground)
+      placeholder(R.drawable.exo_edit_mode_logo)
+      error(R.drawable.exo_edit_mode_logo)
     }
   }
 
