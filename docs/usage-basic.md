@@ -12,31 +12,35 @@ We will explains a lot of details, so it may be a lot of texts. Here is the shor
 
 First, add this to your `Fragment#onViewCreated` or `Activity#onCreate`
 
-```Kotlin tab=
-val kohii = Kohii[this]
-kohii.register(this)
-      .addBucket(recyclerView) // assume that you are using a RecyclerView
-      .addBucket(anotherRecyclerView) // yeah, 2 RVs in one place, why not.
-```
+=== "Kotlin"
+    ```Kotlin
+    val kohii = Kohii[this]
+    kohii.register(this)
+          .addBucket(recyclerView) // assume that you are using a RecyclerView
+          .addBucket(anotherRecyclerView) // yeah, 2 RVs in one place, why not.
+    ```
 
-```Java tab=
-Kohii kohii = Kohii.get(this);
-kohii.register(this)
-      .addBucket(recyclerView) // assume that you are using a RecyclerView
-      .addBucket(anotherRecyclerView); // yeah, 2 RVs in one place, why not.
-```
+=== "Java"
+    ```Java
+    Kohii kohii = Kohii.get(this);
+    kohii.register(this)
+          .addBucket(recyclerView) // assume that you are using a RecyclerView
+          .addBucket(anotherRecyclerView); // yeah, 2 RVs in one place, why not.
+    ```
 
 Second, add this in your `RecyclerView.Adapter#onBindViewHolder`, or corresponding place in `ViewHolder`
 
-```Kotlin tab=
-// You need to pass the kohii instance here
-kohii.setUp(videoUrl).bind(playerView)
-```
+=== "Kotlin"
+    ```Kotlin
+    // You need to pass the kohii instance here
+    kohii.setUp(videoUrl).bind(playerView)
+    ```
 
-```Java tab=
-// You need to pass the kohii instance here
-kohii.setUp(videoUrl).bind(playerView);
-```
+=== "Java"
+    ```Java
+    // You need to pass the kohii instance here
+    kohii.setUp(videoUrl).bind(playerView);
+    ```
 
 Done, you have what you want. But before leaving, let's discover the details below with your curiousity.
 
@@ -90,15 +94,17 @@ First, you need to initialize a few things so that **Kohii** makes sense of your
 
 **Kohii** should be used as a Global instance. You can get it as follow:
 
-```Kotlin tab=
-val kohii = Kohii[this@Fragment]
-// or using Context also works: val kohii = Kohii[requireContext()]
-```
+=== "Kotlin"
+    ```Kotlin
+    val kohii = Kohii[this@Fragment]
+    // or using Context also works: val kohii = Kohii[requireContext()]
+    ```
 
-```Java tab=
-Kohii kohii = Kohii.get(this);
-// or using Context: Kohii kohii = Kohii.get(requireContext());
-```
+=== "Java"
+    ```Java
+    Kohii kohii = Kohii.get(this);
+    // or using Context: Kohii kohii = Kohii.get(requireContext());
+    ```
 
 As a *singleton*, **Kohii** instance can be passed around or re-obtained in other `Fragment`. You can also use *dependency injection library* like **Dagger** to prepare a global instance, and inject it to required places.
 
@@ -108,15 +114,17 @@ As a *singleton*, **Kohii** instance can be passed around or re-obtained in othe
 
 - Where you are using **Kohii** from? A `Fragment` or `Activity`? Line below answers that question:
 
-```Kotlin tab=
-// From the Fragment's onViewCreated()
-kohii.register(this@Fragment)
-```
+=== "Kotlin"
+    ```Kotlin
+    // From the Fragment's onViewCreated()
+    kohii.register(this@Fragment)
+    ```
 
-```Java tab=
-// From the Fragment's onViewCreated()
-kohii.register(this);
-```
+=== "Java"
+    ```Java
+    // From the Fragment's onViewCreated()
+    kohii.register(this);
+    ```
 
 The line above also return a [`Manager`](glossary.md#bucket-manager-and-group) object. It is useful in some advance usages, but we don't need it for now.
 
@@ -124,17 +132,19 @@ The line above also return a [`Manager`](glossary.md#bucket-manager-and-group) o
 
 We call that ViewGroup a [*Bucket*](glossary.md#bucket-manager-and-group). Because you may have more than one *bucket* in your `Fragment`, and not all of them need to be tracked by **Kohii**, you should only register ones you care about. Code for it is as below:
 
-```kotlin tab=
-kohii.register(this@Fragment) // or manager
-  .addBucket(recyclerView)
-  .addBucket(anotherRecyclerView) // yeah, 2 RVs in one Fragment, why not.
-```
+=== "Kotlin"
+    ```Kotlin
+    kohii.register(this@Fragment) // or manager
+      .addBucket(recyclerView)
+      .addBucket(anotherRecyclerView) // yeah, 2 RVs in one Fragment, why not.
+    ```
 
-```java tab=
-kohii.register(this) // or manager
-  .addBucket(recyclerView)
-  .addBucket(anotherRecyclerView); // yeah, 2 RVs in one Fragment, why not.
-```
+=== "Java"
+    ```Java
+    kohii.register(this) // or manager
+      .addBucket(recyclerView)
+      .addBucket(anotherRecyclerView); // yeah, 2 RVs in one Fragment, why not.
+    ```
 
 It is enough setting up for this session. Next, we will setup the Video for each ViewHolder.
 
@@ -142,17 +152,19 @@ It is enough setting up for this session. Next, we will setup the Video for each
 
 To make it works, you need only one line:
 
-```Kotlin tab=
-// You must pass the kohii instance here
-// playerView is the PlayerView you want to play your Video on
-kohii.setUp(videoUrl).bind(playerView)
-```
+=== "Kotlin"
+    ```Kotlin
+    // You must pass the kohii instance here
+    // playerView is the PlayerView you want to play your Video on
+    kohii.setUp(videoUrl).bind(playerView)
+    ```
 
-```Java tab=
-// You must pass the kohii instance here
-// playerView is the PlayerView you want to play your Video on
-kohii.setUp(videoUrl).bind(playerView);
-```
+=== "Java"
+    ```Java
+    // You must pass the kohii instance here
+    // playerView is the PlayerView you want to play your Video on
+    kohii.setUp(videoUrl).bind(playerView);
+    ```
 
 But let's understand the concept behind:
 

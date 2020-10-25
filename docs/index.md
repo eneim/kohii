@@ -8,7 +8,7 @@ Video playback for Android made easy.
 
 ![Bintray](https://img.shields.io/bintray/v/eneimlabs/kohii/kohii-core)
 ![Maven Central](https://img.shields.io/maven-central/v/im.ene.kohii/kohii-core)
-[![Support](https://yourdonation.rocks/images/badge.svg)](https://github.com/sponsors/eneim)
+<iframe src="https://github.com/sponsors/eneim/button" title="Sponsor eneim" height="35" width="116" style="border: 0;"></iframe>
 
 **Kohii** is a powerful, extensible, yet easy to use and extensible Video playback library. **Kohii** provides useful features out of the box, including
 
@@ -51,27 +51,29 @@ implementation "com.google.android.exoplayer:exoplayer:${exoPlayerVersion}"
 
 Assuming that you have a `Fragment` which contains a `RecyclerView`, and you want to play a Video using a `PlayerView` placed inside a `ViewHolder` of the `RecyclerView`, below is what you need to do using `Kohii`:
 
-```Kotlin tab=
-// Kotlin
-// TODO: Have a videoUrl first.
-// 1. Initialization in Fragment
-val kohii = Kohii[this@Fragment]
-kohii.register(this@Fragment).addBucket(this.recyclerView)
+=== "Kotlin"
+    ```Kotlin
+    // Kotlin
+    // TODO: Have a videoUrl first.
+    // 1. Initialization in Fragment
+    val kohii = Kohii[this@Fragment]
+    kohii.register(this@Fragment).addBucket(this.recyclerView)
 
-// 2. In ViewHolder or Adapter: bind the video to the PlayerView.
-kohii.setUp(videoUrl).bind(playerView)
-```
+    // 2. In ViewHolder or Adapter: bind the video to the PlayerView.
+    kohii.setUp(videoUrl).bind(playerView)
+    ```
 
-```Java tab=
-// Java
-// TODO: Have a videoUrl first.
-// 1. Initialization in Fragment
-Kohii kohii = Kohii.get(this);
-kohii.register(this).addBucket(this.recyclerView);
+=== "Java"
+    ```Java
+    // Java
+    // TODO: Have a videoUrl first.
+    // 1. Initialization in Fragment
+    Kohii kohii = Kohii.get(this);
+    kohii.register(this).addBucket(this.recyclerView);
 
-// 2. In ViewHolder or Adapter: bind the video to the PlayerView.
-kohii.setUp(videoUrl).bind(playerView);
-```
+    // 2. In ViewHolder or Adapter: bind the video to the PlayerView.
+    kohii.setUp(videoUrl).bind(playerView);
+    ```
 
 ## Requirements
 
