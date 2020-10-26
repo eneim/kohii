@@ -105,7 +105,7 @@ allprojects {
 
       externalDocumentationLink {
         url = new URL("https://exoplayer.dev/doc/reference/")
-        packageListUrl = new URL("https://exoplayer.dev/doc/reference/package-list")
+        packageListUrl = new URL("https://exoplayer.dev/doc/reference/")
       }
     }
   }
