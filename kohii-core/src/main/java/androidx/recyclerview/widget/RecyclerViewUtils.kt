@@ -17,12 +17,18 @@
 package androidx.recyclerview.widget
 
 import android.view.View
+import android.view.ViewParent
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import kohii.v1.core.Bucket
 
 internal object RecyclerViewUtils {
 
-  // Client must be careful when creating View for ViewHolder.
-  // It is suggested to use 'LayoutInflater.inflate(int, ViewGroup, boolean)' with notnull ViewGroup.
+  /**
+   * Return `true` if the [Bucket] (whose [Bucket.root] is the [recyclerView]) accepts the [params].
+   *
+   * Note that client needs to be careful when creating View for ViewHolder. It is suggested to use
+   * `LayoutInflater.inflate(int, ViewGroup, boolean)` with notnull ViewGroup.
+   */
   fun accepts(
     recyclerView: RecyclerView,
     params: RecyclerView.LayoutParams?
@@ -31,16 +37,24 @@ internal object RecyclerViewUtils {
     return params.mViewHolder == null || params.mViewHolder.mOwnerRecyclerView === recyclerView
   }
 
+  /**
+   * If the [target] is placed inside a [View] whose parent is a [RecyclerView], return that [View]'s
+   * [RecyclerView.LayoutParams], or `null` otherwise.
+   */
   fun fetchItemViewParams(target: View): RecyclerView.LayoutParams? {
     var params = target.layoutParams
-    var parent = target.parent
+    var parent: ViewParent? = target.parent
     while (params != null && params !is RecyclerView.LayoutParams) {
       params = (parent as? View)?.layoutParams
-      parent = parent.parent
+      parent = parent?.parent
     }
     return params as RecyclerView.LayoutParams?
   }
 
+  /**
+   * Return the [ViewHolder] whose View contains the [target], or `null` if no such [ViewHolder] is
+   * available.
+   */
   fun fetchViewHolder(target: View): ViewHolder? {
     val params = fetchItemViewParams(target)
     return if (params is RecyclerView.LayoutParams) params.mViewHolder else null
