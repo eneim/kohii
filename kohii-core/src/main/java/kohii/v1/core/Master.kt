@@ -40,10 +40,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.util.Util
 import kohii.v1.core.Binder.Options
@@ -171,24 +173,6 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  private val screenStateReceiver = lazy(NONE) {
-    object : BroadcastReceiver() {
-      override fun onReceive(
-        context: Context?,
-        intent: Intent?
-      ) {
-        if (isInitialStickyBroadcast) return
-        if (context != null && intent != null) {
-          if (intent.action == Intent.ACTION_SCREEN_OFF) {
-            Master[context].systemLock = true
-          } else if (intent.action == Intent.ACTION_USER_PRESENT) {
-            Master[context].systemLock = false
-          }
-        }
-      }
-    }
-  }
-
   private val networkActionReceiver = lazy(NONE) {
     object : BroadcastReceiver() {
       override fun onReceive(
@@ -233,6 +217,18 @@ class Master private constructor(context: Context) : PlayableManager {
       val to = field
       if (from != to) groups.forEach { it.onRefresh() }
     }
+
+  init {
+    ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+      override fun onStart(owner: LifecycleOwner) {
+        systemLock = false
+      }
+
+      override fun onStop(owner: LifecycleOwner) {
+        systemLock = true
+      }
+    })
+  }
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
     if (actual !== AUTO) return actual
@@ -452,11 +448,6 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun onFirstManagerCreated(group: Group) {
     if (groups.flatMap { it.managers }.isEmpty()) {
       app.registerComponentCallbacks(componentCallbacks)
-      app.registerReceiver(screenStateReceiver.value, IntentFilter().apply {
-        addAction(Intent.ACTION_SCREEN_ON)
-        addAction(Intent.ACTION_SCREEN_OFF)
-        addAction(Intent.ACTION_USER_PRESENT)
-      })
       if (VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
         val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
         networkManager?.registerDefaultNetworkCallback(networkCallback.value)
@@ -478,9 +469,6 @@ class Master private constructor(context: Context) : PlayableManager {
         networkManager?.unregisterNetworkCallback(networkCallback.value)
       } else if (networkActionReceiver.isInitialized()) {
         app.unregisterReceiver(networkActionReceiver.value)
-      }
-      if (screenStateReceiver.isInitialized()) {
-        app.unregisterReceiver(screenStateReceiver.value)
       }
       app.unregisterComponentCallbacks(componentCallbacks)
     }
