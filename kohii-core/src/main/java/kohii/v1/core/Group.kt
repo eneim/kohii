@@ -146,19 +146,22 @@ class Group(
   private fun refresh() {
     "Group#refresh, $this".logDebug()
     val playbacks = this.playbacks // save a cache to prevent re-mapping
-    playbacks.forEach { it.onRefresh() } // update token
+    playbacks.forEach(Playback::onRefresh) // update token
 
     val toPlay = linkedSetOf<Playback>() // Need the order.
     val toPause = arraySetOf<Playback>()
 
-    stickyManager?.let {
-      val (canPlay, canPause) = it.splitPlaybacks()
+    val stickyManager = this.stickyManager
+    if (stickyManager != null) {
+      val (canPlay, canPause) = stickyManager.splitPlaybacks()
       toPlay.addAll(canPlay)
       toPause.addAll(canPause)
-    } ?: managers.forEach {
-      val (canPlay, canPause) = it.splitPlaybacks()
-      toPlay.addAll(canPlay)
-      toPause.addAll(canPause)
+    } else {
+      managers.forEach {
+        val (canPlay, canPause) = it.splitPlaybacks()
+        toPlay.addAll(canPlay)
+        toPause.addAll(canPause)
+      }
     }
 
     val oldSelection = selection

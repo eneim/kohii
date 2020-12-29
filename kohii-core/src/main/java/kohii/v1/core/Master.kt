@@ -29,15 +29,11 @@ import android.content.IntentFilter
 import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.os.Build.VERSION
-import android.os.Handler
-import android.os.Handler.Callback
-import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.arrayMapOf
 import androidx.collection.arraySetOf
 import androidx.core.content.ContextCompat
-import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -58,7 +54,6 @@ import kohii.v1.core.Scope.GLOBAL
 import kohii.v1.core.Scope.GROUP
 import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
-import kohii.v1.debugOnly
 import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
 import kohii.v1.internal.DynamicViewRendererPlayback
@@ -75,10 +70,10 @@ class Master private constructor(context: Context) : PlayableManager {
 
   companion object {
 
-    private const val MSG_CLEANUP = 1
-    private const val MSG_BIND_PLAYABLE = 2
-    private const val MSG_RELEASE_PLAYABLE = 3
-    private const val MSG_DESTROY_PLAYABLE = 4
+    internal const val MSG_CLEANUP = 1
+    internal const val MSG_BIND_PLAYABLE = 2
+    internal const val MSG_RELEASE_PLAYABLE = 3
+    internal const val MSG_DESTROY_PLAYABLE = 4
 
     internal val NO_TAG = Any()
 
@@ -89,41 +84,6 @@ class Master private constructor(context: Context) : PlayableManager {
       master ?: Master(context).also { master = it }
     }
   }
-
-  internal class Dispatcher(val master: Master) : Handler(Looper.getMainLooper(), Callback { msg ->
-    when (msg.what) {
-      MSG_CLEANUP -> {
-        master.cleanupPendingPlayables()
-        true
-      }
-      MSG_BIND_PLAYABLE -> {
-        val container = msg.obj as ViewGroup
-        debugOnly {
-          val request = master.requests[container]
-          if (request != null) {
-            "Request bind: ${request.tag}, $container, ${request.playable}".logInfo()
-          }
-        }
-        container.doOnAttach {
-          master.requests.remove(it)
-              ?.onBind()
-        }
-        true
-      }
-      MSG_RELEASE_PLAYABLE -> {
-        val playable = (msg.obj as Playable)
-        playable.onRelease()
-        true
-      }
-      MSG_DESTROY_PLAYABLE -> {
-        val playable = msg.obj as Playable
-        val clearState = msg.arg1 == 0
-        master.onTearDown(playable, clearState)
-        true
-      }
-      else -> false
-    }
-  })
 
   val app = context.applicationContext as Application
 
@@ -151,7 +111,6 @@ class Master private constructor(context: Context) : PlayableManager {
 
   private var systemLock: Boolean = false
     set(value) {
-      val prev = field
       field = value
       groups.forEach { it.onRefresh() }
     }
@@ -203,10 +162,6 @@ class Master private constructor(context: Context) : PlayableManager {
           .forEach { it.key.onNetworkTypeChanged(from, to) }
     }
 
-  internal fun onNetworkChanged() {
-    this.networkType = Util.getNetworkType(app)
-  }
-
   internal var trimMemoryLevel: Int = RunningAppProcessInfo().let {
     ActivityManager.getMyMemoryState(it)
     it.lastTrimLevel
@@ -215,7 +170,7 @@ class Master private constructor(context: Context) : PlayableManager {
       val from = field
       field = value
       val to = field
-      if (from != to) groups.forEach { it.onRefresh() }
+      if (from != to) groups.forEach(Group::onRefresh)
     }
 
   init {
@@ -228,6 +183,10 @@ class Master private constructor(context: Context) : PlayableManager {
         systemLock = true
       }
     })
+  }
+
+  internal fun onNetworkChanged() {
+    this.networkType = Util.getNetworkType(app)
   }
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
@@ -399,10 +358,10 @@ class Master private constructor(context: Context) : PlayableManager {
         .clear()
   }
 
-  internal val dispatcher = Dispatcher(this)
+  internal val dispatcher = MasterDispatcher(this)
 
   internal fun onGroupLifecycleStateChanged() {
-    groupsMaxLifecycleState = groups.map { it.activity.lifecycle.currentState }.max() ?: DESTROYED
+    groupsMaxLifecycleState = groups.maxOfOrNull { it.activity.lifecycle.currentState } ?: DESTROYED
   }
 
   internal fun onGroupCreated(group: Group) {
@@ -440,13 +399,13 @@ class Master private constructor(context: Context) : PlayableManager {
         }
 
     // If no Manager is online, cleanup stuffs
-    if (groups.flatMap { it.managers }.isEmpty() && playables.isEmpty()) {
+    if (groups.flatMap(Group::managers).isEmpty() && playables.isEmpty()) {
       cleanUp()
     }
   }
 
   internal fun onFirstManagerCreated(group: Group) {
-    if (groups.flatMap { it.managers }.isEmpty()) {
+    if (groups.flatMap(Group::managers).isEmpty()) {
       app.registerComponentCallbacks(componentCallbacks)
       if (VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
         val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
@@ -463,7 +422,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
   @Suppress("UNUSED_PARAMETER")
   internal fun onLastManagerDestroyed(group: Group) {
-    if (groups.flatMap { it.managers }.isEmpty()) {
+    if (groups.flatMap(Group::managers).isEmpty()) {
       if (networkCallback.isInitialized() && VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
         val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
         networkManager?.unregisterNetworkCallback(networkCallback.value)
@@ -502,9 +461,8 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal fun removeBinding(container: Any) {
     requests.remove(container)
-        ?.also {
-          it.playable.playback = null
-        }?.onRemoved()
+        ?.also { it.playable.playback = null }
+        ?.onRemoved()
 
     groups.asSequence()
         .flatMap { it.managers.asSequence() }
@@ -653,8 +611,11 @@ class Master private constructor(context: Context) : PlayableManager {
         }
       }
       PLAYBACK -> {
-        if (target is Playback) if (!target.bucket.lock) target.lock = false
-        else throw IllegalArgumentException("Target for scope $scope must be a Playback")
+        if (target is Playback) {
+          if (!target.bucket.lock) target.lock = false
+        } else {
+          throw IllegalArgumentException("Target for scope $scope must be a Playback")
+        }
       }
     }
   }
@@ -662,7 +623,7 @@ class Master private constructor(context: Context) : PlayableManager {
   fun registerEngine(engine: Engine<*>) {
     engines.put(engine.playableCreator.rendererType, engine)
         ?.cleanUp()
-    groups.forEach { engine.inject(it) }
+    groups.forEach(engine::inject)
   }
 
   internal inline fun onBind(
