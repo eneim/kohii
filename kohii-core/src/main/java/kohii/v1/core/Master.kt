@@ -22,7 +22,7 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.ComponentCallbacks2
-import android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
+import android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -189,10 +189,12 @@ class Master private constructor(context: Context) : PlayableManager {
     this.networkType = Util.getNetworkType(app)
   }
 
-  internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode {
-    if (actual !== AUTO) return actual
-    return if (trimMemoryLevel >= TRIM_MEMORY_RUNNING_CRITICAL) LOW else BALANCED
-  }
+  internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode =
+    if (trimMemoryLevel >= TRIM_MEMORY_RUNNING_LOW) {
+      LOW
+    } else {
+      if (actual !== AUTO) actual else BALANCED
+    }
 
   internal fun registerInternal(
     activity: FragmentActivity,
@@ -370,11 +372,11 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal fun onGroupDestroyed(group: Group) {
     if (groups.remove(group)) {
-      requests.filter { it.key.context.findActivity() === group.activity }
-          .forEach {
-            dispatcher.removeMessages(MSG_BIND_PLAYABLE, it.key)
-            it.value.playable.playback = null
-            requests.remove(it.key)?.onRemoved()
+      requests.filter { (container, _) -> container.context.findActivity() === group.activity }
+          .forEach { (container, request) ->
+            dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
+            request.playable.playback = null
+            requests.remove(container)?.onRemoved()
           }
     }
     if (groups.isEmpty()) {
