@@ -18,6 +18,7 @@ import kohii.BuildConfig
 import kohii.ReleaseInfo
 
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 apply plugin: 'com.jfrog.bintray'
 
 group = "im.ene.kohii"
@@ -52,6 +53,28 @@ static def appendScm(parentNode, connection, url) {
   def node = parentNode.appendNode("scm")
   node.appendNode("connection", connection)
   node.appendNode("url", url)
+}
+
+def isReleaseBuild() {
+  return !version.contains("SNAPSHOT")
+}
+
+def getReleaseRepositoryUrl() {
+  return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL :
+      "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+def getSnapshotRepositoryUrl() {
+  return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL :
+      "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+def getRepositoryUsername() {
+  return hasProperty('SONATYPE_NEXUS_USERNAME') ? SONATYPE_NEXUS_USERNAME : ""
+}
+
+def getRepositoryPassword() {
+  return hasProperty('SONATYPE_NEXUS_PASSWORD') ? SONATYPE_NEXUS_PASSWORD : ""
 }
 
 project.afterEvaluate {
@@ -125,6 +148,22 @@ project.afterEvaluate {
         }
       }
     }
+
+    repositories {
+      maven {
+        url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
+
+        credentials {
+          username getRepositoryUsername()
+          password getRepositoryPassword()
+        }
+      }
+    }
+  }
+
+  signing {
+    required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+    sign publishing.publications
   }
 
   bintray {

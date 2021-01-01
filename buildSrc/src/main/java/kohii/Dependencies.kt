@@ -41,28 +41,8 @@ object BuildConfig {
   const val minSdkVersion = 19
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
-  private fun gitCommitHash() = try {
-    Runtime.getRuntime()
-        .exec("git rev-parse --short HEAD")
-        .inputStream.reader()
-        .use { it.readText() }
-        .trim()
-  } catch (er: Exception) {
-    "1.0.0"
-  }
-
-  private fun gitCommitCount() = 100 + try {
-    Runtime.getRuntime()
-        .exec("git rev-list --count HEAD")
-        .inputStream.reader()
-        .use { it.readText() }
-        .trim().toInt()
-  } catch (er: Exception) {
-    99
-  }
-
-  val releaseVersionCode = gitCommitCount()
-  val releaseVersionName = "1.2.0.${Versions.exoPlayerCode}"
+  val releaseVersionCode = 10300 // [major].[2 digits for minor].[2 digits for patch]
+  val releaseVersionName = "1.3.0.${Versions.exoPlayerCode}-SNAPSHOT"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -70,12 +50,12 @@ object Libs {
 
   object Common {
     const val androidGradlePlugin = "com.android.tools.build:gradle:4.1.0"
-    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:1.0.3"
-    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
+    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
+    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.4.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
-    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.2.3"
+    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.3.0"
 
     val junit = "junit:junit:4.13"
     val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
@@ -84,14 +64,14 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.4.10"
+    private const val version = "1.4.21"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$version"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$version"
     const val extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$version"
-    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9"
+    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
   }
 
   object AndroidX {
