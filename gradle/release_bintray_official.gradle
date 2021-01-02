@@ -70,11 +70,11 @@ def getSnapshotRepositoryUrl() {
 }
 
 def getRepositoryUsername() {
-  return hasProperty('SONATYPE_NEXUS_USERNAME') ? SONATYPE_NEXUS_USERNAME : ""
+  return hasProperty('SONATYPE_NEXUS_USERNAME') ? SONATYPE_NEXUS_USERNAME : System.getenv("SONATYPE_NEXUS_USERNAME")
 }
 
 def getRepositoryPassword() {
-  return hasProperty('SONATYPE_NEXUS_PASSWORD') ? SONATYPE_NEXUS_PASSWORD : ""
+  return hasProperty('SONATYPE_NEXUS_PASSWORD') ? SONATYPE_NEXUS_PASSWORD : System.getenv("SONATYPE_NEXUS_PASSWORD")
 }
 
 project.afterEvaluate {
