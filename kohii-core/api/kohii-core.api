@@ -587,8 +587,10 @@ public final class kohii/v1/core/Rebinder : android/os/Parcelable {
 
 public class kohii/v1/core/Rebinder$Creator : android/os/Parcelable$Creator {
 	public fun <init> ()V
-	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
-	public final fun newArray (I)[Ljava/lang/Object;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun createFromParcel (Landroid/os/Parcel;)Lkohii/v1/core/Rebinder;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+	public final fun newArray (I)[Lkohii/v1/core/Rebinder;
 }
 
 public final class kohii/v1/core/Rebinder$Options {
@@ -748,8 +750,10 @@ public class kohii/v1/media/MediaItem : android/os/Parcelable, kohii/v1/media/Me
 
 public class kohii/v1/media/MediaItem$Creator : android/os/Parcelable$Creator {
 	public fun <init> ()V
-	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
-	public final fun newArray (I)[Ljava/lang/Object;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun createFromParcel (Landroid/os/Parcel;)Lkohii/v1/media/MediaItem;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+	public final fun newArray (I)[Lkohii/v1/media/MediaItem;
 }
 
 public final class kohii/v1/media/PlaybackInfo : android/os/Parcelable {
@@ -779,8 +783,10 @@ public final class kohii/v1/media/PlaybackInfo$Companion {
 
 public class kohii/v1/media/PlaybackInfo$Creator : android/os/Parcelable$Creator {
 	public fun <init> ()V
-	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
-	public final fun newArray (I)[Ljava/lang/Object;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun createFromParcel (Landroid/os/Parcel;)Lkohii/v1/media/PlaybackInfo;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+	public final fun newArray (I)[Lkohii/v1/media/PlaybackInfo;
 }
 
 public final class kohii/v1/media/VolumeInfo : android/os/Parcelable {
@@ -810,8 +816,10 @@ public final class kohii/v1/media/VolumeInfo$Companion {
 
 public class kohii/v1/media/VolumeInfo$Creator : android/os/Parcelable$Creator {
 	public fun <init> ()V
-	public final fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
-	public final fun newArray (I)[Ljava/lang/Object;
+	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
+	public final fun createFromParcel (Landroid/os/Parcel;)Lkohii/v1/media/VolumeInfo;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+	public final fun newArray (I)[Lkohii/v1/media/VolumeInfo;
 }
 
 public class kohii/v1/utils/Capsule {

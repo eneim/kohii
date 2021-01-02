@@ -119,13 +119,6 @@ tasks.wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
 
-ext {
-  // query git for the SHA, Tag and commit count. Use these to automate versioning.
-  gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
-  gitCommitCount =
-      Integer.parseInt('git rev-list --count HEAD'.execute([], project.rootDir).text.trim())
-}
-
 // copy from https://github.com/chrisbanes/tivi
 // read from gradle.properties for a value, or use default instead.
 String lookUpProf(String propertyName, String defaultValue) {
