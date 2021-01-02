@@ -29,7 +29,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.observe
 import kohii.v1.core.Common
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback

@@ -41,8 +41,8 @@ object BuildConfig {
   const val minSdkVersion = 19
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
-  val releaseVersionCode = 10300 // [major].[2 digits for minor].[2 digits for patch]
-  val releaseVersionName = "1.3.0.${Versions.exoPlayerCode}-SNAPSHOT"
+  const val releaseVersionCode = 10300 // [major].[2 digits for minor].[2 digits for patch]
+  const val releaseVersionName = "1.3.0.${Versions.exoPlayerCode}-SNAPSHOT"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -51,16 +51,16 @@ object Libs {
   object Common {
     const val androidGradlePlugin = "com.android.tools.build:gradle:4.1.0"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
-    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.4.1"
+    const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
     const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.3.0"
 
-    val junit = "junit:junit:4.13"
-    val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
-    val robolectric = "org.robolectric:robolectric:4.3.1"
-    val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+    const val junit = "junit:junit:4.13"
+    const val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
+    const val robolectric = "org.robolectric:robolectric:4.3.1"
+    const val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
 
   object Kotlin {
@@ -75,24 +75,24 @@ object Libs {
   }
 
   object AndroidX {
-    val activityKtx = "androidx.activity:activity-ktx:1.1.0"
-    val appcompat = "androidx.appcompat:appcompat:1.1.0"
-    val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
-    val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
-    val benchmark = "androidx.benchmark:benchmark-junit4:1.0.0"
-    val browser = "androidx.browser:browser:1.2.0"
-    val palette = "androidx.palette:palette-ktx:1.0.0"
-    val emoji = "androidx.emoji:emoji:1.0.0"
+    const val activityKtx = "androidx.activity:activity-ktx:1.1.0"
+    const val appcompat = "androidx.appcompat:appcompat:1.1.0"
+    const val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
+    const val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
+    const val benchmark = "androidx.benchmark:benchmark-junit4:1.0.0"
+    const val browser = "androidx.browser:browser:1.2.0"
+    const val palette = "androidx.palette:palette-ktx:1.0.0"
+    const val emoji = "androidx.emoji:emoji:1.0.0"
 
-    val vector = "androidx.vectordrawable:vectordrawable:1.1.0"
+    const val vector = "androidx.vectordrawable:vectordrawable:1.1.0"
 
-    val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
-    val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-rc02"
+    const val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
+    const val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-rc02"
 
-    val viewPager = "androidx.viewpager:viewpager:1.0.0"
-    val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
+    const val viewPager = "androidx.viewpager:viewpager:1.0.0"
+    const val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
 
-    val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
+    const val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     object Media {
       private const val version = "1.0.3"
@@ -115,8 +115,7 @@ object Libs {
 
     object Fragment {
       private const val version = "1.2.4"
-      val fragment = "androidx.fragment:fragment:$version"
-      val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
+      const val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
 
     object Test {
@@ -125,10 +124,10 @@ object Libs {
       val runner = "androidx.test:runner:$version"
       val rules = "androidx.test:rules:$version"
 
-      val espressoCore = "androidx.test.espresso:espresso-core:3.3.0"
+      const val espressoCore = "androidx.test.espresso:espresso-core:3.3.0"
     }
 
-    val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
+    const val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
 
     object Paging {
       private const val version = "2.1.2"
@@ -136,13 +135,13 @@ object Libs {
       val runtime = "androidx.paging:paging-runtime-ktx:$version"
     }
 
-    val preference = "androidx.preference:preference-ktx:1.1.0"
+    const val preference = "androidx.preference:preference-ktx:1.1.0"
 
     // beta4 breaks the overlay demo ...
-    val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0"
+    const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0"
 
-    val core = "androidx.core:core:1.3.0"
-    val coreKtx = "androidx.core:core-ktx:1.3.0"
+    const val core = "androidx.core:core:1.3.0"
+    const val coreKtx = "androidx.core:core-ktx:1.3.0"
 
     object Lifecycle {
       private const val version = "2.2.0"
@@ -202,21 +201,21 @@ object Libs {
   }
 
   object Google {
-    val material = "com.google.android.material:material:1.1.0"
-    val gmsGoogleServices = "com.google.gms:google-services:4.3.3"
-    val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.4.3"
-    val firebaseCrashlyticsPlugin = "com.google.firebase:firebase-crashlytics-gradle:2.2.0"
-    val crashlytics = "com.google.firebase:firebase-crashlytics-ktx:17.2.1"
+    const val material = "com.google.android.material:material:1.1.0"
+    const val gmsGoogleServices = "com.google.gms:google-services:4.3.3"
+    const val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.4.3"
+    const val firebaseCrashlyticsPlugin = "com.google.firebase:firebase-crashlytics-gradle:2.2.0"
+    const val crashlytics = "com.google.firebase:firebase-crashlytics-ktx:17.2.1"
 
-    val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20200618-1.30.9"
-    val httpClientAndroid = "com.google.http-client:google-http-client-android:1.35.0"
-    val apiClientAndroid = "com.google.api-client:google-api-client-android:1.30.9"
-    val apiClientGson = "com.google.api-client:google-api-client-gson:1.30.9"
+    const val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20200618-1.30.9"
+    const val httpClientAndroid = "com.google.http-client:google-http-client-android:1.35.0"
+    const val apiClientAndroid = "com.google.api-client:google-api-client-android:1.30.9"
+    const val apiClientGson = "com.google.api-client:google-api-client-gson:1.30.9"
   }
 
   object Dagger {
     private const val version = "2.28.1"
-    val dagger = "com.google.dagger:dagger:$version"
+    val daggerBase = "com.google.dagger:dagger:$version"
     val androidSupport = "com.google.dagger:dagger-android-support:$version"
     val compiler = "com.google.dagger:dagger-compiler:$version"
     val androidProcessor = "com.google.dagger:dagger-android-processor:$version"
@@ -224,17 +223,17 @@ object Libs {
 
   object Square {
     private const val moshiVersion = "1.9.3"
-    val moshi = "com.squareup.moshi:moshi:${moshiVersion}"
-    val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"
-    val moshiKotlin = "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
-    val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.6"
-    val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.6"
-    val okio = "com.squareup.okio:okio:2.6.0"
+    val moshi = "com.squareup.moshi:moshi:$moshiVersion"
+    val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
+    val moshiKotlin = "com.squareup.moshi:moshi-kotlin:$moshiVersion"
+    const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.6"
+    const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.6"
+    const val okio = "com.squareup.okio:okio:2.6.0"
   }
 
   object Glide {
     private const val version = "4.11.0"
-    val glide = "com.github.bumptech.glide:glide:$version"
+    val glideAll = "com.github.bumptech.glide:glide:$version"
     val compiler = "com.github.bumptech.glide:compiler:$version"
   }
 
@@ -247,8 +246,8 @@ object Libs {
   }
 
   object Other {
-    val androidSvg = "com.caverock:androidsvg-aar:1.4"
-    val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"
-    val timber = "com.jakewharton.timber:timber:4.7.1"
+    const val androidSvg = "com.caverock:androidsvg-aar:1.4"
+    const val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"
+    const val timber = "com.jakewharton.timber:timber:4.7.1"
   }
 }

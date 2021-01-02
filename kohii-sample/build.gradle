@@ -149,7 +149,7 @@ dependencies {
   kapt Libs.Square.moshiCodegen
   implementation Libs.Square.okio
 
-  implementation Libs.Glide.glide
+  implementation Libs.Glide.glideAll
   kapt Libs.Glide.compiler
   implementation Libs.Other.androidSvg
 
