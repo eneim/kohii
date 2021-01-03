@@ -198,14 +198,14 @@ project.afterEvaluate {
         // vcsTag = '1.3.0'
         // Optional configuration for GPG signing
         gpg {
-          sign = true //Determines whether to GPG sign the files. The default is false
-          passphrase = bintray_gpg_password //Optional. The passphrase for GPG signing'
+          sign = true // Determines whether to GPG sign the files. The default is false
+          passphrase = bintray_gpg_password // Optional. The passphrase for GPG signing'
         }
         //Optional configuration for Maven Central sync of the version
         mavenCentralSync {
           sync = true // [Default: true] Determines whether to sync the version to Maven Central.
-          user = SONATYPE_NEXUS_USERNAME // OSS user token: mandatory
-          password = SONATYPE_NEXUS_PASSWORD // OSS user password: mandatory
+          user = getRepositoryUsername() // OSS user token: mandatory
+          password = getRepositoryPassword() // OSS user password: mandatory
           close = '1'
         }
       }
