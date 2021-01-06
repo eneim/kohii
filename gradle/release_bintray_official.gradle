@@ -77,6 +77,18 @@ def getRepositoryPassword() {
   return hasProperty('SONATYPE_NEXUS_PASSWORD') ? SONATYPE_NEXUS_PASSWORD : System.getenv("SONATYPE_NEXUS_PASSWORD")
 }
 
+def getBintrayUser() {
+  return hasProperty('bintray_user') ? bintray_user : System.getenv("bintray_user")
+}
+
+def getBintrayApiKey() {
+  return hasProperty('bintray_apikey') ? bintray_apikey : System.getenv("bintray_apikey")
+}
+
+def getBintrayGpgPassword() {
+  return hasProperty('bintray_gpg_password') ? bintray_gpg_password : System.getenv("bintray_gpg_password")
+}
+
 project.afterEvaluate {
   publishing {
     publications {
@@ -167,8 +179,8 @@ project.afterEvaluate {
   }
 
   bintray {
-    user = bintray_user
-    key = bintray_apikey
+    user = getBintrayUser()
+    key = getBintrayApiKey()
 
     dryRun = false //[Default: false] Whether to run this as dry-run, without deploying
     publish = true //[Default: false] Whether version should be auto published after an upload
@@ -199,7 +211,7 @@ project.afterEvaluate {
         // Optional configuration for GPG signing
         gpg {
           sign = true // Determines whether to GPG sign the files. The default is false
-          passphrase = bintray_gpg_password // Optional. The passphrase for GPG signing'
+          passphrase = getBintrayGpgPassword() // Optional. The passphrase for GPG signing'
         }
         //Optional configuration for Maven Central sync of the version
         mavenCentralSync {
