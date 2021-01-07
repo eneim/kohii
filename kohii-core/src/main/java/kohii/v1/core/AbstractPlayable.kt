@@ -143,9 +143,10 @@ abstract class AbstractPlayable<RENDERER : Any>(
             master // to prevent the Playable from being destroyed when Manager is null.
           }
         } else {
-          // TODO need a better implementation.
-          if (master.manuallyStartedPlayable.get() === this && isPlaying()) master
-          else null
+          // TODO(eneim): rethink this to support off-screen manual playback/kohiiCanPause().
+          /* if (master.manuallyStartedPlayable.get() === this && isPlaying()) master
+          else null */
+          null
         }
       }
 

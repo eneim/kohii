@@ -30,11 +30,19 @@
       android:layout_height="match_parent"
       android:layout_gravity="center"
       android:minHeight="240dp"
-      app:controller_layout_id="@layout/dev_player_controller"
       app:keep_content_on_player_reset="true"
       app:resize_mode="fixed_width"
       app:show_buffering="when_playing"
       app:surface_type="texture_view"
       app:use_controller="true"
       />
+
+  <include
+      layout="@layout/dev_player_controller"
+      android:id="@+id/controller"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|start"
+      />
+
 </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>

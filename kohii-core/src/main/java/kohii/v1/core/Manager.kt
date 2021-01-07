@@ -297,10 +297,11 @@ class Manager internal constructor(
           val candidates = bucketToPlaybacks
               .getValue(it)
               .filter { playback ->
-                val cannotPause = master.manuallyStartedPlayable.get() === playback.playable &&
+                // TODO(eneim): rethink this to support off-screen manual playback/kohiiCanPause().
+                /* val cannotPause = master.manuallyStartedPlayable.get() === playback.playable &&
                     master.plannedManualPlayables.contains(playback.tag) &&
-                    !requireNotNull(playback.config.controller).kohiiCanPause()
-                return@filter cannotPause || it.allowToPlay(playback)
+                    !requireNotNull(playback.config.controller).kohiiCanPause() */
+                return@filter /* cannotPause || */ it.allowToPlay(playback)
               }
           return@map it.strategy(it.selectToPlay(candidates))
         }
