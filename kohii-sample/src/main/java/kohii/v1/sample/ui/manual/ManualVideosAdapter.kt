@@ -18,9 +18,9 @@ package kohii.v1.sample.ui.manual
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Playback.Controller
@@ -37,8 +37,13 @@ internal class ManualVideosAdapter(
     viewType: Int
   ): ManualVideoViewHolder {
     val holder = ManualVideoViewHolder(parent)
-    holder.enterFullscreen.setOnClickListener {
-      enterFullscreenListener(this, holder, holder.playerView, "player::${holder.adapterPosition}")
+    holder.binding.controller.exoFullscreenEnter.setOnClickListener {
+      enterFullscreenListener(
+          this,
+          holder,
+          holder.binding.playerView,
+          "player::${holder.adapterPosition}"
+      )
     }
     return holder
   }
@@ -54,18 +59,30 @@ internal class ManualVideosAdapter(
       tag = "player::${holder.adapterPosition}"
       repeatMode = Player.REPEAT_MODE_ONE
       controller = object : Controller {
-        override fun kohiiCanStart(): Boolean = true
-
-        override fun kohiiCanPause(): Boolean = true
+        override fun kohiiCanStart(): Boolean = false
 
         override fun setupRenderer(playback: Playback, renderer: Any?) {
-          if (renderer is PlayerView) {
-            renderer.useController = true
-            renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+          holder.binding.controller.exoPlay.setOnClickListener {
+            val playable = playback.playable ?: return@setOnClickListener
+            playback.manager.play(playable)
           }
+          holder.binding.controller.exoPause.setOnClickListener {
+            val playable = playback.playable ?: return@setOnClickListener
+            playback.manager.pause(playable)
+          }
+        }
+
+        override fun teardownRenderer(playback: Playback, renderer: Any?) {
+          holder.binding.controller.exoPlay.setOnClickListener(null)
+          holder.binding.controller.exoPause.setOnClickListener(null)
         }
       }
     }
-        .bind(holder.playerView)
+        .bind(holder.binding.playerView) {
+          it.addStateListener(holder)
+          val playing = it.playable?.isPlaying() == true
+          holder.binding.controller.exoPause.isVisible = playing
+          holder.binding.controller.exoPlay.isVisible = !playing
+        }
   }
 }

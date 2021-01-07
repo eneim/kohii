@@ -16,15 +16,29 @@
 
 package kohii.v1.sample.ui.manual
 
-import android.view.View
 import android.view.ViewGroup
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.sample.R
-import kohii.v1.sample.common.BaseViewHolder
+import androidx.core.view.isVisible
+import kohii.v1.core.Playback
+import kohii.v1.sample.common.ViewBindingHolder
+import kohii.v1.sample.databinding.ManualVideoHolderBinding
 
 internal class ManualVideoViewHolder(
   parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.manual_video_holder) {
-  internal val playerView: PlayerView = itemView.findViewById(R.id.playerView)
-  internal val enterFullscreen: View = itemView.findViewById(R.id.exo_fullscreen_enter)
+) : ViewBindingHolder<ManualVideoHolderBinding>(parent, ManualVideoHolderBinding::inflate),
+    Playback.StateListener {
+
+  init {
+    binding.controller.exoPause.isVisible = false
+    binding.controller.exoPlay.isVisible = true
+  }
+
+  override fun onPlaying(playback: Playback) {
+    binding.controller.exoPause.isVisible = true
+    binding.controller.exoPlay.isVisible = false
+  }
+
+  override fun onPaused(playback: Playback) {
+    binding.controller.exoPause.isVisible = false
+    binding.controller.exoPlay.isVisible = true
+  }
 }
