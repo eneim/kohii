@@ -49,7 +49,10 @@ public final class kohii/v1/ads/Manilo : kohii/v1/exoplayer/Kohii, com/google/ad
 	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;)V
 	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addAdEventListener (Lcom/google/ads/interactivemedia/v3/api/AdEvent$AdEventListener;)V
 	public fun onAdEvent (Lcom/google/ads/interactivemedia/v3/api/AdEvent;)V
+	public final fun removeAdEventListener (Lcom/google/ads/interactivemedia/v3/api/AdEvent$AdEventListener;)V
+	public final fun removeAllAdEventListener ()V
 }
 
 public final class kohii/v1/ads/Manilo$Companion {
