@@ -35,6 +35,7 @@ import kohii.v1.sample.common.ViewBindingFragment
 import kohii.v1.sample.databinding.FragmentAdsListBinding
 import okio.buffer
 import okio.source
+import timber.log.Timber
 
 class AdsContainerFragment :
     ViewBindingFragment<FragmentAdsListBinding>(FragmentAdsListBinding::inflate) {
@@ -92,6 +93,10 @@ class AdsContainerFragment :
     super.onViewCreated(view, savedInstanceState)
 
     manilo.register(this).addBucket(requireBinding().playerContainer)
+
+    manilo.addAdEventListener {
+      Timber.d("AdEventListener received : $it")
+    }
 
     val layoutManager = LinearLayoutManager(view.context)
     requireBinding().adsContainer.layoutManager = layoutManager
