@@ -476,14 +476,18 @@ class Master private constructor(context: Context) : PlayableManager {
   }
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
+  // Note: the last manual start wins. Which means that it will pause any other playing items and
+  // try to start the new one.
   internal fun play(playable: Playable) {
     val tag = playable.tag
     if (tag == NO_TAG) return
     if (plannedManualPlayables.contains(tag)) {
       requireNotNull(playable.playback).also {
-        if (!requireNotNull(it.config.controller).kohiiCanPause()) {
+        // TODO(eneim): rethink this to support off-screen manual playback/kohiiCanPause().
+        /* if (!requireNotNull(it.config.controller).kohiiCanPause()) {
           manuallyStartedPlayable.set(playable)
-        }
+        } */
+        manuallyStartedPlayable.set(playable)
         playablesPendingActions[tag] = Common.PLAY
         it.manager.refresh()
       }

@@ -613,6 +613,8 @@ abstract class Playback(
      * user before (this is equal to doing nothing).
      *
      * Default result is `true`.
+     *
+     * Note: this value is ignored in 1.2.0 due to an in-completed behavior.
      */
     @JvmDefault
     fun kohiiCanPause(): Boolean = true
