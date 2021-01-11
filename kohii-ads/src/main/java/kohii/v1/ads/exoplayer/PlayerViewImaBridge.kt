@@ -84,6 +84,13 @@ class PlayerViewImaBridge(
       this
   )
 
+  override fun prepare(loadSource: Boolean) {
+    super.prepare(loadSource)
+    if (loadSource) {
+      adsLoader.setPlayer(player)
+    }
+  }
+
   override fun ready() {
     super.ready()
     adsLoader.setPlayer(player)
