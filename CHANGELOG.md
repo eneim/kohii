@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [1.2.0.2011003]
 
 ### Added
 
@@ -19,6 +19,8 @@ receive that Playback, otherwise it receives the default candidates.
 - (kohii-exoplayer): DefaultMediaSourceFactoryProvider now accepts nullable DrmSessionManagerProvider.
 - (kohii-exoplayer): Default ExoPlayer implementation will always update the AudioAttributes when
 the Volume setting is called.
+- (kohii-core): Always use LOW memory mode if system needs it. (#127)
+- (kohii-core): Using ProcessLifecycleOwner instead of screen state broadcast for system-wide toggle the playback. (#125)
 
 ### Removed
 
