@@ -49,7 +49,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:4.1.0"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:4.1.2"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
@@ -58,7 +58,7 @@ object Libs {
     const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.3.0"
 
     const val junit = "junit:junit:4.13"
-    const val junitExt = "androidx.test.ext:junit-ktx:1.1.1"
+    const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"
     const val robolectric = "org.robolectric:robolectric:4.3.1"
     const val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
