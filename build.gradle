@@ -45,6 +45,10 @@ apply plugin: 'binary-compatibility-validator'
 
 apiValidation {
   ignoredProjects += ["kohii-sample", "kohii-sample-tiktok"]
+
+  file("$rootDir/kohii-samples").eachDir { dir ->
+    ignoredProjects += dir.name
+  }
 }
 
 allprojects {
