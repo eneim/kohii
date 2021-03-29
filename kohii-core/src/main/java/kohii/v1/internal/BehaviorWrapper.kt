@@ -47,8 +47,8 @@ internal class BehaviorWrapper<V : View>(
   private val handler = Handler(this)
   private val weakManager = WeakReference(manager)
 
-  override fun handleMessage(msg: Message?): Boolean {
-    when (msg?.what) {
+  override fun handleMessage(msg: Message): Boolean {
+    when (msg.what) {
       EVENT_SCROLL, EVENT_TOUCH -> {
         scrollConsumed.set(false)
         handler.removeMessages(EVENT_IDLE)
