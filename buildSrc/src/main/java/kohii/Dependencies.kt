@@ -36,8 +36,8 @@ object ReleaseInfo {
 @Suppress("MayBeConstant", "unused")
 object BuildConfig {
 
-  const val compileSdkVersion = 29
-  const val targetSdkVersion = 29
+  const val compileSdkVersion = 30
+  const val targetSdkVersion = 30
   const val minSdkVersion = 19
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
@@ -64,7 +64,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.4.21"
+    private const val version = "1.4.31"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"

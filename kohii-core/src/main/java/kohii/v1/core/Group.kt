@@ -189,7 +189,9 @@ class Group(
           .mapNotNull { /* Manager -> Pair<OnSelectionListener, List<Playback>> */
             if (it.host is OnSelectionListener) {
               it.host to (grouped[it] ?: emptyList())
-            } else null
+            } else {
+              null as Pair<OnSelectionListener, List<Playback>>?
+            }
           }
           .forEach { (onSelectionListener, playbacks) ->
             onSelectionListener.onSelection(playbacks)
