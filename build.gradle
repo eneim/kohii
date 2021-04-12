@@ -21,7 +21,7 @@ buildscript {
   repositories {
     google()
     mavenCentral()
-    maven { url "http://dl.bintray.com/kotlin/kotlin-eap" }
+    maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
     maven { url 'https://maven.fabric.io/public' }
     maven { url "https://plugins.gradle.org/m2/" }
     jcenter()
@@ -31,7 +31,7 @@ buildscript {
     //noinspection GradleDependency
     classpath Libs.Common.androidGradlePlugin
     classpath Libs.Kotlin.gradlePlugin
-    classpath Libs.Common.dexcountGradlePlugin
+    // classpath Libs.Common.dexcountGradlePlugin
     classpath Libs.Google.gmsGoogleServices
     classpath Libs.Google.firebaseCrashlyticsPlugin
     classpath Libs.Common.ktLintPlugin
@@ -55,7 +55,7 @@ allprojects {
   repositories {
     google()
     mavenCentral()
-    maven { url "http://dl.bintray.com/kotlin/kotlin-eap" }
+    maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
     jcenter()
     maven { url 'https://jitpack.io' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
