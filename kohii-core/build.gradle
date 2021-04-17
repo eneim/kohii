@@ -20,7 +20,7 @@ import kohii.Libs
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 // apply plugin: 'com.getkeepsafe.dexcount'
 
 android {
@@ -127,4 +127,4 @@ tasks.withType(Javadoc).all {
 
 project.archivesBaseName = "kohii-core"
 // apply from: rootProject.file('gradle/publish.gradle')
-apply from: rootProject.file('gradle/release_bintray_official.gradle')
+// apply from: rootProject.file('gradle/release_bintray_official.gradle')

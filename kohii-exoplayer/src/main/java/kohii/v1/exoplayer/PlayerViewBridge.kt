@@ -16,6 +16,7 @@
 
 package kohii.v1.exoplayer
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import com.google.android.exoplayer2.C
@@ -53,6 +54,7 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
+@SuppressLint("WrongConstant")
 open class PlayerViewBridge(
   context: Context,
   protected val media: Media,

@@ -19,7 +19,7 @@ package kohii.v1.ads
 import android.net.Uri
 import kohii.v1.media.MediaDrm
 import kohii.v1.media.MediaItem
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * A default implementation of [AdMedia].

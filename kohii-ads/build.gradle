@@ -19,7 +19,7 @@ import kohii.Libs
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 
 android {
   compileSdkVersion BuildConfig.compileSdkVersion
@@ -88,4 +88,4 @@ dependencies {
 
 project.archivesBaseName = "kohii-ads"
 // apply from: rootProject.file('gradle/publish.gradle')
-apply from: rootProject.file('gradle/release_bintray_official.gradle')
+// apply from: rootProject.file('gradle/release_bintray_official.gradle')

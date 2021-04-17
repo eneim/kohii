@@ -19,7 +19,7 @@ package kohii.v1.core
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RestrictTo
-import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
+import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo
 
 object Common {
@@ -38,7 +38,7 @@ object Common {
   internal val PAUSE = PlaybackAction(false)
 
   // ExoPlayer's doesn't catch a RuntimeException and crash if Device has too many App installed.
-  @RestrictTo(LIBRARY_GROUP)
+  @RestrictTo(LIBRARY_GROUP_PREFIX)
   fun getUserAgent(
     context: Context,
     appName: String

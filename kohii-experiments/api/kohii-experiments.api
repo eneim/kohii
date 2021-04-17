@@ -36,8 +36,6 @@ public final class kohii/v1/experiments/YouTubePlayerFragment : androidx/fragmen
 	public static final field Companion Lkohii/v1/experiments/YouTubePlayerFragment$Companion;
 	public static final field STATE_KEY Ljava/lang/String;
 	public fun <init> ()V
-	public fun _$_clearFindViewByIdCache ()V
-	public fun _$_findCachedViewById (I)Landroid/view/View;
 	public fun onCreate (Landroid/os/Bundle;)V
 	public fun onCreateView (Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;
 	public fun onDestroyView ()V

@@ -83,4 +83,4 @@ dependencies {
 
 project.archivesBaseName = "kohii-exoplayer"
 // apply from: rootProject.file('gradle/publish.gradle')
-apply from: rootProject.file('gradle/release_bintray_official.gradle')
+// apply from: rootProject.file('gradle/release_bintray_official.gradle')
