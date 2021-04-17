@@ -52,4 +52,4 @@ jobs:
         env:
           mavenCentralRepositoryUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           mavenCentralRepositoryPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-        run: ./gradlew clean build && ./gradlew publishAllPublicationsToMavenRepository --no-daemon --no-parallel
+        run: ./gradlew clean build && ./gradlew publishReleasePublicationToMavenRepository --no-daemon --no-parallel

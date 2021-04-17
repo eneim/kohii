@@ -18,7 +18,7 @@ package kohii.v1.media
 
 import android.os.Parcelable
 import androidx.annotation.FloatRange
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * @author eneim (2018/06/24).

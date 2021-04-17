@@ -56,6 +56,7 @@ object Libs {
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
     const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.3.0"
+    const val nexusPublish = "io.github.gradle-nexus:publish-plugin:1.0.0"
 
     const val junit = "junit:junit:4.13"
     const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"

@@ -39,10 +39,16 @@ buildscript {
     classpath Libs.Common.dokkaPlugin
     classpath Libs.Common.binaryValidator
     // classpath Libs.Common.mavenPublish
+    classpath Libs.Common.nexusPublish
   }
 }
 
 apply plugin: 'binary-compatibility-validator'
+apply plugin: 'io.github.gradle-nexus.publish-plugin'
+
+// Setup for the Nexus Publish Plugin.
+group = GROUP
+version = VERSION_NAME
 
 apiValidation {
   ignoredProjects += ["kohii-sample", "kohii-sample-tiktok"]
