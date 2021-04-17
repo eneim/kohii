@@ -21,10 +21,10 @@ buildscript {
   repositories {
     google()
     mavenCentral()
+    gradlePluginPortal()
     maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
     maven { url 'https://maven.fabric.io/public' }
     maven { url "https://plugins.gradle.org/m2/" }
-    jcenter()
   }
 
   dependencies {
@@ -35,13 +35,20 @@ buildscript {
     classpath Libs.Google.gmsGoogleServices
     classpath Libs.Google.firebaseCrashlyticsPlugin
     classpath Libs.Common.ktLintPlugin
-    classpath Libs.Common.bintrayPlugin
+    // classpath Libs.Common.bintrayPlugin
     classpath Libs.Common.dokkaPlugin
     classpath Libs.Common.binaryValidator
+    // classpath Libs.Common.mavenPublish
+    classpath Libs.Common.nexusPublish
   }
 }
 
 apply plugin: 'binary-compatibility-validator'
+apply plugin: 'io.github.gradle-nexus.publish-plugin'
+
+// Setup for the Nexus Publish Plugin.
+group = GROUP
+version = VERSION_NAME
 
 apiValidation {
   ignoredProjects += ["kohii-sample", "kohii-sample-tiktok"]
@@ -109,7 +116,12 @@ allprojects {
 
       externalDocumentationLink {
         url = new URL("https://exoplayer.dev/doc/reference/")
-        packageListUrl = new URL("https://exoplayer.dev/doc/reference/package-list")
+        packageListUrl = new URL("https://exoplayer.dev/doc/reference/index-all.html")
+      }
+
+      externalDocumentationLink {
+        url = new URL("https://kotlinlang.org/api/latest/jvm/stdlib/")
+        packageListUrl = new URL("https://kotlinlang.org/api/latest/jvm/stdlib/package-list")
       }
     }
   }

@@ -18,7 +18,7 @@ package kohii.v1.media
 
 import android.net.Uri
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * @author eneim (2018/10/19).

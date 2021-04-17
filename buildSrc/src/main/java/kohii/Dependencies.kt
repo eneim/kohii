@@ -49,13 +49,14 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:7.0.0-alpha14"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:4.2.0-rc01"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
     const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.3.0"
+    const val nexusPublish = "io.github.gradle-nexus:publish-plugin:1.0.0"
 
     const val junit = "junit:junit:4.13"
     const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"

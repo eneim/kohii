@@ -23,7 +23,7 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.View
 import androidx.annotation.RestrictTo
-import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP
+import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior
 import androidx.core.util.Pools.Pool
@@ -106,28 +106,28 @@ fun View.viewBehavior(): Behavior<*>? {
 }
 
 // Because I want to compose the message first, then log it.
-@RestrictTo(LIBRARY_GROUP)
+@RestrictTo(LIBRARY_GROUP_PREFIX)
 fun String.logDebug(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.d(tag, this)
   }
 }
 
-@RestrictTo(LIBRARY_GROUP)
+@RestrictTo(LIBRARY_GROUP_PREFIX)
 fun String.logInfo(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.i(tag, this)
   }
 }
 
-@RestrictTo(LIBRARY_GROUP)
+@RestrictTo(LIBRARY_GROUP_PREFIX)
 fun String.logWarn(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.w(tag, this)
   }
 }
 
-@RestrictTo(LIBRARY_GROUP)
+@RestrictTo(LIBRARY_GROUP_PREFIX)
 fun String.logError(tag: String = "${BuildConfig.LIBRARY_PACKAGE_NAME}.log") {
   if (BuildConfig.DEBUG) {
     Log.e(tag, this)

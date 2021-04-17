@@ -50,6 +50,6 @@ jobs:
 
       - name: Deploy Snapshot
         env:
-          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-        run: ./gradlew clean build && ./gradlew publishAllPublicationsToMavenRepository --no-daemon --no-parallel
+          mavenCentralRepositoryUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          mavenCentralRepositoryPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+        run: ./gradlew clean build && ./gradlew publishReleasePublicationToMavenRepository --no-daemon --no-parallel
