@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2021 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package kohii.v1.core
+package kohii.v1.internal
 
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.view.ViewGroup
 import androidx.core.view.doOnAttach
+import kohii.v1.core.Master
+import kohii.v1.core.Playable
 import kohii.v1.debugOnly
 import kohii.v1.logInfo
 
@@ -43,13 +45,10 @@ internal class MasterDispatcher(val master: Master) : Handler(Looper.getMainLoop
         }
       }
       Master.MSG_RELEASE_PLAYABLE -> {
-        val playable = (msg.obj as Playable)
-        playable.onRelease()
+        (msg.obj as Playable).onRelease()
       }
       Master.MSG_DESTROY_PLAYABLE -> {
-        val playable = msg.obj as Playable
-        val clearState = msg.arg1 == 0
-        master.onTearDown(playable, clearState)
+        master.onTearDown(msg.obj as Playable)
       }
     }
   }

@@ -24,9 +24,9 @@ import kohii.v1.core.Playback.Callback
 import kohii.v1.core.Playback.Controller
 import kohii.v1.core.Playback.NetworkTypeChangeListener
 import kohii.v1.core.Playback.TokenUpdateListener
-import kotlinx.android.parcel.IgnoredOnParcel
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.RawValue
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class Rebinder(val tag: @RawValue Any) : Parcelable {
@@ -60,16 +60,14 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
     engine: Engine<*>,
     container: ViewGroup,
     callback: ((Playback) -> Unit)? = null
-  ) {
-    this.bind(engine.master, container, callback)
-  }
+  ): Unit = this.bind(engine.master, container, callback)
 
   private fun bind(
     master: Master,
     container: ViewGroup,
     callback: ((Playback) -> Unit)? = null
   ) {
-    val playable = master.playables.asSequence()
+    val playable: Playable? = master.playables.asSequence()
         .firstOrNull { it.value == tag /* equals */ }
         ?.key
     master.bind(

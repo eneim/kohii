@@ -22,6 +22,7 @@ import kohii.v1.core.MemoryMode.HIGH
 import kohii.v1.core.MemoryMode.INFINITE
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.MemoryMode.NORMAL
+import kohii.v1.debugOnly
 import kohii.v1.internal.PlayerParametersChangeListener
 import kohii.v1.logInfo
 import kohii.v1.logWarn
@@ -41,7 +42,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   private var playRequested: Boolean = false
 
   override fun toString(): String {
-    return "Playable([t=$tag][b=$bridge][h=${super.hashCode()}])"
+    return "Playable([t=$tag][b=$bridge][h=${hashCode()}])"
   }
 
   // Ensure the preparation for the playback
@@ -89,6 +90,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
   }
 
   override fun isPlaying(): Boolean {
+    "Playable#isPlaying $this".logInfo()
     return bridge.isPlaying()
   }
 
@@ -102,12 +104,12 @@ abstract class AbstractPlayable<RENDERER : Any>(
       val newManager = field
       if (oldManager === newManager) return
       "Playable#manager $oldManager --> $newManager, $this".logInfo()
+      oldManager?.removePlayable(this)
+      newManager?.addPlayable(this)
+      // Setting Manager to null.
       if (newManager == null) {
         master.trySavePlaybackInfo(this)
-        master.tearDown(
-            playable = this,
-            clearState = if (oldManager is Manager) !oldManager.isChangingConfigurations() else true
-        )
+        master.tearDown(playable = this)
       } else if (oldManager === null) {
         master.tryRestorePlaybackInfo(this)
       }
@@ -120,15 +122,7 @@ abstract class AbstractPlayable<RENDERER : Any>(
       val newPlayback = field
       if (oldPlayback === newPlayback) return
       "Playable#playback $oldPlayback --> $newPlayback, $this".logInfo()
-      if (oldPlayback != null) {
-        bridge.removeErrorListener(oldPlayback)
-        bridge.removeEventListener(oldPlayback)
-        oldPlayback.removeCallback(this)
-        if (oldPlayback.playable === this) oldPlayback.playable = null
-        if (oldPlayback.playerParametersChangeListener === this) {
-          oldPlayback.playerParametersChangeListener = null
-        }
-      }
+      oldPlayback?.let(::detachFromPlayback)
 
       this.manager = if (newPlayback != null) {
         newPlayback.manager
@@ -150,29 +144,49 @@ abstract class AbstractPlayable<RENDERER : Any>(
         }
       }
 
-      if (newPlayback != null) {
-        newPlayback.playable = this
-        newPlayback.playerParametersChangeListener = this
-        newPlayback.addCallback(this)
-        newPlayback.config.callbacks.forEach { callback -> newPlayback.addCallback(callback) }
-
-        bridge.addEventListener(newPlayback)
-        bridge.addErrorListener(newPlayback)
-
-        if (newPlayback.tag != Master.NO_TAG) {
-          if (newPlayback.config.controller != null) {
-            master.plannedManualPlayables.add(newPlayback.tag)
-          } else {
-            master.plannedManualPlayables.remove(newPlayback.tag)
-          }
-        }
-      }
+      newPlayback?.let(::attachToPlayback)
 
       master.notifyPlaybackChanged(this, oldPlayback, newPlayback)
     }
 
   override val playerState: Int
     get() = bridge.playerState
+
+  private fun attachToPlayback(playback: Playback) {
+    playback.playable = this
+    playback.playerParametersChangeListener = this
+    playback.addCallback(this)
+    playback.config.callbacks.forEach { callback -> playback.addCallback(callback) }
+
+    bridge.addEventListener(playback)
+    bridge.addErrorListener(playback)
+
+    if (playback.tag != Master.NO_TAG) {
+      if (playback.config.controller != null) {
+        master.plannedManualPlayables.add(playback.tag)
+      } else {
+        master.plannedManualPlayables.remove(playback.tag)
+      }
+    }
+  }
+
+  private fun detachFromPlayback(playback: Playback) {
+    bridge.removeErrorListener(playback)
+    bridge.removeEventListener(playback)
+    playback.removeCallback(this)
+    debugOnly {
+      check(playback.playable === this) {
+        """
+          Old playback of this playable ($this) is 
+          bound to a different playable: ${playback.playable}
+        """.trimIndent()
+      }
+    }
+    if (playback.playable === this) playback.playable = null
+    if (playback.playerParametersChangeListener === this) {
+      playback.playerParametersChangeListener = null
+    }
+  }
 
   // Playback.Callback
 

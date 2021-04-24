@@ -110,6 +110,11 @@ abstract class Playback(
     }
   }
 
+  /**
+   * @property releaseOnInActive If `true`, the resources of this [Playback] should be released as
+   * soon as it is inactive. This flag can be `false` to reduce the releasing/preparing frequency.
+   * Note that a [Playback] will always be released when it is detached.
+   */
   data class Config(
     val tag: Any = Master.NO_TAG,
     val delay: Int = 0,

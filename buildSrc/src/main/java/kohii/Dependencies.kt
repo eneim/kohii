@@ -155,6 +155,7 @@ object Libs {
       val liveData = "androidx.lifecycle:lifecycle-livedata-ktx:$version"
       val viewModel = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
       val service = "androidx.lifecycle:lifecycle-service:$version"
+      val process = "androidx.lifecycle:lifecycle-process:$version"
     }
 
     object Room {

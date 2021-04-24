@@ -18,6 +18,7 @@ package kohii.v1.core
 
 import android.graphics.Rect
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
@@ -51,20 +52,21 @@ class Group(
 
   private var stickyManager: Manager? = null
     set(value) {
-      val from = field
+      val prevStickyManager = field
       field = value
-      val to = field
-      if (from === to) return
-      if (to != null) { // a Manager is promoted
-        to.sticky = true
-        managers.push(to)
+      val nextStickyManager = field
+      if (prevStickyManager === nextStickyManager) return
+      if (nextStickyManager != null) { // a Manager is promoted
+        nextStickyManager.sticky = true
+        managers.push(nextStickyManager)
       } else {
-        require(from != null && from.sticky)
-        if (managers.peek() === from) {
-          from.sticky = false
+        require(prevStickyManager != null && prevStickyManager.sticky)
+        if (managers.peek() === prevStickyManager) {
+          prevStickyManager.sticky = false
           managers.pop()
         }
       }
+      onRefresh()
     }
 
   internal var groupVolumeInfo: VolumeInfo = VolumeInfo.DEFAULT_ACTIVE
@@ -83,7 +85,7 @@ class Group(
       managers.forEach { it.lock = value }
     }
 
-  private val handler = Handler(this)
+  private val handler = Handler(/* looper */ Looper.getMainLooper(), /* callback */ this)
   private val dispatcher = PlayableDispatcher(master)
 
   private val playbacks: Collection<Playback>
@@ -157,8 +159,8 @@ class Group(
       toPlay.addAll(canPlay)
       toPause.addAll(canPause)
     } else {
-      managers.forEach {
-        val (canPlay, canPause) = it.splitPlaybacks()
+      for (manager in managers) {
+        val (canPlay, canPause) = manager.splitPlaybacks()
         toPlay.addAll(canPlay)
         toPause.addAll(canPause)
       }
@@ -190,6 +192,7 @@ class Group(
             if (it.host is OnSelectionListener) {
               it.host to (grouped[it] ?: emptyList())
             } else {
+              @Suppress("USELESS_CAST")
               null as Pair<OnSelectionListener, List<Playback>>?
             }
           }
@@ -231,7 +234,6 @@ class Group(
   internal fun onManagerDestroyed(manager: Manager) {
     if (stickyManager === manager) stickyManager = null
     if (managers.remove(manager)) master.onGroupUpdated(this)
-    if (managers.size == 0) master.onLastManagerDestroyed(this)
   }
 
   // This operation should:

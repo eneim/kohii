@@ -19,16 +19,16 @@ package kohii.v1.utils
 import kohii.v1.core.Engine
 
 /**
- * Singleton Holder
+ * Singleton Holder.
  */
 open class Capsule<T : Any, in A>(
   creator: (A) -> T,
-  onCreate: ((T) -> Unit) = { if (it is Engine<*>) it.master.registerEngine(it) }
+  onCreated: ((T) -> Unit) = { if (it is Engine<*>) it.master.registerEngine(it) }
 ) {
   @Volatile private var instance: T? = null
 
   private var creator: ((A) -> T)? = creator
-  private var onCreate: ((T) -> Unit)? = onCreate
+  private var onCreated: ((T) -> Unit)? = onCreated
 
   protected fun getInstance(arg: A): T {
     val check = instance
@@ -42,10 +42,10 @@ open class Capsule<T : Any, in A>(
         doubleCheck
       } else {
         val created = requireNotNull(creator)(arg)
-        requireNotNull(onCreate)(created)
+        requireNotNull(onCreated)(created)
         instance = created
         creator = null
-        onCreate = null
+        onCreated = null
         created
       }
     }

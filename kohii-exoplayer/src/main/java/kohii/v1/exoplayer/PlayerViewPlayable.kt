@@ -21,9 +21,13 @@ import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
 import kohii.v1.core.Master
+import kohii.v1.core.Playable
 import kohii.v1.core.Playback
 import kohii.v1.media.Media
 
+/**
+ * A [Playable] that can be played in a [PlayerView].
+ */
 class PlayerViewPlayable(
   master: Master,
   media: Media,

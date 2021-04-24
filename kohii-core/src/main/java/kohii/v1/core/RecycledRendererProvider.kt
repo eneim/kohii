@@ -57,8 +57,8 @@ abstract class RecycledRendererProvider @JvmOverloads constructor(
 
   @CallSuper
   override fun clear() {
-    pools.forEach { _, value ->
-      value.onEachAcquired(::onClear)
+    pools.forEach { _, pool ->
+      pool.onEachAcquired(::onClear)
     }
   }
 

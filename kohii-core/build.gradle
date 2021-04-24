@@ -74,6 +74,7 @@ dependencies {
   implementation Libs.AndroidX.coordinatorLayout
   implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.service
+  implementation Libs.AndroidX.Lifecycle.process
   api Libs.AndroidX.Lifecycle.java8
 
   testImplementation(Libs.Common.junit)

@@ -54,11 +54,10 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
-@SuppressLint("WrongConstant")
+@SuppressLint("WrongConstant", "MemberVisibilityCanBePrivate")
 open class PlayerViewBridge(
   context: Context,
   protected val media: Media,
-  @Suppress("MemberVisibilityCanBePrivate")
   protected val playerPool: PlayerPool<Player>,
   mediaSourceFactoryProvider: MediaSourceFactoryProvider
 ) : AbstractBridge<PlayerView>(), PlayerEventListener {
