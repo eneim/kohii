@@ -33,15 +33,15 @@ jobs:
           echo $GPG_KEY_ARMOR | base64 --decode > ./release.asc
           gpg --quiet --output $GITHUB_WORKSPACE/release.gpg --dearmor ./release.asc
 
-          sed -i -e "s,mavenCentralRepositoryUsername=,mavenCentralRepositoryUsername=$SONATYPE_NEXUS_USERNAME,g" ~/.gradle/gradle.properties
-          sed -i -e "s,mavenCentralRepositoryPassword=,mavenCentralRepositoryPassword=$SONATYPE_NEXUS_PASSWORD,g" ~/.gradle/gradle.properties
-          sed -i -e "s,signing.keyId=,signing.keyId=$GPG_KEY_ID,g" ~/.gradle/gradle.properties
-          sed -i -e "s,signing.password=,signing.password=$GPG_PASSWORD,g" ~/.gradle/gradle.properties
-          sed -i -e "s,signing.secretKeyRingFile=,signing.secretKeyRingFile=$GITHUB_WORKSPACE/release.gpg,g" ~/.gradle/gradle.properties
+          echo "mavenCentralRepositoryUsername=$SONATYPE_NEXUS_USERNAME" >> gradle.properties
+          echo "mavenCentralRepositoryPassword=$SONATYPE_NEXUS_PASSWORD" >> gradle.properties
+          echo "signing.keyId=$GPG_KEY_ID" >> gradle.properties
+          echo "signing.password=$GPG_PASSWORD" >> gradle.properties
+          echo "signing.secretKeyRingFile=$GITHUB_WORKSPACE/release.gpg" >> gradle.properties
           ./gradlew clean build && ./gradlew publishReleasePublicationToMavenRepository --no-daemon --no-parallel
         env:
           SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
           GPG_KEY_ARMOR: ${{ secrets.GPG_KEY_ARMOR }}
-          GPG_KEY_ID: ${{ secrets.SYNCED_GPG_KEY_ID }}
-          GPG_PASSWORD: ${{ secrets.SYNCED_GPG_KEY_PASSWORD }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
