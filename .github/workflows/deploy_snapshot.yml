@@ -47,17 +47,20 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('checksum.txt') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Deploy Snapshot
-        run: 
-          echo $GPG_KEY_CONTENTS | base64 --decode > $GITHUB_WORKSPACE/release.gpg
+      - name: Create .gpg key
+        run: |
+          echo $GPG_KEY_ARMOR | base64 --decode > ./release.asc
+          gpg --quiet --output $GITHUB_WORKSPACE/release.gpg --dearmor ./release.asc
 
           sed -i -e "s,signing.keyId=,signing.keyId=$GPG_KEY_ID,g" gradle.properties
           sed -i -e "s,signing.password=,signing.password=$GPG_PASSWORD,g" gradle.properties
-          sed -i -e "s,signing.secretKeyRingFile=,signing.secretKeyRingFile=$GITHUB_WORKSPACE/release.gpg,g" gradle.properties          
-          ./gradlew clean build && ./gradlew publishReleasePublicationToMavenRepository --no-daemon --no-parallel
+          sed -i -e "s,signing.secretKeyRingFile=,signing.secretKeyRingFile=$GITHUB_WORKSPACE/release.gpg,g" gradle.properties
         env:
-          GPG_KEY_CONTENTS: ${{ secrets.GPG_KEY_CONTENTS }}
+          GPG_KEY_ARMOR: ${{ secrets.GPG_KEY_ARMOR }}
           GPG_KEY_ID: ${{ secrets.SYNCED_GPG_KEY_ID }}
           GPG_PASSWORD: ${{ secrets.SYNCED_GPG_KEY_PASSWORD }}
+      - name: Deploy Snapshot
+        run: ./gradlew clean build && ./gradlew publishReleasePublicationToMavenRepository --no-daemon --no-parallel
+        env:
           mavenCentralRepositoryUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           mavenCentralRepositoryPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
