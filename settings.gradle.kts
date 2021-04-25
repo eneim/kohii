@@ -14,21 +14,30 @@
  * limitations under the License.
  */
 
-def includeModules(def modulesDirName = 'kohii-samples') {
-  file("$rootDir/$modulesDirName").eachDir { dir ->
-    if (file("$dir/build.gradle").exists() || file("$dir/build.gradle.kts").exists()) {
-      include ":${dir.name}"
-      project(":${dir.name}").projectDir = dir
+pluginManagement {
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+  }
+}
+
+fun includeModules(modulesDirName: String = "kohii-samples") {
+  val basePath = "$rootDir/$modulesDirName"
+  file(basePath).list()?.forEach { dir ->
+    if (file("$basePath/$dir/build.gradle").exists() ||
+        file("$basePath/$dir/build.gradle.kts").exists()
+    ) {
+      include(":$modulesDirName:$dir")
     }
   }
 }
 
-include ':kohii-core'
-include ':kohii-exoplayer'
-include ':kohii-sample'
-include ':kohii-androidx'
-include ':kohii-ads'
-include ':kohii-experiments'
-include ':kohii-sample-tiktok'
+include(":kohii-core")
+include(":kohii-exoplayer")
+include(":kohii-androidx")
+include(":kohii-ads")
+include(":kohii-experiments")
+include(":kohii-sample")
+include(":kohii-sample-tiktok")
 
 includeModules()

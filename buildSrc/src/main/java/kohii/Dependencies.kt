@@ -54,9 +54,10 @@ object Libs {
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
     // 0.10.0 render method signature after the doc, which looks pretty bad.
-    const val dokkaPlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
-    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.3.0"
-    const val nexusPublish = "io.github.gradle-nexus:publish-plugin:1.0.0"
+    const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
+    const val dokkaAndroidPlugin = "org.jetbrains.dokka:android-documentation-plugin:1.4.32"
+    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.5.0"
+    const val nexusPublish = "io.github.gradle-nexus:publish-plugin:1.1.0"
 
     const val junit = "junit:junit:4.13"
     const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"
@@ -65,7 +66,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.4.31"
+    private const val version = "1.4.32"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"

@@ -55,18 +55,6 @@ android {
   }
 }
 
-afterEvaluate { project ->
-  project.tasks.dokka {
-    outputDirectory = "$rootDir/docs/api"
-    outputFormat = "gfm"
-
-    externalDocumentationLink {
-      url = new URL("file://$rootDir/docs/api/kohii-core/")
-      packageListUrl = new URL("file://$rootDir/docs/api/kohii-core/package-list")
-    }
-  }
-}
-
 dependencies {
   api fileTree(dir: 'libs', include: ['YouTubeAndroidPlayerApi.jar'])
   implementation project(':kohii-core')

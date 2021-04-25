@@ -92,9 +92,5 @@ nav:
   - 'Extending Kohii':
       - 'Custom Engine': custom-engine.md
   - 'Changelog': changelog.md
-  - 'API':
-      - 'kohii-core': api/kohii-core/index.md
-      - 'kohii-exoplayer': api/kohii-exoplayer/index.md
-      - 'kohii-androidx': api/kohii-androidx/index.md
-      - 'kohii-ads': api/kohii-ads/index.md
+  - 'API': api/index.html
   - 'Code of Conduct': code_of_conduct.md
