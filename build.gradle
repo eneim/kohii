@@ -43,19 +43,30 @@ buildscript {
   }
 }
 
-apply plugin: 'binary-compatibility-validator'
 apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
 // Setup for the Nexus Publish Plugin.
 group = GROUP
 version = VERSION_NAME
 
-apiValidation {
-  ignoredProjects += ["kohii-sample", "kohii-sample-tiktok"]
-
-  file("$rootDir/kohii-samples").eachDir { dir ->
-    ignoredProjects += dir.name
+def sampleProjects = [project("kohii-sample"), project("kohii-sample-tiktok")]
+file("$rootDir/kohii-samples").eachDir { dir ->
+  if (file("$dir/build.gradle").exists() || file("$dir/build.gradle.kts").exists()) {
+    sampleProjects += project(":kohii-samples:" + dir.name)
   }
+}
+
+apply plugin: 'binary-compatibility-validator'
+apiValidation {
+  sampleProjects.forEach {
+    ignoredProjects += it.name
+  }
+}
+
+apply plugin: "org.jetbrains.dokka"
+tasks.withType(org.jetbrains.dokka.gradle.DokkaMultiModuleTask).configureEach {
+  outputDirectory.set(file("$rootDir/docs/api"))
+  removeChildTasks(sampleProjects)
 }
 
 allprojects {
@@ -63,16 +74,17 @@ allprojects {
     google()
     mavenCentral()
     maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
-    jcenter()
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-    flatDir {
+    //noinspection JcenterRepositoryObsolete,GrDeprecatedAPIUsage
+    jcenter() // For ExoPlayer 2.11.x
+    maven { url "https://jitpack.io" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    /* flatDir {
       dirs 'libs'
-    }
+    } */
   }
 
   apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
-  apply plugin: 'org.jetbrains.dokka-android'
+  apply plugin: "org.jetbrains.dokka"
 
   tasks.withType(JavaCompile).configureEach { task ->
     task.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -102,26 +114,31 @@ allprojects {
     }
   }
 
+  tasks.withType(org.jetbrains.dokka.gradle.DokkaTaskPartial).configureEach {
+    dokkaSourceSets.configureEach {
+      jdkVersion.set(8)
+      skipDeprecated.set(true)
+
+      externalDocumentationLink {
+        url.set(URL("https://developer.android.com/reference/"))
+      }
+      externalDocumentationLink {
+        url.set(URL("https://exoplayer.dev/doc/reference/"))
+      }
+    }
+  }
+
   afterEvaluate { p ->
-    p.tasks.dokka {
-      jdkVersion = 8
-      reportUndocumented = false
-      skipDeprecated = true
-      skipEmptyPackages = true
-
-      externalDocumentationLink {
-        url = new URL("https://developer.android.com/reference/")
-        packageListUrl = new URL("https://developer.android.com/reference/androidx/package-list")
+    if (p.hasProperty("android")) {
+      p.android.lintOptions {
+        // FIXME(eneim): temporarily disable.
+        disable "RestrictedApi", "VisibleForTests", "UnusedResources", "UnusedIds"
       }
+    }
 
-      externalDocumentationLink {
-        url = new URL("https://exoplayer.dev/doc/reference/")
-        packageListUrl = new URL("https://exoplayer.dev/doc/reference/index-all.html")
-      }
-
-      externalDocumentationLink {
-        url = new URL("https://kotlinlang.org/api/latest/jvm/stdlib/")
-        packageListUrl = new URL("https://kotlinlang.org/api/latest/jvm/stdlib/package-list")
+    if (p.hasProperty("android") && p.hasProperty("dependencies")) {
+      p.dependencies {
+        dokkaHtmlPartialPlugin(Libs.Common.dokkaAndroidPlugin)
       }
     }
   }

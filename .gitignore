@@ -85,3 +85,5 @@
 /kohii-sample-tiktok/src/androidTest/
 /kohii-sample-tiktok/src/test/
 /.idea/compiler.xml
+/kohii-samples/build/
+/.idea/kotlinScripting.xml
