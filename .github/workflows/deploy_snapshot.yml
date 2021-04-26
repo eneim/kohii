@@ -7,7 +7,7 @@ jobs:
   deploy-snapshot:
     name: Run unit-test and Deploy snapshot
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v2
