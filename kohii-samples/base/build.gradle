@@ -1,6 +1,3 @@
-import kohii.BuildConfig
-import kohii.Libs
-
 /*
  * Copyright (c) 2021 Nam Nguyen, nam@ene.im
  *
@@ -16,6 +13,8 @@ import kohii.Libs
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import kohii.BuildConfig
+import kohii.Libs
 
 plugins {
   id 'com.android.library'
