@@ -110,6 +110,7 @@ afterEvaluate { project ->
   publishing {
     publications {
       release(MavenPublication) {
+        from components.release
         groupId = GROUP
         version = VERSION_NAME
         artifactId = POM_ARTIFACT_ID
@@ -150,4 +151,4 @@ afterEvaluate { project ->
 }
 
 // Command:
-// ./gradlew publish closeAndReleaseSonatypeStagingRepository
+// ./gradlew publishReleasePublicationToMavenRepository closeAndReleaseSonatypeStagingRepository
