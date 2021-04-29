@@ -86,7 +86,7 @@ class Binder(
       if (cache.config != config /* equals */) {
         // Scenario: client bind a Video of same tag/media but different Renderer type or Config.
         cache.playback = null // will also set Manager to null
-        engine.master.tearDown(cache, true)
+        engine.master.tearDown(cache)
         cache = null
       }
     }

@@ -34,6 +34,7 @@ import kohii.v1.core.Scope.GROUP
 import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.core.Strategy.SINGLE_PLAYER
+import kohii.v1.internal.ManagerViewModel
 import kohii.v1.logDebug
 import kohii.v1.logInfo
 import kohii.v1.media.VolumeInfo
@@ -64,6 +65,7 @@ class Manager internal constructor(
   internal val group: Group,
   val host: Any,
   internal val lifecycleOwner: LifecycleOwner,
+  internal val viewModel: ManagerViewModel,
   internal val memoryMode: MemoryMode = LOW,
   internal val activeLifecycleState: State = State.STARTED
 ) : PlayableManager, DefaultLifecycleObserver, LifecycleEventObserver, Comparable<Manager> {
@@ -104,16 +106,18 @@ class Manager internal constructor(
   // Up to one Bucket can be sticky at a time.
   private var stickyBucket: Bucket? = null
     set(value) {
-      val from = field
+      val prevStickyBucket = field
       field = value
-      val to = field
-      if (from === to) return
-      // Promote 'to' from buckets.
-      if (to != null /* set new sticky Bucket */) {
-        buckets.push(to) // Push it to head.
-      } else { // 'to' is null then 'from' must be nonnull. Consider to remove it from head.
-        // Demote 'from'
-        if (buckets.peek() === from) buckets.pop()
+      val nextStickyBucket = field
+      if (prevStickyBucket === nextStickyBucket) return
+      // Promote 'nextStickyBucket' from buckets.
+      if (nextStickyBucket != null) {
+        // Set new sticky Bucket by pushing it to head.
+        buckets.push(nextStickyBucket)
+      } else {
+        // 'nextStickyBucket' is null then 'prevStickyBucket' must be nonnull. Consider to remove it
+        // from head.
+        if (buckets.peek() === prevStickyBucket) buckets.pop()
       }
     }
 
@@ -145,11 +149,16 @@ class Manager internal constructor(
     }
   }
 
+  /**
+   * @see [LifecycleEventObserver.onStateChanged]
+   */
   override fun onStateChanged(
     source: LifecycleOwner,
     event: Event
   ) {
-    playbacks.forEach { it.value.lifecycleState = source.lifecycle.currentState }
+    for ((_, playback) in playbacks) {
+      playback.lifecycleState = source.lifecycle.currentState
+    }
     refresh()
   }
 
@@ -157,7 +166,8 @@ class Manager internal constructor(
     playbacks.values
         .toMutableList()
         .also { group.selection -= it }
-        .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
+        // Remove the playback. This will also modify 'playbacks' content.
+        .onEach(::removePlayback)
         .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
 
@@ -184,6 +194,14 @@ class Manager internal constructor(
   override fun onStop(owner: LifecycleOwner) {
     playbacks.forEach { if (it.value.isActive) onPlaybackInActive(it.value) }
     refresh()
+  }
+
+  override fun trySavePlaybackInfo(playable: Playable) {
+    viewModel.trySavePlaybackInfo(playable)
+  }
+
+  override fun tryRestorePlaybackInfo(playable: Playable) {
+    viewModel.tryRestorePlaybackInfo(playable)
   }
 
   internal fun findRendererProvider(playable: Playable): RendererProvider {
@@ -271,8 +289,8 @@ class Manager internal constructor(
     val toInActive = playbacks.filterValues { it.isActive && !it.token.shouldPrepare() }
         .values
 
-    toActive.forEach { onPlaybackActive(it) }
-    toInActive.forEach { onPlaybackInActive(it) }
+    toActive.forEach(::onPlaybackActive)
+    toInActive.forEach(::onPlaybackInActive)
 
     return playbacks.entries.filter { it.value.isAttached }
         .partitionToMutableSets(
@@ -347,6 +365,10 @@ class Manager internal constructor(
     "Manager#notifyPlaybackChanged ${playable.tag}, $from, $to, $this".logInfo()
     playableObservers[playable.tag]?.invoke(playable.tag, from, to)
   }
+
+  override fun addPlayable(playable: Playable) = viewModel.addPlayable(playable)
+
+  override fun removePlayable(playable: Playable) = viewModel.removePlayable(playable)
 
   private fun onPlaybackAttached(playback: Playback): Unit = playback.onAttached()
 

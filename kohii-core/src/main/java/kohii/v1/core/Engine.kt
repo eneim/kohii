@@ -27,12 +27,14 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.MemoryMode.LOW
 import kohii.v1.core.Scope.BUCKET
 import kohii.v1.core.Scope.GROUP
 import kohii.v1.core.Scope.MANAGER
 import kohii.v1.core.Scope.PLAYBACK
+import kohii.v1.internal.ManagerViewModel
 import kohii.v1.media.Media
 import kohii.v1.media.MediaItem
 import kohii.v1.media.VolumeInfo
@@ -47,9 +49,7 @@ abstract class Engine<RENDERER : Any> constructor(
     playableCreator: PlayableCreator<RENDERER>
   ) : this(Master[context], playableCreator)
 
-  internal fun inject(group: Group) {
-    group.managers.forEach { prepare(it) }
-  }
+  internal fun inject(group: Group) = group.managers.forEach(::prepare)
 
   abstract fun prepare(manager: Manager)
 
@@ -103,6 +103,7 @@ abstract class Engine<RENDERER : Any> constructor(
         activity = activity,
         host = fragment,
         managerLifecycleOwner = lifecycleOwner,
+        viewModel = ViewModelProvider(fragment).get(ManagerViewModel::class.java),
         memoryMode = memoryMode,
         activeLifecycleState = activeLifecycleState
     )
@@ -117,6 +118,7 @@ abstract class Engine<RENDERER : Any> constructor(
       activity = activity,
       host = activity,
       managerLifecycleOwner = activity,
+      viewModel = ViewModelProvider(activity).get(ManagerViewModel::class.java),
       memoryMode = memoryMode,
       activeLifecycleState = activeLifecycleState
   )

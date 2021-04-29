@@ -56,7 +56,11 @@ interface Bridge<RENDERER : Any> {
    */
   fun prepare(loadSource: Boolean)
 
-  // Ensure resource is ready to play. PlaybackDispatcher will require this for manual playback.
+  /**
+   * Ensure the resources is ready to play.
+   *
+   * Note: PlaybackDispatcher will require this for manual playback.
+   */
   fun ready()
 
   fun play()

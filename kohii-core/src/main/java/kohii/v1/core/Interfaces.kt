@@ -180,6 +180,4 @@ interface DefaultTrackSelectorHolder {
   val trackSelector: DefaultTrackSelector
 }
 
-interface PlayableManager
-
 interface PlayableContainer

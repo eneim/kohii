@@ -59,6 +59,9 @@ abstract class Playable(
   abstract var renderer: Any?
     internal set
 
+  /**
+   * The current [Playback] that contains this [Playable], or `null` if there is no binding yet.
+   */
   internal abstract var playback: Playback?
 
   internal abstract var manager: PlayableManager?
@@ -85,9 +88,9 @@ abstract class Playable(
   abstract fun onUnbind(playback: Playback)
 
   /**
-   * Return `true` to indicate that this Playable would survive configuration changes and no
-   * playback reloading would be required. In special cases like YouTube playback, it is recommended
-   * to return `false` so Kohii will handle the resource recycling correctly.
+   * Return `true` to indicate that this Playable handles the configuration changes itself, and
+   * no playback reloading would be required. In special cases like YouTube playback, it is
+   * recommended to return `false` so the library will handle the resource recycling correctly.
    */
   abstract fun onConfigChange(): Boolean
 
