@@ -72,7 +72,7 @@ dependencies {
   implementation Libs.AndroidX.viewPager
   implementation Libs.AndroidX.viewPager2
   implementation Libs.AndroidX.coordinatorLayout
-  implementation Libs.AndroidX.Lifecycle.extensions
+  implementation Libs.AndroidX.Lifecycle.process
   implementation Libs.AndroidX.Lifecycle.service
   api Libs.AndroidX.Lifecycle.java8
 
@@ -83,6 +83,7 @@ dependencies {
   testImplementation(Libs.AndroidX.Test.core)
   testImplementation(Libs.AndroidX.Test.rules)
   testImplementation(Libs.AndroidX.Test.runner)
+  testImplementation(Libs.Kotlin.testJunit)
 
   // Common library
   androidTestImplementation Libs.Kotlin.stdlibJdk7

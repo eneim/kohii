@@ -61,8 +61,11 @@ object Libs {
 
     const val junit = "junit:junit:4.13"
     const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"
-    const val robolectric = "org.robolectric:robolectric:4.3.1"
-    const val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+    const val robolectric = "org.robolectric:robolectric:4.5.1"
+    const val mockitoKotlin = "org.mockito.kotlin:mockito-kotlin:3.1.0"
+
+    const val googleTruth = "com.google.truth:truth:1.1.2"
+    const val googleTruthJava8 = "com.google.truth.extensions:truth-java8-extension:1.1.2"
   }
 
   object Kotlin {
@@ -74,12 +77,14 @@ object Libs {
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$version"
     const val extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$version"
     const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
+
+    const val testJunit = "org.jetbrains.kotlin:kotlin-test-junit:$version"
   }
 
   object AndroidX {
-    const val activityKtx = "androidx.activity:activity-ktx:1.1.0"
-    const val appcompat = "androidx.appcompat:appcompat:1.1.0"
-    const val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
+    const val activityKtx = "androidx.activity:activity-ktx:1.2.2"
+    const val appcompat = "androidx.appcompat:appcompat:1.2.0"
+    const val appcompatResources = "androidx.appcompat:appcompat-resources:1.2.0"
     const val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
     const val benchmark = "androidx.benchmark:benchmark-junit4:1.0.0"
     const val browser = "androidx.browser:browser:1.2.0"
@@ -116,7 +121,7 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.4"
+      private const val version = "1.3.3"
       const val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
 
@@ -142,11 +147,11 @@ object Libs {
     // beta4 breaks the overlay demo ...
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0"
 
-    const val core = "androidx.core:core:1.3.0"
-    const val coreKtx = "androidx.core:core-ktx:1.3.0"
+    const val core = "androidx.core:core:1.3.1"
+    const val coreKtx = "androidx.core:core-ktx:1.3.1"
 
     object Lifecycle {
-      private const val version = "2.2.0"
+      private const val version = "2.3.1"
       val extensions = "androidx.lifecycle:lifecycle-extensions:$version"
       val reactive = "androidx.lifecycle:lifecycle-reactivestreams-ktx:$version"
       val compiler = "androidx.lifecycle:lifecycle-compiler:$version"
@@ -155,6 +160,7 @@ object Libs {
       val liveData = "androidx.lifecycle:lifecycle-livedata-ktx:$version"
       val viewModel = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
       val service = "androidx.lifecycle:lifecycle-service:$version"
+      val process = "androidx.lifecycle:lifecycle-process:$version"
     }
 
     object Room {

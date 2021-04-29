@@ -134,7 +134,6 @@ dependencies {
   implementation Libs.AndroidX.constraintLayout
   implementation Libs.Google.material
 
-  implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.runtime
   implementation Libs.AndroidX.Lifecycle.viewModel
   implementation Libs.AndroidX.Lifecycle.liveData
