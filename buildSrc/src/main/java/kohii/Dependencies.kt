@@ -38,7 +38,7 @@ object BuildConfig {
 
   const val compileSdkVersion = 30
   const val targetSdkVersion = 30
-  const val minSdkVersion = 19
+  const val minSdkVersion = 21
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
   const val releaseVersionCode = 10300 // [major].[2 digits for minor].[2 digits for patch]
@@ -49,7 +49,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:4.2.0-rc01"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:4.2.0"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
@@ -62,7 +62,10 @@ object Libs {
     const val junit = "junit:junit:4.13"
     const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"
     const val robolectric = "org.robolectric:robolectric:4.5.1"
+    const val mockito = "org.mockito:mockito-core:3.9.0"
+    const val mockitoAndroid = "org.mockito:mockito-android:3.9.0"
     const val mockitoKotlin = "org.mockito.kotlin:mockito-kotlin:3.1.0"
+    const val mockkAndroid = "io.mockk:mockk-android:1.11.0"
 
     const val googleTruth = "com.google.truth:truth:1.1.2"
     const val googleTruthJava8 = "com.google.truth.extensions:truth-java8-extension:1.1.2"
@@ -76,7 +79,8 @@ object Libs {
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$version"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$version"
     const val extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$version"
-    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
+    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
+    const val coroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.3"
 
     const val testJunit = "org.jetbrains.kotlin:kotlin-test-junit:$version"
   }
@@ -93,8 +97,8 @@ object Libs {
 
     const val vector = "androidx.vectordrawable:vectordrawable:1.1.0"
 
-    const val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
-    const val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-rc02"
+    const val recyclerView = "androidx.recyclerview:recyclerview:1.2.0"
+    const val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0"
 
     const val viewPager = "androidx.viewpager:viewpager:1.0.0"
     const val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
@@ -132,6 +136,7 @@ object Libs {
       val rules = "androidx.test:rules:$version"
 
       const val espressoCore = "androidx.test.espresso:espresso-core:3.3.0"
+      const val espressoIdleResource = "androidx.test.espresso:espresso-idling-resource:3.3.0"
     }
 
     const val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"

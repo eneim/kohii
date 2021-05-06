@@ -21,9 +21,11 @@ import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX
 
 @RestrictTo(LIBRARY_GROUP_PREFIX)
-internal object InternalUtils {
+internal fun checkMainThread() = check(Looper.myLooper() == Looper.getMainLooper()) {
+  "Expected main thread, get: ${Looper.myLooper()?.thread}"
+}
 
-  fun checkMainThread() = check(Looper.myLooper() == Looper.getMainLooper()) {
-    "Expected main thread, get: ${Looper.myLooper()?.thread}"
-  }
+@RestrictTo(LIBRARY_GROUP_PREFIX)
+internal inline fun <T : Any> T?.onNotNull(block: (T) -> Unit) {
+  if (this != null) block(this)
 }

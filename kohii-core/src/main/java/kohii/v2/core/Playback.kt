@@ -16,6 +16,7 @@
 
 package kohii.v2.core
 
+import androidx.annotation.CallSuper
 import androidx.annotation.MainThread
 import androidx.annotation.VisibleForTesting
 import kohii.v2.core.Playback.State.ADDED
@@ -23,26 +24,33 @@ import kohii.v2.core.Playback.State.CREATED
 import kohii.v2.core.Playback.State.REMOVED
 import kohii.v2.core.Playback.State.RESUMED
 import kohii.v2.core.Playback.State.STARTED
-import kohii.v2.internal.InternalUtils.checkMainThread
+import kohii.v2.internal.checkMainThread
 import java.util.ArrayDeque
 
 /**
  * An object that contains the information about the surface to play the media content.
  */
-abstract class Playback {
+abstract class Playback(
+  val bucket: Bucket,
+  val container: Any,
+) {
 
   // Note(eneim, 2021/04/30): Using ArrayDeque because it is fast and light-weight. It supports
   // iterating in both direction, which is nice. All the access to the callbacks are on the main
   // thread, so we do not need thread-safety. We do not need the ability to modify the callbacks
   // during iteration as well. While ArrayDeque is well-known as the best queue implementation, we
   // do not use it as a queue. But it is still a good choice for our use case.
-  private val callbacks = ArrayDeque<Callback>()
+  private val callbacks = ArrayDeque<Callback>(4 /* Skip internal size check */)
 
   /**
    * Returns the current state of the Playback.
    */
-  var state: State = CREATED
+  internal var state: State = CREATED
     @VisibleForTesting internal set
+
+  val isAdded: Boolean get() = state >= ADDED
+  val isStarted: Boolean get() = state >= STARTED
+  val isResumed: Boolean get() = state >= RESUMED
 
   @MainThread
   internal fun addCallback(callback: Callback) {
@@ -57,65 +65,124 @@ abstract class Playback {
     callbacks.remove(callback)
   }
 
+  /**
+   * Called by the [Manager] to perform adding this Playback. This method will call [onAdd], and its
+   * state will be changed: [CREATED]->[onAdd]->[ADDED].
+   */
   @MainThread
-  internal fun onAdd() {
+  internal fun performAdd() {
     checkMainThread()
     checkState(CREATED)
+    onAdd()
     state = ADDED
     for (callback in callbacks) {
       callback.onAdded(this)
     }
   }
 
+  /**
+   * Called by the [Manager] to perform starting this Playback.
+   *
+   * This method will call [onStart], its state will be changed: [ADDED]->[onStart]->[STARTED].
+   */
   @MainThread
-  internal fun onRemove() {
+  internal fun performStart() {
     checkMainThread()
     checkState(ADDED)
-    state = REMOVED
-    for (callback in callbacks) {
-      callback.onRemoved(this)
-    }
-  }
-
-  @MainThread
-  internal fun onStart() {
-    checkMainThread()
-    checkState(ADDED)
+    onStart()
     state = STARTED
     for (callback in callbacks) {
       callback.onStarted(this)
     }
   }
 
+  /**
+   * Called by the [Manager] to perform resuming this Playback.
+   *
+   * This method will call [onResume], its state will be changed: [STARTED]->[onResume]->[RESUMED].
+   */
   @MainThread
-  internal fun onStop() {
+  internal fun performResume() {
     checkMainThread()
     checkState(STARTED)
-    state = ADDED
-    for (callback in callbacks) {
-      callback.onStopped(this)
-    }
-  }
-
-  @MainThread
-  internal fun onResume() {
-    checkMainThread()
-    checkState(STARTED)
+    onResume()
     state = RESUMED
     for (callback in callbacks) {
       callback.onResumed(this)
     }
   }
 
+  /**
+   * Called by the [Manager] to perform pausing this Playback.
+   *
+   * This method will call [onPause], its state will be changed: [RESUMED]->[STARTED]->[onPause].
+   */
   @MainThread
-  internal fun onPause() {
+  internal fun performPause() {
     checkMainThread()
     checkState(RESUMED)
     state = STARTED
     for (callback in callbacks) {
       callback.onPaused(this)
     }
+    onPause()
   }
+
+  /**
+   * Called by the [Manager] to perform stopping this Playback.
+   *
+   * This method will call [onStop], its state will be changed: [STARTED]->[ADDED]->[onStop].
+   */
+  @MainThread
+  internal fun performStop() {
+    checkMainThread()
+    checkState(STARTED)
+    state = ADDED
+    for (callback in callbacks) {
+      callback.onStopped(this)
+    }
+    onStop()
+  }
+
+  /**
+   * Called by the [Manager] to perform removing this Playback.
+   *
+   * This method will call [onRemove], its state will be changed: [ADDED]->[REMOVED]->[onRemove].
+   */
+  @MainThread
+  internal fun performRemove() {
+    checkMainThread()
+    checkState(ADDED)
+    state = REMOVED
+    for (callback in callbacks) {
+      callback.onRemoved(this)
+    }
+    onRemove()
+  }
+
+  @MainThread
+  @CallSuper
+  protected open fun onAdd(): Unit = Unit
+
+  @MainThread
+  @CallSuper
+  protected open fun onRemove(): Unit = Unit
+
+  @MainThread
+  @CallSuper
+  protected open fun onStart(): Unit = Unit
+
+  @MainThread
+  @CallSuper
+  protected open fun onStop(): Unit = Unit
+
+  @MainThread
+  @CallSuper
+  protected open fun onResume(): Unit = Unit
+
+  @MainThread
+  @CallSuper
+  protected open fun onPause(): Unit = Unit
 
   /**
    * See also [androidx.lifecycle.Lifecycle.State]
@@ -123,7 +190,7 @@ abstract class Playback {
   enum class State {
     /**
      * Removed state for a Playback. After this state is reached, the Playback is no longer usable.
-     * This state is reached after a call to [onRemove].
+     * This state is reached right before a call to [onRemove].
      */
     REMOVED,
 
@@ -164,27 +231,27 @@ abstract class Playback {
 
     @JvmDefault
     @MainThread
-    fun onAdded(playback: Playback) = Unit
+    fun onAdded(playback: Playback): Unit = Unit
 
     @JvmDefault
     @MainThread
-    fun onRemoved(playback: Playback) = Unit
+    fun onRemoved(playback: Playback): Unit = Unit
 
     @JvmDefault
     @MainThread
-    fun onStarted(playback: Playback) = Unit
+    fun onStarted(playback: Playback): Unit = Unit
 
     @JvmDefault
     @MainThread
-    fun onStopped(playback: Playback) = Unit
+    fun onStopped(playback: Playback): Unit = Unit
 
     @JvmDefault
     @MainThread
-    fun onResumed(playback: Playback) = Unit
+    fun onResumed(playback: Playback): Unit = Unit
 
     @JvmDefault
     @MainThread
-    fun onPaused(playback: Playback) = Unit
+    fun onPaused(playback: Playback): Unit = Unit
   }
 
   companion object {
@@ -192,9 +259,5 @@ abstract class Playback {
     @Throws(IllegalStateException::class)
     private fun Playback.checkState(expected: State): Unit =
       check(state == expected) { "Expected Playback state: $expected, Actual state: $state" }
-
-    private inline fun Playback.whenCreated(block: () -> Unit) {
-      if (state != REMOVED) block()
-    }
   }
 }

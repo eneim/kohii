@@ -24,16 +24,19 @@ import kohii.v2.core.Playback.State.CREATED
 import kohii.v2.core.Playback.State.REMOVED
 import kohii.v2.core.Playback.State.RESUMED
 import kohii.v2.core.Playback.State.STARTED
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @RunWith(AndroidJUnit4::class)
 class PlaybackCallbackTest {
+
+  private val mockBucket: Bucket = mock()
+  private val mockContainer: Any = mock()
 
   @Test
   fun `test Callback onAdded is called and in correct order`() {
@@ -46,7 +49,7 @@ class PlaybackCallbackTest {
 
     val inOrder = inOrder(callback1, callback2)
 
-    playback.onAdd()
+    playback.performAdd()
     inOrder.verify(callback1).onAdded(playback)
     inOrder.verify(callback2).onAdded(playback)
   }
@@ -63,7 +66,7 @@ class PlaybackCallbackTest {
     val inOrder = inOrder(callback1, callback2)
 
     playback.state = ADDED
-    playback.onRemove()
+    playback.performRemove()
     inOrder.verify(callback1).onRemoved(playback)
     inOrder.verify(callback2).onRemoved(playback)
   }
@@ -80,7 +83,7 @@ class PlaybackCallbackTest {
     val inOrder = inOrder(callback1, callback2)
 
     playback.state = ADDED
-    playback.onStart()
+    playback.performStart()
     inOrder.verify(callback1).onStarted(playback)
     inOrder.verify(callback2).onStarted(playback)
   }
@@ -97,7 +100,7 @@ class PlaybackCallbackTest {
     val inOrder = inOrder(callback1, callback2)
 
     playback.state = STARTED
-    playback.onStop()
+    playback.performStop()
     inOrder.verify(callback1).onStopped(playback)
     inOrder.verify(callback2).onStopped(playback)
   }
@@ -114,7 +117,7 @@ class PlaybackCallbackTest {
     val inOrder = inOrder(callback1, callback2)
 
     playback.state = STARTED
-    playback.onResume()
+    playback.performResume()
     inOrder.verify(callback1).onResumed(playback)
     inOrder.verify(callback2).onResumed(playback)
   }
@@ -132,7 +135,7 @@ class PlaybackCallbackTest {
     val inOrder = inOrder(callback1, callback2)
 
     playback.state = RESUMED
-    playback.onPause()
+    playback.performPause()
     inOrder.verify(callback1).onPaused(playback)
     inOrder.verify(callback2).onPaused(playback)
   }
@@ -145,37 +148,37 @@ class PlaybackCallbackTest {
 
     testUsing(newPlayback()) { playback ->
       playback.state = CREATED
-      playback.onAdd()
+      playback.performAdd()
       playback.assertStateEquals(ADDED)
     }
 
     testUsing(newPlayback()) { playback ->
       playback.state = ADDED
-      playback.onStart()
+      playback.performStart()
       playback.assertStateEquals(STARTED)
     }
 
     testUsing(newPlayback()) { playback ->
       playback.state = STARTED
-      playback.onResume()
+      playback.performResume()
       playback.assertStateEquals(RESUMED)
     }
 
     testUsing(newPlayback()) { playback ->
       playback.state = RESUMED
-      playback.onPause()
+      playback.performPause()
       playback.assertStateEquals(STARTED)
     }
 
     testUsing(newPlayback()) { playback ->
       playback.state = STARTED
-      playback.onStop()
+      playback.performStop()
       playback.assertStateEquals(ADDED)
     }
 
     testUsing(newPlayback()) { playback ->
       playback.state = ADDED
-      playback.onRemove()
+      playback.performRemove()
       playback.assertStateEquals(REMOVED)
     }
   }
@@ -193,7 +196,7 @@ class PlaybackCallbackTest {
       testUsing(newPlayback()) { playback ->
         playback.state = state // Anything but `CREATED`
         try {
-          playback.onAdd()
+          playback.performAdd()
           fail("onAdd() is callable for unexpected state=$state")
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
@@ -211,7 +214,7 @@ class PlaybackCallbackTest {
       testUsing(newPlayback()) { playback ->
         playback.state = state // Anything but `ADDED`
         try {
-          playback.onRemove()
+          playback.performRemove()
           fail("onRemove() is callable for unexpected state=$state")
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
@@ -229,7 +232,7 @@ class PlaybackCallbackTest {
       testUsing(newPlayback()) { playback ->
         playback.state = state // Anything but `ADDED`
         try {
-          playback.onStart()
+          playback.performStart()
           fail("onStart() is callable for unexpected state=$state")
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
@@ -247,7 +250,7 @@ class PlaybackCallbackTest {
       testUsing(newPlayback()) { playback ->
         playback.state = state // Anything but `STARTED`
         try {
-          playback.onStop()
+          playback.performStop()
           fail("onStop() is callable for unexpected state=$state")
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
@@ -265,7 +268,7 @@ class PlaybackCallbackTest {
       testUsing(newPlayback()) { playback ->
         playback.state = state // Anything but `STARTED`
         try {
-          playback.onResume()
+          playback.performResume()
           fail("onResume() is callable for unexpected state=$state")
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
@@ -283,7 +286,7 @@ class PlaybackCallbackTest {
       testUsing(newPlayback()) { playback ->
         playback.state = state // Anything but `RESUMED`
         try {
-          playback.onPause()
+          playback.performPause()
           fail("onPause() is callable for unexpected state=$state")
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
@@ -297,7 +300,8 @@ class PlaybackCallbackTest {
     }
   }
 
-  private fun newPlayback(): Playback = object : Playback() {}
+  private fun newPlayback(): Playback =
+    object : Playback(bucket = mockBucket, container = mockContainer) {}
 
   private fun Playback.assertStateEquals(expected: State) = assertEquals(expected, state)
 
