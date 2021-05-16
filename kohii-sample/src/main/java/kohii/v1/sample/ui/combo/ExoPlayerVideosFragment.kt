@@ -28,8 +28,8 @@ import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.InitData
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 import kohii.v1.sample.ui.main.DemoItem
-import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 /**
  * Sample that uses Videos from ExoPlayer videos.
@@ -56,14 +56,15 @@ class ExoPlayerVideosFragment : BaseFragment(), DemoContainer {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
     postponeEnterTransition()
-    recyclerView.doOnNextLayout { startPostponedEnterTransition() }
+    binding.recyclerView.doOnNextLayout { startPostponedEnterTransition() }
 
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(recyclerView)
+        .addBucket(binding.recyclerView)
 
-    recyclerView.adapter = ExoVideosAdapter(kohii, getApp().exoItems,
+    binding.recyclerView.adapter = ExoVideosAdapter(kohii, getApp().exoItems,
         onClick = { holder, _ ->
           holder.rebinder?.let {
             val player = LandscapeFullscreenFragment.newInstance(

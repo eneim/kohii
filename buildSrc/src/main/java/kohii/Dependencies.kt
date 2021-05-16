@@ -53,6 +53,7 @@ object Libs {
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
+
     // 0.10.0 render method signature after the doc, which looks pretty bad.
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
     const val dokkaAndroidPlugin = "org.jetbrains.dokka:android-documentation-plugin:1.4.32"
@@ -66,7 +67,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.4.32"
+    private const val version = "1.5.0"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
@@ -98,6 +99,7 @@ object Libs {
 
     object Media {
       private const val version = "1.0.3"
+
       // private const val version = "1.1.0-SNAPSHOT"
       val widget = "androidx.media2:media2-widget:$version"
       val common = "androidx.media2:media2-common:$version"
@@ -225,13 +227,13 @@ object Libs {
   }
 
   object Square {
-    private const val moshiVersion = "1.9.3"
+    private const val moshiVersion = "1.12.0"
     val moshi = "com.squareup.moshi:moshi:$moshiVersion"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:$moshiVersion"
     const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.6"
     const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.6"
-    const val okio = "com.squareup.okio:okio:2.6.0"
+    const val okio = "com.squareup.okio:okio:2.10.0"
   }
 
   object Glide {

@@ -25,7 +25,7 @@ import androidx.fragment.app.commit
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
-import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
+import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 
 class MainListFragment : BaseFragment() {
 
@@ -46,7 +46,8 @@ class MainListFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    recyclerView.adapter = DemoItemsAdapter(getApp().demoItems) {
+    val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
+    binding.recyclerView.adapter = DemoItemsAdapter(getApp().demoItems) {
       val fragment: Fragment = it.fragmentClass.newInstance().apply {
         val bundle = Bundle()
         bundle.putParcelable(KEY_DEMO_ITEM, it)
