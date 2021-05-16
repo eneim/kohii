@@ -22,7 +22,7 @@ public final class kohii/v1/ads/AdMediaItem : kohii/v1/media/MediaItem, kohii/v1
 	public fun writeToParcel (Landroid/os/Parcel;I)V
 }
 
-public class kohii/v1/ads/AdMediaItem$Creator : android/os/Parcelable$Creator {
+public final class kohii/v1/ads/AdMediaItem$Creator : android/os/Parcelable$Creator {
 	public fun <init> ()V
 	public synthetic fun createFromParcel (Landroid/os/Parcel;)Ljava/lang/Object;
 	public final fun createFromParcel (Landroid/os/Parcel;)Lkohii/v1/ads/AdMediaItem;

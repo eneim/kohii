@@ -66,8 +66,8 @@ class PlayerActivity : BaseActivity() {
     val rebinder = extras?.getParcelable<Rebinder>(EXTRA_REBINDER)
 
     if (rebinder != null && initData != null) {
-      val displaySize = with(this@PlayerActivity.windowManager.currentWindowMetrics.bounds) {
-        Point(width(), height())
+      val displaySize = Point().apply {
+        this@PlayerActivity.windowManager.defaultDisplay.getSize(this)
       }
 
       if (displaySize.y * initData.aspectRatio >= displaySize.x) {

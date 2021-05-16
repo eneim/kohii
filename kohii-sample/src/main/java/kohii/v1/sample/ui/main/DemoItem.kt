@@ -19,7 +19,7 @@ package kohii.v1.sample.ui.main
 import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class DemoItem(

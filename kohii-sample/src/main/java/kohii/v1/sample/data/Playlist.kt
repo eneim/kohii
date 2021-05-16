@@ -17,7 +17,7 @@ package kohii.v1.sample.data
 
 import android.os.Parcelable
 import com.squareup.moshi.JsonClass
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Suppress("SpellCheckingInspection")
 @JsonClass(generateAdapter = true)
