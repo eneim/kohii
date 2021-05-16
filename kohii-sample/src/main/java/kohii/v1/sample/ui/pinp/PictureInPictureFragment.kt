@@ -25,12 +25,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.Player
+import kohii.v1.core.Common
 import kohii.v1.core.Playback
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
+import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
-import kohii.v1.sample.databinding.FragmentPipBinding
+import kotlinx.android.synthetic.main.fragment_pip.pipButton
+import kotlinx.android.synthetic.main.fragment_pip.playerContainer
+import kotlinx.android.synthetic.main.fragment_pip.playerView
+import kotlinx.android.synthetic.main.fragment_pip.scrollView
 
 @RequiresApi(VERSION_CODES.O)
 class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
@@ -39,7 +43,6 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
     fun newInstance() = PictureInPictureFragment()
   }
 
-  private lateinit var binding: FragmentPipBinding
   private val mPictureInPictureParamsBuilder = PictureInPictureParams.Builder()
   private var playback: Playback? = null
 
@@ -47,10 +50,8 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View {
-    val binding: FragmentPipBinding = FragmentPipBinding.inflate(inflater, container, false)
-    this.binding = binding
-    return binding.root
+  ): View? {
+    return inflater.inflate(R.layout.fragment_pip, container, false)
   }
 
   override fun onViewCreated(
@@ -58,17 +59,17 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    binding.pipButton.setOnClickListener { minimize() }
-    binding.playerContainer.setAspectRatio(16 / 9F)
+    pipButton.setOnClickListener { minimize() }
+    playerContainer.setAspectRatio(16 / 9F)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.playerContainer)
+        .addBucket(playerContainer)
 
     kohii.setUp(assetVideoUri) {
       tag = "${javaClass.name}::$videoUrl"
-      repeatMode = Player.REPEAT_MODE_ONE
+      repeatMode = Common.REPEAT_MODE_ONE
     }
-        .bind(binding.playerView) {
+        .bind(playerView) {
           it.addStateListener(this@PictureInPictureFragment)
           playback = it
         }
@@ -78,7 +79,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
   internal fun minimize() {
     playback?.let {
       mPictureInPictureParamsBuilder
-          .setAspectRatio(Rational(binding.playerContainer.width, binding.playerContainer.height))
+          .setAspectRatio(Rational(playerContainer.width, playerContainer.height))
           .setSourceRectHint(it.containerRect)
 
       requireActivity().enterPictureInPictureMode(mPictureInPictureParamsBuilder.build())
@@ -92,7 +93,7 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
   }
 
   override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
-    binding.scrollView.isVisible = !isInPictureInPictureMode
+    scrollView.isVisible = !isInPictureInPictureMode
   }
 
   override fun onVideoSizeChanged(
@@ -102,6 +103,6 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
     unAppliedRotationDegrees: Int,
     pixelWidthHeightRatio: Float
   ) {
-    binding.playerContainer.setAspectRatio(width / height.toFloat())
+    playerContainer.setAspectRatio(width / height.toFloat())
   }
 }

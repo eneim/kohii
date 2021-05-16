@@ -16,29 +16,32 @@
 
 package kohii.v1.exoplayer
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
 import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractBridge
+import kohii.v1.core.Common
 import kohii.v1.core.DefaultTrackSelectorHolder
+import kohii.v1.core.PlayerEventListener
 import kohii.v1.core.PlayerParameters
 import kohii.v1.core.PlayerPool
 import kohii.v1.core.VolumeInfoController
+import kohii.v1.exoplayer.internal.addEventListener
 import kohii.v1.exoplayer.internal.getVolumeInfo
+import kohii.v1.exoplayer.internal.removeEventListener
 import kohii.v1.exoplayer.internal.setVolumeInfo
 import kohii.v1.logError
 import kohii.v1.logInfo
@@ -51,22 +54,35 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
+@SuppressLint("WrongConstant")
 open class PlayerViewBridge(
   context: Context,
   protected val media: Media,
+  @Suppress("MemberVisibilityCanBePrivate")
   protected val playerPool: PlayerPool<Player>,
-  private val mediaSourceFactory: MediaSourceFactory
-) : AbstractBridge<PlayerView>(), Player.Listener {
+  mediaSourceFactoryProvider: MediaSourceFactoryProvider
+) : AbstractBridge<PlayerView>(), PlayerEventListener {
 
-  protected open val mediaItem: MediaItem = MediaItem.fromUri(media.uri)
+  companion object {
+    internal fun isBehindLiveWindow(error: ExoPlaybackException?): Boolean {
+      if (error?.type != ExoPlaybackException.TYPE_SOURCE) return false
+      var cause: Throwable? = error.sourceException
+      while (cause != null) {
+        if (cause is BehindLiveWindowException) return true
+        cause = cause.cause
+      }
+      return false
+    }
+  }
 
   private val context = context.applicationContext
+  private val mediaSourceFactory = mediaSourceFactoryProvider.provideMediaSourceFactory(media)
 
   private var listenerApplied = false
   private var sourcePrepared = false
 
   private var _playbackInfo = PlaybackInfo() // Backing field for PlaybackInfo set/get
-  private var _repeatMode = Player.REPEAT_MODE_OFF // Backing field
+  private var _repeatMode = Common.REPEAT_MODE_OFF // Backing field
   private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
   private var mediaSource: MediaSource? = null
 
@@ -75,17 +91,8 @@ open class PlayerViewBridge(
 
   protected var player: Player? = null
 
-  @Player.State
   override val playerState: Int
-    get() = player?.playbackState ?: Player.STATE_IDLE
-
-  @Player.RepeatMode
-  override var repeatMode: Int
-    get() = _repeatMode
-    set(value) {
-      _repeatMode = value
-      player?.also { it.repeatMode = value }
-    }
+    get() = player?.playbackState ?: Common.STATE_IDLE
 
   override fun prepare(loadSource: Boolean) {
     "Bridge#prepare loadSource=$loadSource, $this".logInfo()
@@ -151,8 +158,7 @@ open class PlayerViewBridge(
     else updatePlaybackInfo()
     player?.also {
       it.setVolumeInfo(VolumeInfo.DEFAULT_ACTIVE)
-      it.stop()
-      if (resetPlayer) it.clearMediaItems()
+      it.stop(resetPlayer)
     }
     this.mediaSource = null // So it will be re-prepared later.
     this.sourcePrepared = false
@@ -168,12 +174,11 @@ open class PlayerViewBridge(
     _playbackInfo = PlaybackInfo()
     player?.also {
       if (listenerApplied) {
-        it.removeListener(eventListeners)
+        it.removeEventListener(eventListeners)
         listenerApplied = false
       }
       (it as? VolumeInfoController)?.removeVolumeChangedListener(volumeListeners)
-      it.stop()
-      it.clearMediaItems()
+      it.stop(true)
       playerPool.putPlayer(this.media, it)
     }
 
@@ -249,9 +254,16 @@ open class PlayerViewBridge(
     }
   }
 
+  override var repeatMode: Int
+    get() = _repeatMode
+    set(value) {
+      _repeatMode = value
+      this.player?.also { it.repeatMode = value }
+    }
+
   private fun updatePlaybackInfo() {
     player?.also {
-      if (it.playbackState == Player.STATE_IDLE) return
+      if (it.playbackState == Common.STATE_IDLE) return
       _playbackInfo = PlaybackInfo(
           it.currentWindowIndex,
           max(0, it.currentPosition)
@@ -266,23 +278,25 @@ open class PlayerViewBridge(
   private fun prepareMediaSource() {
     val mediaSource: MediaSource = this.mediaSource ?: run {
       sourcePrepared = false
-      mediaSourceFactory.createMediaSource(mediaItem).also { this.mediaSource = it }
+      createMediaSource().also { this.mediaSource = it }
     }
 
     // Player was reset, need to prepare again.
-    if (player?.playbackState == Player.STATE_IDLE) {
+    if (player?.playbackState == Common.STATE_IDLE) {
       sourcePrepared = false
     }
 
     if (!sourcePrepared) {
       ensurePlayer()
       (player as? ExoPlayer)?.also {
-        it.setMediaSource(mediaSource, /* resetPosition */ playbackInfo.resumeWindow == INDEX_UNSET)
-        it.prepare()
+        it.prepare(mediaSource, playbackInfo.resumeWindow == INDEX_UNSET, false)
         sourcePrepared = true
       }
     }
   }
+
+  protected open fun createMediaSource(): MediaSource =
+    mediaSourceFactory.createMediaSource(media.uri)
 
   private fun ensurePlayer() {
     if (player == null) {
@@ -296,11 +310,11 @@ open class PlayerViewBridge(
     requireNotNull(player).also {
       if (!listenerApplied) {
         (player as? VolumeInfoController)?.addVolumeChangedListener(volumeListeners)
-        it.addListener(eventListeners)
+        it.addEventListener(eventListeners)
         listenerApplied = true
       }
 
-      it.playbackParameters = _playbackParams
+      it.setPlaybackParameters(_playbackParams)
       val hasResumePosition = _playbackInfo.resumeWindow != INDEX_UNSET
       if (hasResumePosition) {
         it.seekTo(_playbackInfo.resumeWindow, _playbackInfo.resumePosition)
@@ -324,7 +338,8 @@ open class PlayerViewBridge(
     }
   }
 
-  //region Player.Listener implementation
+  // DefaultEventListener ⬇︎
+
   override fun onPlayerError(error: ExoPlaybackException) {
     "Bridge#onPlayerError error=${error.cause}, message=${error.cause?.message}, $this".logError()
     if (renderer == null) {
@@ -379,25 +394,12 @@ open class PlayerViewBridge(
     val trackInfo = player.trackSelector.currentMappedTrackInfo
     if (trackInfo != null) {
       if (trackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_video), player.playerError)
+        onErrorMessage(context.getString(R.string.error_unsupported_video), player.playbackError)
       }
 
       if (trackInfo.getTypeSupport(C.TRACK_TYPE_AUDIO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_audio), player.playerError)
+        onErrorMessage(context.getString(R.string.error_unsupported_audio), player.playbackError)
       }
-    }
-  }
-  //endregion
-
-  companion object {
-    internal fun isBehindLiveWindow(error: ExoPlaybackException): Boolean {
-      if (error.type != ExoPlaybackException.TYPE_SOURCE) return false
-      var cause: Throwable? = error.sourceException
-      while (cause != null) {
-        if (cause is BehindLiveWindowException) return true
-        cause = cause.cause
-      }
-      return false
     }
   }
 }

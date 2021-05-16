@@ -21,9 +21,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.core.Common
 import kohii.v1.core.Playback
 import kohii.v1.core.Prioritized
 import kohii.v1.exoplayer.Kohii
@@ -32,7 +31,9 @@ import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.isLandscape
 import kohii.v1.sample.data.Sources
 import kohii.v1.sample.data.Video
-import kohii.v1.sample.databinding.FragmentPagerPageBinding
+import kotlinx.android.synthetic.main.fragment_pager_page.content
+import kotlinx.android.synthetic.main.fragment_pager_page.playerContainer
+import kotlinx.android.synthetic.main.fragment_scroll_view.playerView
 
 class PageFragment : BaseFragment(), Prioritized {
 
@@ -80,27 +81,24 @@ class PageFragment : BaseFragment(), Prioritized {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val binding: FragmentPagerPageBinding = FragmentPagerPageBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.content)
+        .addBucket(content)
 
     landscape = requireActivity().isLandscape()
     val pagePos = requireArguments().getInt(
         pageTagKey
     )
     val videoTag = "PAGE::$pagePos::${video.file}"
-    val playerView: PlayerView = view.findViewById(R.id.playerView)
     kohii.setUp(video.file) {
       tag = videoTag
       delay = 500
-      repeatMode = Player.REPEAT_MODE_ONE
+      repeatMode = Common.REPEAT_MODE_ONE
       preload = true
     }
         .bind(playerView) { playback = it }
 
     view.doOnLayout {
-      val playerContainer: AspectRatioFrameLayout = it.findViewById(R.id.playerContainer)
       // [1] Update resize mode based on Window size.
       playerContainer.also { ctn ->
         if (it.width * 9 >= it.height * 16) {

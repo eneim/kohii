@@ -19,9 +19,14 @@ package kohii.v1.exoplayer
 import android.content.Context
 import androidx.fragment.app.Fragment
 import com.google.android.exoplayer2.ControlDispatcher
+import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.upstream.cache.Cache
+import kohii.v1.BuildConfig
 import kohii.v1.core.Common
 import kohii.v1.core.Engine
 import kohii.v1.core.Manager
@@ -30,6 +35,7 @@ import kohii.v1.core.PlayableCreator
 import kohii.v1.core.Playback
 import kohii.v1.core.PlayerPool
 import kohii.v1.core.RendererProviderFactory
+import kohii.v1.exoplayer.ExoPlayerCache.lruCacheSingleton
 import kohii.v1.exoplayer.Kohii.Builder
 import kohii.v1.media.Media
 import kohii.v1.utils.Capsule
@@ -37,7 +43,7 @@ import kohii.v1.utils.Capsule
 open class Kohii constructor(
   master: Master,
   playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master),
-  private val rendererProviderFactory: RendererProviderFactory = ::PlayerViewProvider
+  private val rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
 ) : Engine<PlayerView>(master, playableCreator) {
 
   private constructor(context: Context) : this(Master[context])
@@ -52,6 +58,15 @@ open class Kohii constructor(
     @JvmStatic // convenient static call for Java
     operator fun get(fragment: Fragment) = capsule.get(fragment.requireContext())
   }
+
+  // Adapt from ExoPlayer demo app.
+  /* init {
+    val cookieManager = CookieManager()
+    cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER)
+    if (CookieHandler.getDefault() !== cookieManager) {
+      CookieHandler.setDefault(cookieManager)
+    }
+  } */
 
   override fun prepare(manager: Manager) {
     manager.registerRendererProvider(PlayerView::class.java, rendererProviderFactory())
@@ -107,14 +122,31 @@ open class Kohii constructor(
 fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
   val bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { appContext ->
     val userAgent = Common.getUserAgent(appContext, BuildConfig.LIB_NAME)
-    val playerPool = config.createDefaultPlayerPool(
-        context = context,
-        userAgent = userAgent
+    val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
+
+    val playerPool = ExoPlayerPool(
+        context = appContext,
+        clock = config.clock,
+        bandwidthMeterFactory = config,
+        trackSelectorFactory = config,
+        loadControlFactory = config,
+        renderersFactory = DefaultRenderersFactory(appContext)
+            .setEnableDecoderFallback(config.enableDecoderFallback)
+            .setAllowedVideoJoiningTimeMs(config.allowedVideoJoiningTimeMs)
+            .setExtensionRendererMode(config.extensionRendererMode)
+            .setMediaCodecSelector(config.mediaCodecSelector)
+            .setPlayClearSamplesWithoutKeys(config.playClearSamplesWithoutKeys)
     )
-    PlayerViewBridgeCreator(
-        playerPool = playerPool,
-        mediaSourceFactory = playerPool.defaultMediaSourceFactory
+    val mediaCache: Cache = config.cache ?: lruCacheSingleton.get(context)
+    val drmSessionManagerProvider =
+      config.drmSessionManagerProvider ?: DefaultDrmSessionManagerProvider(
+          appContext, httpDataSource
+      )
+    val upstreamFactory = DefaultDataSourceFactory(appContext, httpDataSource)
+    val mediaSourceFactoryProvider = DefaultMediaSourceFactoryProvider(
+        upstreamFactory, drmSessionManagerProvider, mediaCache
     )
+    PlayerViewBridgeCreator(playerPool, mediaSourceFactoryProvider)
   }
 
   val playableCreator = PlayerViewPlayableCreator.Builder(context.applicationContext)
@@ -125,24 +157,24 @@ fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
 }
 
 /**
- * Creates a new [Kohii] instance using a custom [playerCreator] and [rendererProviderFactory].
- * Note that an application should not hold many instance of [Kohii].
+ * Creates a new [Kohii] instance using a custom [playerCreator], [mediaSourceFactoryCreator] and
+ * [rendererProviderFactory]. Note that an application should not hold many instance of [Kohii].
  *
  * @param context the [Context].
  * @param playerCreator the custom creator for the [Player]. If `null`, it will use the default one.
+ * @param mediaSourceFactoryCreator the custom creator for the [MediaSourceFactory]. If `null`, it
+ * will use the default one.
  * @param rendererProviderFactory the custom [RendererProviderFactory].
  */
 @JvmOverloads
 fun createKohii(
   context: Context,
   playerCreator: ((Context) -> Player)? = null,
+  mediaSourceFactoryCreator: ((Media) -> MediaSourceFactory)? = null,
   rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
 ): Kohii {
   val playerPool = if (playerCreator == null) {
-    ExoPlayerPool(
-        context = context.applicationContext,
-        userAgent = Common.getUserAgent(context.applicationContext, BuildConfig.LIB_NAME)
-    )
+    ExoPlayerPool(context = context)
   } else {
     object : PlayerPool<Player>() {
       override fun recyclePlayerForMedia(media: Media): Boolean = false
@@ -151,14 +183,20 @@ fun createKohii(
     }
   }
 
-  val mediaSourceFactory = (playerPool as? ExoPlayerPool)?.defaultMediaSourceFactory
-      ?: DefaultMediaSourceFactory(context.applicationContext)
+  val mediaSourceFactoryProvider = if (mediaSourceFactoryCreator == null) {
+    DefaultMediaSourceFactoryProvider(context)
+  } else {
+    object : MediaSourceFactoryProvider {
+      override fun provideMediaSourceFactory(media: Media): MediaSourceFactory =
+        mediaSourceFactoryCreator(media)
+    }
+  }
 
   return Builder(context)
       .setPlayableCreator(
           PlayerViewPlayableCreator.Builder(context)
               .setBridgeCreatorFactory {
-                PlayerViewBridgeCreator(playerPool, mediaSourceFactory)
+                PlayerViewBridgeCreator(playerPool, mediaSourceFactoryProvider)
               }
               .build()
       )

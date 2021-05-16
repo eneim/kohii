@@ -27,8 +27,10 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
+import kohii.v1.sample.R
 import kohii.v1.sample.common.InitData
-import kohii.v1.sample.databinding.FragmentPlayerBinding
+import kotlinx.android.synthetic.main.fragment_player.playerContainer
+import kotlinx.android.synthetic.main.fragment_player.playerView
 
 class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
@@ -59,7 +61,6 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
   private lateinit var kohii: Kohii
   private lateinit var rebinder: Rebinder
-  private lateinit var binding: FragmentPlayerBinding
 
   private var playback: Playback? = null
 
@@ -73,10 +74,8 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View {
-    val binding: FragmentPlayerBinding = FragmentPlayerBinding.inflate(inflater, container, false)
-    this.binding = binding
-    return binding.root
+  ): View? {
+    return inflater.inflate(R.layout.fragment_player, container, false)
   }
 
   override fun onViewCreated(
@@ -85,11 +84,11 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
   ) {
     super.onViewCreated(view, savedInstanceState)
     val initData = requireNotNull(requireArguments().getParcelable<InitData>(KEY_INIT_DATA))
-    binding.playerContainer.setAspectRatio(initData.aspectRatio)
+    playerContainer.setAspectRatio(initData.aspectRatio)
 
     kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(binding.playerContainer)
+          .addBucket(playerContainer)
     }
   }
 
@@ -99,7 +98,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     rebinder.with {
       callbacks += this@PlayerDialogFragment
     }
-        .bind(kohii, binding.playerView) { playback = it }
+        .bind(kohii, playerView) { playback = it }
     this.rebinder = rebinder
   }
 

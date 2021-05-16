@@ -21,81 +21,18 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo
-import com.google.android.exoplayer2.Player
 
 object Common {
 
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_OFF",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
+  const val REPEAT_MODE_OFF = 0 // Player.REPEAT_MODE_OFF
+  const val REPEAT_MODE_ONE = 1 // Player.REPEAT_MODE_ONE
+  const val REPEAT_MODE_ALL = 2 // Player.REPEAT_MODE_ALL
+  const val REPEAT_MODE_GROUP = 3
 
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_ONE",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
-
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_ALL",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
-
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_ALL",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val REPEAT_MODE_GROUP = Player.REPEAT_MODE_ALL
-
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_IDLE",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val STATE_IDLE = Player.STATE_IDLE
-
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_BUFFERING",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val STATE_BUFFERING = Player.STATE_BUFFERING
-
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_READY",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val STATE_READY = Player.STATE_READY
-
-  @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_ENDED",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
-  )
-  const val STATE_ENDED = Player.STATE_ENDED
+  const val STATE_IDLE = 1 // Player.STATE_IDLE
+  const val STATE_BUFFERING = 2 // Player.STATE_BUFFERING
+  const val STATE_READY = 3 // Player.STATE_READY
+  const val STATE_ENDED = 4 // Player.STATE_ENDED
 
   internal val PLAY = PlaybackAction(true)
   internal val PAUSE = PlaybackAction(false)

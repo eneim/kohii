@@ -1,1 +1,2 @@
-<manifest package="kohii.v1.sample.base" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="kohii.v1.sample.base" />

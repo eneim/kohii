@@ -17,13 +17,20 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.upstream.cache.Cache
+import kohii.v1.BuildConfig
 import kohii.v1.core.BridgeCreator
 import kohii.v1.core.Common
 import kohii.v1.core.Master
 import kohii.v1.core.Playable
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.PlayableCreator
+import kohii.v1.core.PlayerPool
+import kohii.v1.exoplayer.ExoPlayerCache.lruCacheSingleton
 import kohii.v1.media.Media
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -40,12 +47,19 @@ class PlayerViewPlayableCreator internal constructor(
 
     // Only pass Application to this method.
     private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { context ->
+      val userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
+      val httpDataSource = DefaultHttpDataSourceFactory(userAgent)
+
       // ExoPlayerProvider
-      val playerPool = ExoPlayerPool(
-          context = context,
-          userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
-      )
-      PlayerViewBridgeCreator(playerPool, playerPool.defaultMediaSourceFactory)
+      val playerPool: PlayerPool<Player> = ExoPlayerPool(context = context)
+
+      // MediaSourceFactoryProvider
+      val mediaCache: Cache = lruCacheSingleton.get(context)
+      val upstreamFactory = DefaultDataSourceFactory(context, httpDataSource)
+      val drmSessionManagerProvider = DefaultDrmSessionManagerProvider(context, httpDataSource)
+      val mediaSourceFactoryProvider: MediaSourceFactoryProvider =
+        DefaultMediaSourceFactoryProvider(upstreamFactory, drmSessionManagerProvider, mediaCache)
+      PlayerViewBridgeCreator(playerPool, mediaSourceFactoryProvider)
     }
   }
 

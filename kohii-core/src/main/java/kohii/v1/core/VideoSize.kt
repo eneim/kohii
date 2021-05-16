@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.common
+package kohii.v1.core
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
-
-@Parcelize
-data class InitData(
-  val tag: String,
-  val aspectRatio: Float
-) : Parcelable
+@Deprecated("From 1.1.0+, this data is no longer used anymore.")
+data class VideoSize(
+  val maxWidth: Int,
+  val maxHeight: Int
+) {
+  companion object {
+    val NONE = VideoSize(Int.MIN_VALUE, Int.MIN_VALUE)
+    val SD = VideoSize(720 /* auto */, 480)
+    val HD = VideoSize(1280 /* auto */, 720)
+    val FHD = VideoSize(1920 /* auto */, 1080)
+    val UHD = VideoSize(3840 /* auto */, 2160)
+    val ORIGINAL = VideoSize(Int.MAX_VALUE, Int.MAX_VALUE)
+  }
+}

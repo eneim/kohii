@@ -32,8 +32,10 @@ import kohii.v1.sample.R
 import kohii.v1.sample.common.InfinityDialogFragment
 import kohii.v1.sample.common.isLandscape
 import kohii.v1.sample.common.requireWindow
-import kohii.v1.sample.databinding.FragmentFbookPlayerBinding
 import kohii.v1.sample.ui.fbook.player.PlayerPanel.Callback
+import kotlinx.android.synthetic.main.fragment_fbook_player.minimizeButton
+import kotlinx.android.synthetic.main.fragment_fbook_player.playerContainer
+import kotlinx.android.synthetic.main.fragment_fbook_player.playerView
 import java.util.concurrent.atomic.AtomicInteger
 
 class BigPlayerDialog : InfinityDialogFragment(),
@@ -109,21 +111,19 @@ class BigPlayerDialog : InfinityDialogFragment(),
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val binding: FragmentFbookPlayerBinding = FragmentFbookPlayerBinding.bind(view)
     kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.playerContainer)
+        .addBucket(playerContainer)
 
     requireArguments().apply {
       rebinderFromArgs = requireNotNull(getParcelable(KEY_REBINDER))
       val ratio = getFloat(KEY_RATIO, 16 / 9F)
-      val container =
-        binding.playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
+      val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
       container.setAspectRatio(ratio)
     }
 
-    binding.playerView.setControllerVisibilityListener {
-      binding.minimizeButton.visibility = it
+    playerView.setControllerVisibilityListener {
+      minimizeButton.visibility = it
     }
 
     val decorView = requireWindow().decorView
@@ -160,11 +160,11 @@ class BigPlayerDialog : InfinityDialogFragment(),
       }
       callbacks += this@BigPlayerDialog
     }
-        .bind(kohii, binding.playerView) {
+        .bind(kohii, playerView) {
           it.addStateListener(this@BigPlayerDialog)
         }
 
-    binding.minimizeButton.setOnClickListener {
+    minimizeButton.setOnClickListener {
       floatPlayerController?.showFloatPlayer(rebinder)
       dismissAllowingStateLoss()
     }

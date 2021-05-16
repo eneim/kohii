@@ -30,8 +30,8 @@ import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.getDisplayPoint
 import kohii.v1.sample.data.Video
-import kohii.v1.sample.databinding.FragmentPagerBinding
 import kohii.v1.sample.ui.main.DemoItem
+import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlin.math.abs
 
 // ViewPager (1) whose pages are Fragments
@@ -41,8 +41,6 @@ class ViewPager1WithFragmentsFragment : BaseFragment(), DemoContainer {
     fun newInstance() =
       ViewPager1WithFragmentsFragment()
   }
-
-  private lateinit var binding: FragmentPagerBinding
 
   internal class VideoPagerAdapter(
     fm: FragmentManager,
@@ -62,10 +60,8 @@ class ViewPager1WithFragmentsFragment : BaseFragment(), DemoContainer {
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View {
-    val binding: FragmentPagerBinding = FragmentPagerBinding.inflate(inflater, container, false)
-    this.binding = binding
-    return binding.root
+  ): View? {
+    return inflater.inflate(R.layout.fragment_pager, container, false)
   }
 
   override fun onViewCreated(
@@ -74,9 +70,9 @@ class ViewPager1WithFragmentsFragment : BaseFragment(), DemoContainer {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this)
-        .addBucket(binding.viewPager)
+        .addBucket(viewPager)
 
-    binding.viewPager.apply {
+    viewPager.apply {
       adapter = VideoPagerAdapter(childFragmentManager, getApp().videos)
       pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
     }
@@ -95,7 +91,7 @@ class ViewPager1WithFragmentsFragment : BaseFragment(), DemoContainer {
     // Therefore, it is better to move the call to `setPageTransformer` to this callback because
     // it will be called regardless of there is saved state or not, and in case there is saved state,
     // it will be called after that state is restored.
-    binding.viewPager.apply {
+    viewPager.apply {
       val clientWidth = (requireActivity().getDisplayPoint().x - paddingStart - paddingEnd)
       val offset = paddingStart / clientWidth.toFloat()
       setPageTransformer(false) { page, position ->

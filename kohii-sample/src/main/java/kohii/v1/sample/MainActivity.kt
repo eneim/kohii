@@ -28,13 +28,14 @@ import kohii.v1.sample.common.BaseActivity
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.splitCases
-import kohii.v1.sample.databinding.MainActivityBinding
 import kohii.v1.sample.ui.combo.LandscapeFullscreenFragment
 import kohii.v1.sample.ui.main.MainListFragment
+import kotlinx.android.synthetic.main.main_activity.appBarLayout
+import kotlinx.android.synthetic.main.main_activity.toolbar
+import kotlinx.android.synthetic.main.main_activity.toolbarLayout
 
 class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragment.Callback {
 
-  private lateinit var binding: MainActivityBinding
   private var playerInfo: PlayerInfo? = null
 
   override fun recordPlayerInfo(info: PlayerInfo?) {
@@ -45,9 +46,8 @@ class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragme
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    binding = MainActivityBinding.inflate(layoutInflater)
-    setContentView(binding.root)
-    setSupportActionBar(binding.toolbar)
+    setContentView(R.layout.main_activity)
+    setSupportActionBar(this.toolbar)
 
     supportFragmentManager.registerFragmentLifecycleCallbacks(
         object : FragmentLifecycleCallbacks() {
@@ -106,17 +106,17 @@ class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragme
   }
 
   internal fun updateTitle(title: String) {
-    binding.toolbarLayout.title = title
+    toolbarLayout.title = title
   }
 
   // LandscapeFullscreenFragment.Callback
 
   override fun hideToolbar() {
-    binding.appBarLayout.isVisible = false
+    appBarLayout.isVisible = false
   }
 
   override fun showToolbar() {
-    binding.appBarLayout.isVisible = true
+    appBarLayout.isVisible = true
   }
 }
 

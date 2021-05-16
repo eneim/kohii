@@ -18,7 +18,7 @@ package kohii.v1.sample.ui.grid
 
 import android.os.Parcelable
 import kohii.v1.core.Rebinder
-import kotlinx.parcelize.Parcelize
+import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class SelectionKey(

@@ -29,7 +29,7 @@ import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.getDisplayPoint
-import kohii.v1.sample.databinding.FragmentPagerBinding
+import kotlinx.android.synthetic.main.fragment_pager.viewPager
 import kotlin.math.abs
 
 class MainPagerFragment : BaseFragment() {
@@ -64,11 +64,10 @@ class MainPagerFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val binding: FragmentPagerBinding = FragmentPagerBinding.bind(view)
     Kohii[this].register(this, LOW)
-        .addBucket(binding.viewPager)
+        .addBucket(viewPager)
 
-    binding.viewPager.also {
+    this.viewPager.also {
       it.adapter = PagerAdapter(childFragmentManager, getApp().demoItems)
       it.pageMargin = -resources.getDimensionPixelSize(R.dimen.pager_horizontal_space_base)
       val clientWidth =

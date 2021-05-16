@@ -18,16 +18,15 @@ package kohii.v1.core
 
 import android.os.Parcelable
 import android.view.ViewGroup
-import com.google.android.exoplayer2.Player
 import kohii.v1.core.Master.Companion.NO_TAG
 import kohii.v1.core.Playback.ArtworkHintListener
 import kohii.v1.core.Playback.Callback
 import kohii.v1.core.Playback.Controller
 import kohii.v1.core.Playback.NetworkTypeChangeListener
 import kohii.v1.core.Playback.TokenUpdateListener
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
+import kotlinx.android.parcel.IgnoredOnParcel
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 
 @Parcelize
 data class Rebinder(val tag: @RawValue Any) : Parcelable {
@@ -39,7 +38,7 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
   class Options {
     var threshold: Float = 0.65F
     var preload: Boolean = false
-    var repeatMode: Int = Player.REPEAT_MODE_OFF
+    var repeatMode: Int = Common.REPEAT_MODE_OFF
     var controller: Controller? = null
     var artworkHintListener: ArtworkHintListener? = null
     var tokenUpdateListener: TokenUpdateListener? = null

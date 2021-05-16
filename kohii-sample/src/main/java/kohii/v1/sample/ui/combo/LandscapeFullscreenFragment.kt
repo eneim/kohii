@@ -33,7 +33,8 @@ import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
-import kohii.v1.sample.databinding.FragmentPlayerHorizontalBinding
+import kotlinx.android.synthetic.main.fragment_player_horizontal.playerContainer
+import kotlinx.android.synthetic.main.fragment_player_horizontal.playerView
 import java.util.concurrent.atomic.AtomicInteger
 
 class LandscapeFullscreenFragment : BaseFragment() {
@@ -102,9 +103,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val binding: FragmentPlayerHorizontalBinding = FragmentPlayerHorizontalBinding.bind(view)
-    val container =
-      binding.playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
+    val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
 
     val (initData, rebinder) = requireArguments().let {
       requireNotNull(it.getParcelable<InitData>(KEY_INIT_DATA)) to
@@ -115,7 +114,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
 
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.playerContainer)
+        .addBucket(playerContainer)
     rebinder.with {
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
@@ -130,7 +129,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
         }
       }
     }
-        .bind(kohii, binding.playerView)
+        .bind(kohii, playerView)
 
     (requireActivity() as AppCompatActivity).also {
       if (it.windowManager.defaultDisplay.rotation % 2 == 1) {

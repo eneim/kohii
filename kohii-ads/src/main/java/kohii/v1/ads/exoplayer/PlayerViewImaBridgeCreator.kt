@@ -20,15 +20,15 @@ import android.content.Context
 import com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ads.AdMedia
 import kohii.v1.ads.Manilo
 import kohii.v1.core.Bridge
 import kohii.v1.core.BridgeCreator
 import kohii.v1.core.PlayerPool
-import kohii.v1.exoplayer.ExoPlayerPool
+import kohii.v1.exoplayer.MediaSourceFactoryProvider
 import kohii.v1.exoplayer.PlayerViewBridge
 import kohii.v1.media.Media
 
@@ -37,9 +37,8 @@ import kohii.v1.media.Media
  * media Uri, or fallback to a [PlayerViewBridge] otherwise.
  *
  * @param playerPool The [PlayerPool] for [Player] instances.
- * @param mediaSourceFactory The [DefaultMediaSourceFactory] that is used to create the
- * [MediaSource]. If [playerPool] is an [ExoPlayerPool], this value must be the same as
- * [ExoPlayerPool.defaultMediaSourceFactory].
+ * @param mediaSourceFactoryProvider The [MediaSourceFactoryProvider] for the video of the [Media].
+ * @param adsMediaSourceFactory The [MediaSourceFactory] to create [MediaSource] for the Ad.
  * @param imaAdsLoaderBuilder The [ImaAdsLoader.Builder] to create the [ImaAdsLoader]. When null,
  * the library will use a default one. When the library uses a default builder, it also sets a
  * default [AdEventListener] for debugging purpose. Applications that want to use their own
@@ -47,7 +46,8 @@ import kohii.v1.media.Media
  */
 class PlayerViewImaBridgeCreator(
   private val playerPool: PlayerPool<Player>,
-  private val mediaSourceFactory: DefaultMediaSourceFactory,
+  private val mediaSourceFactoryProvider: MediaSourceFactoryProvider,
+  private val adsMediaSourceFactory: MediaSourceFactory,
   private val imaAdsLoaderBuilder: ImaAdsLoader.Builder? = null
 ) : BridgeCreator<PlayerView> {
 
@@ -55,21 +55,21 @@ class PlayerViewImaBridgeCreator(
     val adTagUri = (media as? AdMedia)?.adTagUri
     return if (adTagUri != null) {
       val adsLoaderBuilder = imaAdsLoaderBuilder ?: ImaAdsLoader.Builder(context)
-          .setAdEventListener(Manilo[context]) // For debugging purpose only.
-      val adsLoader = adsLoaderBuilder.build()
+          .setAdEventListener(Manilo[context])
+      val adsLoader = adsLoaderBuilder.buildForAdTag(adTagUri)
       PlayerViewImaBridge(
           context,
           media,
           playerPool,
-          ImaBridgeConfig(adsLoader),
-          mediaSourceFactory
+          mediaSourceFactoryProvider,
+          ImaBridgeConfig(adsLoader, adsMediaSourceFactory)
       )
     } else {
       PlayerViewBridge(
           context,
           media,
           playerPool,
-          mediaSourceFactory
+          mediaSourceFactoryProvider
       )
     }
   }

@@ -19,7 +19,6 @@ package kohii.v1.experiments.internal
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.exoplayer2.Player
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
 import com.google.android.youtube.player.YouTubePlayer.ErrorReason
@@ -29,6 +28,7 @@ import com.google.android.youtube.player.YouTubePlayer.PlayerStateChangeListener
 import com.google.android.youtube.player.YouTubePlayer.PlayerStyle.MINIMAL
 import com.google.android.youtube.player.YouTubePlayer.Provider
 import kohii.v1.core.AbstractBridge
+import kohii.v1.core.Common
 import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.experiments.performRelease
 import kohii.v1.media.Media
@@ -81,11 +81,11 @@ internal class OfficialYouTubePlayerBridge(
         to.setShowFullscreenButton(false)
       } else {
         _playWhenReady = false
-        _playbackState = Player.STATE_IDLE
+        _playbackState = Common.STATE_IDLE
       }
     }
 
-  private var _playbackState = Player.STATE_IDLE
+  private var _playbackState = Common.STATE_IDLE
     set(value) {
       val from = field
       field = value
@@ -99,7 +99,7 @@ internal class OfficialYouTubePlayerBridge(
 
   private fun updatePlaybackInfo() {
     player?.let {
-      if (_playbackState != Player.STATE_IDLE) {
+      if (_playbackState != Common.STATE_IDLE) {
         _playbackInfo = try {
           _playbackInfo.copy(resumePosition = it.currentTimeMillis.toLong())
         } catch (er: IllegalStateException) {
@@ -192,7 +192,7 @@ internal class OfficialYouTubePlayerBridge(
   override fun reset(resetPlayer: Boolean) {
     this.pause()
     _playWhenReady = false
-    _playbackState = Player.STATE_IDLE
+    _playbackState = Common.STATE_IDLE
     _playbackInfo = PlaybackInfo()
   }
 
@@ -206,7 +206,7 @@ internal class OfficialYouTubePlayerBridge(
     _playbackInfo = PlaybackInfo(temp.resumeWindow, temp.resumePosition)
   }
 
-  override var repeatMode = Player.REPEAT_MODE_OFF
+  override var repeatMode = Common.REPEAT_MODE_OFF
 
   override fun prepare(loadSource: Boolean) {
     // no-ops
@@ -224,17 +224,17 @@ internal class OfficialYouTubePlayerBridge(
 
   override fun onBuffering(isBuffering: Boolean) {
     Log.i("Kohii::YouTube", "Event: onBuffering $isBuffering")
-    _playbackState = if (isBuffering) Player.STATE_BUFFERING else _playbackState
+    _playbackState = if (isBuffering) Common.STATE_BUFFERING else _playbackState
   }
 
   override fun onPlaying() {
     Log.i("Kohii::YouTube", "Event: onPlaying")
-    _playbackState = Player.STATE_READY
+    _playbackState = Common.STATE_READY
   }
 
   override fun onPaused() {
     Log.i("Kohii::YouTube", "Event: onPaused")
-    _playbackState = Player.STATE_READY
+    _playbackState = Common.STATE_READY
   }
 
   override fun onStopped() {
@@ -265,12 +265,12 @@ internal class OfficialYouTubePlayerBridge(
 
   override fun onVideoEnded() {
     Log.d("Kohii::YouTube", "State: onVideoEnded")
-    _playbackState = Player.STATE_ENDED
+    _playbackState = Common.STATE_ENDED
   }
 
   override fun onError(reason: ErrorReason?) {
     Log.w("Kohii::YouTube", "State: onError $reason")
-    _playbackState = Player.STATE_IDLE
+    _playbackState = Common.STATE_IDLE
     val error = RuntimeException(reason?.name ?: "Unknown error.")
     this.errorListeners.onError(error)
   }
@@ -287,7 +287,7 @@ internal class OfficialYouTubePlayerBridge(
     updatePlaybackInfo()
     player?.performRelease()
     _playWhenReady = false
-    _playbackState = Player.STATE_IDLE
+    _playbackState = Common.STATE_IDLE
     owner.lifecycle.removeObserver(this)
   }
 }

@@ -21,7 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Keep
-import com.google.android.exoplayer2.Player
+import kohii.v1.core.Common
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
@@ -74,7 +74,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, DemoCo
 
     val rebinder = kohii.setUp(videoUrl) {
       tag = videoTag
-      repeatMode = Player.REPEAT_MODE_ONE
+      repeatMode = Common.REPEAT_MODE_ONE
     }
         .bind(binding.playerView) { playback = it }
 

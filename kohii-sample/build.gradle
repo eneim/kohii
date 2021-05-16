@@ -19,8 +19,8 @@ import kohii.Libs
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-parcelize'
 // apply plugin: 'com.getkeepsafe.dexcount'
 
 if (file("google-services.json").exists()) {
@@ -112,6 +112,7 @@ configurations {
 }
 
 dependencies {
+  implementation fileTree(include: ['*.jar'], dir: 'libs')
   implementation project(':kohii-core')
   implementation project(':kohii-exoplayer')
   implementation project(':kohii-androidx')

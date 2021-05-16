@@ -17,7 +17,6 @@
 package kohii.v1.experiments.internal
 
 import android.util.Log
-import com.google.android.exoplayer2.Player
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerState.BUFFERING
@@ -30,6 +29,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.AbstractBridge
+import kohii.v1.core.Common
 import kohii.v1.media.Media
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
@@ -40,11 +40,11 @@ internal class UnofficialYouTubePlayerBridge(
 
   internal fun mapState(original: PlayerState): Int {
     return when (original) {
-      PLAYING -> Player.STATE_READY
-      BUFFERING -> Player.STATE_BUFFERING
-      ENDED -> Player.STATE_ENDED
-      PAUSED -> Player.STATE_READY
-      else -> Player.STATE_IDLE
+      PLAYING -> Common.STATE_READY
+      BUFFERING -> Common.STATE_BUFFERING
+      ENDED -> Common.STATE_ENDED
+      PAUSED -> Common.STATE_READY
+      else -> Common.STATE_IDLE
     }
   }
 
@@ -126,7 +126,7 @@ internal class UnofficialYouTubePlayerBridge(
 
   // override var parameters: PlaybackParameters = PlaybackParameters.DEFAULT
 
-  override var repeatMode: Int = Player.REPEAT_MODE_OFF
+  override var repeatMode: Int = Common.REPEAT_MODE_OFF
 
   override val playerState: Int
     get() = mapState(tracker.state)

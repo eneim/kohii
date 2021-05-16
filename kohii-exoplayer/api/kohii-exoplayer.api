@@ -10,6 +10,25 @@ public final class kohii/v1/exoplayer/BuildConfig {
 	public fun <init> ()V
 }
 
+public final class kohii/v1/exoplayer/DefaultDrmSessionManagerProvider : kohii/v1/exoplayer/DrmSessionManagerProvider {
+	public fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/upstream/HttpDataSource$Factory;)V
+	public fun provideDrmSessionManager (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/drm/DrmSessionManager;
+}
+
+public final class kohii/v1/exoplayer/DefaultMediaSourceFactoryProvider : kohii/v1/exoplayer/MediaSourceFactoryProvider {
+	public fun <init> (Landroid/content/Context;)V
+	public fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/upstream/HttpDataSource$Factory;)V
+	public fun <init> (Lcom/google/android/exoplayer2/upstream/DataSource$Factory;)V
+	public fun <init> (Lcom/google/android/exoplayer2/upstream/DataSource$Factory;Lkohii/v1/exoplayer/DrmSessionManagerProvider;)V
+	public fun <init> (Lcom/google/android/exoplayer2/upstream/DataSource$Factory;Lkohii/v1/exoplayer/DrmSessionManagerProvider;Lcom/google/android/exoplayer2/upstream/cache/Cache;)V
+	public synthetic fun <init> (Lcom/google/android/exoplayer2/upstream/DataSource$Factory;Lkohii/v1/exoplayer/DrmSessionManagerProvider;Lcom/google/android/exoplayer2/upstream/cache/Cache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun provideMediaSourceFactory (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/source/MediaSourceFactory;
+}
+
+public abstract interface class kohii/v1/exoplayer/DrmSessionManagerProvider {
+	public abstract fun provideDrmSessionManager (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/drm/DrmSessionManager;
+}
+
 public final class kohii/v1/exoplayer/ExoPlayerCache {
 	public static final field INSTANCE Lkohii/v1/exoplayer/ExoPlayerCache;
 	public final fun getDownloadCacheSingleton ()Lkohii/v1/utils/Capsule;
@@ -19,10 +38,10 @@ public final class kohii/v1/exoplayer/ExoPlayerCache {
 public final class kohii/v1/exoplayer/ExoPlayerConfig : kohii/v1/exoplayer/BandwidthMeterFactory, kohii/v1/exoplayer/LoadControlFactory, kohii/v1/exoplayer/TrackSelectorFactory {
 	public static final field Companion Lkohii/v1/exoplayer/ExoPlayerConfig$Companion;
 	public fun <init> ()V
-	public fun <init> (Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/ExoTrackSelection$Factory;JZIZJILcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;)V
-	public synthetic fun <init> (Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/ExoTrackSelection$Factory;JZIZJILcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun copy (Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/ExoTrackSelection$Factory;JZIZJILcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;)Lkohii/v1/exoplayer/ExoPlayerConfig;
-	public static synthetic fun copy$default (Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/ExoTrackSelection$Factory;JZIZJILcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;ILjava/lang/Object;)Lkohii/v1/exoplayer/ExoPlayerConfig;
+	public fun <init> (Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/TrackSelection$Factory;JZIZJIZLcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;Lkohii/v1/exoplayer/DefaultDrmSessionManagerProvider;)V
+	public synthetic fun <init> (Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/TrackSelection$Factory;JZIZJIZLcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;Lkohii/v1/exoplayer/DefaultDrmSessionManagerProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/TrackSelection$Factory;JZIZJIZLcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;Lkohii/v1/exoplayer/DefaultDrmSessionManagerProvider;)Lkohii/v1/exoplayer/ExoPlayerConfig;
+	public static synthetic fun copy$default (Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector$Parameters;Lcom/google/android/exoplayer2/trackselection/TrackSelection$Factory;JZIZJIZLcom/google/android/exoplayer2/mediacodec/MediaCodecSelector;Lcom/google/android/exoplayer2/upstream/DefaultAllocator;IIIIZIIZLcom/google/android/exoplayer2/upstream/cache/Cache;Lkohii/v1/exoplayer/DefaultDrmSessionManagerProvider;ILjava/lang/Object;)Lkohii/v1/exoplayer/ExoPlayerConfig;
 	public fun createBandwidthMeter (Landroid/content/Context;)Lcom/google/android/exoplayer2/upstream/BandwidthMeter;
 	public fun createDefaultTrackSelector (Landroid/content/Context;)Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;
 	public fun createLoadControl ()Lcom/google/android/exoplayer2/LoadControl;
@@ -39,31 +58,29 @@ public final class kohii/v1/exoplayer/ExoPlayerConfig$Companion {
 }
 
 public final class kohii/v1/exoplayer/ExoPlayerConfigKt {
-	public static final fun createDefaultPlayerPool (Lkohii/v1/exoplayer/ExoPlayerConfig;Landroid/content/Context;Ljava/lang/String;)Lkohii/v1/exoplayer/ExoPlayerPool;
+	public static final fun createDefaultMediaSourceFactoryProvider (Lkohii/v1/exoplayer/ExoPlayerConfig;Landroid/content/Context;Lcom/google/android/exoplayer2/upstream/HttpDataSource$Factory;)Lkohii/v1/exoplayer/DefaultMediaSourceFactoryProvider;
+	public static final fun createDefaultPlayerPool (Lkohii/v1/exoplayer/ExoPlayerConfig;Landroid/content/Context;)Lkohii/v1/exoplayer/ExoPlayerPool;
 }
 
 public final class kohii/v1/exoplayer/ExoPlayerPool : kohii/v1/core/PlayerPool {
-	public fun <init> (ILandroid/content/Context;Ljava/lang/String;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;)V
-	public synthetic fun <init> (ILandroid/content/Context;Ljava/lang/String;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ILandroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;)V
+	public synthetic fun <init> (ILandroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun createPlayer (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/Player;
 	public synthetic fun createPlayer (Lkohii/v1/media/Media;)Ljava/lang/Object;
 	public fun destroyPlayer (Lcom/google/android/exoplayer2/Player;)V
 	public synthetic fun destroyPlayer (Ljava/lang/Object;)V
-	public final fun getDefaultMediaSourceFactory ()Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;
 	public fun resetPlayer (Lcom/google/android/exoplayer2/Player;)V
 	public synthetic fun resetPlayer (Ljava/lang/Object;)V
 }
 
 public final class kohii/v1/exoplayer/HybridMediaItem : com/google/android/exoplayer2/source/MediaSource, kohii/v1/media/Media {
 	public fun <init> (Lkohii/v1/media/Media;Lcom/google/android/exoplayer2/source/MediaSource;)V
-	public fun addDrmEventListener (Landroid/os/Handler;Lcom/google/android/exoplayer2/drm/DrmSessionEventListener;)V
 	public fun addEventListener (Landroid/os/Handler;Lcom/google/android/exoplayer2/source/MediaSourceEventListener;)V
 	public fun createPeriod (Lcom/google/android/exoplayer2/source/MediaSource$MediaPeriodId;Lcom/google/android/exoplayer2/upstream/Allocator;J)Lcom/google/android/exoplayer2/source/MediaPeriod;
 	public fun disable (Lcom/google/android/exoplayer2/source/MediaSource$MediaSourceCaller;)V
 	public fun enable (Lcom/google/android/exoplayer2/source/MediaSource$MediaSourceCaller;)V
 	public final fun getMedia ()Lkohii/v1/media/Media;
 	public fun getMediaDrm ()Lkohii/v1/media/MediaDrm;
-	public fun getMediaItem ()Lcom/google/android/exoplayer2/MediaItem;
 	public final fun getMediaSource ()Lcom/google/android/exoplayer2/source/MediaSource;
 	public fun getType ()Ljava/lang/String;
 	public fun getUri ()Landroid/net/Uri;
@@ -71,7 +88,6 @@ public final class kohii/v1/exoplayer/HybridMediaItem : com/google/android/exopl
 	public fun prepareSource (Lcom/google/android/exoplayer2/source/MediaSource$MediaSourceCaller;Lcom/google/android/exoplayer2/upstream/TransferListener;)V
 	public fun releasePeriod (Lcom/google/android/exoplayer2/source/MediaPeriod;)V
 	public fun releaseSource (Lcom/google/android/exoplayer2/source/MediaSource$MediaSourceCaller;)V
-	public fun removeDrmEventListener (Lcom/google/android/exoplayer2/drm/DrmSessionEventListener;)V
 	public fun removeEventListener (Lcom/google/android/exoplayer2/source/MediaSourceEventListener;)V
 }
 
@@ -99,14 +115,13 @@ public final class kohii/v1/exoplayer/Kohii$Companion {
 }
 
 public class kohii/v1/exoplayer/KohiiExoPlayer : com/google/android/exoplayer2/SimpleExoPlayer, kohii/v1/core/DefaultTrackSelectorHolder, kohii/v1/core/VolumeInfoController {
-	public fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/analytics/AnalyticsCollector;Landroid/os/Looper;)V
-	public synthetic fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/analytics/AnalyticsCollector;Landroid/os/Looper;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Landroid/os/Looper;)V
+	public synthetic fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Landroid/os/Looper;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun addVolumeChangedListener (Lkohii/v1/core/VolumeChangedListener;)V
 	public fun getTrackSelector ()Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;
-	public final fun getVolume ()F
 	public fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
 	public fun removeVolumeChangedListener (Lkohii/v1/core/VolumeChangedListener;)V
-	public final fun setVolume (F)V
+	public fun setVolume (F)V
 	public fun setVolumeInfo (Lkohii/v1/media/VolumeInfo;)Z
 }
 
@@ -114,8 +129,9 @@ public final class kohii/v1/exoplayer/KohiiKt {
 	public static final fun createKohii (Landroid/content/Context;)Lkohii/v1/exoplayer/Kohii;
 	public static final fun createKohii (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;)Lkohii/v1/exoplayer/Kohii;
 	public static final fun createKohii (Landroid/content/Context;Lkotlin/jvm/functions/Function1;)Lkohii/v1/exoplayer/Kohii;
-	public static final fun createKohii (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lkohii/v1/exoplayer/Kohii;
-	public static synthetic fun createKohii$default (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lkohii/v1/exoplayer/Kohii;
+	public static final fun createKohii (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lkohii/v1/exoplayer/Kohii;
+	public static final fun createKohii (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lkohii/v1/exoplayer/Kohii;
+	public static synthetic fun createKohii$default (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lkohii/v1/exoplayer/Kohii;
 }
 
 public abstract interface class kohii/v1/exoplayer/LoadControlFactory {
@@ -126,11 +142,11 @@ public abstract interface class kohii/v1/exoplayer/MediaSourceFactoryProvider {
 	public abstract fun provideMediaSourceFactory (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/source/MediaSourceFactory;
 }
 
-public class kohii/v1/exoplayer/PlayerViewBridge : kohii/v1/core/AbstractBridge, com/google/android/exoplayer2/Player$Listener {
+public class kohii/v1/exoplayer/PlayerViewBridge : kohii/v1/core/AbstractBridge, kohii/v1/core/PlayerEventListener {
 	public static final field Companion Lkohii/v1/exoplayer/PlayerViewBridge$Companion;
-	public fun <init> (Landroid/content/Context;Lkohii/v1/media/Media;Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)V
+	public fun <init> (Landroid/content/Context;Lkohii/v1/media/Media;Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;)V
+	protected fun createMediaSource ()Lcom/google/android/exoplayer2/source/MediaSource;
 	protected final fun getMedia ()Lkohii/v1/media/Media;
-	protected fun getMediaItem ()Lcom/google/android/exoplayer2/MediaItem;
 	public fun getPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
 	protected final fun getPlayer ()Lcom/google/android/exoplayer2/Player;
 	public fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
@@ -164,7 +180,7 @@ public final class kohii/v1/exoplayer/PlayerViewBridge$Companion {
 }
 
 public final class kohii/v1/exoplayer/PlayerViewBridgeCreator : kohii/v1/core/BridgeCreator {
-	public fun <init> (Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)V
+	public fun <init> (Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;)V
 	public fun cleanUp ()V
 	public fun createBridge (Landroid/content/Context;Lkohii/v1/media/Media;)Lkohii/v1/core/Bridge;
 }
@@ -201,7 +217,9 @@ public abstract interface class kohii/v1/exoplayer/TrackSelectorFactory {
 }
 
 public final class kohii/v1/exoplayer/internal/ExtensionsKt {
+	public static final fun addEventListener (Lcom/google/android/exoplayer2/Player;Lkohii/v1/core/PlayerEventListener;)V
 	public static final fun getVolumeInfo (Lcom/google/android/exoplayer2/Player;)Lkohii/v1/media/VolumeInfo;
+	public static final fun removeEventListener (Lcom/google/android/exoplayer2/Player;Lkohii/v1/core/PlayerEventListener;)V
 	public static final fun setVolumeInfo (Lcom/google/android/exoplayer2/Player;Lkohii/v1/media/VolumeInfo;)V
 }
 

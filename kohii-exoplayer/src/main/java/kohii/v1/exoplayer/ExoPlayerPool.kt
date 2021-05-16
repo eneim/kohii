@@ -17,22 +17,13 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
-import androidx.annotation.RestrictTo
-import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX
 import com.google.android.exoplayer2.DefaultRenderersFactory
-import com.google.android.exoplayer2.ExoPlayer.AudioComponent
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.AudioComponent
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.audio.AudioAttributes
-import com.google.android.exoplayer2.drm.DefaultDrmSessionManagerProvider
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
-import com.google.android.exoplayer2.upstream.cache.Cache
-import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.util.Clock
 import com.google.android.exoplayer2.util.Util
-import kohii.v1.core.Common.getUserAgent
 import kohii.v1.core.PlayerPool
 import kohii.v1.media.Media
 
@@ -45,50 +36,27 @@ import kohii.v1.media.Media
 class ExoPlayerPool(
   poolSize: Int = DEFAULT_POOL_SIZE,
   private val context: Context,
-  private val userAgent: String = getUserAgent(context.applicationContext, BuildConfig.LIB_NAME),
   private val clock: Clock = Clock.DEFAULT,
   private val bandwidthMeterFactory: BandwidthMeterFactory = ExoPlayerConfig.DEFAULT,
   private val trackSelectorFactory: TrackSelectorFactory = ExoPlayerConfig.DEFAULT,
   private val loadControlFactory: LoadControlFactory = ExoPlayerConfig.DEFAULT,
   private val renderersFactory: RenderersFactory =
-    DefaultRenderersFactory(context.applicationContext),
-    // DefaultMediaSourceFactory
-  @RestrictTo(LIBRARY_GROUP_PREFIX)
-  val defaultMediaSourceFactory: DefaultMediaSourceFactory = with(context) {
-    val httpDataSource = DefaultHttpDataSource.Factory().setUserAgent(userAgent)
-
-    // DefaultMediaSourceFactory
-    val mediaCache: Cache = ExoPlayerCache.lruCacheSingleton.get(context)
-    val upstreamFactory = DefaultDataSourceFactory(context, httpDataSource)
-    val drmSessionManagerProvider = DefaultDrmSessionManagerProvider()
-    drmSessionManagerProvider.setDrmHttpDataSourceFactory(httpDataSource)
-
-    DefaultMediaSourceFactory(
-        /* dataSourceFactory */ CacheDataSource.Factory()
-        .setCache(mediaCache)
-        .setUpstreamDataSourceFactory(upstreamFactory)
-        .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-    )
-        .setDrmSessionManagerProvider(drmSessionManagerProvider)
-    // .setLoadErrorHandlingPolicy() // TODO(eneim): left out, needs more investigations.
-  }
+    DefaultRenderersFactory(context.applicationContext)
 ) : PlayerPool<Player>(poolSize) {
 
   override fun createPlayer(media: Media): Player = KohiiExoPlayer(
-      context = context.applicationContext,
-      clock = clock,
-      renderersFactory = renderersFactory,
-      trackSelector = trackSelectorFactory.createDefaultTrackSelector(context.applicationContext),
-      loadControl = loadControlFactory.createLoadControl(),
-      bandwidthMeter = bandwidthMeterFactory.createBandwidthMeter(context.applicationContext),
-      mediaSourceFactory = defaultMediaSourceFactory,
-      looper = Util.getCurrentOrMainLooper()
+      context.applicationContext,
+      clock,
+      renderersFactory,
+      trackSelectorFactory.createDefaultTrackSelector(context.applicationContext),
+      loadControlFactory.createLoadControl(),
+      bandwidthMeterFactory.createBandwidthMeter(context.applicationContext),
+      Util.getLooper()
   )
 
   override fun resetPlayer(player: Player) {
     super.resetPlayer(player)
-    player.stop()
-    player.clearMediaItems()
+    player.stop(true)
     if (player is AudioComponent) {
       player.setAudioAttributes(AudioAttributes.DEFAULT, true)
     }

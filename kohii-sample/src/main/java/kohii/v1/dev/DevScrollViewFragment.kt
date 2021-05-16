@@ -21,9 +21,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ControlDispatcher
-import com.google.android.exoplayer2.DefaultControlDispatcher
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import kohii.v1.core.Common
 import kohii.v1.core.Manager
 import kohii.v1.core.Manager.OnSelectionListener
 import kohii.v1.core.Playback
@@ -44,7 +43,7 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View {
+  ): View? {
     binding = ActivityDevScrollviewBinding.inflate(inflater, container, false)
     return binding.root
   }
@@ -60,7 +59,7 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
 
     kohii.setUp(DemoApp.assetVideoUri) {
       tag = "player::0"
-      repeatMode = Player.REPEAT_MODE_ONE
+      repeatMode = Common.REPEAT_MODE_ONE
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
 
@@ -127,7 +126,7 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
         }
       }
     } else {
-      binding.controlView.setControlDispatcher(DefaultControlDispatcher())
+      binding.controlView.setControlDispatcher(null)
       binding.controlView.player = null
       binding.controlView.hide()
     }

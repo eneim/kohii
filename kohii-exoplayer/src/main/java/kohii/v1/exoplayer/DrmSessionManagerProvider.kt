@@ -16,32 +16,14 @@
 
 package kohii.v1.exoplayer
 
-import android.content.Context
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.core.Bridge
-import kohii.v1.core.BridgeCreator
-import kohii.v1.core.PlayerPool
+import com.google.android.exoplayer2.drm.DrmSessionManager
+import com.google.android.exoplayer2.drm.ExoMediaCrypto
 import kohii.v1.media.Media
 
-class PlayerViewBridgeCreator(
-  private val playerPool: PlayerPool<Player>,
-  private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
-) : BridgeCreator<PlayerView> {
+/**
+ * @author eneim (2018/10/27).
+ */
+interface DrmSessionManagerProvider {
 
-  override fun createBridge(
-    context: Context,
-    media: Media
-  ): Bridge<PlayerView> {
-    return PlayerViewBridge(
-        context,
-        media,
-        playerPool,
-        mediaSourceFactoryProvider
-    )
-  }
-
-  override fun cleanUp() {
-    playerPool.clear()
-  }
+  fun provideDrmSessionManager(media: Media): DrmSessionManager<ExoMediaCrypto>?
 }

@@ -18,13 +18,13 @@ package kohii.v1.exoplayer
 
 import android.content.Context
 import android.os.Looper
+import androidx.annotation.CallSuper
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.analytics.AnalyticsCollector
-import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
@@ -51,25 +51,19 @@ open class KohiiExoPlayer(
     // unique TrackSelector per Player instance.
   override val trackSelector: DefaultTrackSelector =
     DefaultTrackSelector(context.applicationContext),
-  loadControl: LoadControl = DefaultLoadControl.Builder().build(),
+  loadControl: LoadControl = DefaultLoadControl.Builder().createDefaultLoadControl(),
   bandwidthMeter: BandwidthMeter =
     DefaultBandwidthMeter.Builder(context.applicationContext).build(),
-  mediaSourceFactory: MediaSourceFactory,
-  analyticsCollector: AnalyticsCollector = AnalyticsCollector(clock),
-  looper: Looper = Util.getCurrentOrMainLooper()
+  looper: Looper = Util.getLooper()
 ) : SimpleExoPlayer(
-    Builder(
-        context.applicationContext,
-        renderersFactory,
-        trackSelector,
-        mediaSourceFactory,
-        loadControl,
-        bandwidthMeter,
-        analyticsCollector
-    )
-        .setUseLazyPreparation(true)
-        .setClock(clock)
-        .setLooper(looper)
+    context,
+    renderersFactory,
+    trackSelector,
+    loadControl,
+    bandwidthMeter,
+    AnalyticsCollector(clock),
+    clock,
+    looper
 ), VolumeInfoController, DefaultTrackSelectorHolder {
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
@@ -78,17 +72,14 @@ open class KohiiExoPlayer(
   override val volumeInfo
     get() = playerVolumeInfo
 
-  final override fun setVolume(audioVolume: Float) {
+  @CallSuper
+  override fun setVolume(audioVolume: Float) {
     this.setVolumeInfo(VolumeInfo(audioVolume == 0f, audioVolume))
   }
 
-  final override fun getVolume(): Float {
-    return super.getVolume()
-  }
-
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
-    val muted = volumeInfo.mute || volumeInfo.volume == 0F
-    super.setAudioAttributes(super.getAudioAttributes(), !muted)
+    val mute = volumeInfo.mute || volumeInfo.volume == 0F
+    super.setAudioAttributes(super.getAudioAttributes(), !mute)
     val changed = this.playerVolumeInfo != volumeInfo // Compare equality, not reference.
     if (changed) {
       this.playerVolumeInfo = volumeInfo

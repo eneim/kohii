@@ -17,7 +17,6 @@
 package kohii.v1.core
 
 import androidx.annotation.CallSuper
-import com.google.android.exoplayer2.Player
 import kohii.v1.logInfo
 
 abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
@@ -26,27 +25,27 @@ abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
   protected val errorListeners = ErrorListeners()
   protected val volumeListeners = VolumeChangedListeners()
 
-  final override fun addEventListener(listener: Player.Listener) {
+  override fun addEventListener(listener: PlayerEventListener) {
     this.eventListeners.add(listener)
   }
 
-  final override fun removeEventListener(listener: Player.Listener?) {
+  override fun removeEventListener(listener: PlayerEventListener?) {
     this.eventListeners.remove(listener)
   }
 
-  final override fun addVolumeChangeListener(listener: VolumeChangedListener) {
+  override fun addVolumeChangeListener(listener: VolumeChangedListener) {
     this.volumeListeners.add(listener)
   }
 
-  final override fun removeVolumeChangeListener(listener: VolumeChangedListener?) {
+  override fun removeVolumeChangeListener(listener: VolumeChangedListener?) {
     this.volumeListeners.remove(listener)
   }
 
-  final override fun addErrorListener(errorListener: ErrorListener) {
+  override fun addErrorListener(errorListener: ErrorListener) {
     this.errorListeners.add(errorListener)
   }
 
-  final override fun removeErrorListener(errorListener: ErrorListener?) {
+  override fun removeErrorListener(errorListener: ErrorListener?) {
     this.errorListeners.remove(errorListener)
   }
 
@@ -59,6 +58,8 @@ abstract class AbstractBridge<RENDERER : Any> : Bridge<RENDERER> {
   override fun pause() {
     "Bridge#pause $this".logInfo()
   }
+
+  override var videoSize: VideoSize = VideoSize.ORIGINAL
 
   // For backward compatibility.
   override var playerParameters: PlayerParameters = PlayerParameters.DEFAULT

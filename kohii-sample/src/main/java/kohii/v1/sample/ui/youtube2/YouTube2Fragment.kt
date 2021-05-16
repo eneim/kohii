@@ -22,10 +22,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import kohii.v1.experiments.UnofficialYouTubePlayerEngine
+import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
-import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 import kohii.v1.sample.ui.main.DemoItem
+import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class YouTube2Fragment : BaseFragment(), DemoContainer {
 
@@ -34,7 +35,6 @@ class YouTube2Fragment : BaseFragment(), DemoContainer {
   }
 
   private val viewModel: YouTubeViewModel by viewModels()
-  private lateinit var binding: FragmentRecyclerViewBinding
 
   override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
@@ -42,11 +42,8 @@ class YouTube2Fragment : BaseFragment(), DemoContainer {
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View {
-    val binding: FragmentRecyclerViewBinding =
-      FragmentRecyclerViewBinding.inflate(inflater, container, false)
-    this.binding = binding
-    return binding.root
+  ): View? {
+    return inflater.inflate(R.layout.fragment_recycler_view, container, false)
   }
 
   override fun onViewCreated(
@@ -56,10 +53,10 @@ class YouTube2Fragment : BaseFragment(), DemoContainer {
     super.onViewCreated(view, savedInstanceState)
     val engine = UnofficialYouTubePlayerEngine[requireContext()]
     engine.register(this)
-        .addBucket(binding.recyclerView)
+        .addBucket(recyclerView)
 
     val adapter = YouTubeItemsAdapter(engine)
-    binding.recyclerView.adapter = adapter
+    recyclerView.adapter = adapter
 
     viewModel.posts.observe(viewLifecycleOwner) {
       adapter.submitList(it)
@@ -78,6 +75,6 @@ class YouTube2Fragment : BaseFragment(), DemoContainer {
 
   override fun onDestroyView() {
     super.onDestroyView()
-    binding.recyclerView.adapter = null
+    recyclerView.adapter = null
   }
 }

@@ -30,7 +30,8 @@ import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.InitData
-import kohii.v1.sample.databinding.FragmentPlayerBinding
+import kotlinx.android.synthetic.main.fragment_player.playerContainer
+import kotlinx.android.synthetic.main.fragment_player.playerView
 
 /**
  * To play a single Video.
@@ -71,7 +72,6 @@ open class PlayerFragment : BaseFragment(), Prioritized {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
-    val binding: FragmentPlayerBinding = FragmentPlayerBinding.bind(view)
     // Avoid a postponeEnterTransition on orientation change, and postpone only of first creation.
     if (savedInstanceState == null) {
       postponeEnterTransition()
@@ -83,8 +83,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
           requireNotNull(it.getParcelable<Rebinder>(KEY_REBINDER))
     }
 
-    val container =
-      binding.playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
+    val container = playerView.findViewById(R.id.exo_content_frame) as AspectRatioFrameLayout
     container.setAspectRatio(initData.aspectRatio)
 
     ViewCompat.setTransitionName(container, initData.tag)
@@ -92,10 +91,10 @@ open class PlayerFragment : BaseFragment(), Prioritized {
 
     val kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(binding.playerContainer)
+          .addBucket(playerContainer)
     }
 
-    rebinder.bind(kohii, binding.playerView) {
+    rebinder.bind(kohii, playerView) {
       startPostponedEnterTransition()
     }
   }

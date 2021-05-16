@@ -27,6 +27,8 @@ import kohii.v1.core.Bucket.Companion.BOTH_AXIS
 import kohii.v1.core.Bucket.Companion.HORIZONTAL
 import kohii.v1.core.Bucket.Companion.NONE_AXIS
 import kohii.v1.core.Bucket.Companion.VERTICAL
+import kohii.v1.core.Common.STATE_ENDED
+import kohii.v1.core.Common.STATE_IDLE
 import kohii.v1.core.Playback.Controller
 import kohii.v1.internal.PlayerParametersChangeListener
 import kohii.v1.logDebug
@@ -54,7 +56,7 @@ abstract class Playback(
   val bucket: Bucket,
   val container: ViewGroup,
   val config: Config = Config()
-) : PlayableContainer, Player.Listener, ErrorListener {
+) : PlayableContainer, PlayerEventListener, ErrorListener {
 
   companion object {
     @Suppress("unused")
@@ -114,7 +116,7 @@ abstract class Playback(
     val threshold: Float = 0.65F,
     val preload: Boolean = false,
     val releaseOnInActive: Boolean = false,
-    val repeatMode: Int = Player.REPEAT_MODE_OFF,
+    val repeatMode: Int = Common.REPEAT_MODE_OFF,
     val callbacks: Set<Callback> = emptySet(),
     val controller: Controller? = null,
     val initialPlaybackInfo: PlaybackInfo? = null,
@@ -194,7 +196,7 @@ abstract class Playback(
   internal var playerParametersChangeListener: PlayerParametersChangeListener? = null
 
   private val playerState: Int
-    get() = playable?.playerState ?: Player.STATE_IDLE
+    get() = playable?.playerState ?: STATE_IDLE
 
   val tag = config.tag
 
@@ -379,7 +381,7 @@ abstract class Playback(
     "Playback#onPlay $this".logDebug()
     container.keepScreenOn = true
     artworkHintListener?.onArtworkHint(
-        this, playerState == Player.STATE_ENDED, playbackInfo.resumePosition, playerState
+        this, playerState == STATE_ENDED, playbackInfo.resumePosition, playerState
     )
   }
 
