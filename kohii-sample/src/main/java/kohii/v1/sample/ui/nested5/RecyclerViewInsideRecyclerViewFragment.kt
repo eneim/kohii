@@ -27,13 +27,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kohii.v1.exoplayer.Kohii
-import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.sample.ui.nested5.MainAdapter.Companion.STATE_KEY
-import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 class RecyclerViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
 
@@ -41,14 +40,18 @@ class RecyclerViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
     fun newInstance() = RecyclerViewInsideRecyclerViewFragment()
   }
 
+  private lateinit var binding: FragmentRecyclerViewBinding
   override val demoItem: DemoItem? get() = arguments?.getParcelable(KEY_DEMO_ITEM)
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View? {
-    return inflater.inflate(R.layout.fragment_recycler_view, container, false)
+  ): View {
+    val binding: FragmentRecyclerViewBinding =
+      FragmentRecyclerViewBinding.inflate(inflater, container, false)
+    this.binding = binding
+    return binding.root
   }
 
   private lateinit var adapter: MainAdapter
@@ -61,21 +64,22 @@ class RecyclerViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
 
     val kohii = Kohii[this]
     val manager = kohii.register(this)
-        .addBucket(recyclerView)
+        .addBucket(binding.recyclerView)
 
     adapter = MainAdapter(kohii, manager, getApp().exoItems)
     if (savedInstanceState != null) adapter.onRestoreState(savedInstanceState)
 
-    recyclerView.adapter = adapter
+    binding.recyclerView.adapter = adapter
     val layoutManager = LinearLayoutManager(requireContext())
     layoutManager.isItemPrefetchEnabled = true
-    recyclerView.layoutManager = layoutManager
+    binding.recyclerView.layoutManager = layoutManager
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     val positionCache = SparseArray<HolderStateEntry>()
-    val nestedRecyclerViews = recyclerView.findHoldersForType<NestedRecyclerViewViewHolder>()
+    val nestedRecyclerViews =
+      binding.recyclerView.findHoldersForType<NestedRecyclerViewViewHolder>()
     if (nestedRecyclerViews.isNotEmpty()) {
       nestedRecyclerViews.forEach { holder ->
         val layout = holder.container.layoutManager as LinearLayoutManager

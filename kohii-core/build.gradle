@@ -85,7 +85,7 @@ dependencies {
   testImplementation(Libs.AndroidX.Test.runner)
 
   // Common library
-  androidTestImplementation Libs.Kotlin.stdlibJdk7
+  androidTestImplementation Libs.Kotlin.stdlibJdk8
   androidTestImplementation Libs.AndroidX.recyclerView
 
   // AndroidJUnitRunner and JUnit Rules

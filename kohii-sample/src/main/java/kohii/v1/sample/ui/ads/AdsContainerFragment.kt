@@ -25,10 +25,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ads.AdMediaItem
 import kohii.v1.ads.Manilo
-import kohii.v1.core.Common
 import kohii.v1.core.controller
 import kohii.v1.sample.DemoApp
 import kohii.v1.sample.common.ViewBindingFragment
@@ -65,7 +65,7 @@ class AdsContainerFragment :
 
           manilo.setUp(adMedia) {
             tag = "$value"
-            repeatMode = Common.REPEAT_MODE_ONE
+            repeatMode = Player.REPEAT_MODE_ONE
             controller = controller { _, renderer ->
               if (renderer is PlayerView) {
                 renderer.useController = true

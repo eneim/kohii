@@ -38,9 +38,9 @@ import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.doOnNextLayoutAs
 import kohii.v1.sample.common.getApp
 import kohii.v1.sample.common.toPixel
+import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 import kohii.v1.sample.ui.list.data.Item
 import kohii.v1.sample.ui.main.DemoItem
-import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 import okio.buffer
 import okio.source
 
@@ -90,9 +90,10 @@ class VerticalListRecyclerViewFragment : BaseFragment(), DemoContainer {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
     val kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(recyclerView)
+          .addBucket(binding.recyclerView)
     }
 
     val data = ArrayList(items).apply { this.addAll(items) } // To double the list.

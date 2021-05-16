@@ -28,8 +28,8 @@ import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.databinding.FragmentDebugNestsvInRvBinding
 import kohii.v1.sample.ui.main.DemoItem
-import kotlinx.android.synthetic.main.fragment_debug_nestsv_in_rv.recyclerView
 
 class NestedScrollViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
 
@@ -52,15 +52,16 @@ class NestedScrollViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    val binding: FragmentDebugNestsvInRvBinding = FragmentDebugNestsvInRvBinding.bind(view)
     val kohii = Kohii[this]
     val manager = kohii.register(this, MemoryMode.BALANCED)
-        .addBucket(recyclerView)
+        .addBucket(binding.recyclerView)
 
-    recyclerView.adapter = NestedItemsAdapter(kohii, manager)
+    binding.recyclerView.adapter = NestedItemsAdapter(kohii, manager)
 
     // To allow NestedScrollView to scroll inside RecyclerView.
     // This implementation is really simple and should not be used as-is in production code.
-    recyclerView.addOnItemTouchListener(object : SimpleOnItemTouchListener() {
+    binding.recyclerView.addOnItemTouchListener(object : SimpleOnItemTouchListener() {
 
       override fun onInterceptTouchEvent(
         rv: RecyclerView,

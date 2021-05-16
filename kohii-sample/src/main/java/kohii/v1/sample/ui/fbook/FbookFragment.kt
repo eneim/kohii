@@ -29,7 +29,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
-import kohii.v1.core.Common
+import com.google.android.exoplayer2.Player
 import kohii.v1.core.Manager
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
@@ -118,7 +118,7 @@ class FbookFragment : BaseFragment(), DemoContainer,
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View? {
+  ): View {
     _binding = FragmentFacebookBinding.inflate(inflater, container, false)
     return binding.root
   }
@@ -291,7 +291,7 @@ class FbookFragment : BaseFragment(), DemoContainer,
         floatPlayerManager.openFloatPlayer OPEN@{ playerView ->
           val overlayRebinder = currentOverlayRebinder ?: return@OPEN
           overlayRebinder.with {
-            repeatMode = Common.REPEAT_MODE_OFF
+            repeatMode = Player.REPEAT_MODE_OFF
             callbacks += object : Playback.Callback {
               override fun onInActive(playback: Playback) {
                 kohii.unstick(playback)

@@ -16,6 +16,7 @@
 
 package kohii.v1.core
 
+import com.google.android.exoplayer2.Player
 import kohii.v1.media.PlaybackInfo
 import kohii.v1.media.VolumeInfo
 
@@ -25,12 +26,7 @@ interface Bridge<RENDERER : Any> {
 
   var renderer: RENDERER?
 
-  @Deprecated("From 1.1.0+ this value should not be used anymore.")
-  var videoSize: VideoSize
-
   var playbackInfo: PlaybackInfo
-
-  // var parameters: PlaybackParameters
 
   var repeatMode: Int
 
@@ -76,20 +72,20 @@ interface Bridge<RENDERER : Any> {
   fun release()
 
   /**
-   * Add a new [PlayerEventListener] to this Playable. As calling [prepare] also triggers some
+   * Add a new [Player.Listener] to this Playable. As calling [prepare] also triggers some
    * internal events, this method should be called before [prepare] so that Client could received
    * them all.
    *
-   * @param listener the EventListener to add, must be not `null`.
+   * @param listener the Player.Listener to add, must be not `null`.
    */
-  fun addEventListener(listener: PlayerEventListener)
+  fun addEventListener(listener: Player.Listener)
 
   /**
-   * Remove a [PlayerEventListener] from this Playable.
+   * Remove a [Player.Listener] from this Playable.
    *
-   * @param listener the EventListener to be removed. If null, nothing happens.
+   * @param listener the Player.Listener to be removed. If null, nothing happens.
    */
-  fun removeEventListener(listener: PlayerEventListener?)
+  fun removeEventListener(listener: Player.Listener?)
 
   fun addVolumeChangeListener(listener: VolumeChangedListener)
 
