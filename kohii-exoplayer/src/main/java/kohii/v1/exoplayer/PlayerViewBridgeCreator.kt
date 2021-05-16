@@ -18,6 +18,7 @@ package kohii.v1.exoplayer
 
 import android.content.Context
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Bridge
 import kohii.v1.core.BridgeCreator
@@ -26,7 +27,7 @@ import kohii.v1.media.Media
 
 class PlayerViewBridgeCreator(
   private val playerPool: PlayerPool<Player>,
-  private val mediaSourceFactoryProvider: MediaSourceFactoryProvider
+  private val mediaSourceFactory: MediaSourceFactory
 ) : BridgeCreator<PlayerView> {
 
   override fun createBridge(
@@ -37,7 +38,7 @@ class PlayerViewBridgeCreator(
         context,
         media,
         playerPool,
-        mediaSourceFactoryProvider
+        mediaSourceFactory
     )
   }
 

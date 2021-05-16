@@ -22,8 +22,8 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
+import com.google.android.exoplayer2.Player
 import kohii.v1.core.Binder.Options
-import kohii.v1.core.Common
 import kohii.v1.core.Playback
 import kohii.v1.core.Playback.Controller
 import kohii.v1.core.Rebinder
@@ -104,7 +104,7 @@ internal class VideoViewHolder(
     state: Int
   ) {
     thumbnail.isVisible = shouldShow
-    playAgain.isVisible = shouldShow && state == Common.STATE_ENDED
+    playAgain.isVisible = shouldShow && state == Player.STATE_ENDED
   }
 
   override fun onRecycled(success: Boolean) {

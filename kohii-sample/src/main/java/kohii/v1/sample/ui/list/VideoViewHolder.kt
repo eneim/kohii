@@ -19,9 +19,9 @@ package kohii.v1.sample.ui.list
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.core.Common
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
@@ -59,7 +59,7 @@ class VideoViewHolder(
       rebinder = kohii.setUp(item.content) {
         tag = itemTag
         preload = true
-        repeatMode = Common.REPEAT_MODE_ONE
+        repeatMode = Player.REPEAT_MODE_ONE
         callbacks += this@VideoViewHolder
       }
           .bind(playerView) {

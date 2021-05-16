@@ -17,6 +17,7 @@
 package kohii.v1.exoplayer
 
 import com.google.android.exoplayer2.ControlDispatcher
+import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
@@ -30,6 +31,8 @@ class PlayerViewPlayable(
   config: Config,
   bridge: Bridge<PlayerView>
 ) : AbstractPlayable<PlayerView>(master, media, config, bridge) {
+
+  private val defaultControlDispatcher = DefaultControlDispatcher()
 
   override var renderer: Any?
     get() = bridge.renderer
@@ -45,7 +48,7 @@ class PlayerViewPlayable(
         renderer.setControlDispatcher(controller)
         renderer.useController = true
       } else {
-        renderer.setControlDispatcher(null)
+        renderer.setControlDispatcher(defaultControlDispatcher)
         renderer.useController = false
       }
     }
@@ -59,7 +62,7 @@ class PlayerViewPlayable(
 
   override fun onRendererDetached(playback: Playback, renderer: Any?) {
     if (renderer is PlayerView) {
-      renderer.setControlDispatcher(null)
+      renderer.setControlDispatcher(defaultControlDispatcher)
       renderer.useController = false
     }
     super.onRendererDetached(playback, renderer)

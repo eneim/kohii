@@ -19,7 +19,7 @@ package kohii.v1.sample.ui.nested5
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import kohii.v1.core.Common
+import com.google.android.exoplayer2.Player
 import kohii.v1.core.Playback
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
@@ -52,7 +52,7 @@ class VideoViewHolder(
         kohii.setUp(assetVideoUri) {
           tag = requireNotNull(itemTag)
           preload = false
-          repeatMode = Common.REPEAT_MODE_ONE
+          repeatMode = Player.REPEAT_MODE_ONE
           callbacks += this@VideoViewHolder
         }
             .bind(playerContainer)

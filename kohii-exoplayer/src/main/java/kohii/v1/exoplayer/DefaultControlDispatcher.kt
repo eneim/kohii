@@ -16,11 +16,14 @@
 
 package kohii.v1.exoplayer
 
-import com.google.android.exoplayer2.ControlDispatcher
+import com.google.android.exoplayer2.DefaultControlDispatcher
+import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import kohii.v1.core.Playback
 
-internal class DefaultControlDispatcher(private val playback: Playback) : ControlDispatcher {
+@Suppress("RedundantOverride")
+internal class DefaultControlDispatcher(private val playback: Playback) :
+    DefaultControlDispatcher() {
 
   override fun dispatchSeekTo(
     player: Player,
@@ -65,7 +68,39 @@ internal class DefaultControlDispatcher(private val playback: Playback) : Contro
   ): Boolean {
     val playable = playback.playable
     if (playable != null) playback.manager.pause(playable)
-    player.stop(reset)
+    player.stop()
+    if (reset) player.clearMediaItems()
     return true
   }
+
+  override fun dispatchPrepare(player: Player): Boolean {
+    // Kohii handles this independently.
+    return true
+  }
+
+  override fun dispatchPrevious(player: Player): Boolean {
+    // Kohii hasn't support playlist yet
+    return true
+  }
+
+  override fun dispatchNext(player: Player): Boolean {
+    // Kohii hasn't support playlist yet
+    return true
+  }
+
+  // TODO(eneim): do we need to handle this manually?
+  override fun dispatchRewind(player: Player): Boolean = super.dispatchRewind(player)
+
+  // TODO(eneim): do we need to handle this manually?
+  override fun dispatchFastForward(player: Player): Boolean = super.dispatchFastForward(player)
+
+  // TODO(eneim): do we need to handle this manually?
+  override fun dispatchSetPlaybackParameters(
+    player: Player,
+    playbackParameters: PlaybackParameters
+  ): Boolean = super.dispatchSetPlaybackParameters(player, playbackParameters)
+
+  override fun isRewindEnabled(): Boolean = super.isRewindEnabled()
+
+  override fun isFastForwardEnabled(): Boolean = super.isFastForwardEnabled()
 }

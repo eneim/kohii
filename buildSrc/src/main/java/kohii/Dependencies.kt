@@ -18,9 +18,9 @@ package kohii
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Versions {
-  const val exoPlayerSnapShot = "dev-v2-SNAPSHOT"
-  const val exoPlayer = "2.11.8"
-  const val exoPlayerCode = 2011008
+  const val exoPlayerSnapShot = "dev-v2-r2.14.0-SNAPSHOT"
+  const val exoPlayer = "2.14.0"
+  const val exoPlayerCode = 2014000
 }
 
 object ReleaseInfo {
@@ -49,7 +49,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:4.2.0-rc01"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:4.2.1"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
@@ -183,6 +183,7 @@ object Libs {
 
     val all = "com.google.android.exoplayer:exoplayer:${Versions.exoPlayer}"
 
+    val common = subLib("common")
     val core = subLib("core")
     val ui = subLib("ui")
     val dash = subLib("dash")
@@ -199,7 +200,7 @@ object Libs {
 
     val workManager = extLib("workmanager")
 
-    val allSnapshot = "com.github.google:exoplayer:${Versions.exoPlayerSnapShot}"
+    val allSnapshot = "com.github.google.exoplayer:exoplayer:${Versions.exoPlayerSnapShot}"
   }
 
   object Google {

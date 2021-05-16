@@ -22,7 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import kohii.v1.core.Common
+import com.google.android.exoplayer2.Player
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -52,7 +52,7 @@ class ViewPager2WithViewsFragment : BaseFragment(), DemoContainer {
       kohii.setUp(video.file) {
         tag = itemTag
         preload = true
-        repeatMode = Common.REPEAT_MODE_ONE
+        repeatMode = Player.REPEAT_MODE_ONE
       }
           .bind(itemView.videoFrame)
     }
