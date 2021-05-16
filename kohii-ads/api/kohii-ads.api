@@ -40,12 +40,12 @@ public final class kohii/v1/ads/BuildConfig {
 
 public final class kohii/v1/ads/Manilo : kohii/v1/exoplayer/Kohii, com/google/ads/interactivemedia/v3/api/AdEvent$AdEventListener {
 	public static final field Companion Lkohii/v1/ads/Manilo$Companion;
-	public fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;)V
 	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -58,17 +58,18 @@ public final class kohii/v1/ads/Manilo$Companion {
 }
 
 public final class kohii/v1/ads/exoplayer/ImaBridgeConfig {
-	public fun <init> (Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)V
+	public fun <init> (Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;)V
 	public final fun getAdsLoader ()Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader;
-	public final fun getAdsMediaSourceFactory ()Lcom/google/android/exoplayer2/source/MediaSourceFactory;
 }
 
-public final class kohii/v1/ads/exoplayer/PlayerViewImaBridge : kohii/v1/exoplayer/PlayerViewBridge, com/google/android/exoplayer2/source/ads/AdsLoader$AdViewProvider {
-	public fun <init> (Landroid/content/Context;Lkohii/v1/ads/AdMedia;Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lkohii/v1/ads/exoplayer/ImaBridgeConfig;)V
-	public fun getAdOverlayViews ()[Landroid/view/View;
+public final class kohii/v1/ads/exoplayer/PlayerViewImaBridge : kohii/v1/exoplayer/PlayerViewBridge, com/google/android/exoplayer2/source/DefaultMediaSourceFactory$AdsLoaderProvider, com/google/android/exoplayer2/ui/AdViewProvider {
+	public fun <init> (Landroid/content/Context;Lkohii/v1/ads/AdMedia;Lkohii/v1/core/PlayerPool;Lkohii/v1/ads/exoplayer/ImaBridgeConfig;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;)V
+	public fun getAdOverlayInfos ()Ljava/util/List;
 	public fun getAdViewGroup ()Landroid/view/ViewGroup;
+	public fun getAdsLoader (Lcom/google/android/exoplayer2/MediaItem$AdsConfiguration;)Lcom/google/android/exoplayer2/source/ads/AdsLoader;
 	public fun getRenderer ()Lcom/google/android/exoplayer2/ui/PlayerView;
 	public synthetic fun getRenderer ()Ljava/lang/Object;
+	public fun prepare (Z)V
 	public fun ready ()V
 	public fun release ()V
 	public fun reset (Z)V
@@ -77,8 +78,8 @@ public final class kohii/v1/ads/exoplayer/PlayerViewImaBridge : kohii/v1/exoplay
 }
 
 public final class kohii/v1/ads/exoplayer/PlayerViewImaBridgeCreator : kohii/v1/core/BridgeCreator {
-	public fun <init> (Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;)V
-	public synthetic fun <init> (Lkohii/v1/core/PlayerPool;Lkohii/v1/exoplayer/MediaSourceFactoryProvider;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;)V
+	public synthetic fun <init> (Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;Lcom/google/android/exoplayer2/ext/ima/ImaAdsLoader$Builder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun cleanUp ()V
 	public fun createBridge (Landroid/content/Context;Lkohii/v1/media/Media;)Lkohii/v1/core/Bridge;
 }

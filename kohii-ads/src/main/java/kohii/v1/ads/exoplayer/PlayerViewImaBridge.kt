@@ -17,20 +17,23 @@
 package kohii.v1.ads.exoplayer
 
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.google.ads.interactivemedia.v3.api.AdDisplayContainer
+import com.google.ads.interactivemedia.v3.api.FriendlyObstructionPurpose
+import com.google.ads.interactivemedia.v3.api.ImaSdkFactory
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.MediaItem.AdsConfiguration
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.MediaSourceFactory
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory.AdsLoaderProvider
 import com.google.android.exoplayer2.source.ads.AdsLoader
-import com.google.android.exoplayer2.source.ads.AdsMediaSource
+import com.google.android.exoplayer2.ui.AdOverlayInfo
+import com.google.android.exoplayer2.ui.AdOverlayInfo.Purpose
+import com.google.android.exoplayer2.ui.AdViewProvider
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.ads.AdMedia
 import kohii.v1.core.PlayerPool
-import kohii.v1.exoplayer.MediaSourceFactoryProvider
 import kohii.v1.exoplayer.PlayerViewBridge
 
 /**
@@ -40,71 +43,98 @@ class PlayerViewImaBridge(
   context: Context,
   media: AdMedia,
   playerPool: PlayerPool<Player>,
-  mediaSourceFactoryProvider: MediaSourceFactoryProvider,
-  imaBridgeConfig: ImaBridgeConfig
+  imaBridgeConfig: ImaBridgeConfig,
+  private val mediaSourceFactory: DefaultMediaSourceFactory
 ) : PlayerViewBridge(
     context,
     media,
     playerPool,
-    mediaSourceFactoryProvider
-), AdsLoader.AdViewProvider {
+    mediaSourceFactory
+), AdViewProvider, AdsLoaderProvider {
 
-  private val adsLoader: ImaAdsLoader = imaBridgeConfig.adsLoader
-  private val adsMediaSourceFactory: MediaSourceFactory = imaBridgeConfig.adsMediaSourceFactory
-  private val mediaSourceFactory: MediaSourceFactory =
-    mediaSourceFactoryProvider.provideMediaSourceFactory(media)
+  override val mediaItem: MediaItem = MediaItem.Builder()
+      .setUri(media.uri)
+      .setAdTagUri(media.adTagUri)
+      .build()
 
   // Using Application Context so this View instance can survive configuration changes.
   private val adViewGroup: ViewGroup = FrameLayout(context.applicationContext)
-  private val adDisplayContainer: AdDisplayContainer = adsLoader.adDisplayContainer
+  private val adsLoader: ImaAdsLoader = imaBridgeConfig.adsLoader
 
   override var renderer: PlayerView?
     get() = super.renderer
     set(value) {
       super.renderer?.let { current ->
         current.adViewGroup.removeView(adViewGroup)
-        @Suppress("DEPRECATION")
-        adDisplayContainer.unregisterAllVideoControlsOverlays()
-        adDisplayContainer.unregisterAllFriendlyObstructions()
+        adsLoader.adDisplayContainer?.unregisterAllFriendlyObstructions()
       }
       super.renderer = value
       if (value != null) {
         value.adViewGroup.addView(adViewGroup)
-        value.adOverlayViews.forEach {
-          @Suppress("DEPRECATION")
-          adDisplayContainer.registerVideoControlsOverlay(it)
+        val adDisplayContainer = adsLoader.adDisplayContainer ?: return
+        for (adOverlayInfo in value.adOverlayInfos) {
+          adDisplayContainer.registerFriendlyObstruction(
+              ImaSdkFactory.getInstance().createFriendlyObstruction(
+                  adOverlayInfo.view,
+                  getFriendlyObstructionPurpose(adOverlayInfo.purpose),
+                  adOverlayInfo.reasonDetail
+              )
+          )
         }
       }
     }
 
-  override fun createMediaSource(): MediaSource = AdsMediaSource(
-      mediaSourceFactory.createMediaSource(media.uri),
-      adsMediaSourceFactory,
-      adsLoader,
-      this
-  )
+  override fun prepare(loadSource: Boolean) {
+    if (loadSource) {
+      mediaSourceFactory.setAdViewProvider(this)
+      mediaSourceFactory.setAdsLoaderProvider(this)
+    }
+    super.prepare(loadSource)
+  }
 
   override fun ready() {
+    // Call before super.ready() so the Ads setup is injected into the MediaSource.
+    mediaSourceFactory.setAdViewProvider(this)
+    mediaSourceFactory.setAdsLoaderProvider(this)
     super.ready()
     adsLoader.setPlayer(player)
   }
 
   override fun reset(resetPlayer: Boolean) {
+    mediaSourceFactory.setAdViewProvider(null)
+    mediaSourceFactory.setAdsLoaderProvider(null)
     super.reset(resetPlayer)
     adsLoader.setPlayer(null)
   }
 
   override fun release() {
     super.release()
+    mediaSourceFactory.setAdViewProvider(null)
+    mediaSourceFactory.setAdsLoaderProvider(null)
     adsLoader.setPlayer(null)
     adsLoader.release()
   }
 
-  /* [BEGIN] AdsLoader.AdViewProvider */
+  //region AdsLoaderProvider implementation
+  override fun getAdsLoader(adsConfiguration: AdsConfiguration): AdsLoader = adsLoader
+  //endregion
 
+  //region AdsLoader.AdViewProvider implementation
   override fun getAdViewGroup(): ViewGroup = adViewGroup
 
-  override fun getAdOverlayViews(): Array<View> = arrayOf()
+  // This bridge will manually register the AdOverlayInfo
+  override fun getAdOverlayInfos(): List<AdOverlayInfo> = emptyList()
+  //endregion
 
-  /* [END] AdsLoader.AdViewProvider */
+  private companion object {
+    fun getFriendlyObstructionPurpose(@Purpose purpose: Int): FriendlyObstructionPurpose {
+      return when (purpose) {
+        AdOverlayInfo.PURPOSE_CONTROLS -> FriendlyObstructionPurpose.VIDEO_CONTROLS
+        AdOverlayInfo.PURPOSE_CLOSE_AD -> FriendlyObstructionPurpose.CLOSE_AD
+        AdOverlayInfo.PURPOSE_NOT_VISIBLE -> FriendlyObstructionPurpose.NOT_VISIBLE
+        AdOverlayInfo.PURPOSE_OTHER -> FriendlyObstructionPurpose.OTHER
+        else -> FriendlyObstructionPurpose.OTHER
+      }
+    }
+  }
 }

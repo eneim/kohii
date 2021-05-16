@@ -31,7 +31,6 @@ import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.InitData
 import kohii.v1.sample.databinding.FragmentMotionBinding
 import kohii.v1.sample.ui.main.DemoItem
-import kotlinx.android.synthetic.main.fragment_motion.scrollView
 
 /**
  * @author eneim (2018/07/15).
@@ -51,7 +50,7 @@ class MotionFragment : BaseFragment(), Presenter, DemoContainer {
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View? {
+  ): View {
     binding = DataBindingUtil.inflate(
         inflater,
         R.layout.fragment_motion,
@@ -67,7 +66,7 @@ class MotionFragment : BaseFragment(), Presenter, DemoContainer {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this)
-        .addBucket(scrollView)
+        .addBucket(binding.scrollView)
     binding.motion = Motion()
     binding.lifecycleOwner = viewLifecycleOwner
   }

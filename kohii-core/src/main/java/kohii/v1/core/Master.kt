@@ -16,24 +16,17 @@
 
 package kohii.v1.core
 
-import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.Application
-import android.content.BroadcastReceiver
 import android.content.ComponentCallbacks2
 import android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.res.Configuration
-import android.net.ConnectivityManager
-import android.os.Build.VERSION
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.arrayMapOf
 import androidx.collection.arraySetOf
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -43,7 +36,8 @@ import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.util.Util
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.util.NetworkTypeObserver
 import kohii.v1.core.Binder.Options
 import kohii.v1.core.MemoryMode.AUTO
 import kohii.v1.core.MemoryMode.BALANCED
@@ -57,14 +51,13 @@ import kohii.v1.core.Scope.PLAYBACK
 import kohii.v1.findActivity
 import kohii.v1.internal.DynamicFragmentRendererPlayback
 import kohii.v1.internal.DynamicViewRendererPlayback
-import kohii.v1.internal.MasterNetworkCallback
 import kohii.v1.internal.StaticViewRendererPlayback
 import kohii.v1.logDebug
 import kohii.v1.logInfo
 import kohii.v1.logWarn
 import kohii.v1.media.PlaybackInfo
+import kohii.v1.utils.Capsule
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.LazyThreadSafetyMode.NONE
 
 class Master private constructor(context: Context) : PlayableManager {
 
@@ -77,12 +70,10 @@ class Master private constructor(context: Context) : PlayableManager {
 
     internal val NO_TAG = Any()
 
-    @Volatile private var master: Master? = null
+    private val capsule: Capsule<Master, Context> = Capsule(::Master)
 
     @JvmStatic
-    operator fun get(context: Context) = master ?: synchronized(this) {
-      master ?: Master(context).also { master = it }
-    }
+    operator fun get(context: Context) = capsule.get(context.applicationContext)
   }
 
   val app = context.applicationContext as Application
@@ -112,7 +103,7 @@ class Master private constructor(context: Context) : PlayableManager {
   private var systemLock: Boolean = false
     set(value) {
       field = value
-      groups.forEach { it.onRefresh() }
+      groups.forEach(Group::onRefresh)
     }
 
   internal var lock: Boolean = false
@@ -132,35 +123,21 @@ class Master private constructor(context: Context) : PlayableManager {
     }
   }
 
-  private val networkActionReceiver = lazy(NONE) {
-    object : BroadcastReceiver() {
-      override fun onReceive(
-        context: Context?,
-        intent: Intent?
-      ) {
-        if (isInitialStickyBroadcast) return
-        if (context != null) {
-          Master[context].onNetworkChanged()
-        }
-      }
-    }
-  }
-
-  @SuppressLint("NewApi") // will only be used in proper API level.
-  private val networkCallback = lazy(NONE) {
-    MasterNetworkCallback(this)
-  }
-
   @C.NetworkType
-  internal var networkType: NetworkType = Util.getNetworkType(app)
+  internal var networkType: NetworkType = C.NETWORK_TYPE_UNKNOWN
     set(value) {
       val from = field
       field = value
       val to = field
       if (from == to) return
-      playables.filterKeys { it.playback?.isActive == true }
-          .forEach { it.key.onNetworkTypeChanged(from, to) }
+      playables.asSequence()
+          .filter { (playable: Playable, _) -> playable.playback?.isActive == true }
+          .forEach { (playable: Playable, _) -> playable.onNetworkTypeChanged(from, to) }
     }
+
+  private val networkTypeChangedListener = NetworkTypeObserver.Listener { networkType ->
+    this@Master.networkType = networkType
+  }
 
   internal var trimMemoryLevel: Int = RunningAppProcessInfo().let {
     ActivityManager.getMyMemoryState(it)
@@ -174,6 +151,7 @@ class Master private constructor(context: Context) : PlayableManager {
     }
 
   init {
+    NetworkTypeObserver.getInstance(app).register(networkTypeChangedListener)
     ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
       override fun onStart(owner: LifecycleOwner) {
         systemLock = false
@@ -183,10 +161,6 @@ class Master private constructor(context: Context) : PlayableManager {
         systemLock = true
       }
     })
-  }
-
-  internal fun onNetworkChanged() {
-    this.networkType = Util.getNetworkType(app)
   }
 
   internal fun preferredMemoryMode(actual: MemoryMode): MemoryMode =
@@ -315,7 +289,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
     "Master#tryRestorePlaybackInfo: $cache, $playable".logInfo()
     // Only restoring playback state if there is cached state, and the player is not ready yet.
-    if (cache != null && playable.playerState <= Common.STATE_IDLE) {
+    if (cache != null && playable.playerState <= Player.STATE_IDLE) {
       playable.playbackInfo = cache
     }
   }
@@ -409,15 +383,6 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun onFirstManagerCreated(group: Group) {
     if (groups.flatMap(Group::managers).isEmpty()) {
       app.registerComponentCallbacks(componentCallbacks)
-      if (VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
-        val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
-        networkManager?.registerDefaultNetworkCallback(networkCallback.value)
-      } else {
-        @Suppress("DEPRECATION")
-        app.registerReceiver(
-            networkActionReceiver.value, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        )
-      }
     }
     engines.forEach { it.value.inject(group) }
   }
@@ -425,12 +390,6 @@ class Master private constructor(context: Context) : PlayableManager {
   @Suppress("UNUSED_PARAMETER")
   internal fun onLastManagerDestroyed(group: Group) {
     if (groups.flatMap(Group::managers).isEmpty()) {
-      if (networkCallback.isInitialized() && VERSION.SDK_INT >= 24 /* VERSION_CODES.N */) {
-        val networkManager = ContextCompat.getSystemService(app, ConnectivityManager::class.java)
-        networkManager?.unregisterNetworkCallback(networkCallback.value)
-      } else if (networkActionReceiver.isInitialized()) {
-        app.unregisterReceiver(networkActionReceiver.value)
-      }
       app.unregisterComponentCallbacks(componentCallbacks)
     }
   }

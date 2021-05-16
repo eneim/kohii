@@ -35,21 +35,19 @@ public abstract interface annotation class kohii/v1/Stable : java/lang/annotatio
 
 public abstract class kohii/v1/core/AbstractBridge : kohii/v1/core/Bridge {
 	public fun <init> ()V
-	public fun addErrorListener (Lkohii/v1/core/ErrorListener;)V
-	public fun addEventListener (Lkohii/v1/core/PlayerEventListener;)V
-	public fun addVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public final fun addErrorListener (Lkohii/v1/core/ErrorListener;)V
+	public final fun addEventListener (Lcom/google/android/exoplayer2/Player$Listener;)V
+	public final fun addVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
 	protected final fun getErrorListeners ()Lkohii/v1/core/ErrorListeners;
 	protected final fun getEventListeners ()Lkohii/v1/core/PlayerEventListeners;
 	public fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
-	public fun getVideoSize ()Lkohii/v1/core/VideoSize;
 	protected final fun getVolumeListeners ()Lkohii/v1/core/VolumeChangedListeners;
 	public fun pause ()V
 	public fun play ()V
-	public fun removeErrorListener (Lkohii/v1/core/ErrorListener;)V
-	public fun removeEventListener (Lkohii/v1/core/PlayerEventListener;)V
-	public fun removeVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public final fun removeErrorListener (Lkohii/v1/core/ErrorListener;)V
+	public final fun removeEventListener (Lcom/google/android/exoplayer2/Player$Listener;)V
+	public final fun removeVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
 	public fun setPlayerParameters (Lkohii/v1/core/PlayerParameters;)V
-	public fun setVideoSize (Lkohii/v1/core/VideoSize;)V
 }
 
 public abstract class kohii/v1/core/AbstractPlayable : kohii/v1/core/Playable, kohii/v1/core/Playback$Callback, kohii/v1/internal/PlayerParametersChangeListener {
@@ -113,14 +111,13 @@ public final class kohii/v1/core/Binder$Options {
 
 public abstract interface class kohii/v1/core/Bridge {
 	public abstract fun addErrorListener (Lkohii/v1/core/ErrorListener;)V
-	public abstract fun addEventListener (Lkohii/v1/core/PlayerEventListener;)V
+	public abstract fun addEventListener (Lcom/google/android/exoplayer2/Player$Listener;)V
 	public abstract fun addVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
 	public abstract fun getPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
 	public abstract fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
 	public abstract fun getPlayerState ()I
 	public abstract fun getRenderer ()Ljava/lang/Object;
 	public abstract fun getRepeatMode ()I
-	public abstract fun getVideoSize ()Lkohii/v1/core/VideoSize;
 	public abstract fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
 	public abstract fun isPlaying ()Z
 	public abstract fun pause ()V
@@ -129,7 +126,7 @@ public abstract interface class kohii/v1/core/Bridge {
 	public abstract fun ready ()V
 	public abstract fun release ()V
 	public abstract fun removeErrorListener (Lkohii/v1/core/ErrorListener;)V
-	public abstract fun removeEventListener (Lkohii/v1/core/PlayerEventListener;)V
+	public abstract fun removeEventListener (Lcom/google/android/exoplayer2/Player$Listener;)V
 	public abstract fun removeVolumeChangeListener (Lkohii/v1/core/VolumeChangedListener;)V
 	public abstract fun reset (Z)V
 	public abstract fun seekTo (J)V
@@ -137,7 +134,6 @@ public abstract interface class kohii/v1/core/Bridge {
 	public abstract fun setPlayerParameters (Lkohii/v1/core/PlayerParameters;)V
 	public abstract fun setRenderer (Ljava/lang/Object;)V
 	public abstract fun setRepeatMode (I)V
-	public abstract fun setVideoSize (Lkohii/v1/core/VideoSize;)V
 	public abstract fun setVolumeInfo (Lkohii/v1/media/VolumeInfo;)V
 }
 
@@ -365,7 +361,7 @@ public abstract class kohii/v1/core/PlayableCreator {
 public abstract interface class kohii/v1/core/PlayableManager {
 }
 
-public abstract class kohii/v1/core/Playback : kohii/v1/core/ErrorListener, kohii/v1/core/PlayableContainer, kohii/v1/core/PlayerEventListener {
+public abstract class kohii/v1/core/Playback : com/google/android/exoplayer2/Player$Listener, kohii/v1/core/ErrorListener, kohii/v1/core/PlayableContainer {
 	public static final field Companion Lkohii/v1/core/Playback$Companion;
 	public static final field DELAY_INFINITE J
 	public fun <init> (Lkohii/v1/core/Manager;Lkohii/v1/core/Bucket;Landroid/view/ViewGroup;Lkohii/v1/core/Playback$Config;)V
@@ -488,35 +484,33 @@ public final class kohii/v1/core/PlaybackKt {
 	public static synthetic fun controller$default (ZZLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkohii/v1/core/Playback$Controller;
 }
 
-public abstract interface class kohii/v1/core/PlayerEventListener : com/google/android/exoplayer2/Player$EventListener, com/google/android/exoplayer2/audio/AudioListener, com/google/android/exoplayer2/metadata/MetadataOutput, com/google/android/exoplayer2/text/TextOutput, com/google/android/exoplayer2/video/VideoListener {
-	public fun onCues (Ljava/util/List;)V
-	public fun onMetadata (Lcom/google/android/exoplayer2/metadata/Metadata;)V
+public abstract interface class kohii/v1/core/PlayerEventListener : com/google/android/exoplayer2/Player$Listener {
 }
 
-public final class kohii/v1/core/PlayerEventListeners : java/util/concurrent/CopyOnWriteArraySet, kohii/v1/core/PlayerEventListener {
+public final class kohii/v1/core/PlayerEventListeners : java/util/concurrent/CopyOnWriteArraySet, com/google/android/exoplayer2/Player$Listener {
 	public fun <init> ()V
+	public fun contains (Lcom/google/android/exoplayer2/Player$Listener;)Z
 	public final fun contains (Ljava/lang/Object;)Z
-	public fun contains (Lkohii/v1/core/PlayerEventListener;)Z
 	public fun getSize ()I
 	public fun onAudioAttributesChanged (Lcom/google/android/exoplayer2/audio/AudioAttributes;)V
-	public fun onAudioSessionId (I)V
+	public fun onAudioSessionIdChanged (I)V
 	public fun onCues (Ljava/util/List;)V
-	public fun onLoadingChanged (Z)V
+	public fun onIsLoadingChanged (Z)V
 	public fun onMetadata (Lcom/google/android/exoplayer2/metadata/Metadata;)V
+	public fun onPlayWhenReadyChanged (ZI)V
 	public fun onPlaybackParametersChanged (Lcom/google/android/exoplayer2/PlaybackParameters;)V
+	public fun onPlaybackStateChanged (I)V
 	public fun onPlayerError (Lcom/google/android/exoplayer2/ExoPlaybackException;)V
-	public fun onPlayerStateChanged (ZI)V
-	public fun onPositionDiscontinuity (I)V
+	public fun onPositionDiscontinuity (Lcom/google/android/exoplayer2/Player$PositionInfo;Lcom/google/android/exoplayer2/Player$PositionInfo;I)V
 	public fun onRenderedFirstFrame ()V
 	public fun onRepeatModeChanged (I)V
-	public fun onSeekProcessed ()V
 	public fun onShuffleModeEnabledChanged (Z)V
 	public fun onTimelineChanged (Lcom/google/android/exoplayer2/Timeline;I)V
 	public fun onTracksChanged (Lcom/google/android/exoplayer2/source/TrackGroupArray;Lcom/google/android/exoplayer2/trackselection/TrackSelectionArray;)V
-	public fun onVideoSizeChanged (IIIF)V
+	public fun onVideoSizeChanged (Lcom/google/android/exoplayer2/video/VideoSize;)V
 	public fun onVolumeChanged (F)V
+	public fun remove (Lcom/google/android/exoplayer2/Player$Listener;)Z
 	public final fun remove (Ljava/lang/Object;)Z
-	public fun remove (Lkohii/v1/core/PlayerEventListener;)Z
 	public final fun size ()I
 }
 
@@ -660,29 +654,6 @@ public final class kohii/v1/core/Strategy$SINGLE_PLAYER : kohii/v1/core/Strategy
 	public static final field INSTANCE Lkohii/v1/core/Strategy$SINGLE_PLAYER;
 	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
 	public fun invoke (Ljava/util/Collection;)Ljava/util/Collection;
-}
-
-public final class kohii/v1/core/VideoSize {
-	public static final field Companion Lkohii/v1/core/VideoSize$Companion;
-	public fun <init> (II)V
-	public final fun component1 ()I
-	public final fun component2 ()I
-	public final fun copy (II)Lkohii/v1/core/VideoSize;
-	public static synthetic fun copy$default (Lkohii/v1/core/VideoSize;IIILjava/lang/Object;)Lkohii/v1/core/VideoSize;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getMaxHeight ()I
-	public final fun getMaxWidth ()I
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class kohii/v1/core/VideoSize$Companion {
-	public final fun getFHD ()Lkohii/v1/core/VideoSize;
-	public final fun getHD ()Lkohii/v1/core/VideoSize;
-	public final fun getNONE ()Lkohii/v1/core/VideoSize;
-	public final fun getORIGINAL ()Lkohii/v1/core/VideoSize;
-	public final fun getSD ()Lkohii/v1/core/VideoSize;
-	public final fun getUHD ()Lkohii/v1/core/VideoSize;
 }
 
 public abstract class kohii/v1/core/ViewRendererProvider : kohii/v1/core/RecycledRendererProvider {

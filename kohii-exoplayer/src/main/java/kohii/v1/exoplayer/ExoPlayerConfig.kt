@@ -25,12 +25,10 @@ import com.google.android.exoplayer2.mediacodec.MediaCodecSelector
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.Parameters
-import com.google.android.exoplayer2.trackselection.TrackSelection
+import com.google.android.exoplayer2.trackselection.ExoTrackSelection
 import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.util.Clock
 
@@ -44,7 +42,7 @@ data class ExoPlayerConfig(
   internal val clock: Clock = Clock.DEFAULT,
     // DefaultTrackSelector parameters
   internal val trackSelectorParameters: Parameters = Parameters.DEFAULT_WITHOUT_CONTEXT,
-  internal val trackSelectionFactory: TrackSelection.Factory = AdaptiveTrackSelection.Factory(),
+  internal val trackSelectionFactory: ExoTrackSelection.Factory = AdaptiveTrackSelection.Factory(),
     // DefaultBandwidthMeter parameters
   internal val overrideInitialBitrateEstimate: Long = -1,
   internal val resetOnNetworkTypeChange: Boolean = true,
@@ -53,7 +51,6 @@ data class ExoPlayerConfig(
   internal val enableDecoderFallback: Boolean = true,
   internal val allowedVideoJoiningTimeMs: Long = DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS,
   internal val extensionRendererMode: Int = DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF,
-  internal val playClearSamplesWithoutKeys: Boolean = false,
   internal val mediaCodecSelector: MediaCodecSelector = MediaCodecSelector.DEFAULT,
     // DefaultLoadControl parameters
   internal val allocator: DefaultAllocator = DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
@@ -66,8 +63,7 @@ data class ExoPlayerConfig(
   internal val backBufferDurationMs: Int = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS,
   internal val retainBackBufferFromKeyframe: Boolean = DefaultLoadControl.DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME,
     // Other configurations
-  internal val cache: Cache? = null,
-  internal val drmSessionManagerProvider: DefaultDrmSessionManagerProvider? = null
+  internal val cache: Cache? = null
 ) : LoadControlFactory, BandwidthMeterFactory, TrackSelectorFactory {
 
   companion object {
@@ -103,7 +99,7 @@ data class ExoPlayerConfig(
       )
       .setPrioritizeTimeOverSizeThresholds(prioritizeTimeOverSizeThresholds)
       .setTargetBufferBytes(targetBufferBytes)
-      .createDefaultLoadControl()
+      .build()
 
   override fun createBandwidthMeter(context: Context): BandwidthMeter =
     DefaultBandwidthMeter.Builder(context.applicationContext)
@@ -132,8 +128,12 @@ data class ExoPlayerConfig(
 }
 
 // For internal use only
-fun ExoPlayerConfig.createDefaultPlayerPool(context: Context) = ExoPlayerPool(
+fun ExoPlayerConfig.createDefaultPlayerPool(
+  context: Context,
+  userAgent: String
+) = ExoPlayerPool(
     context = context.applicationContext,
+    userAgent = userAgent,
     clock = clock,
     bandwidthMeterFactory = this,
     trackSelectorFactory = this,
@@ -143,19 +143,4 @@ fun ExoPlayerConfig.createDefaultPlayerPool(context: Context) = ExoPlayerPool(
         .setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs)
         .setExtensionRendererMode(extensionRendererMode)
         .setMediaCodecSelector(mediaCodecSelector)
-        .setPlayClearSamplesWithoutKeys(playClearSamplesWithoutKeys)
 )
-
-// For internal use only.
-fun ExoPlayerConfig.createDefaultMediaSourceFactoryProvider(
-  context: Context,
-  dataSourceFactory: HttpDataSource.Factory
-) = run {
-  val mediaCache: Cache = cache ?: ExoPlayerCache.lruCacheSingleton.get(context.applicationContext)
-  val drmSessionManagerProvider =
-    drmSessionManagerProvider ?: DefaultDrmSessionManagerProvider(
-        context.applicationContext, dataSourceFactory
-    )
-  val upstreamFactory = DefaultDataSourceFactory(context.applicationContext, dataSourceFactory)
-  DefaultMediaSourceFactoryProvider(upstreamFactory, drmSessionManagerProvider, mediaCache)
-}

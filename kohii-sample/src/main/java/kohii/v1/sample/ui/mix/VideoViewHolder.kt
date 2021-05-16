@@ -21,9 +21,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.view.get
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import kohii.v1.core.Common
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.media.MediaItem
 import kohii.v1.sample.R
@@ -68,7 +68,7 @@ class VideoViewHolder(
       kohii.setUp(mediaItem) {
         tag = requireNotNull(itemTag)
         preload = false
-        repeatMode = Common.REPEAT_MODE_ONE
+        repeatMode = Player.REPEAT_MODE_ONE
       }
           .bind(playerView)
     }

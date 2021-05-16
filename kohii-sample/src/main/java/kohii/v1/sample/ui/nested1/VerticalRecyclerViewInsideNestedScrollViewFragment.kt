@@ -25,10 +25,8 @@ import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.databinding.FragmentDebugRvInNestsvVerticalBinding
 import kohii.v1.sample.ui.main.DemoItem
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.libIntro
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyclerView
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.scrollView
 
 class VerticalRecyclerViewInsideNestedScrollViewFragment : BaseFragment(), DemoContainer {
 
@@ -47,12 +45,14 @@ class VerticalRecyclerViewInsideNestedScrollViewFragment : BaseFragment(), DemoC
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    val binding: FragmentDebugRvInNestsvVerticalBinding =
+      FragmentDebugRvInNestsvVerticalBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(scrollView)
-        .addBucket(recyclerView)
+        .addBucket(binding.scrollView)
+        .addBucket(binding.recyclerView)
 
-    libIntro.text = getString(R.string.lib_intro).parseAsHtml()
-    recyclerView.adapter = VerticalItemsAdapter(kohii)
+    binding.libIntro.text = getString(R.string.lib_intro).parseAsHtml()
+    binding.recyclerView.adapter = VerticalItemsAdapter(kohii)
   }
 }
