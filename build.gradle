@@ -83,8 +83,19 @@ allprojects {
     } */
   }
 
-  apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
   apply plugin: "org.jetbrains.dokka"
+  apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
+
+  ktlint {
+    // version = "0.41.0"
+    debug = true
+    verbose = true
+    // android = true
+    outputToConsole = true
+    outputColorName = "RED"
+    ignoreFailures = false
+    additionalEditorconfigFile = rootProject.file(".editorconfig")
+  }
 
   tasks.withType(JavaCompile).configureEach { task ->
     task.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -142,6 +153,19 @@ allprojects {
       }
     }
   }
+
+  // Un-comment when update ktlint-gradle version.
+  /* configurations.named("ktlint").configure {
+    resolutionStrategy {
+      dependencySubstitution {
+        substitute module("com.pinterest:ktlint") with variant(module("com.pinterest:ktlint:0.41.0")) {
+          attributes {
+            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
+          }
+        }
+      }
+    }
+  } */
 }
 
 task clean(type: Delete) {
