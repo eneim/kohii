@@ -16,6 +16,7 @@
 
 package kohii.v2.core
 
+import android.view.View
 import androidx.annotation.CallSuper
 import androidx.annotation.MainThread
 import androidx.annotation.VisibleForTesting
@@ -229,26 +230,48 @@ abstract class Playback(
    */
   interface Callback {
 
+    /**
+     * Called when the [playback] is added to the manager. [Playback.state] is [ADDED].
+     */
     @JvmDefault
     @MainThread
     fun onAdded(playback: Playback): Unit = Unit
 
+    /**
+     * Called when the [playback] is remove from the manager. [Playback.state] is [REMOVED].
+     */
     @JvmDefault
     @MainThread
     fun onRemoved(playback: Playback): Unit = Unit
 
+    /**
+     * Called when the [playback] is started. If the [Playback.container] is a [View], this event is
+     * the same as the [View.onAttachedToWindow] event. [Playback.state] is [STARTED].
+     */
     @JvmDefault
     @MainThread
     fun onStarted(playback: Playback): Unit = Unit
 
+    /**
+     * Called when the [playback] is stopped. If the [Playback.container] is a [View], this event is
+     * the same as the [View.onDetachedFromWindow] event. [Playback.state] is [ADDED].
+     */
     @JvmDefault
     @MainThread
     fun onStopped(playback: Playback): Unit = Unit
 
+    /**
+     * Called when the [playback] is resumed. If the [Playback.container] is a [View], this event is
+     * the same as when the container has at least one pixel on the screen.
+     */
     @JvmDefault
     @MainThread
     fun onResumed(playback: Playback): Unit = Unit
 
+    /**
+     * Called when the [playback] is paused. If the [Playback.container] is a [View], this event is
+     * the same as when the container doesn't meed the "resume" condition.
+     */
     @JvmDefault
     @MainThread
     fun onPaused(playback: Playback): Unit = Unit
