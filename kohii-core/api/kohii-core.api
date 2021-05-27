@@ -800,3 +800,65 @@ public class kohii/v1/utils/Capsule {
 	protected final fun getInstance (Ljava/lang/Object;)Ljava/lang/Object;
 }
 
+public abstract class kohii/v2/core/Bucket {
+	public fun <init> (Lkohii/v2/core/Manager;Ljava/lang/Object;)V
+	public fun addContainer (Ljava/lang/Object;)V
+	public final fun getManager ()Lkohii/v2/core/Manager;
+	public final fun getRoot ()Ljava/lang/Object;
+	public fun onAdd ()V
+	public fun onRemove ()V
+	public fun onStart ()V
+	public fun onStop ()V
+	public fun removeContainer (Ljava/lang/Object;)V
+}
+
+public final class kohii/v2/core/Manager {
+	public fun <init> ()V
+}
+
+public abstract class kohii/v2/core/Playback {
+	public static final field Companion Lkohii/v2/core/Playback$Companion;
+	public fun <init> (Lkohii/v2/core/Bucket;Ljava/lang/Object;)V
+	public final fun getBucket ()Lkohii/v2/core/Bucket;
+	public final fun getContainer ()Ljava/lang/Object;
+	public final fun isAdded ()Z
+	public final fun isResumed ()Z
+	public final fun isStarted ()Z
+	protected fun onAdd ()V
+	protected fun onPause ()V
+	protected fun onRemove ()V
+	protected fun onResume ()V
+	protected fun onStart ()V
+	protected fun onStop ()V
+}
+
+public abstract interface class kohii/v2/core/Playback$Callback {
+	public fun onAdded (Lkohii/v2/core/Playback;)V
+	public fun onPaused (Lkohii/v2/core/Playback;)V
+	public fun onRemoved (Lkohii/v2/core/Playback;)V
+	public fun onResumed (Lkohii/v2/core/Playback;)V
+	public fun onStarted (Lkohii/v2/core/Playback;)V
+	public fun onStopped (Lkohii/v2/core/Playback;)V
+}
+
+public final class kohii/v2/core/Playback$Companion {
+}
+
+public final class kohii/v2/core/Playback$State : java/lang/Enum {
+	public static final field ADDED Lkohii/v2/core/Playback$State;
+	public static final field CREATED Lkohii/v2/core/Playback$State;
+	public static final field REMOVED Lkohii/v2/core/Playback$State;
+	public static final field RESUMED Lkohii/v2/core/Playback$State;
+	public static final field STARTED Lkohii/v2/core/Playback$State;
+	public static fun valueOf (Ljava/lang/String;)Lkohii/v2/core/Playback$State;
+	public static fun values ()[Lkohii/v2/core/Playback$State;
+}
+
+public abstract class kohii/v2/core/ViewBucket : kohii/v2/core/Bucket {
+	public fun <init> (Lkohii/v2/core/Manager;Landroid/view/ViewGroup;)V
+	public fun addContainer (Ljava/lang/Object;)V
+	public fun onAdd ()V
+	public fun onRemove ()V
+	public fun removeContainer (Ljava/lang/Object;)V
+}
+

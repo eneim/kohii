@@ -87,7 +87,6 @@ dependencies {
   implementation(Libs.AndroidX.Navigation.runtimeKtx)
   implementation(Libs.AndroidX.Navigation.fragmentKtx)
 
-  implementation Libs.AndroidX.Lifecycle.extensions
   implementation Libs.AndroidX.Lifecycle.runtime
   implementation Libs.AndroidX.Lifecycle.viewModel
   implementation Libs.AndroidX.Lifecycle.liveData
