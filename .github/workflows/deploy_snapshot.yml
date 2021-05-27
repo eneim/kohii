@@ -2,7 +2,7 @@ name: Deploy Snapshot
 on:
   push:
     branches:
-      - dev-**
+      - dev-v1
 jobs:
   deploy-snapshot:
     name: Run unit-test and Deploy snapshot
