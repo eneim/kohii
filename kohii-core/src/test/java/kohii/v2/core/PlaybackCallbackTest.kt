@@ -201,7 +201,7 @@ class PlaybackCallbackTest {
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
           assertEquals(
-              expected = "Expected Playback state: ${CREATED}, Actual state: $state",
+              expected = "Expected Playback state: $CREATED, Actual state: $state",
               actual = error.localizedMessage,
               message = "Checking condition for `Playback.onAdd()` fails when state=$state"
           )
@@ -219,7 +219,7 @@ class PlaybackCallbackTest {
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
           assertEquals(
-              expected = "Expected Playback state: ${ADDED}, Actual state: $state",
+              expected = "Expected Playback state: $ADDED, Actual state: $state",
               actual = error.localizedMessage,
               message = "Checking condition for `Playback.onRemove()` fails when state=$state"
           )
@@ -237,7 +237,7 @@ class PlaybackCallbackTest {
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
           assertEquals(
-              expected = "Expected Playback state: ${ADDED}, Actual state: $state",
+              expected = "Expected Playback state: $ADDED, Actual state: $state",
               actual = error.localizedMessage,
               message = "Checking condition for `Playback.onStart()` fails when state=$state"
           )
@@ -255,7 +255,7 @@ class PlaybackCallbackTest {
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
           assertEquals(
-              expected = "Expected Playback state: ${STARTED}, Actual state: $state",
+              expected = "Expected Playback state: $STARTED, Actual state: $state",
               actual = error.localizedMessage,
               message = "Checking condition for `Playback.onStop()` fails when state=$state"
           )
@@ -273,7 +273,7 @@ class PlaybackCallbackTest {
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
           assertEquals(
-              expected = "Expected Playback state: ${STARTED}, Actual state: $state",
+              expected = "Expected Playback state: $STARTED, Actual state: $state",
               actual = error.localizedMessage,
               message = "Checking condition for `Playback.onResume()` fails when state=$state"
           )
@@ -291,7 +291,7 @@ class PlaybackCallbackTest {
         } catch (error: Throwable) {
           assertTrue { error is IllegalStateException }
           assertEquals(
-              expected = "Expected Playback state: ${RESUMED}, Actual state: $state",
+              expected = "Expected Playback state: $RESUMED, Actual state: $state",
               actual = error.localizedMessage,
               message = "Checking condition for `Playback.onPause()` fails when state=$state"
           )

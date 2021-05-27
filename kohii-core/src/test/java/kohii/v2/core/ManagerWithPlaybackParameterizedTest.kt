@@ -64,7 +64,7 @@ class ManagerWithPlaybackParameterizedTest(
     fun scenarios(): List<Array<*>> = listOf(
         arrayOf(true, true),
         arrayOf(true, false),
-        arrayOf(false, false),
+        arrayOf(false, false)
     )
   }
 }

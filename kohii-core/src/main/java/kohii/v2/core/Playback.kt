@@ -33,7 +33,7 @@ import java.util.ArrayDeque
  */
 abstract class Playback(
   val bucket: Bucket,
-  val container: Any,
+  val container: Any
 ) {
 
   // Note(eneim, 2021/04/30): Using ArrayDeque because it is fast and light-weight. It supports
