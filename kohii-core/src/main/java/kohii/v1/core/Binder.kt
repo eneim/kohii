@@ -17,6 +17,7 @@
 package kohii.v1.core
 
 import android.view.ViewGroup
+import com.google.android.exoplayer2.Player
 import kohii.v1.core.Master.Companion.NO_TAG
 import kohii.v1.core.Playable.Config
 import kohii.v1.core.Playback.ArtworkHintListener
@@ -43,7 +44,7 @@ class Binder(
     var threshold: Float = 0.65F
     var delay: Int = 0
     var preload: Boolean = false
-    var repeatMode: Int = Common.REPEAT_MODE_OFF
+    var repeatMode: Int = Player.REPEAT_MODE_OFF
     var controller: Controller? = null
     var initialPlaybackInfo: PlaybackInfo? = null
     var artworkHintListener: ArtworkHintListener? = null

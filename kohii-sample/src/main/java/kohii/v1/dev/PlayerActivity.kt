@@ -24,11 +24,9 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kohii.v1.core.Playback
 import kohii.v1.core.Rebinder
 import kohii.v1.exoplayer.Kohii
-import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseActivity
 import kohii.v1.sample.common.InitData
-import kotlinx.android.synthetic.main.activity_player.playerContainer
-import kotlinx.android.synthetic.main.activity_player.playerView
+import kohii.v1.sample.databinding.ActivityPlayerBinding
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
@@ -55,12 +53,13 @@ class PlayerActivity : BaseActivity() {
     }
   }
 
-  val kohii by lazy(NONE) { Kohii[this] }
+  val kohii by lazy(NONE) { Kohii[application] }
   private var playback: Playback? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_player)
+    val binding: ActivityPlayerBinding = ActivityPlayerBinding.inflate(layoutInflater)
+    setContentView(binding.root)
 
     val extras = intent?.extras
     val initData = extras?.getParcelable<InitData>(EXTRA_INIT_DATA)
@@ -72,15 +71,15 @@ class PlayerActivity : BaseActivity() {
       }
 
       if (displaySize.y * initData.aspectRatio >= displaySize.x) {
-        playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+        binding.playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
       } else {
-        playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+        binding.playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
       }
 
       kohii.register(this)
-          .addBucket(playerContainer)
+          .addBucket(binding.playerContainer)
 
-      rebinder.bind(kohii, this.playerView) {
+      rebinder.bind(kohii, binding.playerView) {
         this.playback = it
       }
     } else finish()

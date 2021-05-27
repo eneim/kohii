@@ -21,7 +21,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import coil.api.load
-import kohii.v1.core.Common
+import com.google.android.exoplayer2.Player
 import kohii.v1.core.Playback
 import kohii.v1.core.Playback.ArtworkHintListener
 import kohii.v1.core.controller
@@ -50,7 +50,7 @@ class VideosAdapter(
       tag = "video::$pos"
       threshold = 0.5F
       preload = true
-      repeatMode = Common.REPEAT_MODE_ONE
+      repeatMode = Player.REPEAT_MODE_ONE
       artworkHintListener = object : ArtworkHintListener {
         override fun onArtworkHint(
           playback: Playback,

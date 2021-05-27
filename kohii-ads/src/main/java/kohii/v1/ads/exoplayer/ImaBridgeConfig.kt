@@ -17,16 +17,10 @@
 package kohii.v1.ads.exoplayer
 
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.MediaSourceFactory
 
 /**
  * Configurations for a [PlayerViewImaBridge].
  *
  * @param adsLoader The [ImaAdsLoader] to construct a [PlayerViewImaBridge].
- * @param adsMediaSourceFactory The [MediaSourceFactory] to create the [MediaSource] for an Ad.
  */
-class ImaBridgeConfig(
-  val adsLoader: ImaAdsLoader,
-  val adsMediaSourceFactory: MediaSourceFactory
-)
+class ImaBridgeConfig(val adsLoader: ImaAdsLoader)

@@ -29,14 +29,8 @@ import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
+import kohii.v1.sample.databinding.FragmentDebugRvInNestsvVerticalBinding
 import kohii.v1.sample.ui.main.DemoItem
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.dummyPlayer1
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.dummyPlayer2
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.libIntro
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyclerView
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyclerViewContainer
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.recyclerViewTitle
-import kotlinx.android.synthetic.main.fragment_debug_rv_in_nestsv_vertical.scrollView
 
 class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment(),
     DemoContainer {
@@ -61,12 +55,14 @@ class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragme
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    val binding: FragmentDebugRvInNestsvVerticalBinding =
+      FragmentDebugRvInNestsvVerticalBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(scrollView)
-        .addBucket(recyclerView)
+        .addBucket(binding.scrollView)
+        .addBucket(binding.recyclerView)
 
-    libIntro.text = getString(R.string.lib_intro).parseAsHtml()
+    binding.libIntro.text = getString(R.string.lib_intro).parseAsHtml()
 
     val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
       override fun getSpanSize(position: Int): Int {
@@ -75,23 +71,23 @@ class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragme
     }
 
     // Constraint RecyclerView height
-    recyclerView.layoutParams.height = LayoutParams.WRAP_CONTENT
-    recyclerViewContainer.layoutParams.height = LayoutParams.WRAP_CONTENT
+    binding.recyclerView.layoutParams.height = LayoutParams.WRAP_CONTENT
+    binding.recyclerViewContainer.layoutParams.height = LayoutParams.WRAP_CONTENT
 
-    recyclerViewTitle.text = "Below is a fixed height RecyclerView"
+    binding.recyclerViewTitle.text = "Below is a fixed height RecyclerView"
 
     // Setup RecyclerView
-    recyclerView.isNestedScrollingEnabled = false // test
-    (recyclerView.layoutManager as? GridLayoutManager)?.let {
+    binding.recyclerView.isNestedScrollingEnabled = false // test
+    (binding.recyclerView.layoutManager as? GridLayoutManager)?.let {
       it.spanCount = 3
       it.spanSizeLookup = spanSizeLookup
     }
-    recyclerView.adapter = ItemsAdapter(kohii, 13)
+    binding.recyclerView.adapter = ItemsAdapter(kohii, 13)
 
     kohii.setUp(assetVideoUri)
-        .bind(dummyPlayer1)
+        .bind(binding.dummyPlayer1)
 
     kohii.setUp(assetVideoUri)
-        .bind(dummyPlayer2)
+        .bind(binding.dummyPlayer2)
   }
 }

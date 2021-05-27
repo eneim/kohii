@@ -27,8 +27,8 @@ import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.common.getApp
+import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 import kohii.v1.sample.ui.main.DemoItem
-import kotlinx.android.synthetic.main.fragment_recycler_view.recyclerView
 
 // Change VolumeInfo of each Playback individually, and store that info across config change.
 class EchoFragment : BaseFragment(), DemoContainer {
@@ -55,9 +55,10 @@ class EchoFragment : BaseFragment(), DemoContainer {
     savedInstanceState: Bundle?
   ) {
     super.onViewCreated(view, savedInstanceState)
+    val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
     kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(recyclerView)
+        .addBucket(binding.recyclerView)
 
     val adapter = VideoItemsAdapter(getApp().videos, kohii, viewModel) {
       val playback = it.playback
@@ -73,6 +74,6 @@ class EchoFragment : BaseFragment(), DemoContainer {
       }
     }
 
-    recyclerView.adapter = adapter
+    binding.recyclerView.adapter = adapter
   }
 }
