@@ -4,6 +4,7 @@
 
 ### Added
 
+- ExoPlayer: 2.11.7
 - Fix an issue that cause cache doesn't write to file (https://github.com/eneim/kohii/pull/91);
 
 ## 1.1.0.2011003
