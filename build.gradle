@@ -69,6 +69,23 @@ tasks.withType(org.jetbrains.dokka.gradle.DokkaMultiModuleTask).configureEach {
   removeChildTasks(sampleProjects)
 }
 
+def getRepositoryUsername() {
+  return hasProperty('mavenCentralRepositoryUsername') ? mavenCentralRepositoryUsername : ""
+}
+
+def getRepositoryPassword() {
+  return hasProperty('mavenCentralRepositoryPassword') ? mavenCentralRepositoryPassword : ""
+}
+
+nexusPublishing {
+  repositories {
+    sonatype {
+      username = getRepositoryUsername()
+      password = getRepositoryPassword()
+    }
+  }
+}
+
 allprojects {
   repositories {
     google()

@@ -19,14 +19,6 @@ def getSnapshotRepositoryUrl() {
       : "https://oss.sonatype.org/content/repositories/snapshots/"
 }
 
-def getRepositoryUsername() {
-  return hasProperty('mavenCentralRepositoryUsername') ? mavenCentralRepositoryUsername : ""
-}
-
-def getRepositoryPassword() {
-  return hasProperty('mavenCentralRepositoryPassword') ? mavenCentralRepositoryPassword : ""
-}
-
 def configurePom(pom) {
   pom.name = POM_NAME
   pom.packaging = POM_PACKAGING
@@ -137,15 +129,6 @@ afterEvaluate { project ->
   signing {
     publishing.publications.all { publication ->
       sign publication
-    }
-  }
-
-  nexusPublishing {
-    repositories {
-      sonatype {
-        username = getRepositoryUsername()
-        password = getRepositoryPassword()
-      }
     }
   }
 }
