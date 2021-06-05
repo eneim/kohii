@@ -89,6 +89,11 @@ class PlayerEventListeners : CopyOnWriteArraySet<Player.Listener>(), Player.List
   override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int): Unit =
     forEach { it.onPlayWhenReadyChanged(playWhenReady, reason) }
 
+  // Keep this to deliver the events to Playback.
+  override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+    forEach { it.onPlayerStateChanged(playWhenReady, playbackState) }
+  }
+
   override fun onVideoSizeChanged(videoSize: VideoSize): Unit =
     forEach { it.onVideoSizeChanged(videoSize) }
 
