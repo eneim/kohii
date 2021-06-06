@@ -73,7 +73,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.5.0"
+    private const val version = "1.5.10"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"

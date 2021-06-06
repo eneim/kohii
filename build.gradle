@@ -114,7 +114,7 @@ allprojects {
     task.kotlinOptions {
       freeCompilerArgs += [
           '-XXLanguage:+InlineClasses',
-          '-Xjvm-default=enable'
+          '-Xjvm-default=all'
       ]
     }
   }
@@ -174,11 +174,4 @@ task clean(type: Delete) {
 
 tasks.wrapper {
   distributionType = Wrapper.DistributionType.ALL
-}
-
-// copy from https://github.com/chrisbanes/tivi
-// read from gradle.properties for a value, or use default instead.
-String lookUpProf(String propertyName, String defaultValue) {
-  def propertyValue = project.properties[propertyName]
-  return propertyValue != null ? propertyValue : defaultValue
 }
