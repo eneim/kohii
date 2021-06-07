@@ -59,6 +59,8 @@ class Manilo(
     rendererProviderFactory
 ), AdEventListener {
 
+  private val adEventListeners = mutableSetOf<AdEventListener>()
+
   private constructor(context: Context) : this(Master[context])
 
   /**
@@ -164,9 +166,21 @@ class Manilo(
   }
 
   // AdEventListener
+  fun addAdEventListener(listener: AdEventListener) {
+    adEventListeners.add(listener)
+  }
+
+  fun removeAdEventListener(listener: AdEventListener) {
+    adEventListeners.remove(listener)
+  }
+
+  fun removeAllAdEventListener() {
+    adEventListeners.clear()
+  }
 
   // This callback only works when [Manilo] uses a default [ImaAdsLoader.Builder].
   override fun onAdEvent(adEvent: AdEvent) {
     "AdEvent: $adEvent".logInfo()
+    adEventListeners.forEach { it.onAdEvent(adEvent) }
   }
 }
