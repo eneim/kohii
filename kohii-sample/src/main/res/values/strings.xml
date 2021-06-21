@@ -150,6 +150,10 @@
     learnt from \"Continuous Shared Element Transitions: RecyclerView to ViewPager\".
   </string>
 
+  <string name="demo_title_recycler_view_1_2">
+    Kohii + RecyclerView (List 2)
+  </string>
+
   <string name="demo_title_recycler_view_2">
     Kohii + RecyclerView (2)
   </string>
