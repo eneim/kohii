@@ -35,6 +35,7 @@ import kohii.v1.sample.ui.echo.EchoFragment
 import kohii.v1.sample.ui.fbook.FbookFragment
 import kohii.v1.sample.ui.grid.GridRecyclerViewWithUserClickFragment
 import kohii.v1.sample.ui.list.VerticalListRecyclerViewFragment
+import kohii.v1.sample.ui.list2.VerticalListRecyclerViewFragment2
 import kohii.v1.sample.ui.main.DemoItem
 import kohii.v1.sample.ui.manual.ManualRecyclerViewFragment
 import kohii.v1.sample.ui.motion.MotionFragment
@@ -147,6 +148,11 @@ class DemoApp : Application() {
             R.string.demo_title_recycler_view_1,
             R.string.demo_desc_recycler_view_1,
             VerticalListRecyclerViewFragment::class.java
+        ),
+        DemoItem(
+            R.string.demo_title_recycler_view_1_2,
+            R.string.demo_desc_recycler_view_1,
+            VerticalListRecyclerViewFragment2::class.java
         ),
         DemoItem(
             R.string.demo_title_recycler_view_2,
