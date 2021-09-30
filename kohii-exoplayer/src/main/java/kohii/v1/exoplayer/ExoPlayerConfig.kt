@@ -142,5 +142,6 @@ fun ExoPlayerConfig.createDefaultPlayerPool(
         .setEnableDecoderFallback(enableDecoderFallback)
         .setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs)
         .setExtensionRendererMode(extensionRendererMode)
-        .setMediaCodecSelector(mediaCodecSelector)
+        .setMediaCodecSelector(mediaCodecSelector),
+    cache = cache
 )
