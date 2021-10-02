@@ -70,7 +70,7 @@ class YouTubeViewHolder(
     state: Int
   ) {
     thumbnail.isVisible = shouldShow
-    Timber.tag("Kohii::Art").d("${playback.tag} art: $shouldShow, $position, $state")
+    Timber.d("${playback.tag} art: $shouldShow, $position, $state")
   }
 
   override fun onRecycled(success: Boolean) {
