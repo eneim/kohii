@@ -17,8 +17,6 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
-import androidx.annotation.RestrictTo
-import androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlayer.AudioComponent
 import com.google.android.exoplayer2.Player
@@ -53,7 +51,8 @@ class ExoPlayerPool(
   private val renderersFactory: RenderersFactory =
     DefaultRenderersFactory(context.applicationContext),
     // DefaultMediaSourceFactory
-  @RestrictTo(LIBRARY_GROUP_PREFIX)
+    // @RestrictTo(LIBRARY_GROUP)
+    // Note: Only used within the library group. Client must not access this field.
   val defaultMediaSourceFactory: DefaultMediaSourceFactory = with(context) {
     val httpDataSource = DefaultHttpDataSource.Factory().setUserAgent(userAgent)
 

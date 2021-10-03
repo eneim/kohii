@@ -68,13 +68,13 @@ class DemoApp : Application() {
 
   companion object {
 
-    const val assetVideoUri = "file:///android_asset/bbb_45s_hevc.mp4"
+    const val assetVideoUri = "file:///android_asset/bbb_45s_hevc.webm"
   }
 
   internal val moshi: Moshi = Moshi.Builder()
       .add(object : JsonAdapter<Uri>() {
         @FromJson
-        override fun fromJson(reader: JsonReader): Uri? = reader.nextString().toUri()
+        override fun fromJson(reader: JsonReader): Uri = reader.nextString().toUri()
 
         @ToJson
         override fun toJson(writer: JsonWriter, value: Uri?) {

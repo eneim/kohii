@@ -18,9 +18,9 @@ package kohii
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Versions {
-  const val exoPlayerSnapShot = "dev-v2-r2.14.0-SNAPSHOT"
-  const val exoPlayer = "2.14.0"
-  const val exoPlayerCode = 2014000
+  const val exoPlayer = "2.14.2"
+  const val exoPlayerSnapShot = "dev-v2-r${exoPlayer}-SNAPSHOT"
+  const val exoPlayerCode = 2014002
 }
 
 object ReleaseInfo {
@@ -49,15 +49,15 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:4.2.1"
-    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:7.0.2"
+    const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:3.0.1"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
 
-    // 0.10.0 render method signature after the doc, which looks pretty bad.
-    const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
-    const val dokkaAndroidPlugin = "org.jetbrains.dokka:android-documentation-plugin:1.4.32"
-    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.5.0"
+    private const val dokkaVersion = "1.5.30"
+    const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"
+    const val dokkaAndroidPlugin = "org.jetbrains.dokka:android-documentation-plugin:$dokkaVersion"
+    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.7.1"
     const val nexusPublish = "io.github.gradle-nexus:publish-plugin:1.1.0"
 
     const val junit = "junit:junit:4.13"
@@ -67,7 +67,7 @@ object Libs {
   }
 
   object Kotlin {
-    private const val version = "1.5.0"
+    private const val version = "1.5.30"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
@@ -90,7 +90,7 @@ object Libs {
     const val vector = "androidx.vectordrawable:vectordrawable:1.1.0"
 
     const val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
-    const val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0-rc02"
+    const val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0"
 
     const val viewPager = "androidx.viewpager:viewpager:1.0.0"
     const val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
