@@ -22,6 +22,7 @@ import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
@@ -325,38 +326,42 @@ open class PlayerViewBridge(
   }
 
   //region Player.Listener implementation
-  override fun onPlayerError(error: ExoPlaybackException) {
+  override fun onPlayerError(error: PlaybackException) {
     "Bridge#onPlayerError error=${error.cause}, message=${error.cause?.message}, $this".logError()
-    if (renderer == null) {
-      var errorString: String? = null
-      if (error.type == ExoPlaybackException.TYPE_RENDERER) {
-        val exception = error.rendererException
-        if (exception is DecoderInitializationException) {
-          // Special case for decoder initialization failures.
-          errorString = if (exception.codecInfo == null) {
-            when {
-              exception.cause is MediaCodecUtil.DecoderQueryException ->
-                context.getString(R.string.error_querying_decoders)
-              exception.secureDecoderRequired ->
-                context.getString(R.string.error_no_secure_decoder, exception.mimeType)
-              else -> context.getString(R.string.error_no_decoder, exception.mimeType)
+    if (error is ExoPlaybackException) {
+      if (renderer == null) {
+        var errorString: String? = null
+        if (error.type == ExoPlaybackException.TYPE_RENDERER) {
+          val exception = error.rendererException
+          if (exception is DecoderInitializationException) {
+            // Special case for decoder initialization failures.
+            errorString = if (exception.codecInfo == null) {
+              when {
+                exception.cause is MediaCodecUtil.DecoderQueryException ->
+                  context.getString(R.string.error_querying_decoders)
+                exception.secureDecoderRequired ->
+                  context.getString(R.string.error_no_secure_decoder, exception.mimeType)
+                else -> context.getString(R.string.error_no_decoder, exception.mimeType)
+              }
+            } else {
+              context.getString(
+                  R.string.error_instantiating_decoder, exception.codecInfo?.name ?: ""
+              )
             }
-          } else {
-            context.getString(R.string.error_instantiating_decoder, exception.codecInfo?.name ?: "")
           }
         }
+
+        if (errorString != null) onErrorMessage(errorString, error)
       }
 
-      if (errorString != null) onErrorMessage(errorString, error)
+      inErrorState = true
+      if (isBehindLiveWindow(error)) {
+        reset()
+      } else {
+        updatePlaybackInfo()
+      }
+      this.errorListeners.onError(error)
     }
-
-    inErrorState = true
-    if (isBehindLiveWindow(error)) {
-      reset()
-    } else {
-      updatePlaybackInfo()
-    }
-    this.errorListeners.onError(error)
   }
 
   override fun onPositionDiscontinuity(reason: Int) {
