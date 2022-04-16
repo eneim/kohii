@@ -18,9 +18,9 @@ package kohii
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Versions {
-  const val exoPlayer = "2.14.2"
+  const val exoPlayer = "2.17.1"
   const val exoPlayerSnapShot = "dev-v2-r${exoPlayer}-SNAPSHOT"
-  const val exoPlayerCode = 2014002
+  const val exoPlayerCode = 2017001
 }
 
 object ReleaseInfo {
@@ -36,13 +36,13 @@ object ReleaseInfo {
 @Suppress("MayBeConstant", "unused")
 object BuildConfig {
 
-  const val compileSdkVersion = 30
-  const val targetSdkVersion = 30
+  const val compileSdkVersion = 31
+  const val targetSdkVersion = 31
   const val minSdkVersion = 19
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
-  const val releaseVersionCode = 10300 // [major].[2 digits for minor].[2 digits for patch]
-  const val releaseVersionName = "1.3.0.${Versions.exoPlayerCode}-SNAPSHOT"
+  const val releaseVersionCode = 10400 // [major].[2 digits for minor].[2 digits for patch]
+  const val releaseVersionName = "1.4.0.${Versions.exoPlayerCode}-SNAPSHOT"
 }
 
 @Suppress("MayBeConstant", "unused")
@@ -231,8 +231,8 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:$moshiVersion"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:$moshiVersion"
-    const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.6"
-    const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.6"
+    const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.8.1"
+    const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.8.1"
     const val okio = "com.squareup.okio:okio:2.10.0"
   }
 

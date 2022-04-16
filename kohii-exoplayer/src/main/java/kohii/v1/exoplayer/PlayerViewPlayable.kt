@@ -16,8 +16,6 @@
 
 package kohii.v1.exoplayer
 
-import com.google.android.exoplayer2.ControlDispatcher
-import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
@@ -32,8 +30,6 @@ class PlayerViewPlayable(
   bridge: Bridge<PlayerView>
 ) : AbstractPlayable<PlayerView>(master, media, config, bridge) {
 
-  private val defaultControlDispatcher = DefaultControlDispatcher()
-
   override var renderer: Any?
     get() = bridge.renderer
     set(value) {
@@ -43,7 +39,8 @@ class PlayerViewPlayable(
 
   override fun onRendererAttached(playback: Playback, renderer: Any?) {
     val controller = playback.config.controller
-    if (renderer is PlayerView) {
+    // TODO: replace with custom ForwardingPlayer.
+    /* if (renderer is PlayerView) {
       if (controller is ControlDispatcher) {
         renderer.setControlDispatcher(controller)
         renderer.useController = true
@@ -51,7 +48,7 @@ class PlayerViewPlayable(
         renderer.setControlDispatcher(defaultControlDispatcher)
         renderer.useController = false
       }
-    }
+    } */
     super.onRendererAttached(playback, renderer)
     if (renderer is PlayerView && renderer.useController && controller == null) {
       throw IllegalStateException(
@@ -61,10 +58,11 @@ class PlayerViewPlayable(
   }
 
   override fun onRendererDetached(playback: Playback, renderer: Any?) {
-    if (renderer is PlayerView) {
+    // TODO: replace with custom ForwardingPlayer.
+    /* if (renderer is PlayerView) {
       renderer.setControlDispatcher(defaultControlDispatcher)
       renderer.useController = false
-    }
+    } */
     super.onRendererDetached(playback, renderer)
   }
 }

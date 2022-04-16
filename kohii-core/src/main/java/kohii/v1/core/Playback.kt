@@ -22,6 +22,7 @@ import androidx.annotation.CallSuper
 import androidx.annotation.FloatRange
 import androidx.lifecycle.Lifecycle.State
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.video.VideoSize
 import kohii.v1.BuildConfig
 import kohii.v1.core.Bucket.Companion.BOTH_AXIS
 import kohii.v1.core.Bucket.Companion.HORIZONTAL
@@ -494,15 +495,16 @@ abstract class Playback(
     )
   }
 
-  override fun onVideoSizeChanged(
-    width: Int,
-    height: Int,
-    unappliedRotationDegrees: Int,
-    pixelWidthHeightRatio: Float
-  ) {
-    "Playback#onVideoSizeChanged $width × $height, $this".logDebug()
+  override fun onVideoSizeChanged(videoSize: VideoSize) {
+    "Playback#onVideoSizeChanged ${videoSize.width} × ${videoSize.height}, $this".logDebug()
     listeners.forEach {
-      it.onVideoSizeChanged(this, width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
+      it.onVideoSizeChanged(
+          playback = this,
+          width = videoSize.width,
+          height = videoSize.height,
+          unAppliedRotationDegrees = videoSize.unappliedRotationDegrees,
+          pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
+      )
     }
   }
 

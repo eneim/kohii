@@ -17,6 +17,7 @@
 package kohii.v1.core
 
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.PositionInfo
@@ -62,7 +63,7 @@ class PlayerEventListeners : CopyOnWriteArraySet<Player.Listener>(), Player.List
     trackSelections: TrackSelectionArray
   ): Unit = forEach { it.onTracksChanged(trackGroups, trackSelections) }
 
-  override fun onPlayerError(error: ExoPlaybackException): Unit =
+  override fun onPlayerError(error: PlaybackException): Unit =
     forEach { it.onPlayerError(error) }
 
   override fun onIsLoadingChanged(isLoading: Boolean): Unit =

@@ -124,8 +124,9 @@ class LandscapeFullscreenFragment : BaseFragment() {
 
         override fun setupRenderer(playback: Playback, renderer: Any?) {
           if (renderer is PlayerView) {
-            renderer.useController = true
-            renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+            // TODO: replace with custom ForwardingPlayer.
+            // renderer.useController = true
+            // renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
           }
         }
       }

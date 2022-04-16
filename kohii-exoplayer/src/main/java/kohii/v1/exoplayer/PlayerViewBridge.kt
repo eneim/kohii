@@ -19,14 +19,13 @@ package kohii.v1.exoplayer
 import android.content.Context
 import android.widget.Toast
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
-import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.source.TrackGroupArray
@@ -75,11 +74,9 @@ open class PlayerViewBridge(
 
   protected var player: Player? = null
 
-  @Player.State
   override val playerState: Int
     get() = player?.playbackState ?: Player.STATE_IDLE
 
-  @Player.RepeatMode
   override var repeatMode: Int
     get() = _repeatMode
     set(value) {
@@ -325,25 +322,23 @@ open class PlayerViewBridge(
   }
 
   //region Player.Listener implementation
-  override fun onPlayerError(error: ExoPlaybackException) {
+  override fun onPlayerError(error: PlaybackException) {
     "Bridge#onPlayerError error=${error.cause}, message=${error.cause?.message}, $this".logError()
     if (renderer == null) {
       var errorString: String? = null
-      if (error.type == ExoPlaybackException.TYPE_RENDERER) {
-        val exception = error.rendererException
-        if (exception is DecoderInitializationException) {
-          // Special case for decoder initialization failures.
-          errorString = if (exception.codecInfo == null) {
-            when {
-              exception.cause is MediaCodecUtil.DecoderQueryException ->
-                context.getString(R.string.error_querying_decoders)
-              exception.secureDecoderRequired ->
-                context.getString(R.string.error_no_secure_decoder, exception.mimeType)
-              else -> context.getString(R.string.error_no_decoder, exception.mimeType)
-            }
-          } else {
-            context.getString(R.string.error_instantiating_decoder, exception.codecInfo?.name ?: "")
+      val exception = error.cause
+      if (exception is DecoderInitializationException) {
+        // Special case for decoder initialization failures.
+        errorString = if (exception.codecInfo == null) {
+          when {
+            exception.cause is MediaCodecUtil.DecoderQueryException ->
+              context.getString(R.string.error_querying_decoders)
+            exception.secureDecoderRequired ->
+              context.getString(R.string.error_no_secure_decoder, exception.mimeType)
+            else -> context.getString(R.string.error_no_decoder, exception.mimeType)
           }
+        } else {
+          context.getString(R.string.error_instantiating_decoder, exception.codecInfo?.name ?: "")
         }
       }
 
@@ -351,7 +346,7 @@ open class PlayerViewBridge(
     }
 
     inErrorState = true
-    if (isBehindLiveWindow(error)) {
+    if (error.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) {
       reset()
     } else {
       updatePlaybackInfo()
@@ -388,16 +383,4 @@ open class PlayerViewBridge(
     }
   }
   //endregion
-
-  companion object {
-    internal fun isBehindLiveWindow(error: ExoPlaybackException): Boolean {
-      if (error.type != ExoPlaybackException.TYPE_SOURCE) return false
-      var cause: Throwable? = error.sourceException
-      while (cause != null) {
-        if (cause is BehindLiveWindowException) return true
-        cause = cause.cause
-      }
-      return false
-    }
-  }
 }
