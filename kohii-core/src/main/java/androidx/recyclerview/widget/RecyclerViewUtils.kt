@@ -24,7 +24,7 @@ import kohii.v1.core.Bucket
 internal object RecyclerViewUtils {
 
   /**
-   * Return `true` if the [Bucket] (whose [Bucket.root] is the [recyclerView]) accepts the [params].
+   * Return `true` if the [Bucket] of the [recyclerView] accepts [params].
    *
    * Note that client needs to be careful when creating View for ViewHolder. It is suggested to use
    * `LayoutInflater.inflate(int, ViewGroup, boolean)` with notnull ViewGroup.

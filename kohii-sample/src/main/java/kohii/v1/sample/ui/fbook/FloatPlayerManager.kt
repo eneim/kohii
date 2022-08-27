@@ -61,7 +61,7 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
         or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
         or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
 
-    params.gravity = GravityCompat.END or Gravity.BOTTOM
+    params.gravity = Gravity.END or Gravity.BOTTOM
     params.width = WindowManager.LayoutParams.WRAP_CONTENT
     params.height = WindowManager.LayoutParams.WRAP_CONTENT
     return@lazy params

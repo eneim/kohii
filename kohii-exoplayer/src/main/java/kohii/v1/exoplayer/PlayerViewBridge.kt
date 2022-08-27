@@ -354,6 +354,7 @@ open class PlayerViewBridge(
     this.errorListeners.onError(error)
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onPositionDiscontinuity(reason: Int) {
     if (inErrorState) {
       // Adapt from ExoPlayer demo.
@@ -364,6 +365,7 @@ open class PlayerViewBridge(
     }
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onTracksChanged(
     trackGroups: TrackGroupArray,
     trackSelections: TrackSelectionArray

@@ -61,46 +61,45 @@ object Libs {
     const val nexusPublish = "io.github.gradle-nexus:publish-plugin:1.1.0"
 
     const val junit = "junit:junit:4.13"
-    const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"
+    const val junitExt = "androidx.test.ext:junit-ktx:1.1.3"
     const val robolectric = "org.robolectric:robolectric:4.3.1"
     const val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
 
   object Kotlin {
-    private const val version = "1.5.30"
+    private const val version = "1.6.21"
 
     const val stdlibJdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$version"
     const val stdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$version"
     const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$version"
     const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$version"
     const val extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$version"
-    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
+    const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
   }
 
   object AndroidX {
-    const val activityKtx = "androidx.activity:activity-ktx:1.1.0"
-    const val appcompat = "androidx.appcompat:appcompat:1.1.0"
-    const val appcompatResources = "androidx.appcompat:appcompat-resources:1.1.0"
-    const val collectionKtx = "androidx.collection:collection-ktx:1.1.0"
-    const val benchmark = "androidx.benchmark:benchmark-junit4:1.0.0"
-    const val browser = "androidx.browser:browser:1.2.0"
+    const val activityKtx = "androidx.activity:activity-ktx:1.5.1"
+    const val appcompat = "androidx.appcompat:appcompat:1.5.0"
+    const val appcompatResources = "androidx.appcompat:appcompat-resources:1.5.0"
+    const val collectionKtx = "androidx.collection:collection-ktx:1.2.0"
+    const val benchmark = "androidx.benchmark:benchmark-junit4:1.1.0"
+    const val browser = "androidx.browser:browser:1.4.0"
     const val palette = "androidx.palette:palette-ktx:1.0.0"
-    const val emoji = "androidx.emoji:emoji:1.0.0"
+    const val emoji = "androidx.emoji:emoji:1.1.0"
 
     const val vector = "androidx.vectordrawable:vectordrawable:1.1.0"
 
-    const val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
+    const val recyclerView = "androidx.recyclerview:recyclerview:1.2.1"
     const val recyclerViewSelection = "androidx.recyclerview:recyclerview-selection:1.1.0"
 
     const val viewPager = "androidx.viewpager:viewpager:1.0.0"
     const val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
 
-    const val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
+    const val coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
 
     object Media {
-      private const val version = "1.0.3"
+      private const val version = "1.2.1"
 
-      // private const val version = "1.1.0-SNAPSHOT"
       val widget = "androidx.media2:media2-widget:$version"
       val common = "androidx.media2:media2-common:$version"
       val player = "androidx.media2:media2-player:$version"
@@ -108,7 +107,7 @@ object Libs {
     }
 
     object Navigation {
-      private const val version = "2.3.0"
+      private const val version = "2.5.1"
 
       val runtimeKtx = "androidx.navigation:navigation-runtime-ktx:$version"
       val commonKtx = "androidx.navigation:navigation-common-ktx:$version"
@@ -118,34 +117,34 @@ object Libs {
     }
 
     object Fragment {
-      private const val version = "1.2.4"
+      private const val version = "1.5.2"
       const val fragmentKtx = "androidx.fragment:fragment-ktx:$version"
     }
 
     object Test {
-      private const val version = "1.3.0"
+      private const val version = "1.4.0"
       val core = "androidx.test:core:$version"
       val runner = "androidx.test:runner:$version"
       val rules = "androidx.test:rules:$version"
 
-      const val espressoCore = "androidx.test.espresso:espresso-core:3.3.0"
+      const val espressoCore = "androidx.test.espresso:espresso-core:3.4.0"
     }
 
     const val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
 
     object Paging {
-      private const val version = "2.1.2"
+      private const val version = "3.1.1"
       val common = "androidx.paging:paging-common-ktx:$version"
       val runtime = "androidx.paging:paging-runtime-ktx:$version"
     }
 
-    const val preference = "androidx.preference:preference-ktx:1.1.0"
+    const val preference = "androidx.preference:preference-ktx:1.2.0"
 
     // beta4 breaks the overlay demo ...
-    const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.0.0"
+    const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.1.4"
 
-    const val core = "androidx.core:core:1.3.0"
-    const val coreKtx = "androidx.core:core-ktx:1.3.0"
+    const val core = "androidx.core:core:1.8.0"
+    const val coreKtx = "androidx.core:core-ktx:1.8.0"
 
     object Lifecycle {
       private const val version = "2.2.0"
@@ -160,7 +159,7 @@ object Libs {
     }
 
     object Room {
-      private const val version = "2.2.5"
+      private const val version = "2.4.3"
       val common = "androidx.room:room-common:$version"
       val runtime = "androidx.room:room-runtime:$version"
       val compiler = "androidx.room:room-compiler:$version"
@@ -169,7 +168,7 @@ object Libs {
     }
 
     object Work {
-      private const val version = "2.3.1"
+      private const val version = "2.7.1"
       val runtimeKtx = "androidx.work:work-runtime-ktx:$version"
     }
   }
@@ -206,11 +205,11 @@ object Libs {
   }
 
   object Google {
-    const val material = "com.google.android.material:material:1.1.0"
-    const val gmsGoogleServices = "com.google.gms:google-services:4.3.3"
-    const val firebaseAnalytics = "com.google.firebase:firebase-analytics:17.4.3"
-    const val firebaseCrashlyticsPlugin = "com.google.firebase:firebase-crashlytics-gradle:2.2.0"
-    const val crashlytics = "com.google.firebase:firebase-crashlytics-ktx:17.2.1"
+    const val material = "com.google.android.material:material:1.6.1"
+    const val gmsGoogleServices = "com.google.gms:google-services:4.3.13"
+    const val firebaseAnalytics = "com.google.firebase:firebase-analytics:21.1.0"
+    const val firebaseCrashlyticsPlugin = "com.google.firebase:firebase-crashlytics-gradle:2.9.1"
+    const val crashlytics = "com.google.firebase:firebase-crashlytics-ktx:18.2.12"
 
     const val youtubeApi = "com.google.apis:google-api-services-youtube:v3-rev20200618-1.30.9"
     const val httpClientAndroid = "com.google.http-client:google-http-client-android:1.35.0"
@@ -227,12 +226,12 @@ object Libs {
   }
 
   object Square {
-    private const val moshiVersion = "1.12.0"
+    private const val moshiVersion = "1.13.0"
     val moshi = "com.squareup.moshi:moshi:$moshiVersion"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:$moshiVersion"
-    const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.8.1"
-    const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.8.1"
+    const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.9.1"
+    const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.9.1"
     const val okio = "com.squareup.okio:okio:2.10.0"
   }
 

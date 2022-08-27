@@ -18,6 +18,7 @@ package kohii.v1.core
 
 import android.graphics.Rect
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
@@ -83,7 +84,7 @@ class Group(
       managers.forEach { it.lock = value }
     }
 
-  private val handler = Handler(this)
+  private val handler = Handler(Looper.getMainLooper(), this)
   private val dispatcher = PlayableDispatcher(master)
 
   private val playbacks: Collection<Playback>
@@ -186,11 +187,11 @@ class Group(
 
       val grouped = newSelection.groupBy(Playback::manager)
       this.managers.asSequence()
-          .mapNotNull { /* Manager -> Pair<OnSelectionListener, List<Playback>> */
+          .mapNotNull<Manager, Pair<OnSelectionListener, List<Playback>>> {
             if (it.host is OnSelectionListener) {
               it.host to (grouped[it] ?: emptyList())
             } else {
-              null as Pair<OnSelectionListener, List<Playback>>?
+              null
             }
           }
           .forEach { (onSelectionListener, playbacks) ->

@@ -93,7 +93,7 @@ class Master private constructor(context: Context) : PlayableManager {
   internal val manuallyStartedPlayable = AtomicReference<Playable>()
 
   // TODO when to remove entries of this map?
-  internal val playablesPendingActions = arrayMapOf<Any /* Playable tag */, PlaybackAction>()
+  internal val playablesPendingActions = arrayMapOf<Any /* Playable tag */, Boolean>()
 
   // TODO design a dedicated mechanism for this store, considering paging to save in-memory space.
   // TODO when to remove entries of this map?
@@ -679,7 +679,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
       requireNotNull(bucket) { "No Manager and Bucket available for $container" }
 
-      master.onBind(playable, tag, bucket.manager, container, callback, createNewPlayback@{
+      master.onBind(playable, tag, bucket.manager, container, callback) createNewPlayback@{
         val config = Config(
             tag = options.tag,
             delay = options.delay,
@@ -712,7 +712,7 @@ class Master private constructor(context: Context) : PlayableManager {
             )
           }
         }
-      })
+      }
       "Request bound: $tag, $container, $playable".logInfo()
     }
 

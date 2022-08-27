@@ -117,8 +117,7 @@ allprojects {
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile).configureEach { task ->
     task.kotlinOptions {
       freeCompilerArgs += [
-          '-XXLanguage:+InlineClasses',
-          '-Xjvm-default=enable'
+          '-Xjvm-default=all'
       ]
     }
   }

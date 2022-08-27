@@ -17,8 +17,10 @@
 package kohii.v1.sample
 
 import android.content.res.Configuration
+import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -90,9 +92,10 @@ class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragme
     }
   }
 
+  @RequiresApi(VERSION_CODES.O)
   override fun onPictureInPictureModeChanged(
     isInPictureInPictureMode: Boolean,
-    newConfig: Configuration?
+    newConfig: Configuration
   ) {
     super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
     val decorView = window.decorView
