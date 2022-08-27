@@ -36,9 +36,9 @@ object ReleaseInfo {
 @Suppress("MayBeConstant", "unused")
 object BuildConfig {
 
-  const val compileSdkVersion = 31
-  const val targetSdkVersion = 31
-  const val minSdkVersion = 19
+  const val compileSdkVersion = 32
+  const val targetSdkVersion = 32
+  const val minSdkVersion = 21
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
   const val releaseVersionCode = 10400 // [major].[2 digits for minor].[2 digits for patch]
@@ -49,7 +49,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:7.0.2"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:7.2.2"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:3.0.1"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"

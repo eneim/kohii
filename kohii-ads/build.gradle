@@ -27,8 +27,6 @@ android {
   defaultConfig {
     minSdkVersion BuildConfig.minSdkVersion
     targetSdkVersion BuildConfig.targetSdkVersion
-    versionCode BuildConfig.releaseVersionCode
-    versionName BuildConfig.releaseVersionName
 
     buildConfigField("String", "LIB_NAME", "\"" + "Kohii with Ads, v" + versionName + "\"")
 
