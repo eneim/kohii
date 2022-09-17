@@ -36,8 +36,8 @@ object ReleaseInfo {
 @Suppress("MayBeConstant", "unused")
 object BuildConfig {
 
-  const val compileSdkVersion = 30
-  const val targetSdkVersion = 30
+  const val compileSdkVersion = 31
+  const val targetSdkVersion = 31
   const val minSdkVersion = 19
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
@@ -231,8 +231,8 @@ object Libs {
     val moshi = "com.squareup.moshi:moshi:$moshiVersion"
     val moshiCodegen = "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
     val moshiKotlin = "com.squareup.moshi:moshi-kotlin:$moshiVersion"
-    const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.6"
-    const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.6"
+    const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.9.1"
+    const val leakCanaryPlumber = "com.squareup.leakcanary:plumber-android:2.9.1"
     const val okio = "com.squareup.okio:okio:2.10.0"
   }
 
@@ -252,7 +252,7 @@ object Libs {
 
   object Other {
     const val androidSvg = "com.caverock:androidsvg-aar:1.4"
-    const val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"
+    const val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0"
     const val timber = "com.jakewharton.timber:timber:4.7.1"
   }
 }

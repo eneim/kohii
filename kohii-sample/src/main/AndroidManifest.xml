@@ -53,6 +53,7 @@
 
     <activity-alias
         android:name="Home"
+        android:exported="true"
         android:targetActivity=".MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

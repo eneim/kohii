@@ -87,3 +87,4 @@
 /.idea/compiler.xml
 /kohii-samples/build/
 /.idea/kotlinScripting.xml
+/.idea/checkstyle-idea.xml
