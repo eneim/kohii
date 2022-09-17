@@ -38,15 +38,15 @@ buildscript {
     classpath Libs.Common.dokkaPlugin
     classpath Libs.Common.binaryValidator
     // classpath Libs.Common.mavenPublish
-    classpath Libs.Common.nexusPublish
+    // classpath Libs.Common.nexusPublish
   }
 }
 
-apply plugin: 'io.github.gradle-nexus.publish-plugin'
+// apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
 // Setup for the Nexus Publish Plugin.
-group = GROUP
-version = VERSION_NAME
+// group = GROUP
+// version = VERSION_NAME
 
 def sampleProjects = [project("kohii-sample"), project("kohii-sample-tiktok")]
 file("$rootDir/kohii-samples").eachDir { dir ->
@@ -76,14 +76,14 @@ def getRepositoryPassword() {
   return hasProperty('mavenCentralRepositoryPassword') ? mavenCentralRepositoryPassword : ""
 }
 
-nexusPublishing {
+/* nexusPublishing {
   repositories {
     sonatype {
       username = getRepositoryUsername()
       password = getRepositoryPassword()
     }
   }
-}
+} */
 
 allprojects {
   repositories {
