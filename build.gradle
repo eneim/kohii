@@ -22,7 +22,6 @@ buildscript {
     google()
     mavenCentral()
     gradlePluginPortal()
-    maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
     maven { url 'https://maven.fabric.io/public' }
     maven { url "https://plugins.gradle.org/m2/" }
   }
@@ -91,8 +90,6 @@ allprojects {
     google()
     mavenCentral()
     maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
-    //noinspection JcenterRepositoryObsolete,GrDeprecatedAPIUsage
-    jcenter() // For ExoPlayer 2.11.x
     maven { url "https://jitpack.io" }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     /* flatDir {

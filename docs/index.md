@@ -32,15 +32,15 @@ Add to your module's build.gradle dependencies
 // Update top level build.gradle
 allprojects {
   repositories {
-    jcenter() // mavenCentral() should also work.
+    mavenCentral()
   }
 }
 ```
 
 ```groovy
 // Add these to app level build.gradle (or to module that will use Kohii)
-def kohiiVersion = '1.1.0.2011003'
-def exoPlayerVersion = '2.11.3'
+def kohiiVersion = '1.3.0.2014002'
+def exoPlayerVersion = '2.14.2'
 
 implementation "im.ene.kohii:kohii-core:${kohiiVersion}"
 implementation "im.ene.kohii:kohii-exoplayer:${kohiiVersion}"
