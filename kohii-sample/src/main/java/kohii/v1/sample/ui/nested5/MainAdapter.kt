@@ -38,10 +38,11 @@ class MainAdapter(
 ) : Adapter<BaseViewHolder>() {
 
   companion object {
-    const val TYPE_NORMAL = R.layout.holder_nested_normal
-    const val TYPE_LIST = R.layout.holder_nested_recyclerview
     const val STATE_KEY = "${BuildConfig.APPLICATION_ID}::nested::state"
   }
+
+  private val TYPE_NORMAL = R.layout.holder_nested_normal
+  private val TYPE_LIST = R.layout.holder_nested_recyclerview
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
