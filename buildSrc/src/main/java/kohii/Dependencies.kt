@@ -62,7 +62,7 @@ object Libs {
 
     const val junit = "junit:junit:4.13"
     const val junitExt = "androidx.test.ext:junit-ktx:1.1.2"
-    const val robolectric = "org.robolectric:robolectric:4.3.1"
+    const val robolectric = "org.robolectric:robolectric:4.8.2"
     const val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
   }
 
@@ -123,12 +123,12 @@ object Libs {
     }
 
     object Test {
-      private const val version = "1.3.0"
+      private const val version = "1.4.0"
       val core = "androidx.test:core:$version"
       val runner = "androidx.test:runner:$version"
       val rules = "androidx.test:rules:$version"
 
-      const val espressoCore = "androidx.test.espresso:espresso-core:3.3.0"
+      const val espressoCore = "androidx.test.espresso:espresso-core:3.4.0"
     }
 
     const val archCoreTesting = "androidx.arch.core:core-testing:2.1.0"
