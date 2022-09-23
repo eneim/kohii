@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.3.0.2014002]
+
+### Changed
+
+- (kohii-core): Target SDK and Compile SDK are updated to 31.
+- (kohii-core): The libraries are now released to maven repository only.
+- (kohii-exoplayer): ExoPlayer is updated to 2.14.2.
+
 ## [1.2.0.2011008]
 
 ### Added
