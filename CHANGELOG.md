@@ -6,6 +6,7 @@
 
 - (kohii-core): Compatible with ExoPlayer 2.17.1.
 - (kohii-core): Target SDK and Compile SDK are updated to 32.
+- (kohii-core): Kotlin 1.6.21.
 - (kohii-exoplayer): ExoPlayer is updated to 2.17.1.
 
 ### Removed
