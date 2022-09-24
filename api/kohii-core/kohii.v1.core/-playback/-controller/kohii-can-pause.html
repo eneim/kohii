@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>kohiiCanPause</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+const savedDarkMode = storage ? JSON.parse(storage) : false
+if(savedDarkMode === true){
+    document.getElementsByTagName("html")[0].classList.add("theme-dark")
+}</script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script></head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+<a href="../../../../index.html">
+<span>kohii</span>            </a>    </div>
+    <div>1.4.0.2017001
+    </div>
+    <div class="pull-right d-flex">
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" id="content" pageids="kohii-core::kohii.v1.core/Playback.Controller/kohiiCanPause/#/PointingToDeclaration//1012812011">
+  <div class="breadcrumbs"><a href="../../../index.html">kohii-core</a><span class="delimiter">/</span><a href="../../index.html">kohii.v1.core</a><span class="delimiter">/</span><a href="../index.html">Playback</a><span class="delimiter">/</span><a href="index.html">Controller</a><span class="delimiter">/</span><a href="kohii-can-pause.html">kohiiCanPause</a></div>
+  <div class="cover ">
+    <h1 class="cover"><span>kohii</span><wbr><span>Can</span><wbr><span><span>Pause</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":kohii-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="kohii-can-pause.html"><span class="token function">kohiiCanPause</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Returns <code class="lang-kotlin">true</code> if the library can automatically pause the <a href="../index.html">Playback</a>, <code class="lang-kotlin">false</code> otherwise.</p><p class="paragraph">If this method returns <code class="lang-kotlin">true</code>:</p><ul><li><p class="paragraph">Once the user starts a <a href="../index.html">Playback</a>, it will not be paused <strong>until</strong> its container is not visible enough (controlled by <a href="../-config/threshold.html">Playback.Config.threshold</a>), or user starts other Playback (priority overridden).</p></li><li><p class="paragraph">Once the user pauses a <a href="../index.html">Playback</a>, it will not be played until the user manually resumes it.</p></li><li><p class="paragraph">Once the user interacts so that the <a href="../index.html">Playback</a>'s container is not visible enough, the library will pause the it.</p></li><li><p class="paragraph">Once the user interacts so that a paused <a href="../index.html">Playback</a>'s container is visible enough, the library will: play it if it was not paused by the user, or pause it if it was paused by the user before (this is equal to doing nothing).</p></li></ul><p class="paragraph">Default result is <code class="lang-kotlin">true</code>.</p><p class="paragraph">Note: this value is ignored in 1.2.0 due to an in-completed behavior.</p></div></div>
+</div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2022 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+        </div>
+    </div>
+</div>
+
+</body></html>
+

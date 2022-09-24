@@ -1,8 +1,0 @@
-$dokka.format:gfm
-$dokka.linkExtension:md
-$dokka.location:kohii.v1.exoplayer.internal$addEventListener(com.google.android.exoplayer2.Player, kohii.v1.core.PlayerEventListener)kohii.v1.exoplayer.internal/com.google.android.exoplayer2.-player/add-event-listener.md
-$dokka.location:kohii.v1.exoplayer.internal$getVolumeInfo(com.google.android.exoplayer2.Player)kohii.v1.exoplayer.internal/com.google.android.exoplayer2.-player/get-volume-info.md
-$dokka.location:kohii.v1.exoplayer.internal$removeEventListener(com.google.android.exoplayer2.Player, kohii.v1.core.PlayerEventListener)kohii.v1.exoplayer.internal/com.google.android.exoplayer2.-player/remove-event-listener.md
-$dokka.location:kohii.v1.exoplayer.internal$setVolumeInfo(com.google.android.exoplayer2.Player, kohii.v1.media.VolumeInfo)kohii.v1.exoplayer.internal/com.google.android.exoplayer2.-player/set-volume-info.md
-kohii.v1.exoplayer
-kohii.v1.exoplayer.internal
