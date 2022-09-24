@@ -18,9 +18,9 @@ package kohii
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Versions {
-  const val exoPlayer = "2.17.1"
+  const val exoPlayer = "2.18.1"
   const val exoPlayerSnapShot = "dev-v2-r${exoPlayer}-SNAPSHOT"
-  const val exoPlayerCode = 2017001
+  const val exoPlayerCode = 2018001
 }
 
 object ReleaseInfo {
@@ -41,8 +41,8 @@ object BuildConfig {
   const val minSdkVersion = 21
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
-  const val releaseVersionCode = 10400 // [major].[2 digits for minor].[2 digits for patch]
-  const val releaseVersionName = "1.4.0.${Versions.exoPlayerCode}-SNAPSHOT"
+  const val releaseVersionCode = 10500 // [major].[2 digits for minor].[2 digits for patch]
+  const val releaseVersionName = "1.5.0.${Versions.exoPlayerCode}-SNAPSHOT"
 }
 
 @Suppress("MayBeConstant", "unused")

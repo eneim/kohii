@@ -39,9 +39,9 @@ allprojects {
 
 ```groovy
 // Add these to app level build.gradle (or to module that will use Kohii)
-implementation "im.ene.kohii:kohii-core:1.0.0.2010004" // core library
-implementation "im.ene.kohii:kohii-exoplayer:1.0.0.2010004" // default support for ExoPlayer
-implementation "com.google.android.exoplayer:exoplayer:2.10.4" // required ExoPlayer implementation.
+implementation "im.ene.kohii:kohii-core:1.4.0.2017001" // core library
+implementation "im.ene.kohii:kohii-exoplayer:1.4.0.2017001" // default support for ExoPlayer
+implementation "com.google.android.exoplayer:exoplayer:2.17.1" // required ExoPlayer implementation.
 ```
 
 Kohii uses Kotlin language with some Java 8 features so you will need to include the following options to your module's build.gradle:
@@ -55,9 +55,6 @@ android {
 
   kotlinOptions {
     jvmTarget = "1.8"
-    freeCompilerArgs += [
-        '-Xjvm-default=enable'
-    ]
   }
 }
 ```
