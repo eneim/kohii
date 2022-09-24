@@ -49,15 +49,15 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:7.2.2"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:7.3.0"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:3.0.1"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
 
-    private const val dokkaVersion = "1.5.30"
+    private const val dokkaVersion = "1.6.21"
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"
     const val dokkaAndroidPlugin = "org.jetbrains.dokka:android-documentation-plugin:$dokkaVersion"
-    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.7.1"
+    const val binaryValidator = "org.jetbrains.kotlinx:binary-compatibility-validator:0.11.1"
     const val nexusPublish = "io.github.gradle-nexus:publish-plugin:1.1.0"
 
     const val junit = "junit:junit:4.13"
