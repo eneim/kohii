@@ -89,8 +89,6 @@ allprojects {
   repositories {
     google()
     mavenCentral()
-    //noinspection JcenterRepositoryObsolete,GrDeprecatedAPIUsage
-    jcenter() // For ExoPlayer 2.11.x
     maven { url "https://jitpack.io" }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     /* flatDir {
@@ -134,10 +132,10 @@ allprojects {
       skipDeprecated.set(true)
 
       externalDocumentationLink {
-        url.set(URL("https://developer.android.com/reference/"))
+        url.set("https://developer.android.com/reference/".toURL())
       }
       externalDocumentationLink {
-        url.set(URL("https://exoplayer.dev/doc/reference/"))
+        url.set("https://exoplayer.dev/doc/reference/".toURL())
       }
     }
   }

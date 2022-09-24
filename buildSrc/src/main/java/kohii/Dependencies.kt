@@ -52,7 +52,6 @@ object Libs {
     const val androidGradlePlugin = "com.android.tools.build:gradle:7.3.0"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:3.0.1"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
-    const val bintrayPlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
 
     private const val dokkaVersion = "1.6.21"
     const val dokkaPlugin = "org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"
@@ -251,7 +250,7 @@ object Libs {
 
   object Other {
     const val androidSvg = "com.caverock:androidsvg-aar:1.4"
-    const val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5"
+    const val youtubePlayer = "com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0"
     const val timber = "com.jakewharton.timber:timber:4.7.1"
   }
 }

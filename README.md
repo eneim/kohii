@@ -32,8 +32,7 @@ Add to your module's build.gradle dependencies
 // Update top level build.gradle
 allprojects {
   repositories {
-    jcenter()
-    // mavenCentral() should also work.
+    mavenCentral()
   }
 }
 ```
