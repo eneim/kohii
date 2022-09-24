@@ -46,8 +46,7 @@ class MainActivity : AppCompatActivity() {
     val defaultFactory = supportFragmentManager.fragmentFactory
     supportFragmentManager.fragmentFactory = object : FragmentFactory() {
       override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-        return fragments.getOrElse(
-            className, { defaultFactory.instantiate(classLoader, className) })
+        return fragments.getOrElse(className) { defaultFactory.instantiate(classLoader, className) }
       }
     }
 

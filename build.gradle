@@ -15,14 +15,16 @@
  */
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+import kohii.BuildConfig
 import kohii.Libs
+import kohii.ReleaseInfo
 
 buildscript {
   repositories {
     google()
     mavenCentral()
     gradlePluginPortal()
-    maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
     maven { url 'https://maven.fabric.io/public' }
     maven { url "https://plugins.gradle.org/m2/" }
   }
@@ -46,8 +48,8 @@ buildscript {
 apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
 // Setup for the Nexus Publish Plugin.
-group = GROUP
-version = VERSION_NAME
+group = ReleaseInfo.groupId
+version = BuildConfig.releaseVersionName
 
 def sampleProjects = [project("kohii-sample"), project("kohii-sample-tiktok")]
 file("$rootDir/kohii-samples").eachDir { dir ->
@@ -90,9 +92,6 @@ allprojects {
   repositories {
     google()
     mavenCentral()
-    maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
-    //noinspection JcenterRepositoryObsolete,GrDeprecatedAPIUsage
-    jcenter() // For ExoPlayer 2.11.x
     maven { url "https://jitpack.io" }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     /* flatDir {
@@ -119,8 +118,7 @@ allprojects {
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile).configureEach { task ->
     task.kotlinOptions {
       freeCompilerArgs += [
-          '-XXLanguage:+InlineClasses',
-          '-Xjvm-default=enable'
+          '-Xjvm-default=all'
       ]
     }
   }
@@ -137,10 +135,10 @@ allprojects {
       skipDeprecated.set(true)
 
       externalDocumentationLink {
-        url.set(URL("https://developer.android.com/reference/"))
+        url.set("https://developer.android.com/reference/".toURL())
       }
       externalDocumentationLink {
-        url.set(URL("https://exoplayer.dev/doc/reference/"))
+        url.set("https://exoplayer.dev/doc/reference/".toURL())
       }
     }
   }

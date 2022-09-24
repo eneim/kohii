@@ -4,7 +4,7 @@
 rm -rf docs/api
 
 # Build the Dokka docs.
-./gradlew clean dokkaHtmlMultiModule
+./gradlew clean && ./gradlew dokkaHtmlMultiModule
 
 cp -R art docs/
 cp CHANGELOG.md docs/changelog.md

@@ -97,8 +97,8 @@ object Common {
   )
   const val STATE_ENDED = Player.STATE_ENDED
 
-  internal val PLAY = PlaybackAction(true)
-  internal val PAUSE = PlaybackAction(false)
+  internal const val PLAY = true
+  internal const val PAUSE = false
 
   // ExoPlayer's doesn't catch a RuntimeException and crash if Device has too many App installed.
   @RestrictTo(LIBRARY_GROUP_PREFIX)

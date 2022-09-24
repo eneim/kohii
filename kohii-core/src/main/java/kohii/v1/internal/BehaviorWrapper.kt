@@ -73,6 +73,10 @@ internal class BehaviorWrapper<V : View>(
     return delegate.blocksInteractionBelow(parent, child)
   }
 
+  @Deprecated(
+      "Deprecated in Java",
+      ReplaceWith("delegate.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed)")
+  )
   override fun onNestedPreScroll(
     coordinatorLayout: CoordinatorLayout,
     child: V,
@@ -96,6 +100,8 @@ internal class BehaviorWrapper<V : View>(
     delegate.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
   }
 
+  @Suppress("DeprecatedCallableAddReplaceWith")
+  @Deprecated("Deprecated in Java")
   override fun onNestedScroll(
     coordinatorLayout: CoordinatorLayout,
     child: V,
@@ -110,6 +116,8 @@ internal class BehaviorWrapper<V : View>(
     )
   }
 
+  @Suppress("DeprecatedCallableAddReplaceWith")
+  @Deprecated("Deprecated in Java")
   override fun onNestedScroll(
     coordinatorLayout: CoordinatorLayout,
     child: V,
@@ -149,6 +157,8 @@ internal class BehaviorWrapper<V : View>(
     return delegate.onSaveInstanceState(parent, child)
   }
 
+  @Suppress("DeprecatedCallableAddReplaceWith")
+  @Deprecated("Deprecated in Java")
   override fun onNestedScrollAccepted(
     coordinatorLayout: CoordinatorLayout,
     child: V,
@@ -245,6 +255,8 @@ internal class BehaviorWrapper<V : View>(
     delegate.onDependentViewRemoved(parent, child, dependency)
   }
 
+  @Suppress("DeprecatedCallableAddReplaceWith")
+  @Deprecated("Deprecated in Java")
   override fun onStopNestedScroll(
     coordinatorLayout: CoordinatorLayout,
     child: V,
@@ -316,6 +328,7 @@ internal class BehaviorWrapper<V : View>(
     delegate.onAttachedToLayoutParams(params)
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onStartNestedScroll(
     coordinatorLayout: CoordinatorLayout,
     child: V,

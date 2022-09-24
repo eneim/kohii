@@ -18,7 +18,6 @@ package kohii.v1.exoplayer
 
 import android.content.Context
 import androidx.fragment.app.Fragment
-import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
@@ -62,13 +61,14 @@ open class Kohii constructor(
    * This method must be used for the [Playback] that supports manual playback control (the
    * [Playback.Config.controller] is not null).
    */
-  fun createControlDispatcher(playback: Playback): ControlDispatcher {
+  // TODO: replace with custom ForwardingPlayer.
+  /* fun createControlDispatcher(playback: Playback): ControlDispatcher {
     requireNotNull(playback.config.controller) {
       "Playback needs to be setup with a Controller to use this method."
     }
 
     return DefaultControlDispatcher(playback)
-  }
+  } */
 
   class Builder(context: Context) {
 

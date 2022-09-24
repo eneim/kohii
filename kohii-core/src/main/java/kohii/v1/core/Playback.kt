@@ -22,6 +22,7 @@ import androidx.annotation.CallSuper
 import androidx.annotation.FloatRange
 import androidx.lifecycle.Lifecycle.State
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.video.VideoSize
 import kohii.v1.BuildConfig
 import kohii.v1.core.Bucket.Companion.BOTH_AXIS
 import kohii.v1.core.Bucket.Companion.HORIZONTAL
@@ -466,6 +467,7 @@ abstract class Playback(
 
   // PlayerEventListener
 
+  @Deprecated("Deprecated in Java")
   override fun onPlayerStateChanged(
     playWhenReady: Boolean,
     playbackState: Int
@@ -494,15 +496,16 @@ abstract class Playback(
     )
   }
 
-  override fun onVideoSizeChanged(
-    width: Int,
-    height: Int,
-    unappliedRotationDegrees: Int,
-    pixelWidthHeightRatio: Float
-  ) {
-    "Playback#onVideoSizeChanged $width × $height, $this".logDebug()
+  override fun onVideoSizeChanged(videoSize: VideoSize) {
+    "Playback#onVideoSizeChanged ${videoSize.width} × ${videoSize.height}, $this".logDebug()
     listeners.forEach {
-      it.onVideoSizeChanged(this, width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
+      it.onVideoSizeChanged(
+          playback = this,
+          width = videoSize.width,
+          height = videoSize.height,
+          unAppliedRotationDegrees = videoSize.unappliedRotationDegrees,
+          pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
+      )
     }
   }
 
@@ -525,7 +528,6 @@ abstract class Playback(
   interface StateListener {
 
     /** Called when a Video is rendered on the Surface for the first time */
-    @JvmDefault
     fun onRendered(playback: Playback) = Unit
 
     /**
@@ -533,25 +535,20 @@ abstract class Playback(
      *
      * @param playWhenReady true if the Video will start playing once buffered enough, false otherwise.
      */
-    @JvmDefault
     fun onBuffering(
       playback: Playback,
       playWhenReady: Boolean
     ) = Unit // ExoPlayer state: 2
 
     /** Called when the Video starts playing */
-    @JvmDefault
     fun onPlaying(playback: Playback) = Unit // ExoPlayer state: 3, play flag: true
 
     /** Called when the Video is paused */
-    @JvmDefault
     fun onPaused(playback: Playback) = Unit // ExoPlayer state: 3, play flag: false
 
     /** Called when the Video finishes its playback */
-    @JvmDefault
     fun onEnded(playback: Playback) = Unit // ExoPlayer state: 4
 
-    @JvmDefault
     fun onVideoSizeChanged(
       playback: Playback,
       width: Int,
@@ -560,7 +557,6 @@ abstract class Playback(
       pixelWidthHeightRatio: Float
     ) = Unit
 
-    @JvmDefault
     fun onError(
       playback: Playback,
       exception: Exception
@@ -572,22 +568,16 @@ abstract class Playback(
    */
   interface Callback {
 
-    @JvmDefault
     fun onActive(playback: Playback) = Unit
 
-    @JvmDefault
     fun onInActive(playback: Playback) = Unit
 
-    @JvmDefault
     fun onAdded(playback: Playback) = Unit
 
-    @JvmDefault
     fun onRemoved(playback: Playback) = Unit
 
-    @JvmDefault
     fun onAttached(playback: Playback) = Unit
 
-    @JvmDefault
     fun onDetached(playback: Playback) = Unit
   }
 
@@ -614,7 +604,6 @@ abstract class Playback(
      *
      * Note: this value is ignored in 1.2.0 due to an in-completed behavior.
      */
-    @JvmDefault
     fun kohiiCanPause(): Boolean = true
 
     /**
@@ -627,7 +616,6 @@ abstract class Playback(
      *
      * Default result is `false`.
      */
-    @JvmDefault
     fun kohiiCanStart(): Boolean = false
 
     /**
@@ -637,7 +625,6 @@ abstract class Playback(
      *
      * @see [Playback.onRendererAttached]
      */
-    @JvmDefault
     fun setupRenderer(playback: Playback, renderer: Any?) = Unit
 
     /**
@@ -647,7 +634,6 @@ abstract class Playback(
      *
      * @see [Playback.onRendererDetached]
      */
-    @JvmDefault
     fun teardownRenderer(playback: Playback, renderer: Any?) = Unit
   }
 

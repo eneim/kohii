@@ -34,7 +34,7 @@ internal class NestedScrollViewBucket(
 ) : Bucket(manager, root, strategy, selector), OnScrollChangeListener {
 
   override fun onScrollChange(
-    v: NestedScrollView?,
+    v: NestedScrollView,
     scrollX: Int,
     scrollY: Int,
     oldScrollX: Int,

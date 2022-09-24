@@ -1,5 +1,21 @@
 # Change Log
 
+## [1.4.0.2017001]
+
+### Changed
+
+- (kohii-core): Compatible with ExoPlayer 2.17.1.
+- (kohii-core): Target SDK and Compile SDK are updated to 32.
+- (kohii-exoplayer): ExoPlayer is updated to 2.17.1.
+
+### Removed
+
+- (kohii-core): jcenter repository and its usage.
+
+## [1.3.0.x]
+
+This version is skipped.
+
 ## [1.2.0.2011008]
 
 ### Added

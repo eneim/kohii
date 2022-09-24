@@ -6,7 +6,6 @@
 
 Video playback for Android made easy.
 
-![Bintray](https://img.shields.io/bintray/v/eneimlabs/kohii/kohii-core)
 ![Maven Central](https://img.shields.io/maven-central/v/im.ene.kohii/kohii-core)
 <iframe src="https://github.com/sponsors/eneim/button" title="Sponsor eneim" height="35" width="116" style="border: 0;"></iframe>
 
@@ -32,15 +31,15 @@ Add to your module's build.gradle dependencies
 // Update top level build.gradle
 allprojects {
   repositories {
-    jcenter() // mavenCentral() should also work.
+    mavenCentral()
   }
 }
 ```
 
 ```groovy
 // Add these to app level build.gradle (or to module that will use Kohii)
-def kohiiVersion = '1.1.0.2011003'
-def exoPlayerVersion = '2.11.3'
+def kohiiVersion = '1.4.0.2017001'
+def exoPlayerVersion = '2.17.1'
 
 implementation "im.ene.kohii:kohii-core:${kohiiVersion}"
 implementation "im.ene.kohii:kohii-exoplayer:${kohiiVersion}"

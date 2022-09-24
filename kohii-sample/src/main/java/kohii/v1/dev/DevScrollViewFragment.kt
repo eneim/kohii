@@ -20,8 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.google.android.exoplayer2.ControlDispatcher
-import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Manager
@@ -68,8 +66,9 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
 
         override fun setupRenderer(playback: Playback, renderer: Any?) {
           if (renderer is PlayerView) {
-            val controller = kohii.createControlDispatcher(playback)
-            renderer.setControlDispatcher(controller)
+            // TODO: replace with custom ForwardingPlayer.
+            // val controller = kohii.createControlDispatcher(playback)
+            // renderer.setControlDispatcher(controller)
             renderer.useController = true
             renderer.tag = controller
           }
@@ -77,8 +76,9 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
 
         override fun teardownRenderer(playback: Playback, renderer: Any?) {
           if (renderer is PlayerView) {
-            val tag = renderer.tag
-            if (tag is ControlDispatcher) renderer.tag = null
+            // TODO: replace with custom ForwardingPlayer.
+            // val tag = renderer.tag
+            // if (tag is ControlDispatcher) renderer.tag = null
           }
         }
       }
@@ -94,17 +94,19 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
 
         override fun setupRenderer(playback: Playback, renderer: Any?) {
           if (renderer is PlayerView) {
-            val controller = kohii.createControlDispatcher(playback)
-            renderer.setControlDispatcher(controller)
-            renderer.useController = true
-            renderer.tag = controller
+            // TODO: replace with custom ForwardingPlayer.
+            // val controller = kohii.createControlDispatcher(playback)
+            // renderer.setControlDispatcher(controller)
+            // renderer.useController = true
+            // renderer.tag = controller
           }
         }
 
         override fun teardownRenderer(playback: Playback, renderer: Any?) {
           if (renderer is PlayerView) {
-            val tag = renderer.tag
-            if (tag is ControlDispatcher) renderer.tag = null
+            // TODO: replace with custom ForwardingPlayer.
+            // val tag = renderer.tag
+            // if (tag is ControlDispatcher) renderer.tag = null
           }
         }
       }
@@ -121,13 +123,15 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
       if (container is PlayerView) {
         container.useController = false // if you want to only use the global controller.
         binding.controlView.player = container.player
-        val controller = container.tag
+        // TODO: replace with custom ForwardingPlayer.
+        /* val controller = container.tag
         if (controller is ControlDispatcher) {
           binding.controlView.setControlDispatcher(controller)
-        }
+        } */
       }
     } else {
-      binding.controlView.setControlDispatcher(DefaultControlDispatcher())
+      // TODO: replace with custom ForwardingPlayer.
+      // binding.controlView.setControlDispatcher(DefaultControlDispatcher())
       binding.controlView.player = null
       binding.controlView.hide()
     }

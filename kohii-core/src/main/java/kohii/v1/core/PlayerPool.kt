@@ -28,7 +28,7 @@ import kotlin.math.max
 /**
  * Definition of a pool to provide [PLAYER] instance for the consumer.
  */
-abstract class PlayerPool<PLAYER> @JvmOverloads constructor(
+abstract class PlayerPool<PLAYER : Any> @JvmOverloads constructor(
   @IntRange(from = 1) poolSize: Int = DEFAULT_POOL_SIZE
 ) {
 
@@ -43,7 +43,7 @@ abstract class PlayerPool<PLAYER> @JvmOverloads constructor(
     require(poolSize > 0) { "Pool size must be positive." }
   }
 
-  private val playerPool = Pools.SimplePool<PLAYER>(poolSize)
+  private val playerCache = Pools.SimplePool<PLAYER>(poolSize)
 
   /**
    * Return `true` if a [PLAYER] instance can be reused to play the [media], `false` otherwise. If
@@ -86,7 +86,7 @@ abstract class PlayerPool<PLAYER> @JvmOverloads constructor(
    */
   fun getPlayer(media: Media): PLAYER {
     if (!recyclePlayerForMedia(media)) return createPlayer(media)
-    return playerPool.acquire() ?: createPlayer(media)
+    return playerCache.acquire() ?: createPlayer(media)
   }
 
   /**
@@ -102,7 +102,7 @@ abstract class PlayerPool<PLAYER> @JvmOverloads constructor(
     media: Media,
     player: PLAYER
   ): Boolean {
-    return if (!recyclePlayerForMedia(media) || !playerPool.release(player)) {
+    return if (!recyclePlayerForMedia(media) || !playerCache.release(player)) {
       destroyPlayer(player)
       false
     } else {
@@ -116,7 +116,7 @@ abstract class PlayerPool<PLAYER> @JvmOverloads constructor(
    */
   @CallSuper
   open fun clear() {
-    playerPool.onEachAcquired {
+    playerCache.onEachAcquired {
       destroyPlayer(it)
     }
   }
