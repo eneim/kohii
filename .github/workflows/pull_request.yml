@@ -24,4 +24,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Run test and check code change
-        run: bash ./gradlew test check assembleDebug --stacktrace
+        run: bash ./gradlew clean && ./gradlew test && ./gradlew check && ./gradlew assembleDebug --stacktrace
