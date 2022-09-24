@@ -42,7 +42,7 @@ object BuildConfig {
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
   const val releaseVersionCode = 10400 // [major].[2 digits for minor].[2 digits for patch]
-  const val releaseVersionName = "1.4.0.${Versions.exoPlayerCode}-SNAPSHOT"
+  const val releaseVersionName = "1.4.0.${Versions.exoPlayerCode}"
 }
 
 @Suppress("MayBeConstant", "unused")
