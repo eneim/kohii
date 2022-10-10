@@ -6,7 +6,7 @@
 
 Video playback for Android made easy.
 
-[![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/im.ene.kohii/kohii-core.svg)](https://oss.sonatype.org/content/repositories/snapshots/im/ene/kohii/kohii-core/)
+<!-- [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/im.ene.kohii/kohii-core.svg)](https://oss.sonatype.org/content/repositories/snapshots/im/ene/kohii/kohii-core/) -->
 ![Maven Central](https://img.shields.io/maven-central/v/im.ene.kohii/kohii-core)
 [![](https://yourdonation.rocks/images/badge.svg)](https://github.com/sponsors/eneim)
 
