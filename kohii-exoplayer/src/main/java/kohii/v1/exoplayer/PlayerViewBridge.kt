@@ -24,13 +24,12 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceFactory
-import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.DefaultTrackSelectorHolder
@@ -69,7 +68,7 @@ open class PlayerViewBridge(
   private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
   private var mediaSource: MediaSource? = null
 
-  private var lastSeenTrackGroupArray: TrackGroupArray? = null
+  private var lastSeenTrackGroupArray: List<Tracks.Group>? = null
   private var inErrorState = false
 
   protected var player: Player? = null
@@ -333,8 +332,10 @@ open class PlayerViewBridge(
           when {
             exception.cause is MediaCodecUtil.DecoderQueryException ->
               context.getString(R.string.error_querying_decoders)
+
             exception.secureDecoderRequired ->
               context.getString(R.string.error_no_secure_decoder, exception.mimeType)
+
             else -> context.getString(R.string.error_no_decoder, exception.mimeType)
           }
         } else {
@@ -365,13 +366,10 @@ open class PlayerViewBridge(
     }
   }
 
-  @Deprecated("Deprecated in Java")
-  override fun onTracksChanged(
-    trackGroups: TrackGroupArray,
-    trackSelections: TrackSelectionArray
-  ) {
-    if (trackGroups == lastSeenTrackGroupArray) return
-    lastSeenTrackGroupArray = trackGroups
+  override fun onTracksChanged(tracks: Tracks) {
+    val groups = tracks.groups
+    if (groups == lastSeenTrackGroupArray) return
+    lastSeenTrackGroupArray = groups
     val player = this.player as? KohiiExoPlayer ?: return
     val trackInfo = player.trackSelector.currentMappedTrackInfo
     if (trackInfo != null) {
@@ -384,5 +382,6 @@ open class PlayerViewBridge(
       }
     }
   }
+
   //endregion
 }

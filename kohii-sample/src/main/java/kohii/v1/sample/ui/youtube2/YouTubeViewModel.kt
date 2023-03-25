@@ -19,8 +19,8 @@ package kohii.v1.sample.ui.youtube2
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations.map
-import androidx.lifecycle.Transformations.switchMap
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.youtube.YouTube
@@ -49,13 +49,13 @@ class YouTubeViewModel(application: Application) : AndroidViewModel(application)
     )
 
   private val playlistId = MutableLiveData<String>()
-  private val repoResult = map(playlistId) {
+  private val repoResult = playlistId.map {
     repository.itemsOfPlaylist(it, YOUTUBE_PLAYLIST_MAX_RESULTS)
   }
 
-  val posts = switchMap(repoResult) { it.pagedList }
-  val networkState = switchMap(repoResult) { it.networkState }
-  val refreshState = switchMap(repoResult) { it.refreshState }
+  val posts = repoResult.switchMap { it.pagedList }
+  val networkState = repoResult.switchMap { it.networkState }
+  val refreshState = repoResult.switchMap { it.refreshState }
 
   fun loadPlaylist(playlistId: String): Boolean {
     if (this.playlistId.value == playlistId) {

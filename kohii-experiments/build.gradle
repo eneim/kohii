@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import kohii.BuildConfig
-import kohii.Libs
-
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 
 android {
-  compileSdkVersion BuildConfig.compileSdkVersion
+  compileSdkVersion libs.versions.android.target.sdk.get().toInteger()
 
   defaultConfig {
-    minSdkVersion BuildConfig.minSdkVersion
-    targetSdkVersion BuildConfig.targetSdkVersion
+    minSdkVersion libs.versions.android.min.sdk.get()
+    targetSdkVersion libs.versions.android.target.sdk.get()
 
     buildConfigField("String", "LIB_NAME", "\"" + "Kohii Experiments, v" + versionName + "\"")
 
@@ -56,18 +52,20 @@ android {
 dependencies {
   api fileTree(dir: 'libs', include: ['YouTubeAndroidPlayerApi.jar'])
   implementation project(':kohii-core')
-  implementation Libs.ExoPlayer.core
+  implementation(libs.android.exoplayer.core)
 
-  implementation Libs.Kotlin.stdlibJdk8
-  implementation Libs.AndroidX.appcompat
-  implementation Libs.AndroidX.coreKtx
-  implementation Libs.AndroidX.collectionKtx
+  api("com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0") // TODO: 12.0.0
 
-  api Libs.Other.youtubePlayer
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.core)
+  implementation(libs.androidx.collection)
 
-  testImplementation Libs.Common.junit
-  androidTestImplementation Libs.Common.junitExt
-  androidTestImplementation Libs.AndroidX.Test.espressoCore
+  testImplementation("androidx.test:core-ktx:1.5.0")
+  testImplementation("androidx.test:rules:1.5.0")
+  testImplementation("androidx.test:runner:1.5.2")
+
+  androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")
+  androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
 
 project.archivesBaseName = "kohii-experiments"

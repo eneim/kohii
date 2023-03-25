@@ -16,7 +16,7 @@
 
 package kohii.v1.sample.youtube.data
 
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.switchMap
 import androidx.paging.toLiveData
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.Video
@@ -42,12 +42,12 @@ class YouTubePlaylistRepository(
         // Arch Components' IO keyToPool which is also used for disk access
         fetchExecutor = executor
     )
-    val refreshState = Transformations.switchMap(sourceFactory.sourceLiveData) {
+    val refreshState = sourceFactory.sourceLiveData.switchMap {
       it.initialLoad
     }
     return Listing(
         pagedList = livePagedList,
-        networkState = Transformations.switchMap(sourceFactory.sourceLiveData) {
+        networkState = sourceFactory.sourceLiveData.switchMap {
           it.networkState
         },
         retry = {

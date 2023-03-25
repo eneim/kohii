@@ -505,7 +505,7 @@ public final class kohii/v1/core/PlayerEventListeners : java/util/concurrent/Cop
 	public fun onRepeatModeChanged (I)V
 	public fun onShuffleModeEnabledChanged (Z)V
 	public fun onTimelineChanged (Lcom/google/android/exoplayer2/Timeline;I)V
-	public fun onTracksChanged (Lcom/google/android/exoplayer2/source/TrackGroupArray;Lcom/google/android/exoplayer2/trackselection/TrackSelectionArray;)V
+	public fun onTracksChanged (Lcom/google/android/exoplayer2/Tracks;)V
 	public fun onVideoSizeChanged (Lcom/google/android/exoplayer2/video/VideoSize;)V
 	public fun onVolumeChanged (F)V
 	public fun remove (Lcom/google/android/exoplayer2/Player$Listener;)Z

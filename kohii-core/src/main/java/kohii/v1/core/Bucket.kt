@@ -85,23 +85,23 @@ abstract class Bucket constructor(
   }
 
   private val containerAttachStateChangeListener = object : OnAttachStateChangeListener {
-    override fun onViewAttachedToWindow(v: View?) {
+    override fun onViewAttachedToWindow(v: View) {
       "Bucket# container is attached: $v, $this".logInfo()
       manager.onContainerAttachedToWindow(v)
     }
 
-    override fun onViewDetachedFromWindow(v: View?) {
+    override fun onViewDetachedFromWindow(v: View) {
       "Bucket# container is detached: $v, $this".logInfo()
       manager.onContainerDetachedFromWindow(v)
     }
   }
 
   private val rootAttachStateChangeListener = object : OnAttachStateChangeListener {
-    override fun onViewAttachedToWindow(v: View?) {
+    override fun onViewAttachedToWindow(v: View) {
       onAttached()
     }
 
-    override fun onViewDetachedFromWindow(v: View?) {
+    override fun onViewDetachedFromWindow(v: View) {
       onDetached()
     }
   }
