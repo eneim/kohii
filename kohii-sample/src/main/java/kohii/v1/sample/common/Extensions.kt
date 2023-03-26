@@ -33,10 +33,11 @@ import androidx.fragment.app.DialogFragment
  */
 fun Int.toPixel(resources: Resources): Int {
   return TypedValue.applyDimension(
-      TypedValue.COMPLEX_UNIT_DIP, this.toFloat(),
-      resources.displayMetrics
+    TypedValue.COMPLEX_UNIT_DIP,
+    this.toFloat(),
+    resources.displayMetrics
   )
-      .toInt()
+    .toInt()
 }
 
 // Improved (or Degraded?) version of ktx.doOnNextLayout
@@ -80,7 +81,7 @@ inline fun <T> SparseArray<T>.getOrPut(
 
 fun ViewGroup.inflateView(layoutId: Int): View {
   return LayoutInflater.from(context)
-      .inflate(layoutId, this, false)
+    .inflate(layoutId, this, false)
 }
 
 internal fun String.splitCases(): String {

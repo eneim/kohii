@@ -40,7 +40,7 @@ class ViewPager1WithRecyclerViewFragmentsFragment : BaseFragment(), DemoContaine
   }
 
   internal class VideoPagerAdapter(fm: FragmentManager) :
-      FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getItem(position: Int): Fragment {
       return GridContentFragment.newInstance(position)
@@ -68,7 +68,7 @@ class ViewPager1WithRecyclerViewFragmentsFragment : BaseFragment(), DemoContaine
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this)
-        .addBucket(binding.viewPager)
+      .addBucket(binding.viewPager)
     binding.viewPager.apply {
       adapter = VideoPagerAdapter(childFragmentManager)
       setPadding(0)

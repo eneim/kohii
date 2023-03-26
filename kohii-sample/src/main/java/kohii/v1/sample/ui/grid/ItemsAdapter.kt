@@ -72,9 +72,11 @@ internal class ItemsAdapter(
           tag = requireNotNull(videoTag)
           artworkHintListener = holder
         }
-            .bind(holder.container)
+          .bind(holder.container)
       }
-    } else holder.bind(position)
+    } else {
+      holder.bind(position)
+    }
   }
 
   override fun onViewAttachedToWindow(holder: BaseViewHolder) {
@@ -82,7 +84,7 @@ internal class ItemsAdapter(
     if (holder is VideoViewHolder) {
       holder.itemView.setOnClickListener {
         holder.rebinder?.let { rebinder ->
-          onVideoClick(SelectionKey(holder.adapterPosition, rebinder))
+          onVideoClick(SelectionKey(holder.absoluteAdapterPosition, rebinder))
         }
       }
     }

@@ -38,10 +38,10 @@ class VideoViewPlayableCreator @JvmOverloads constructor(
     media: Media
   ): Playable {
     return VideoViewPlayable(
-        master,
-        media,
-        config,
-        VideoViewBridge(media, playerPool)
+      master,
+      media,
+      config,
+      VideoViewBridge(media, playerPool)
     )
   }
 

@@ -53,8 +53,11 @@ import kotlin.properties.Delegates
  */
 @Suppress("MemberVisibilityCanBePrivate")
 @Keep
-class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPressConsumer,
-    DemoContainer {
+class OverlayViewFragment :
+  BaseFragment(),
+  TransitionListenerAdapter,
+  BackPressConsumer,
+  DemoContainer {
 
   companion object {
     fun newInstance() = OverlayViewFragment()
@@ -82,29 +85,29 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
 
   private var playback: Playback? = null
   private var selection by Delegates.observable<Pair<Int, Rebinder?>>(
-      initialValue = -1 to null,
-      onChange = { _, from, to ->
-        if (from == to) return@observable
-        val (oldPos, oldRebinder) = from
-        val (newPos, newRebinder) = to
-        if (newRebinder != null) {
-          if (overlaySheet.state == STATE_HIDDEN) overlaySheet.state = STATE_EXPANDED
-          newRebinder.bind(kohii, overlayBinding.overlayPlayerView) {
-            kohii.stick(it)
-            playback = it
+    initialValue = -1 to null,
+    onChange = { _, from, to ->
+      if (from == to) return@observable
+      val (oldPos, oldRebinder) = from
+      val (newPos, newRebinder) = to
+      if (newRebinder != null) {
+        if (overlaySheet.state == STATE_HIDDEN) overlaySheet.state = STATE_EXPANDED
+        newRebinder.bind(kohii, overlayBinding.overlayPlayerView) {
+          kohii.stick(it)
+          playback = it
+        }
+        binding.recyclerView.adapter?.notifyItemChanged(newPos)
+      } else {
+        if (oldRebinder != null) {
+          playback?.also {
+            val vh = binding.recyclerView.findViewHolderForAdapterPosition(oldPos)
+            if (vh == null) it.unbind() // the VH is out of viewport.
+            binding.recyclerView.adapter?.notifyItemChanged(oldPos)
           }
-          binding.recyclerView.adapter?.notifyItemChanged(newPos)
-        } else {
-          if (oldRebinder != null) {
-            playback?.also {
-              val vh = binding.recyclerView.findViewHolderForAdapterPosition(oldPos)
-              if (vh == null) it.unbind() // the VH is out of viewport.
-              binding.recyclerView.adapter?.notifyItemChanged(oldPos)
-            }
-            playback = null
-          }
+          playback = null
         }
       }
+    }
   )
 
   private lateinit var kohii: Kohii
@@ -132,12 +135,14 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     manager = kohii.register(this)
-        .addBucket(binding.recyclerView)
-        .addBucket(overlayBinding.videoPlayerContainer)
+      .addBucket(binding.recyclerView)
+      .addBucket(overlayBinding.videoPlayerContainer)
 
-    adapter = VideoItemsAdapter(getApp().videos, kohii,
-        shouldBindVideo = { /* the Rebinder is not selected */ it != selection.second },
-        onVideoClick = { pos, rebinder -> selectRebinder(pos, rebinder) }
+    adapter = VideoItemsAdapter(
+      getApp().videos,
+      kohii,
+      shouldBindVideo = { /* the Rebinder is not selected */ it != selection.second },
+      onVideoClick = { pos, rebinder -> selectRebinder(pos, rebinder) }
     )
 
     binding.recyclerView.let {
@@ -227,10 +232,12 @@ class OverlayViewFragment : BaseFragment(), TransitionListenerAdapter, BackPress
         overlaySheet.state = STATE_HIDDEN
         true
       }
+
       STATE_EXPANDED -> {
         overlaySheet.state = STATE_COLLAPSED
         true
       }
+
       else -> false
     }
   }

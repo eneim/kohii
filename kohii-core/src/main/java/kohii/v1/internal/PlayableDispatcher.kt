@@ -50,8 +50,8 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     val manuallyStartedPlayable = master.manuallyStartedPlayable.get()
     // Has manual controller
     if (manuallyStartedPlayable != null && /* has Playable started by client */
-        manuallyStartedPlayable.isPlaying() && /* the Playable is playing */
-        manuallyStartedPlayable !== playable /* but not this one */
+      manuallyStartedPlayable.isPlaying() && /* the Playable is playing */
+      manuallyStartedPlayable !== playable /* but not this one */
     ) {
       // Pause due to lower priority.
       justPause(playable)
@@ -64,8 +64,11 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     } else {
       val nextAction = master.playablesPendingActions[playable.tag]
       if (nextAction != null) { // A flag was set somewhere by User/Client reaction.
-        if (nextAction == Common.PLAY) justPlay(playable)
-        else justPause(playable)
+        if (nextAction == Common.PLAY) {
+          justPlay(playable)
+        } else {
+          justPause(playable)
+        }
       } else {
         val controller = requireNotNull(playable.playback?.config?.controller)
         // No history of User action, let's determine next action by ourselves
@@ -81,8 +84,8 @@ internal class PlayableDispatcher(val master: Master) : Handler.Callback {
     val manuallyStartedPlayable = master.manuallyStartedPlayable.get()
     // Has manual controller
     if (manuallyStartedPlayable != null && /* has Playable started by client */
-        manuallyStartedPlayable.isPlaying() && /* the Playable is playing */
-        manuallyStartedPlayable !== playable /* but not this one */
+      manuallyStartedPlayable.isPlaying() && /* the Playable is playing */
+      manuallyStartedPlayable !== playable /* but not this one */
     ) {
       justPause(playable)
       return

@@ -37,8 +37,11 @@ inline fun <T> Pool<T>.onEachAcquired(action: (T) -> Unit) {
   var item: T?
   do {
     item = this.acquire()
-    if (item == null) break
-    else action(item)
+    if (item == null) {
+      break
+    } else {
+      action(item)
+    }
   } while (true)
 }
 

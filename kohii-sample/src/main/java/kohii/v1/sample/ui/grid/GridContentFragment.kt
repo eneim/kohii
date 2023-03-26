@@ -72,7 +72,7 @@ class GridContentFragment : BaseFragment() {
   ) {
     super.onViewCreated(view, savedInstanceState)
     kohii.register(this, MemoryMode.BALANCED)
-        .addBucket(binding.container)
+      .addBucket(binding.container)
 
     val spanCount = resources.getInteger(R.integer.grid_span)
     val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -82,9 +82,9 @@ class GridContentFragment : BaseFragment() {
     }
 
     val adapter = ItemsAdapter(
-        kohii,
-        shouldBindVideo = { !selectionTracker.isSelected(it) },
-        onVideoClick = { videoGridCallback?.onSelected(it) }
+      kohii,
+      shouldBindVideo = { !selectionTracker.isSelected(it) },
+      onVideoClick = { videoGridCallback?.onSelected(it) }
     )
 
     (binding.container.layoutManager as? GridLayoutManager)?.spanSizeLookup = spanSizeLookup
@@ -94,14 +94,14 @@ class GridContentFragment : BaseFragment() {
     val videoItemDetailsLookup = VideoItemDetailsLookup(binding.container)
 
     _selectionTracker = Builder(
-        "${BuildConfig.APPLICATION_ID}::sample::grid",
-        binding.container,
-        videoKeyProvider,
-        videoItemDetailsLookup,
-        StorageStrategy.createParcelableStorage(SelectionKey::class.java)
+      "${BuildConfig.APPLICATION_ID}::sample::grid",
+      binding.container,
+      videoKeyProvider,
+      videoItemDetailsLookup,
+      StorageStrategy.createParcelableStorage(SelectionKey::class.java)
     )
-        .withSelectionPredicate(SelectionPredicates.createSelectSingleAnything())
-        .build()
+      .withSelectionPredicate(SelectionPredicates.createSelectSingleAnything())
+      .build()
 
     selectionTracker.onRestoreInstanceState(savedInstanceState)
   }

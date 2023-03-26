@@ -36,9 +36,9 @@ internal class PhotoViewHolder(parent: ViewGroup) : FbookItemHolder(parent) {
     super.bind(item)
     photoCaption.text = itemView.context.getText(R.string.large_text)
     Glide.with(photoContent)
-        .load("https://content.jwplatform.com/thumbs/0G7vaSoF-720.jpg")
-        .thumbnail(0.15F)
-        .fitCenter()
-        .into(photoContent)
+      .load("https://content.jwplatform.com/thumbs/0G7vaSoF-720.jpg")
+      .thumbnail(0.15F)
+      .fitCenter()
+      .into(photoContent)
   }
 }

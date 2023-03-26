@@ -17,16 +17,16 @@
 package kohii.v1.core
 
 data class PlayerParameters(
-    // Video
+  // Video
   val maxVideoWidth: Int = Int.MAX_VALUE,
   val maxVideoHeight: Int = Int.MAX_VALUE,
   val maxVideoBitrate: Int = Int.MAX_VALUE,
-    // Audio
+  // Audio
   val maxAudioBitrate: Int = Int.MAX_VALUE
 ) {
 
   fun playerShouldStart() = maxAudioBitrate > 0 ||
-      (maxVideoBitrate > 0 && maxVideoWidth > 0 && maxVideoHeight > 0)
+    (maxVideoBitrate > 0 && maxVideoWidth > 0 && maxVideoHeight > 0)
 
   companion object {
     val DEFAULT = PlayerParameters()

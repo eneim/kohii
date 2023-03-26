@@ -21,12 +21,11 @@ import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.PositionInfo
 import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.metadata.Metadata
-import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.text.Cue
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.video.VideoSize
 import kohii.v1.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
@@ -54,12 +53,7 @@ class PlayerEventListeners : CopyOnWriteArraySet<Player.Listener>(), Player.List
   override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters): Unit =
     forEach { it.onPlaybackParametersChanged(playbackParameters) }
 
-  @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
-  @Deprecated("Deprecated in Java")
-  override fun onTracksChanged(
-    trackGroups: TrackGroupArray,
-    trackSelections: TrackSelectionArray
-  ): Unit = forEach { it.onTracksChanged(trackGroups, trackSelections) }
+  override fun onTracksChanged(tracks: Tracks): Unit = forEach { it.onTracksChanged(tracks) }
 
   override fun onPlayerError(error: PlaybackException): Unit =
     forEach { it.onPlayerError(error) }

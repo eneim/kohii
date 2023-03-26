@@ -50,7 +50,7 @@ class ItemsAdapter(
   override fun getItemId(position: Int): Long {
     val item = items[position]
     return item.hashCode()
-        .toLong()
+      .toLong()
   }
 
   override fun getItemViewType(position: Int): Int {

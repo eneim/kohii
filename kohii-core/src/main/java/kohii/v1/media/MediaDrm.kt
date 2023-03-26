@@ -47,10 +47,11 @@ interface MediaDrm : Comparable<MediaDrm>, Parcelable {
     }
 
     if (result == 0) {
-      result = if (Arrays.deepEquals(keyRequestPropertiesArray, other.keyRequestPropertiesArray))
+      result = if (Arrays.deepEquals(keyRequestPropertiesArray, other.keyRequestPropertiesArray)) {
         0
-      else
+      } else {
         -1
+      }
     }
 
     return result

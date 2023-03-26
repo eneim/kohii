@@ -30,8 +30,8 @@ internal class NestedTextViewHolder(
   override fun bind(item: Any?) {
     super.bind(item)
     (itemView as TextView).text = itemView.context.getString(
-        string.lib_intro
+      string.lib_intro
     )
-        .parseAsHtml()
+      .parseAsHtml()
   }
 }

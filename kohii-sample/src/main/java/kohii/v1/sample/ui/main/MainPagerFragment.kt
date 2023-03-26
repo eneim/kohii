@@ -66,7 +66,7 @@ class MainPagerFragment : BaseFragment() {
     super.onViewCreated(view, savedInstanceState)
     val binding: FragmentPagerBinding = FragmentPagerBinding.bind(view)
     Kohii[this].register(this, LOW)
-        .addBucket(binding.viewPager)
+      .addBucket(binding.viewPager)
 
     binding.viewPager.also {
       it.adapter = PagerAdapter(childFragmentManager, getApp().demoItems)

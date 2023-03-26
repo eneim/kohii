@@ -30,9 +30,10 @@ import kohii.v1.utils.Capsule
 class OfficialYouTubePlayerEngine private constructor(
   master: Master
 ) : Engine<YouTubePlayerFragment>(
-    master,
-    OfficialYouTubePlayerPlayableCreator(master)
-), DefaultLifecycleObserver {
+  master,
+  OfficialYouTubePlayerPlayableCreator(master)
+),
+  DefaultLifecycleObserver {
 
   private constructor(context: Context) : this(Master[context])
 

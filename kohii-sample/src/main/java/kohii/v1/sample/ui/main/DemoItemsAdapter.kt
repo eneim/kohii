@@ -39,9 +39,10 @@ class DemoItemsAdapter(
       R.layout.holder_main_text -> TextViewHolder(parent)
       R.layout.holder_main_demo_item -> DemoItemViewHolder(parent).also { holder ->
         holder.itemView.setOnClickListener {
-          onClick(items[holder.adapterPosition - 1])
+          onClick(items[holder.absoluteAdapterPosition - 1])
         }
       }
+
       else -> throw IllegalArgumentException("Unknown type: $viewType")
     }
   }
@@ -54,7 +55,7 @@ class DemoItemsAdapter(
   ) {
     if (position <= 0) {
       val content = holder.getString(R.string.lib_intro)
-          .parseAsHtml()
+        .parseAsHtml()
       holder.bind(content)
     } else {
       holder.bind(items[position - 1])

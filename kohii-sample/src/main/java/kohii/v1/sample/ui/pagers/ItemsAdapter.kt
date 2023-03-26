@@ -41,8 +41,11 @@ internal class ItemsAdapter(
     parent: ViewGroup,
     viewType: Int
   ): BaseViewHolder {
-    return if (viewType == TYPE_VIDEO) VideoViewHolder(parent, pagePos)
-    else TextViewHolder(parent)
+    return if (viewType == TYPE_VIDEO) {
+      VideoViewHolder(parent, pagePos)
+    } else {
+      TextViewHolder(parent)
+    }
   }
 
   override fun getItemCount(): Int {
@@ -69,8 +72,10 @@ internal class ItemsAdapter(
         repeatMode = Player.REPEAT_MODE_ONE
         artworkHintListener = holder
       }
-          .bind(holder.container)
-    } else holder.bind(position)
+        .bind(holder.container)
+    } else {
+      holder.bind(position)
+    }
   }
 
   override fun onViewRecycled(holder: BaseViewHolder) {

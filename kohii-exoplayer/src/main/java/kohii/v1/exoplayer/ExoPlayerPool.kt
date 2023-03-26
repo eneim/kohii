@@ -50,9 +50,9 @@ class ExoPlayerPool(
   private val loadControlFactory: LoadControlFactory = ExoPlayerConfig.DEFAULT,
   private val renderersFactory: RenderersFactory =
     DefaultRenderersFactory(context.applicationContext),
-    // DefaultMediaSourceFactory
-    // @RestrictTo(LIBRARY_GROUP)
-    // Note: Only used within the library group. Client must not access this field.
+  // DefaultMediaSourceFactory
+  // @RestrictTo(LIBRARY_GROUP)
+  // Note: Only used within the library group. Client must not access this field.
   val defaultMediaSourceFactory: DefaultMediaSourceFactory = with(context) {
     val httpDataSource = DefaultHttpDataSource.Factory().setUserAgent(userAgent)
 
@@ -63,25 +63,25 @@ class ExoPlayerPool(
     drmSessionManagerProvider.setDrmHttpDataSourceFactory(httpDataSource)
 
     DefaultMediaSourceFactory(
-        /* dataSourceFactory */ CacheDataSource.Factory()
+      /* dataSourceFactory */ CacheDataSource.Factory()
         .setCache(mediaCache)
         .setUpstreamDataSourceFactory(upstreamFactory)
         .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
     )
-        .setDrmSessionManagerProvider(drmSessionManagerProvider)
+      .setDrmSessionManagerProvider(drmSessionManagerProvider)
     // .setLoadErrorHandlingPolicy() // TODO(eneim): left out, needs more investigations.
   }
 ) : PlayerPool<Player>(poolSize) {
 
   override fun createPlayer(media: Media): Player = KohiiExoPlayer(
-      context = context.applicationContext,
-      clock = clock,
-      renderersFactory = renderersFactory,
-      trackSelector = trackSelectorFactory.createDefaultTrackSelector(context.applicationContext),
-      loadControl = loadControlFactory.createLoadControl(),
-      bandwidthMeter = bandwidthMeterFactory.createBandwidthMeter(context.applicationContext),
-      mediaSourceFactory = defaultMediaSourceFactory,
-      looper = Util.getCurrentOrMainLooper()
+    context = context.applicationContext,
+    clock = clock,
+    renderersFactory = renderersFactory,
+    trackSelector = trackSelectorFactory.createDefaultTrackSelector(context.applicationContext),
+    loadControl = loadControlFactory.createLoadControl(),
+    bandwidthMeter = bandwidthMeterFactory.createBandwidthMeter(context.applicationContext),
+    mediaSourceFactory = defaultMediaSourceFactory,
+    looper = Util.getCurrentOrMainLooper()
   )
 
   override fun resetPlayer(player: Player) {

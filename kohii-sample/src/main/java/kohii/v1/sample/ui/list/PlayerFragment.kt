@@ -52,7 +52,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
         it.putParcelable(KEY_INIT_DATA, initData)
       }
       return PlayerFragment()
-          .also { it.arguments = bundle }
+        .also { it.arguments = bundle }
     }
   }
 
@@ -80,7 +80,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
 
     val (initData, rebinder) = requireArguments().let {
       requireNotNull(it.getParcelable<InitData>(KEY_INIT_DATA)) to
-          requireNotNull(it.getParcelable<Rebinder>(KEY_REBINDER))
+        requireNotNull(it.getParcelable<Rebinder>(KEY_REBINDER))
     }
 
     val container =
@@ -92,7 +92,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
 
     val kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(binding.playerContainer)
+        .addBucket(binding.playerContainer)
     }
 
     rebinder.bind(kohii, binding.playerView) {
@@ -110,7 +110,7 @@ open class PlayerFragment : BaseFragment(), Prioritized {
    */
   private fun prepareSharedElementTransition() {
     val transition = TransitionInflater.from(requireContext())
-        .inflateTransition(R.transition.player_shared_element_transition)
+      .inflateTransition(R.transition.player_shared_element_transition)
     transition.duration = 275
     sharedElementEnterTransition = transition
 

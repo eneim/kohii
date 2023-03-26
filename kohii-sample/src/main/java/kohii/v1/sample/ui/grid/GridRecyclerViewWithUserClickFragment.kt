@@ -27,9 +27,11 @@ import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.ui.main.DemoItem
 import timber.log.Timber
 
-class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
-    GridContentFragment.VideoGridCallback,
-    SinglePlayerFragment.Callback {
+class GridRecyclerViewWithUserClickFragment :
+  BaseFragment(),
+  DemoContainer,
+  GridContentFragment.VideoGridCallback,
+  SinglePlayerFragment.Callback {
 
   companion object {
     fun newInstance() = GridRecyclerViewWithUserClickFragment()
@@ -49,8 +51,8 @@ class GridRecyclerViewWithUserClickFragment : BaseFragment(), DemoContainer,
         videoFragment.select(value)
         val tag = value.rebinder.tag.toString()
         childFragmentManager.findFragmentByTag(tag)
-            ?: SinglePlayerFragment.newInstance(value)
-                .showNow(childFragmentManager, tag)
+          ?: SinglePlayerFragment.newInstance(value)
+            .showNow(childFragmentManager, tag)
       } else {
         if (from != null) videoFragment.deselect(from)
       }

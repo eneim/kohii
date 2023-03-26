@@ -24,33 +24,32 @@ import androidx.recyclerview.widget.RecyclerView.NO_ID
 import androidx.recyclerview.widget.RecyclerView.NO_POSITION
 import androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener
 import kohii.v1.core.Rebinder
-import java.util.HashMap
 
 // This KeyProvider allow a detached View still in key/position map.
 class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
-    ItemKeyProvider<Rebinder>(SCOPE_CACHED) {
+  ItemKeyProvider<Rebinder>(SCOPE_CACHED) {
 
   private val positionToKey = SparseArray<Rebinder>()
   private val keyToPosition = HashMap<Rebinder, Int>()
 
   init {
     recyclerView.addOnChildAttachStateChangeListener(
-        object : OnChildAttachStateChangeListener {
-          override fun onChildViewAttachedToWindow(view: View) {
-            onAttached(view)
-          }
-
-          override fun onChildViewDetachedFromWindow(view: View) {
-            onDetached(view)
-          }
+      object : OnChildAttachStateChangeListener {
+        override fun onChildViewAttachedToWindow(view: View) {
+          onAttached(view)
         }
+
+        override fun onChildViewDetachedFromWindow(view: View) {
+          onDetached(view)
+        }
+      }
     )
   }
 
   internal /* synthetic access */ fun onAttached(view: View) {
     val holder = recyclerView.findContainingViewHolder(view)
     if (holder is VideoItemHolder) {
-      val position = holder.adapterPosition
+      val position = holder.absoluteAdapterPosition
       val id = holder.getItemId()
       if (id != NO_ID) {
         val key = holder.rebinder
@@ -65,7 +64,7 @@ class VideoTagKeyProvider(private val recyclerView: RecyclerView) :
   internal /* synthetic access */ fun onDetached(view: View) {
     val holder = recyclerView.findContainingViewHolder(view)
     if (holder is VideoItemHolder) {
-      val position = holder.adapterPosition
+      val position = holder.absoluteAdapterPosition
       val id = holder.getItemId()
       // only if id == NO_ID, we remove this View from cache.
       // when id != NO_ID, it means that this View is still bound to an Item.

@@ -18,9 +18,9 @@ package kohii
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Versions {
-  const val exoPlayer = "2.18.1"
+  const val exoPlayer = "2.18.5"
   const val exoPlayerSnapShot = "dev-v2-r${exoPlayer}-SNAPSHOT"
-  const val exoPlayerCode = 2018001
+  const val exoPlayerCode = 2018005
 }
 
 object ReleaseInfo {
@@ -33,11 +33,11 @@ object ReleaseInfo {
   val licenses = arrayOf("Apache-2.0")
 }
 
-@Suppress("MayBeConstant", "unused")
+@Suppress("unused")
 object BuildConfig {
 
-  const val compileSdkVersion = 32
-  const val targetSdkVersion = 32
+  const val compileSdkVersion = 33
+  const val targetSdkVersion = 33
   const val minSdkVersion = 21
   const val demoSdkVersion = 21 // to prevent dex limit on debug build.
 
@@ -49,7 +49,7 @@ object BuildConfig {
 object Libs {
 
   object Common {
-    const val androidGradlePlugin = "com.android.tools.build:gradle:7.3.0"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:7.4.2"
     const val dexcountGradlePlugin = "com.getkeepsafe.dexcount:dexcount-gradle-plugin:3.0.1"
     const val ktLintPlugin = "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
 

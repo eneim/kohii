@@ -29,7 +29,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 class TikTokApp : Application() {
 
   private val moshi: Moshi = Moshi.Builder()
-      .build()
+    .build()
 
   val videos by lazy(NONE) {
     val jsonAdapter: JsonAdapter<List<Video>> =

@@ -45,11 +45,11 @@ class PageKeyedPlaylistDataSource(
   val initialLoad = MutableLiveData<NetworkState>()
 
   private val request = youtube.playlistItems()
-      .list(listOf(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_PART))
-      .setPlaylistId(playlistId)
-      .setFields(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_FIELDS)
-      .setMaxResults(pageSize)
-      .setKey(apiKey)
+    .list(listOf(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_PART))
+    .setPlaylistId(playlistId)
+    .setFields(YouTubeDataSourceFactory.YOUTUBE_PLAYLIST_FIELDS)
+    .setMaxResults(pageSize)
+    .setKey(apiKey)
 
   fun retryAllFailed() {
     val prevRetry = retry
@@ -69,15 +69,15 @@ class PageKeyedPlaylistDataSource(
     initialLoad.postValue(NetworkState.LOADING)
 
     val result = request.setPageToken(null)
-        .execute()
+      .execute()
     val videoIds = result.items.map<PlaylistItem, String> { it.snippet.resourceId.videoId }
-        .toList()
+      .toList()
     val videos = youtube.videos()
-        .list(listOf(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART))
-        .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
-        .setKey(apiKey)
-        .setId(videoIds)
-        .execute()
+      .list(listOf(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART))
+      .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
+      .setKey(apiKey)
+      .setId(videoIds)
+      .execute()
 
     callback.onResult(videos.items, result.prevPageToken, result.nextPageToken)
     networkState.postValue(NetworkState.LOADED)
@@ -91,15 +91,15 @@ class PageKeyedPlaylistDataSource(
     networkState.postValue(NetworkState.LOADING)
 
     val result = request.setPageToken(params.key)
-        .execute()
+      .execute()
     val videoIds = result.items.map<PlaylistItem, String> { it.snippet.resourceId.videoId }
-        .toList()
+      .toList()
     val videos = youtube.videos()
-        .list(listOf(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART))
-        .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
-        .setKey(apiKey)
-        .setId(videoIds)
-        .execute()
+      .list(listOf(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_PART))
+      .setFields(YouTubeDataSourceFactory.YOUTUBE_VIDEOS_FIELDS)
+      .setKey(apiKey)
+      .setId(videoIds)
+      .execute()
 
     callback.onResult(videos.items, result.nextPageToken)
     networkState.postValue(NetworkState.LOADED)

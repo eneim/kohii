@@ -61,7 +61,7 @@ class GridContentFragment : BaseFragment(), Prioritized {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     kohii.register(this, MemoryMode.LOW)
-        .addBucket(binding.container)
+      .addBucket(binding.container)
 
     val spanCount = resources.getInteger(R.integer.grid_span)
     val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {

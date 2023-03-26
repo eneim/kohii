@@ -54,6 +54,7 @@ internal class BehaviorWrapper<V : View>(
         handler.removeMessages(EVENT_IDLE)
         handler.sendEmptyMessageDelayed(EVENT_IDLE, EVENT_DELAY)
       }
+
       EVENT_IDLE -> {
         // idle --> consume it.
         if (!scrollConsumed.getAndSet(true)) weakManager.get()?.refresh()
@@ -74,8 +75,8 @@ internal class BehaviorWrapper<V : View>(
   }
 
   @Deprecated(
-      "Deprecated in Java",
-      ReplaceWith("delegate.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed)")
+    "Deprecated in Java",
+    ReplaceWith("delegate.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed)")
   )
   override fun onNestedPreScroll(
     coordinatorLayout: CoordinatorLayout,
@@ -112,7 +113,13 @@ internal class BehaviorWrapper<V : View>(
     dyUnconsumed: Int
   ) {
     delegate.onNestedScroll(
-        coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed
+      coordinatorLayout,
+      child,
+      target,
+      dxConsumed,
+      dyConsumed,
+      dxUnconsumed,
+      dyUnconsumed
     )
   }
 
@@ -129,7 +136,14 @@ internal class BehaviorWrapper<V : View>(
     type: Int
   ) {
     delegate.onNestedScroll(
-        coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type
+      coordinatorLayout,
+      child,
+      target,
+      dxConsumed,
+      dyConsumed,
+      dxUnconsumed,
+      dyUnconsumed,
+      type
     )
   }
 
@@ -145,8 +159,8 @@ internal class BehaviorWrapper<V : View>(
     consumed: IntArray
   ) {
     delegate.onNestedScroll(
-        coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type,
-        consumed
+      coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type,
+      consumed
     )
   }
 
@@ -352,7 +366,12 @@ internal class BehaviorWrapper<V : View>(
     handler.removeCallbacksAndMessages(null)
     handler.sendEmptyMessage(EVENT_SCROLL)
     return delegate.onStartNestedScroll(
-        coordinatorLayout, child, directTargetChild, target, axes, type
+      coordinatorLayout,
+      child,
+      directTargetChild,
+      target,
+      axes,
+      type
     )
   }
 
@@ -365,7 +384,12 @@ internal class BehaviorWrapper<V : View>(
     heightUsed: Int
   ): Boolean {
     return delegate.onMeasureChild(
-        parent, child, parentWidthMeasureSpec, widthUsed, parentHeightMeasureSpec, heightUsed
+      parent,
+      child,
+      parentWidthMeasureSpec,
+      widthUsed,
+      parentHeightMeasureSpec,
+      heightUsed
     )
   }
 }

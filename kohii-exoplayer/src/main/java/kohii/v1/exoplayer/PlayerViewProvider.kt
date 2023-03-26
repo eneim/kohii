@@ -43,6 +43,6 @@ class PlayerViewProvider : ViewRendererProvider() {
     rendererType: Int
   ): PlayerView {
     return LayoutInflater.from(playback.container.context)
-        .inflate(rendererType, playback.container, false) as PlayerView
+      .inflate(rendererType, playback.container, false) as PlayerView
   }
 }

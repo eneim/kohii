@@ -76,7 +76,7 @@ class SinglePlayerFragment : AppCompatDialogFragment(), Playback.Callback {
     super.onViewCreated(view, savedInstanceState)
     binding.playerContainer.setAspectRatio(16 / 9F)
     kohii.register(this)
-        .addBucket(binding.playerContainer)
+      .addBucket(binding.playerContainer)
   }
 
   override fun onDestroyView() {

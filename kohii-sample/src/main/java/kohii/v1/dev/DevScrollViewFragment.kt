@@ -54,7 +54,7 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     manager = kohii.register(this)
-        .addBucket(binding.scrollView)
+      .addBucket(binding.scrollView)
 
     kohii.setUp(DemoApp.assetVideoUri) {
       tag = "player::0"
@@ -83,7 +83,7 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
         }
       }
     }
-        .bind(binding.playerView1)
+      .bind(binding.playerView1)
 
     kohii.setUp("https://content.jwplatform.com/manifests/Cl6EVHgQ.m3u8") {
       tag = "player::1"
@@ -111,7 +111,7 @@ class DevScrollViewFragment : BaseFragment(), OnSelectionListener {
         }
       }
     }
-        .bind(binding.playerView2)
+      .bind(binding.playerView2)
   }
 
   override fun onSelection(selection: Collection<Playback>) {

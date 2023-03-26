@@ -71,7 +71,9 @@ class Latte private constructor(
     }
 
     fun build(): Latte = Latte(
-        master, playableCreator, rendererProviderFactory
+      master,
+      playableCreator,
+      rendererProviderFactory
     ).also {
       master.registerEngine(it)
     }

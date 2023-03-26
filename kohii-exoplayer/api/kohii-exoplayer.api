@@ -141,7 +141,7 @@ public class kohii/v1/exoplayer/PlayerViewBridge : kohii/v1/core/AbstractBridge,
 	public fun isPlaying ()Z
 	public fun onPlayerError (Lcom/google/android/exoplayer2/PlaybackException;)V
 	public fun onPositionDiscontinuity (I)V
-	public fun onTracksChanged (Lcom/google/android/exoplayer2/source/TrackGroupArray;Lcom/google/android/exoplayer2/trackselection/TrackSelectionArray;)V
+	public fun onTracksChanged (Lcom/google/android/exoplayer2/Tracks;)V
 	public fun pause ()V
 	public fun play ()V
 	public fun prepare (Z)V

@@ -131,19 +131,22 @@ internal class DynamicFragmentRendererPlayback(
     container: ViewGroup,
     fragment: Fragment
   ) {
-    fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
-      override fun onFragmentViewCreated(
-        fm: FragmentManager,
-        f: Fragment,
-        v: View,
-        savedInstanceState: Bundle?
-      ) {
-        if (f === fragment) {
-          fm.unregisterFragmentLifecycleCallbacks(this)
-          addViewToContainer(v, container)
+    fragmentManager.registerFragmentLifecycleCallbacks(
+      object : FragmentLifecycleCallbacks() {
+        override fun onFragmentViewCreated(
+          fm: FragmentManager,
+          f: Fragment,
+          v: View,
+          savedInstanceState: Bundle?
+        ) {
+          if (f === fragment) {
+            fm.unregisterFragmentLifecycleCallbacks(this)
+            addViewToContainer(v, container)
+          }
         }
-      }
-    }, false)
+      },
+      false
+    )
   }
 
   internal fun addViewToContainer(

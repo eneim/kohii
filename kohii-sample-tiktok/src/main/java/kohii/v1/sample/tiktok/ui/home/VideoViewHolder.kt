@@ -32,9 +32,9 @@ class VideoViewHolder(
         val firstPlaylist = value.playlist.first()
         videoThumbnail = firstPlaylist.image
         videoFile = firstPlaylist.sources
-            .firstOrNull {
-              it.file.endsWith("m3u8")
-            }?.file ?: firstPlaylist.sources.first().file
+          .firstOrNull {
+            it.file.endsWith("m3u8")
+          }?.file ?: firstPlaylist.sources.first().file
       } else {
         videoThumbnail = null
         videoFile = null

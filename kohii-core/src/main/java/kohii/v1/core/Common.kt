@@ -26,74 +26,74 @@ import com.google.android.exoplayer2.Player
 object Common {
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_OFF",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.REPEAT_MODE_OFF",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_ONE",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.REPEAT_MODE_ONE",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_ALL",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.REPEAT_MODE_ALL",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.REPEAT_MODE_ALL",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.REPEAT_MODE_ALL",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val REPEAT_MODE_GROUP = Player.REPEAT_MODE_ALL
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_IDLE",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.STATE_IDLE",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val STATE_IDLE = Player.STATE_IDLE
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_BUFFERING",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.STATE_BUFFERING",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val STATE_BUFFERING = Player.STATE_BUFFERING
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_READY",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.STATE_READY",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val STATE_READY = Player.STATE_READY
 
   @Deprecated(
-      message = "Use constant from Player class directly instead.",
-      replaceWith = ReplaceWith(
-          expression = "Player.STATE_ENDED",
-          imports = ["com.google.android.exoplayer2.Player"]
-      )
+    message = "Use constant from Player class directly instead.",
+    replaceWith = ReplaceWith(
+      expression = "Player.STATE_ENDED",
+      imports = ["com.google.android.exoplayer2.Player"]
+    )
   )
   const val STATE_ENDED = Player.STATE_ENDED
 

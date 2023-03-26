@@ -39,9 +39,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         />
 
-    <include
-        layout="@layout/holder_nested_recyclerview"
-        />
+    <include layout="@layout/holder_nested_recyclerview" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"

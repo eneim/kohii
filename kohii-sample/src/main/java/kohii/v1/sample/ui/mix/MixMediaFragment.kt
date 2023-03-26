@@ -54,7 +54,7 @@ class MixMediaFragment : BaseFragment() {
     val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
     val kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(binding.recyclerView)
+        .addBucket(binding.recyclerView)
     }
 
     binding.recyclerView.also {

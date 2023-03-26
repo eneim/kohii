@@ -58,7 +58,7 @@ abstract class Engine<RENDERER : Any> constructor(
     media: Media,
     crossinline options: Options.() -> Unit = {}
   ): Binder = Binder(this, media)
-      .also { options(it.options) }
+    .also { options(it.options) }
 
   @JvmOverloads
   inline fun setUp(
@@ -74,10 +74,10 @@ abstract class Engine<RENDERER : Any> constructor(
 
   fun cancel(tag: Any) {
     master.requests.filterValues { it.tag == tag }
-        .forEach {
-          it.value.playable.playback = null
-          master.requests.remove(it.key)?.onRemoved()
-        }
+      .forEach {
+        it.value.playable.playback = null
+        master.requests.remove(it.key)?.onRemoved()
+      }
   }
 
   fun cancel(container: ViewGroup) {
@@ -85,8 +85,8 @@ abstract class Engine<RENDERER : Any> constructor(
   }
 
   @Deprecated(
-      "Just create the Rebinder directly.",
-      ReplaceWith("Rebinder(tag)", "kohii.v1.core.Rebinder")
+    "Just create the Rebinder directly.",
+    ReplaceWith("Rebinder(tag)", "kohii.v1.core.Rebinder")
   )
   fun fetchRebinder(tag: Any?): Rebinder? {
     return if (tag == null) null else Rebinder(tag)
@@ -100,11 +100,11 @@ abstract class Engine<RENDERER : Any> constructor(
   ): Manager {
     val (activity, lifecycleOwner) = fragment.requireActivity() to fragment.viewLifecycleOwner
     return master.registerInternal(
-        activity = activity,
-        host = fragment,
-        managerLifecycleOwner = lifecycleOwner,
-        memoryMode = memoryMode,
-        activeLifecycleState = activeLifecycleState
+      activity = activity,
+      host = fragment,
+      managerLifecycleOwner = lifecycleOwner,
+      memoryMode = memoryMode,
+      activeLifecycleState = activeLifecycleState
     )
   }
 
@@ -114,11 +114,11 @@ abstract class Engine<RENDERER : Any> constructor(
     memoryMode: MemoryMode = LOW,
     activeLifecycleState: State = STARTED
   ): Manager = master.registerInternal(
-      activity = activity,
-      host = activity,
-      managerLifecycleOwner = activity,
-      memoryMode = memoryMode,
-      activeLifecycleState = activeLifecycleState
+    activity = activity,
+    host = activity,
+    managerLifecycleOwner = activity,
+    memoryMode = memoryMode,
+    activeLifecycleState = activeLifecycleState
   )
 
   /**
@@ -152,10 +152,10 @@ abstract class Engine<RENDERER : Any> constructor(
 
   fun stick(lifecycleOwner: LifecycleOwner) {
     val manager = master.groups.asSequence()
-        .map {
-          it.managers.find { m -> m.lifecycleOwner === lifecycleOwner }
-        }
-        .firstOrNull()
+      .map {
+        it.managers.find { m -> m.lifecycleOwner === lifecycleOwner }
+      }
+      .firstOrNull()
     if (manager != null) {
       manager.group.stick(manager)
       manager.refresh()
@@ -164,8 +164,8 @@ abstract class Engine<RENDERER : Any> constructor(
 
   fun unstick(lifecycleOwner: LifecycleOwner) {
     val manager = master.groups.asSequence()
-        .map { it.managers.find { m -> m.lifecycleOwner === lifecycleOwner } }
-        .firstOrNull()
+      .map { it.managers.find { m -> m.lifecycleOwner === lifecycleOwner } }
+      .firstOrNull()
     if (manager != null) {
       manager.group.unstick(manager)
       manager.refresh()

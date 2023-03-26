@@ -93,7 +93,7 @@ class VerticalListRecyclerViewFragment : BaseFragment(), DemoContainer {
     val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
     val kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(binding.recyclerView)
+        .addBucket(binding.recyclerView)
     }
 
     val data = ArrayList(items).apply { this.addAll(items) } // To double the list.
@@ -107,27 +107,27 @@ class VerticalListRecyclerViewFragment : BaseFragment(), DemoContainer {
     postponeEnterTransition()
 
     this.playerInfoHolder?.fetchPlayerInfo()
-        ?.run {
-          container.doOnNextLayoutAs<RecyclerView> {
-            val layout = it.layoutManager as LinearLayoutManager
-            val viewAtPosition = layout.findViewByPosition(this.adapterPos)
-            // Scroll to position if the view for the current position is null (not currently part of
-            // layout manager children), or it's not completely visible.
-            if (viewAtPosition == null ||
-                layout.isViewPartiallyVisible(viewAtPosition, false, true)
-            ) {
-              it.postDelayed(200) {
-                layout.scrollToPositionWithOffset(this.adapterPos, this.viewTop)
-              }
+      ?.run {
+        container.doOnNextLayoutAs<RecyclerView> {
+          val layout = it.layoutManager as LinearLayoutManager
+          val viewAtPosition = layout.findViewByPosition(this.adapterPos)
+          // Scroll to position if the view for the current position is null (not currently part of
+          // layout manager children), or it's not completely visible.
+          if (viewAtPosition == null ||
+            layout.isViewPartiallyVisible(viewAtPosition, false, true)
+          ) {
+            it.postDelayed(200) {
+              layout.scrollToPositionWithOffset(this.adapterPos, this.viewTop)
             }
           }
         }
+      }
   }
 
   private fun prepareTransitions(container: RecyclerView) {
     // Hmm Google https://stackoverflow.com/questions/49461738/transitionset-arraylist-size-on-a-null-object-reference
     val transition = TransitionInflater.from(requireContext())
-        .inflateTransition(R.transition.player_exit_transition)
+      .inflateTransition(R.transition.player_exit_transition)
     transition.duration = 375
     exitTransition = transition
 

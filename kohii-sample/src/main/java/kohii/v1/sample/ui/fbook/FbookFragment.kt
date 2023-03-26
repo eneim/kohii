@@ -53,10 +53,14 @@ import kotlin.properties.Delegates
 /**
  * A demonstration that implements the UX of Facebook Videos.
  */
-class FbookFragment : BaseFragment(), DemoContainer,
-    BackPressConsumer,
-    FloatPlayerController,
-    PlayerPanel.Callback, Manager.OnSelectionListener, Playback.StateListener {
+class FbookFragment :
+  BaseFragment(),
+  DemoContainer,
+  BackPressConsumer,
+  FloatPlayerController,
+  PlayerPanel.Callback,
+  Manager.OnSelectionListener,
+  Playback.StateListener {
 
   companion object {
     private const val STATE_KEY_REBINDER = "kohii::fbook::arg::rebinder"
@@ -75,15 +79,15 @@ class FbookFragment : BaseFragment(), DemoContainer,
   private var _binding: FragmentFacebookBinding? = null
   private var currentSelectedRebinder: Rebinder? = null
   private var currentSelectedPlayback: Playback? by Delegates.observable<Playback?>(
-      initialValue = null,
-      onChange = { _, from, to ->
-        if (from === to) return@observable
-        from?.removeStateListener(this@FbookFragment)
-        if (to != null) {
-          to.addStateListener(this@FbookFragment)
-          currentSelectedRebinder = Rebinder(to.tag)
-        }
+    initialValue = null,
+    onChange = { _, from, to ->
+      if (from === to) return@observable
+      from?.removeStateListener(this@FbookFragment)
+      if (to != null) {
+        to.addStateListener(this@FbookFragment)
+        currentSelectedRebinder = Rebinder(to.tag)
       }
+    }
   )
 
   // Floating View
@@ -94,25 +98,26 @@ class FbookFragment : BaseFragment(), DemoContainer,
 
   private var currentOverlayRebinder: Rebinder? = null
   private var currentOverlayPlayerInfo by Delegates.observable<OverlayPlayerInfo?>(
-      initialValue = null,
-      onChange = { _, from, to ->
-        if (to == null) { // dismiss the overlay player.
-          if (from != null) {
-            currentOverlayRebinder = null
-            closeFullscreenPlayer(from.rebinder)
-            closeFloatPlayer(from.rebinder)
-            clearPlayerSelection(from.rebinder)
-          }
-        } else { // open overlay player
-          val (mode, rebinder) = to
-          currentOverlayRebinder = rebinder
-          when (mode) {
-            OverlayPlayerInfo.MODE_FULLSCREEN -> openFullscreenPlayer(rebinder)
-            OverlayPlayerInfo.MODE_FLOAT -> openFloatPlayer(rebinder)
-            else -> throw IllegalArgumentException("Unknown overlay mode: $mode")
-          }
+    initialValue = null,
+    onChange = { _, from, to ->
+      if (to == null) { // dismiss the overlay player.
+        if (from != null) {
+          currentOverlayRebinder = null
+          closeFullscreenPlayer(from.rebinder)
+          closeFloatPlayer(from.rebinder)
+          clearPlayerSelection(from.rebinder)
         }
-      })
+      } else { // open overlay player
+        val (mode, rebinder) = to
+        currentOverlayRebinder = rebinder
+        when (mode) {
+          OverlayPlayerInfo.MODE_FULLSCREEN -> openFullscreenPlayer(rebinder)
+          OverlayPlayerInfo.MODE_FLOAT -> openFloatPlayer(rebinder)
+          else -> throw IllegalArgumentException("Unknown overlay mode: $mode")
+        }
+      }
+    }
+  )
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -129,8 +134,8 @@ class FbookFragment : BaseFragment(), DemoContainer,
   ) {
     super.onViewCreated(view, savedInstanceState)
     val manager = kohii.register(this)
-        .addBucket(binding.recyclerView)
-        .addBucket(binding.content)
+      .addBucket(binding.recyclerView)
+      .addBucket(binding.content)
 
     viewModel.apply {
       timelineVolume.observe(viewLifecycleOwner) {
@@ -138,7 +143,7 @@ class FbookFragment : BaseFragment(), DemoContainer,
         val adapter = binding.recyclerView.adapter
         if (adapter != null) {
           binding.recyclerView.filterVisibleHolder<VideoViewHolder>()
-              .forEach { vh -> adapter.notifyItemChanged(vh.adapterPosition, it) }
+            .forEach { vh -> adapter.notifyItemChanged(vh.adapterPosition, it) }
         }
       }
 
@@ -148,13 +153,16 @@ class FbookFragment : BaseFragment(), DemoContainer,
     }
 
     val videos = getApp().videos
-    val adapter = FbookAdapter(kohii, videos, this,
-        shouldBindVideo = { rebinder -> currentOverlayRebinder != rebinder },
-        volumeClick = {
-          val current = requireNotNull(viewModel.timelineVolume.value)
-          viewModel.timelineVolume.value =
-            VolumeInfo(!current.mute, current.volume)
-        }
+    val adapter = FbookAdapter(
+      kohii,
+      videos,
+      this,
+      shouldBindVideo = { rebinder -> currentOverlayRebinder != rebinder },
+      volumeClick = {
+        val current = requireNotNull(viewModel.timelineVolume.value)
+        viewModel.timelineVolume.value =
+          VolumeInfo(!current.mute, current.volume)
+      }
     )
 
     binding.recyclerView.adapter = adapter
@@ -257,7 +265,9 @@ class FbookFragment : BaseFragment(), DemoContainer,
     return if (viewModel.overlayPlayerInfo.value != null) {
       viewModel.overlayPlayerInfo.value = null
       true
-    } else false
+    } else {
+      false
+    }
   }
 
   // Other util methods
@@ -266,10 +276,10 @@ class FbookFragment : BaseFragment(), DemoContainer,
     val adapter = binding.recyclerView.adapter
     if (adapter != null) {
       binding.recyclerView.filterVisibleHolder<VideoViewHolder> { it.rebinder == rebinder }
-          .also { if (it.isEmpty()) overlayPlayback?.unbind() } // No visible Player --> unbind.
-          .forEach {
-            adapter.notifyItemChanged(it.adapterPosition)
-          }
+        .also { if (it.isEmpty()) overlayPlayback?.unbind() } // No visible Player --> unbind.
+        .forEach {
+          adapter.notifyItemChanged(it.absoluteAdapterPosition)
+        }
     }
     overlayPlayback = null
   }
@@ -298,18 +308,18 @@ class FbookFragment : BaseFragment(), DemoContainer,
               }
             }
           }
-              .bind(kohii, playerView) { playback ->
-                binding.dummyPlayer.isGone = true
-                playback.addStateListener(object : Playback.StateListener {
-                  override fun onEnded(playback: Playback) {
-                    kohii.unstick(playback)
-                    playback.removeStateListener(this)
-                    viewModel.overlayPlayerInfo.value = null
-                  }
-                })
-                kohii.stick(playback)
-                overlayPlayback = playback
-              }
+            .bind(kohii, playerView) { playback ->
+              binding.dummyPlayer.isGone = true
+              playback.addStateListener(object : Playback.StateListener {
+                override fun onEnded(playback: Playback) {
+                  kohii.unstick(playback)
+                  playback.removeStateListener(this)
+                  viewModel.overlayPlayerInfo.value = null
+                }
+              })
+              kohii.stick(playback)
+              overlayPlayback = playback
+            }
         }
       }
 
@@ -320,8 +330,8 @@ class FbookFragment : BaseFragment(), DemoContainer,
         binding.dummyPlayer.isInvisible = true // View.INVISIBLE
         rebinder.bind(kohii, binding.dummyPlayer)
         val intent = Intent(
-            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            "package:${requireActivity().packageName}".toUri()
+          Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+          "package:${requireActivity().packageName}".toUri()
         )
         startActivityForResult(intent, PERMISSION_REQ_CODE)
       }

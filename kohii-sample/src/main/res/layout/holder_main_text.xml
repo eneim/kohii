@@ -15,8 +15,7 @@
   ~ limitations under the License.
   -->
 
-<androidx.appcompat.widget.AppCompatTextView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.AppCompatTextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/textContent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

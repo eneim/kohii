@@ -36,10 +36,11 @@ import kohii.v1.sample.databinding.FragmentFbookPlayerBinding
 import kohii.v1.sample.ui.fbook.player.PlayerPanel.Callback
 import java.util.concurrent.atomic.AtomicInteger
 
-class BigPlayerDialog : InfinityDialogFragment(),
-    PlayerPanel,
-    Playback.Callback,
-    Playback.StateListener {
+class BigPlayerDialog :
+  InfinityDialogFragment(),
+  PlayerPanel,
+  Playback.Callback,
+  Playback.StateListener {
 
   companion object {
     private const val KEY_REBINDER = "kohii:fragment:player:rebinder"
@@ -67,7 +68,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
 
   private val systemUiOptions by lazy {
     AtomicInteger(
-        requireActivity().window.decorView.systemUiVisibility
+      requireActivity().window.decorView.systemUiVisibility
     )
   }
 
@@ -112,7 +113,7 @@ class BigPlayerDialog : InfinityDialogFragment(),
     val binding: FragmentFbookPlayerBinding = FragmentFbookPlayerBinding.bind(view)
     kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.playerContainer)
+      .addBucket(binding.playerContainer)
 
     requireArguments().apply {
       rebinderFromArgs = requireNotNull(getParcelable(KEY_REBINDER))
@@ -130,16 +131,16 @@ class BigPlayerDialog : InfinityDialogFragment(),
     if (requireActivity().isLandscape()) {
       val currentUiOptions = decorView.systemUiVisibility
       decorView.systemUiVisibility = (
-          currentUiOptions
-              or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-              or View.SYSTEM_UI_FLAG_IMMERSIVE
-              // or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-              // or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-              // or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-              // Hide the nav bar and status bar
-              or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-              or View.SYSTEM_UI_FLAG_FULLSCREEN
-          )
+        currentUiOptions
+          or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+          or View.SYSTEM_UI_FLAG_IMMERSIVE
+          // or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+          // or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+          // or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+          // Hide the nav bar and status bar
+          or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+          or View.SYSTEM_UI_FLAG_FULLSCREEN
+        )
     } else {
       decorView.systemUiVisibility = 0
       playerCallback?.requestDismiss(this) ?: dismissAllowingStateLoss()
@@ -161,9 +162,9 @@ class BigPlayerDialog : InfinityDialogFragment(),
       }
       callbacks += this@BigPlayerDialog
     }
-        .bind(kohii, binding.playerView) {
-          it.addStateListener(this@BigPlayerDialog)
-        }
+      .bind(kohii, binding.playerView) {
+        it.addStateListener(this@BigPlayerDialog)
+      }
 
     binding.minimizeButton.setOnClickListener {
       floatPlayerController?.showFloatPlayer(rebinder)
