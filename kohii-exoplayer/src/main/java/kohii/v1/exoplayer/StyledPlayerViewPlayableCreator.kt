@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2023 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import kohii.v1.core.BridgeCreator
 import kohii.v1.core.Common
 import kohii.v1.core.Master
@@ -27,33 +27,30 @@ import kohii.v1.core.PlayableCreator
 import kohii.v1.media.Media
 import kotlin.LazyThreadSafetyMode.NONE
 
-@Deprecated(
-  message = "PlayerView is deprecated. Use the StyledPlayerViewBridgeCreatorFactory instead."
-)
-typealias PlayerViewBridgeCreatorFactory = (Context) -> BridgeCreator<PlayerView>
+typealias StyledPlayerViewBridgeCreatorFactory = (Context) -> BridgeCreator<StyledPlayerView>
 
-@Deprecated(message = "PlayerView is deprecated. Use the StyledPlayerViewPlayableCreator instead.")
-class PlayerViewPlayableCreator internal constructor(
+class StyledPlayerViewPlayableCreator internal constructor(
   private val master: Master,
-  private val bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = defaultBridgeCreatorFactory
-) : PlayableCreator<PlayerView>(PlayerView::class.java) {
+  private val bridgeCreatorFactory: StyledPlayerViewBridgeCreatorFactory =
+    defaultBridgeCreatorFactory
+) : PlayableCreator<StyledPlayerView>(StyledPlayerView::class.java) {
 
   constructor(context: Context) : this(Master[context.applicationContext])
 
   companion object {
 
     // Only pass Application to this method.
-    private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { context ->
+    private val defaultBridgeCreatorFactory: StyledPlayerViewBridgeCreatorFactory = { context ->
       // ExoPlayerProvider
       val playerPool = ExoPlayerPool(
         context = context,
         userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
       )
-      PlayerViewBridgeCreator(playerPool, playerPool.defaultMediaSourceFactory)
+      StyledPlayerViewBridgeCreator(playerPool, playerPool.defaultMediaSourceFactory)
     }
   }
 
-  private val bridgeCreator: Lazy<BridgeCreator<PlayerView>> = lazy(NONE) {
+  private val bridgeCreator: Lazy<BridgeCreator<StyledPlayerView>> = lazy(NONE) {
     bridgeCreatorFactory(master.app)
   }
 
@@ -61,7 +58,7 @@ class PlayerViewPlayableCreator internal constructor(
     config: Config,
     media: Media
   ): Playable {
-    return PlayerViewPlayable(
+    return StyledPlayerViewPlayable(
       master,
       media,
       config,
@@ -77,13 +74,14 @@ class PlayerViewPlayableCreator internal constructor(
 
     private val app = context.applicationContext
 
-    private var bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = defaultBridgeCreatorFactory
+    private var bridgeCreatorFactory: StyledPlayerViewBridgeCreatorFactory =
+      defaultBridgeCreatorFactory
 
-    fun setBridgeCreatorFactory(factory: PlayerViewBridgeCreatorFactory): Builder = apply {
+    fun setBridgeCreatorFactory(factory: StyledPlayerViewBridgeCreatorFactory): Builder = apply {
       this.bridgeCreatorFactory = factory
     }
 
-    fun build(): PlayableCreator<PlayerView> = PlayerViewPlayableCreator(
+    fun build(): PlayableCreator<StyledPlayerView> = StyledPlayerViewPlayableCreator(
       Master[app],
       bridgeCreatorFactory
     )

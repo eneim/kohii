@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2023 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,22 @@ package kohii.v1.exoplayer
 import android.content.Context
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import kohii.v1.core.Bridge
 import kohii.v1.core.BridgeCreator
 import kohii.v1.core.PlayerPool
 import kohii.v1.media.Media
 
-@Deprecated(message = "PlayerView is deprecated. Use the StyledPlayerViewBridgeCreator instead.")
-class PlayerViewBridgeCreator(
+class StyledPlayerViewBridgeCreator(
   private val playerPool: PlayerPool<Player>,
   private val mediaSourceFactory: MediaSource.Factory
-) : BridgeCreator<PlayerView> {
+) : BridgeCreator<StyledPlayerView> {
 
   override fun createBridge(
     context: Context,
     media: Media
-  ): Bridge<PlayerView> {
-    return PlayerViewBridge(
+  ): Bridge<StyledPlayerView> {
+    return StyledPlayerViewBridge(
       context,
       media,
       playerPool,

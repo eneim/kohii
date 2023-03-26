@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2023 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,33 +20,28 @@ import android.content.Context
 import androidx.fragment.app.Fragment
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import kohii.v1.core.Common
 import kohii.v1.core.Engine
 import kohii.v1.core.Manager
 import kohii.v1.core.Master
 import kohii.v1.core.PlayableCreator
-import kohii.v1.core.Playback
 import kohii.v1.core.PlayerPool
 import kohii.v1.core.RendererProviderFactory
-import kohii.v1.exoplayer.Kohii.Builder
 import kohii.v1.media.Media
 import kohii.v1.utils.Capsule
 
-@Deprecated(
-  message = "PlayerView is deprecated. Use the StyledPlayerViewEngine instead."
-)
-open class Kohii constructor(
+open class StyledPlayerViewEngine constructor(
   master: Master,
-  playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master),
-  private val rendererProviderFactory: RendererProviderFactory = ::PlayerViewProvider
-) : Engine<PlayerView>(master, playableCreator) {
+  playableCreator: PlayableCreator<StyledPlayerView> = StyledPlayerViewPlayableCreator(master),
+  private val rendererProviderFactory: RendererProviderFactory = ::StyledPlayerViewProvider
+) : Engine<StyledPlayerView>(master, playableCreator) {
 
   private constructor(context: Context) : this(Master[context])
 
   companion object {
 
-    private val capsule = Capsule(::Kohii)
+    private val capsule = Capsule(::StyledPlayerViewEngine)
 
     @JvmStatic // convenient static call for Java
     operator fun get(context: Context) = capsule.get(context)
@@ -56,14 +51,9 @@ open class Kohii constructor(
   }
 
   override fun prepare(manager: Manager) {
-    manager.registerRendererProvider(PlayerView::class.java, rendererProviderFactory())
+    manager.registerRendererProvider(StyledPlayerView::class.java, rendererProviderFactory())
   }
 
-  /**
-   * Creates a [ControlDispatcher] that can be used to setup the renderer when it is a [PlayerView].
-   * This method must be used for the [Playback] that supports manual playback control (the
-   * [Playback.Config.controller] is not null).
-   */
   // TODO: replace with custom ForwardingPlayer.
   /* fun createControlDispatcher(playback: Playback): ControlDispatcher {
     requireNotNull(playback.config.controller) {
@@ -77,12 +67,12 @@ open class Kohii constructor(
 
     private val master = Master[context.applicationContext]
 
-    private var playableCreator: PlayableCreator<PlayerView> =
-      PlayerViewPlayableCreator(master)
+    private var playableCreator: PlayableCreator<StyledPlayerView> =
+      StyledPlayerViewPlayableCreator(master)
 
-    private var rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
+    private var rendererProviderFactory: RendererProviderFactory = { StyledPlayerViewProvider() }
 
-    fun setPlayableCreator(playableCreator: PlayableCreator<PlayerView>): Builder = apply {
+    fun setPlayableCreator(playableCreator: PlayableCreator<StyledPlayerView>): Builder = apply {
       this.playableCreator = playableCreator
     }
 
@@ -90,7 +80,7 @@ open class Kohii constructor(
       this.rendererProviderFactory = factory
     }
 
-    fun build(): Kohii = Kohii(
+    fun build(): StyledPlayerViewEngine = StyledPlayerViewEngine(
       master = master,
       playableCreator = playableCreator,
       rendererProviderFactory = rendererProviderFactory
@@ -101,56 +91,51 @@ open class Kohii constructor(
 }
 
 /**
- * Creates a new [Kohii] instance using an [ExoPlayerConfig]. Note that an application should not
- * hold many instance of [Kohii].
+ * Creates a new [StyledPlayerViewEngine] instance using an [ExoPlayerConfig]. Note that an
+ * application should not hold many instance of [StyledPlayerViewEngine].
  *
  * @param context the [Context].
  * @param config the [ExoPlayerConfig].
- *
- * @deprecated Use [createStyledPlayerViewEngine] instead.
  */
-@Deprecated(
-  message = "PlayerView is deprecated. Use createStyledPlayerViewEngine instead."
-)
-fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
-  val bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { appContext ->
+fun createStyledPlayerViewEngine(
+  context: Context,
+  config: ExoPlayerConfig
+): StyledPlayerViewEngine {
+  val bridgeCreatorFactory: StyledPlayerViewBridgeCreatorFactory = { appContext ->
     val userAgent = Common.getUserAgent(appContext, BuildConfig.LIB_NAME)
     val playerPool = config.createDefaultPlayerPool(
       context = context,
       userAgent = userAgent
     )
-    PlayerViewBridgeCreator(
+    StyledPlayerViewBridgeCreator(
       playerPool = playerPool,
       mediaSourceFactory = playerPool.defaultMediaSourceFactory
     )
   }
 
-  val playableCreator = PlayerViewPlayableCreator.Builder(context.applicationContext)
+  val playableCreator = StyledPlayerViewPlayableCreator.Builder(context.applicationContext)
     .setBridgeCreatorFactory(bridgeCreatorFactory)
     .build()
 
-  return Builder(context).setPlayableCreator(playableCreator).build()
+  return StyledPlayerViewEngine.Builder(context).setPlayableCreator(playableCreator).build()
 }
 
 /**
- * Creates a new [Kohii] instance using a custom [playerCreator] and [rendererProviderFactory].
- * Note that an application should not hold many instance of [Kohii].
+ * Creates a new [StyledPlayerViewEngine] instance using a custom [playerCreator] and
+ * [rendererProviderFactory].
+ *
+ * Note that an application should not hold many instance of [StyledPlayerViewEngine].
  *
  * @param context the [Context].
  * @param playerCreator the custom creator for the [Player]. If `null`, it will use the default one.
  * @param rendererProviderFactory the custom [RendererProviderFactory].
- *
- * @deprecated Use [createStyledPlayerViewEngine] instead.
  */
-@Deprecated(
-  message = "PlayerView is deprecated. Use createStyledPlayerViewEngine instead."
-)
 @JvmOverloads
-fun createKohii(
+fun createStyledPlayerViewEngine(
   context: Context,
   playerCreator: ((Context) -> Player)? = null,
-  rendererProviderFactory: RendererProviderFactory = { PlayerViewProvider() }
-): Kohii {
+  rendererProviderFactory: RendererProviderFactory = { StyledPlayerViewProvider() }
+): StyledPlayerViewEngine {
   val playerPool = if (playerCreator == null) {
     ExoPlayerPool(
       context = context.applicationContext,
@@ -167,11 +152,11 @@ fun createKohii(
   val mediaSourceFactory = (playerPool as? ExoPlayerPool)?.defaultMediaSourceFactory
     ?: DefaultMediaSourceFactory(context.applicationContext)
 
-  return Builder(context)
+  return StyledPlayerViewEngine.Builder(context)
     .setPlayableCreator(
-      PlayerViewPlayableCreator.Builder(context)
+      StyledPlayerViewPlayableCreator.Builder(context)
         .setBridgeCreatorFactory {
-          PlayerViewBridgeCreator(playerPool, mediaSourceFactory)
+          StyledPlayerViewBridgeCreator(playerPool, mediaSourceFactory)
         }
         .build()
     )

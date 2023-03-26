@@ -185,10 +185,6 @@ public final class kohii/v1/core/Common {
 	public final fun getUserAgent (Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;
 }
 
-public abstract interface class kohii/v1/core/DefaultTrackSelectorHolder {
-	public abstract fun getTrackSelector ()Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;
-}
-
 public abstract class kohii/v1/core/Engine {
 	public fun <init> (Landroid/content/Context;Lkohii/v1/core/PlayableCreator;)V
 	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;)V

@@ -36,7 +36,8 @@ import com.google.android.exoplayer2.util.Clock
  * Detailed config for building a [com.google.android.exoplayer2.SimpleExoPlayer]. Only for
  * advanced user.
  *
- * @see createKohii
+ * @see [createStyledPlayerViewEngine]
+ * @see [createKohii]
  */
 data class ExoPlayerConfig(
   internal val clock: Clock = Clock.DEFAULT,

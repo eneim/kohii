@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2023 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,24 @@
 
 package kohii.v1.exoplayer
 
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import kohii.v1.core.AbstractPlayable
 import kohii.v1.core.Bridge
 import kohii.v1.core.Master
 import kohii.v1.core.Playback
 import kohii.v1.media.Media
 
-@Deprecated(message = "PlayerView is deprecated. Use the StyledPlayerViewPlayable instead.")
-class PlayerViewPlayable(
+class StyledPlayerViewPlayable(
   master: Master,
   media: Media,
   config: Config,
-  bridge: Bridge<PlayerView>
-) : AbstractPlayable<PlayerView>(master, media, config, bridge) {
+  bridge: Bridge<StyledPlayerView>
+) : AbstractPlayable<StyledPlayerView>(master, media, config, bridge) {
 
   override var renderer: Any?
     get() = bridge.renderer
     set(value) {
-      require(value is PlayerView?)
+      require(value is StyledPlayerView?)
       bridge.renderer = value
     }
 
@@ -51,7 +50,7 @@ class PlayerViewPlayable(
       }
     } */
     super.onRendererAttached(playback, renderer)
-    if (renderer is PlayerView && renderer.useController && controller == null) {
+    if (renderer is StyledPlayerView && renderer.useController && controller == null) {
       throw IllegalStateException(
         "To enable `useController`, Playback $playback must have a non-null Playback.Controller."
       )
