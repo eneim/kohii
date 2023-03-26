@@ -16,7 +16,7 @@
 
 package kohii.v1.exoplayer.internal
 
-import com.google.android.exoplayer2.ExoPlayer.AudioComponent
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import kohii.v1.core.VolumeInfoController
 import kohii.v1.media.VolumeInfo
@@ -40,8 +40,8 @@ fun Player.setVolumeInfo(volume: VolumeInfo) {
       } else {
         this.volume = volume.volume
       }
-      if (this is AudioComponent) {
-        val audioAttributes = (this as AudioComponent).audioAttributes
+      if (this is ExoPlayer) {
+        val audioAttributes = this.audioAttributes
         this.setAudioAttributes(audioAttributes, !volume.mute)
       }
     }

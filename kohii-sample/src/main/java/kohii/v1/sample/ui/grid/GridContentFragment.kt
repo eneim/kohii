@@ -26,8 +26,10 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.SelectionTracker.Builder
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.exoplayer2.ui.StyledPlayerView
+import kohii.v1.core.Engine
 import kohii.v1.core.MemoryMode
-import kohii.v1.exoplayer.Kohii
+import kohii.v1.exoplayer.StyledPlayerViewEngine
 import kohii.v1.sample.BuildConfig
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseFragment
@@ -35,7 +37,7 @@ import kohii.v1.sample.databinding.FragmentRecyclerviewGridBinding
 
 class GridContentFragment : BaseFragment() {
 
-  private lateinit var kohii: Kohii
+  private lateinit var kohii: Engine<StyledPlayerView>
 
   private var _binding: FragmentRecyclerviewGridBinding? = null
   private val binding: FragmentRecyclerviewGridBinding get() = requireNotNull(_binding)
@@ -48,7 +50,8 @@ class GridContentFragment : BaseFragment() {
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
-    kohii = Kohii[this]
+    // OR: kohii = createStyledPlayerViewEngine(context, ExoPlayerConfig.DEFAULT)
+    kohii = StyledPlayerViewEngine[this]
     videoGridCallback = parentFragment as? VideoGridCallback
   }
 

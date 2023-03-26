@@ -18,7 +18,7 @@ package kohii.v1.exoplayer
 
 import android.content.Context
 import com.google.android.exoplayer2.DefaultRenderersFactory
-import com.google.android.exoplayer2.ExoPlayer.AudioComponent
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -88,7 +88,7 @@ class ExoPlayerPool(
     super.resetPlayer(player)
     player.stop()
     player.clearMediaItems()
-    if (player is AudioComponent) {
+    if (player is ExoPlayer) {
       player.setAudioAttributes(AudioAttributes.DEFAULT, true)
     }
   }

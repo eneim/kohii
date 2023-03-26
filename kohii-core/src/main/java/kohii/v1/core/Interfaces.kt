@@ -25,7 +25,6 @@ import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.metadata.Metadata
 import com.google.android.exoplayer2.text.Cue
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.video.VideoSize
 import kohii.v1.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
@@ -125,12 +124,6 @@ interface VolumeInfoController {
   fun addVolumeChangedListener(listener: VolumeChangedListener)
 
   fun removeVolumeChangedListener(listener: VolumeChangedListener?)
-}
-
-// TODO(eneim): document about the usage of this interface.
-interface DefaultTrackSelectorHolder {
-
-  val trackSelector: DefaultTrackSelector
 }
 
 interface PlayableManager

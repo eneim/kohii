@@ -14,23 +14,28 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.youtube2
+package kohii.v1.sample.ui.youtube
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle.State
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kohii.v1.experiments.UnofficialYouTubePlayerEngine
 import kohii.v1.sample.common.BaseFragment
 import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 import kohii.v1.sample.ui.main.DemoItem
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-class YouTube2Fragment : BaseFragment(), DemoContainer {
+class YouTubeFragment : BaseFragment(), DemoContainer {
 
   companion object {
-    fun newInstance() = YouTube2Fragment()
+    fun newInstance() = YouTubeFragment()
   }
 
   private val viewModel: YouTubeViewModel by viewModels()
@@ -58,22 +63,16 @@ class YouTube2Fragment : BaseFragment(), DemoContainer {
     engine.register(this)
       .addBucket(binding.recyclerView)
 
-    val adapter = YouTubeItemsAdapter(engine)
+    val adapter = YouTubePlaylistPagingAdapter(engine)
     binding.recyclerView.adapter = adapter
 
-    viewModel.posts.observe(viewLifecycleOwner) {
-      adapter.submitList(it)
+    viewLifecycleOwner.lifecycleScope.launch {
+      repeatOnLifecycle(State.STARTED) {
+        viewModel.pagingData.collectLatest(adapter::submitData)
+      }
     }
 
-    viewModel.networkState.observe(viewLifecycleOwner) {
-      adapter.setNetworkState(it)
-    }
-
-    viewModel.refreshState.observe(viewLifecycleOwner) {
-      adapter.setNetworkState(it)
-    }
-
-    viewModel.loadPlaylist(YouTubeViewModel.YOUTUBE_PLAYLIST_ID)
+    viewModel.load(YouTubeViewModel.YOUTUBE_PLAYLIST_ID)
   }
 
   override fun onDestroyView() {

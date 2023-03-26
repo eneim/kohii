@@ -24,7 +24,7 @@ android {
     minSdkVersion libs.versions.android.min.sdk.get()
     targetSdkVersion libs.versions.android.target.sdk.get()
 
-    buildConfigField("String", "LIB_NAME", "\"" + "Kohii for AndroidX, v" + versionName + "\"")
+    buildConfigField("String", "LIB_NAME", "\"" + "Kohii for AndroidX, v" + libs.versions.release.name.get() + "\"")
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles 'consumer-rules.pro'

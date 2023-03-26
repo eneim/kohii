@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Nam Nguyen, nam@ene.im
+ * Copyright (c) 2023 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
 import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import kohii.v1.core.AbstractBridge
 import kohii.v1.core.PlayerParameters
 import kohii.v1.core.PlayerPool
@@ -46,13 +46,13 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
-@Deprecated(message = "PlayerView is deprecated. Use the Bridge for StyledPlayerView instead.")
-open class PlayerViewBridge(
+@Suppress("MemberVisibilityCanBePrivate")
+open class StyledPlayerViewBridge(
   context: Context,
   protected val media: Media,
   protected val playerPool: PlayerPool<Player>,
   private val mediaSourceFactory: MediaSource.Factory
-) : AbstractBridge<PlayerView>(), Player.Listener {
+) : AbstractBridge<StyledPlayerView>(), Player.Listener {
 
   protected open val mediaItem: MediaItem = MediaItem.fromUri(media.uri)
 
@@ -99,7 +99,7 @@ open class PlayerViewBridge(
     this.inErrorState = false
   }
 
-  override var renderer: PlayerView? = null
+  override var renderer: StyledPlayerView? = null
     set(value) {
       if (field === value) return // same reference
       "Bridge#renderer $field -> $value, $this".logInfo()
@@ -113,7 +113,7 @@ open class PlayerViewBridge(
         }
       } else {
         this.player?.also {
-          PlayerView.switchTargetView(it, field, value)
+          StyledPlayerView.switchTargetView(it, field, value)
         }
       }
 
@@ -200,7 +200,7 @@ open class PlayerViewBridge(
   override fun seekTo(positionMs: Long) {
     val playbackInfo = this.playbackInfo
     playbackInfo.resumePosition = positionMs
-    playbackInfo.resumeWindow = player?.currentWindowIndex ?: playbackInfo.resumeWindow
+    playbackInfo.resumeWindow = player?.currentMediaItemIndex ?: playbackInfo.resumeWindow
     this.playbackInfo = playbackInfo
   }
 
@@ -248,7 +248,7 @@ open class PlayerViewBridge(
     player?.also {
       if (it.playbackState == Player.STATE_IDLE) return
       _playbackInfo = PlaybackInfo(
-        it.currentWindowIndex,
+        it.currentMediaItemIndex,
         max(0, it.currentPosition)
       )
     }
