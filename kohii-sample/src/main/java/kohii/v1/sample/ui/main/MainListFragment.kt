@@ -57,8 +57,9 @@ class MainListFragment : BaseFragment() {
       parentFragmentManager.commit {
         setReorderingAllowed(true) // Optimize for shared element transition
         replace(
-            R.id.fragmentContainer, fragment,
-            it.fragmentClass.canonicalName
+          R.id.fragmentContainer,
+          fragment,
+          it.fragmentClass.canonicalName
         )
         addToBackStack(null)
       }

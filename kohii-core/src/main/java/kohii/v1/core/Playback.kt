@@ -247,8 +247,11 @@ abstract class Playback(
     }
 
     val offset: Float =
-      if (drawArea > 0) (tmpRect.width() * tmpRect.height()) / drawArea.toFloat()
-      else 0F
+      if (drawArea > 0) {
+        (tmpRect.width() * tmpRect.height()) / drawArea.toFloat()
+      } else {
+        0F
+      }
     return Token(config.threshold, offset, tmpRect, container.width, container.height)
   }
 
@@ -326,7 +329,7 @@ abstract class Playback(
     tokenUpdateListener = config.tokenUpdateListener
     networkTypeChangeListener = config.networkTypeChangeListener
     playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(manager.master.networkType)
-        ?: playerParameters
+      ?: playerParameters
   }
 
   internal fun onRemoved() {
@@ -337,7 +340,7 @@ abstract class Playback(
     artworkHintListener = null
     networkTypeChangeListener = null
     callbacks.onEach { it.onRemoved(this) }
-        .clear()
+      .clear()
     listeners.clear()
   }
 
@@ -359,10 +362,10 @@ abstract class Playback(
     playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
     artworkHintListener?.onArtworkHint(
-        this,
-        playable?.isPlaying() == false,
-        playbackInfo.resumePosition,
-        playerState
+      this,
+      playable?.isPlaying() == false,
+      playbackInfo.resumePosition,
+      playerState
     )
   }
 
@@ -380,7 +383,10 @@ abstract class Playback(
     "Playback#onPlay $this".logDebug()
     container.keepScreenOn = true
     artworkHintListener?.onArtworkHint(
-        this, playerState == Player.STATE_ENDED, playbackInfo.resumePosition, playerState
+      this,
+      playerState == Player.STATE_ENDED,
+      playbackInfo.resumePosition,
+      playerState
     )
   }
 
@@ -410,11 +416,15 @@ abstract class Playback(
       VERTICAL -> CENTER_Y.compare(thisToken, thatToken)
       HORIZONTAL -> CENTER_X.compare(thisToken, thatToken)
       BOTH_AXIS -> max(
-          CENTER_Y.compare(thisToken, thatToken), CENTER_X.compare(thisToken, thatToken)
+        CENTER_Y.compare(thisToken, thatToken),
+        CENTER_X.compare(thisToken, thatToken)
       )
+
       NONE_AXIS -> max(
-          CENTER_Y.compare(thisToken, thatToken), CENTER_X.compare(thisToken, thatToken)
+        CENTER_Y.compare(thisToken, thatToken),
+        CENTER_X.compare(thisToken, thatToken)
       )
+
       else -> 0
     }
 
@@ -424,7 +434,7 @@ abstract class Playback(
 
   internal fun onNetworkTypeChanged(networkType: NetworkType) {
     this.playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(networkType)
-        ?: this.playerParameters
+      ?: this.playerParameters
   }
 
   internal fun addCallback(callback: Callback) {
@@ -478,21 +488,23 @@ abstract class Playback(
       Player.STATE_BUFFERING -> {
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       }
+
       Player.STATE_READY -> {
         listeners.forEach {
           if (playWhenReady) it.onPlaying(this@Playback) else it.onPaused(this@Playback)
         }
       }
+
       Player.STATE_ENDED -> {
         listeners.forEach { it.onEnded(this@Playback) }
       }
     }
     val playable = this.playable
     artworkHintListener?.onArtworkHint(
-        playback = this,
-        shouldShow = if (playable != null) !playable.isPlaying() else true,
-        position = playbackInfo.resumePosition,
-        state = playerState
+      playback = this,
+      shouldShow = if (playable != null) !playable.isPlaying() else true,
+      position = playbackInfo.resumePosition,
+      state = playerState
     )
   }
 
@@ -500,11 +512,11 @@ abstract class Playback(
     "Playback#onVideoSizeChanged ${videoSize.width} × ${videoSize.height}, $this".logDebug()
     listeners.forEach {
       it.onVideoSizeChanged(
-          playback = this,
-          width = videoSize.width,
-          height = videoSize.height,
-          unAppliedRotationDegrees = videoSize.unappliedRotationDegrees,
-          pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
+        playback = this,
+        width = videoSize.width,
+        height = videoSize.height,
+        unAppliedRotationDegrees = videoSize.unappliedRotationDegrees,
+        pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
       )
     }
   }

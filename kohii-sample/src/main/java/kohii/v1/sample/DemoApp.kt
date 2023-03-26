@@ -72,18 +72,18 @@ class DemoApp : Application() {
   }
 
   internal val moshi: Moshi = Moshi.Builder()
-      .add(object : JsonAdapter<Uri>() {
-        @FromJson
-        override fun fromJson(reader: JsonReader): Uri = reader.nextString().toUri()
+    .add(object : JsonAdapter<Uri>() {
+      @FromJson
+      override fun fromJson(reader: JsonReader): Uri = reader.nextString().toUri()
 
-        @ToJson
-        override fun toJson(writer: JsonWriter, value: Uri?) {
-          writer.value(value.toString())
-        }
+      @ToJson
+      override fun toJson(writer: JsonWriter, value: Uri?) {
+        writer.value(value.toString())
+      }
 
-        override fun toString(): String = "JsonAdapter(Uri)"
-      })
-      .build()
+      override fun toString(): String = "JsonAdapter(Uri)"
+    })
+    .build()
 
   val videos by lazy(NONE) {
     val jsonAdapter: JsonAdapter<List<Video>> =
@@ -106,124 +106,136 @@ class DemoApp : Application() {
     @Suppress("UNUSED_VARIABLE")
     val youtubeDemos: Collection<DemoItem> = if (youtubeApiKey.isNotEmpty()) {
       listOf(
-          DemoItem(
-              R.string.demo_title_youtube_1,
-              R.string.demo_desc_youtube_1,
-              YouTube1Fragment::class.java
-          ),
-          DemoItem(
-              R.string.demo_title_youtube_2,
-              R.string.demo_desc_youtube_2,
-              YouTube2Fragment::class.java
-          )
+        DemoItem(
+          R.string.demo_title_youtube_1,
+          R.string.demo_desc_youtube_1,
+          YouTube1Fragment::class.java
+        ),
+        DemoItem(
+          R.string.demo_title_youtube_2,
+          R.string.demo_desc_youtube_2,
+          YouTube2Fragment::class.java
+        )
       )
     } else {
       emptyList()
     }
 
-    (setOf(
+    (
+      setOf(
         DemoItem(
-            R.string.demo_title_recycler_view_0,
-            R.string.demo_desc_recycler_view_0,
-            GridRecyclerViewWithUserClickFragment::class.java
+          R.string.demo_title_recycler_view_0,
+          R.string.demo_desc_recycler_view_0,
+          GridRecyclerViewWithUserClickFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_manual_1,
-            R.string.demo_desc_manual_1,
-            ManualRecyclerViewFragment::class.java
+          R.string.demo_title_manual_1,
+          R.string.demo_desc_manual_1,
+          ManualRecyclerViewFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_ads_1,
-            R.string.demo_desc_ads_1,
-            AdsContainerFragment::class.java
+          R.string.demo_title_ads_1,
+          R.string.demo_desc_ads_1,
+          AdsContainerFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_fbook,
-            R.string.demo_desc_fbook,
-            FbookFragment::class.java
+          R.string.demo_title_fbook,
+          R.string.demo_desc_fbook,
+          FbookFragment::class.java
         )
-    ) + youtubeDemos + setOf(
+      ) + youtubeDemos + setOf(
         DemoItem(
-            R.string.demo_title_recycler_view_1,
-            R.string.demo_desc_recycler_view_1,
-            VerticalListRecyclerViewFragment::class.java
+          R.string.demo_title_recycler_view_1,
+          R.string.demo_desc_recycler_view_1,
+          VerticalListRecyclerViewFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_recycler_view_2,
-            R.string.demo_desc_recycler_view_2,
-            ExoPlayerVideosFragment::class.java
+          R.string.demo_title_recycler_view_2,
+          R.string.demo_desc_recycler_view_2,
+          ExoPlayerVideosFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_recycler_view_3,
-            R.string.demo_desc_recycler_view_3,
-            OverlayViewFragment::class.java
+          R.string.demo_title_recycler_view_3,
+          R.string.demo_desc_recycler_view_3,
+          OverlayViewFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_recycler_view_4,
-            R.string.demo_desc_recycler_view_4,
-            EchoFragment::class.java
+          R.string.demo_title_recycler_view_4,
+          R.string.demo_desc_recycler_view_4,
+          EchoFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_nested_scrollview_1,
-            R.string.demo_desc_nested_scrollview_1,
-            MotionFragment::class.java
+          R.string.demo_title_nested_scrollview_1,
+          R.string.demo_desc_nested_scrollview_1,
+          MotionFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_nested_scrollview_2,
-            R.string.demo_desc_nested_scrollview_2,
-            ScrollViewFragment::class.java
+          R.string.demo_title_nested_scrollview_2,
+          R.string.demo_desc_nested_scrollview_2,
+          ScrollViewFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_pager_1,
-            R.string.demo_desc_pager_1,
-            ViewPager1WithFragmentsFragment::class.java
+          R.string.demo_title_pager_1,
+          R.string.demo_desc_pager_1,
+          ViewPager1WithFragmentsFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_pager_2,
-            R.string.demo_desc_pager_2,
-            ViewPager1WithViewsFragment::class.java
+          R.string.demo_title_pager_2,
+          R.string.demo_desc_pager_2,
+          ViewPager1WithViewsFragment::class.java
         ),
         DemoItem(
-            0,
-            0,
-            ViewPager1WithRecyclerViewFragmentsFragment::class.java
+          0,
+          0,
+          ViewPager1WithRecyclerViewFragmentsFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_pager_3,
-            R.string.demo_desc_pager_3,
-            ViewPager2WithFragmentsFragment::class.java
+          R.string.demo_title_pager_3,
+          R.string.demo_desc_pager_3,
+          ViewPager2WithFragmentsFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_pager_4,
-            R.string.demo_desc_pager_4,
-            ViewPager2WithViewsFragment::class.java
+          R.string.demo_title_pager_4,
+          R.string.demo_desc_pager_4,
+          ViewPager2WithViewsFragment::class.java
         ),
         DemoItem(
-            0,
-            0,
-            ViewPager2WithRecyclerViewFragmentsFragment::class.java
+          0,
+          0,
+          ViewPager2WithRecyclerViewFragmentsFragment::class.java
         ),
         DemoItem(
-            0, 0, NestedScrollViewInsideRecyclerViewFragment::class.java
+          0,
+          0,
+          NestedScrollViewInsideRecyclerViewFragment::class.java
         ),
         DemoItem(
-            0, 0, VerticalRecyclerViewInsideNestedScrollViewFragment::class.java
+          0,
+          0,
+          VerticalRecyclerViewInsideNestedScrollViewFragment::class.java
         ),
         DemoItem(
-            0, 0, HorizontalRecyclerViewInsideNestedScrollViewFragment::class.java
+          0,
+          0,
+          HorizontalRecyclerViewInsideNestedScrollViewFragment::class.java
         ),
         DemoItem(
-            0, 0, VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment::class.java
+          0,
+          0,
+          VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment::class.java
         ),
         DemoItem(
-            0, 0, RecyclerViewInsideRecyclerViewFragment::class.java
+          0,
+          0,
+          RecyclerViewInsideRecyclerViewFragment::class.java
         ),
         DemoItem(
-            R.string.demo_title_master_detail,
-            R.string.demo_desc_master_detail,
-            MasterDetailFragment::class.java
+          R.string.demo_title_master_detail,
+          R.string.demo_desc_master_detail,
+          MasterDetailFragment::class.java
         )
-    )).toList()
+      )
+      ).toList()
   }
 
   val manilo: Manilo by lazy(NONE) {

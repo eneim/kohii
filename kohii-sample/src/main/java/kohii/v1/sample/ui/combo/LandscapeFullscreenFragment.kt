@@ -108,14 +108,14 @@ class LandscapeFullscreenFragment : BaseFragment() {
 
     val (initData, rebinder) = requireArguments().let {
       requireNotNull(it.getParcelable<InitData>(KEY_INIT_DATA)) to
-          requireNotNull(it.getParcelable<Rebinder>(KEY_REBINDER))
+        requireNotNull(it.getParcelable<Rebinder>(KEY_REBINDER))
     }
 
     container.setAspectRatio(initData.aspectRatio)
 
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.playerContainer)
+      .addBucket(binding.playerContainer)
     rebinder.with {
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
@@ -131,7 +131,7 @@ class LandscapeFullscreenFragment : BaseFragment() {
         }
       }
     }
-        .bind(kohii, binding.playerView)
+      .bind(kohii, binding.playerView)
 
     (requireActivity() as AppCompatActivity).also {
       if (it.windowManager.defaultDisplay.rotation % 2 == 1) {
@@ -140,16 +140,16 @@ class LandscapeFullscreenFragment : BaseFragment() {
         callback?.hideToolbar()
         val currentOptions = it.window.decorView.systemUiVisibility
         it.window.decorView.systemUiVisibility = (
-            currentOptions
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_IMMERSIVE
-                // or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                // or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                // or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                // Hide the nav bar and status bar
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-            )
+          currentOptions
+            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            or View.SYSTEM_UI_FLAG_IMMERSIVE
+            // or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            // or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            // or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            // Hide the nav bar and status bar
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_FULLSCREEN
+          )
       } else {
         // it.supportActionBar?.show()
         callback?.showToolbar()

@@ -24,17 +24,19 @@ import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.media.Media
 
 internal class OfficialYouTubePlayerPlayableCreator(private val master: Master) :
-    PlayableCreator<YouTubePlayerFragment>(
-        YouTubePlayerFragment::class.java
-    ) {
+  PlayableCreator<YouTubePlayerFragment>(
+    YouTubePlayerFragment::class.java
+  ) {
 
   override fun createPlayable(
     config: Config,
     media: Media
   ): Playable {
     return OfficialYouTubePlayerPlayable(
-        master, media, config,
-        OfficialYouTubePlayerBridge(media)
+      master,
+      media,
+      config,
+      OfficialYouTubePlayerBridge(media)
     )
   }
 

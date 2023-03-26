@@ -40,12 +40,14 @@ class YouTubeViewModel(application: Application) : AndroidViewModel(application)
   private val jsonFactory = GsonFactory.getDefaultInstance()
   private val httpTransport = NetHttpTransport()
   val youtube: YouTube = YouTube.Builder(httpTransport, jsonFactory, null)
-      .setApplicationName("Kohii + Youtube, " + BuildConfig.VERSION_NAME)
-      .build()
+    .setApplicationName("Kohii + Youtube, " + BuildConfig.VERSION_NAME)
+    .build()
 
   private val repository =
     YouTubePlaylistRepository(
-        (application as DemoApp).youtubeApiKey, youtube, Executors.newSingleThreadExecutor()
+      apiKey = (application as DemoApp).youtubeApiKey,
+      youtube = youtube,
+      executor = Executors.newSingleThreadExecutor()
     )
 
   private val playlistId = MutableLiveData<String>()

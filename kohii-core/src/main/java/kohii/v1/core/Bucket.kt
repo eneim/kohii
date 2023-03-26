@@ -55,10 +55,10 @@ abstract class Bucket constructor(
     const val NONE_AXIS = -2
 
     private val playbackComparators = mapOf(
-        HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
-        VERTICAL to Playback.VERTICAL_COMPARATOR,
-        BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,
-        NONE_AXIS to Playback.BOTH_AXIS_COMPARATOR
+      HORIZONTAL to Playback.HORIZONTAL_COMPARATOR,
+      VERTICAL to Playback.VERTICAL_COMPARATOR,
+      BOTH_AXIS to Playback.BOTH_AXIS_COMPARATOR,
+      NONE_AXIS to Playback.BOTH_AXIS_COMPARATOR
     )
 
     @JvmStatic
@@ -74,11 +74,13 @@ abstract class Bucket constructor(
         is ViewPager2 -> ViewPager2Bucket(manager, root, strategy, selector)
         is ViewPager -> ViewPagerBucket(manager, root, strategy, selector)
         is ViewGroup -> {
-          if (VERSION.SDK_INT >= 23)
+          if (VERSION.SDK_INT >= 23) {
             ViewGroupV23Bucket(manager, root, strategy, selector)
-          else
+          } else {
             ViewGroupBucket(manager, root, strategy, selector)
+          }
         }
+
         else -> throw IllegalArgumentException("Unsupported: $root")
       }
     }
@@ -110,7 +112,7 @@ abstract class Bucket constructor(
 
   private val behaviorHolder = lazy(NONE) {
     val container = manager.group.activity.window.peekDecorView()
-        ?.findCoordinatorLayoutDirectChildContainer(root)
+      ?.findCoordinatorLayoutDirectChildContainer(root)
     val params = container?.layoutParams
     return@lazy if (params is CoordinatorLayout.LayoutParams) params else null
   }
@@ -146,8 +148,8 @@ abstract class Bucket constructor(
     set(value) {
       field = value
       manager.playbacks
-          .filter { it.value.bucket === this }
-          .forEach { it.value.lock = value }
+        .filter { it.value.bucket === this }
+        .forEach { it.value.lock = value }
       manager.refresh()
     }
 
@@ -168,7 +170,7 @@ abstract class Bucket constructor(
         containerAttachStateChangeListener.onViewAttachedToWindow(container)
       }
       container.addOnAttachStateChangeListener(
-          containerAttachStateChangeListener
+        containerAttachStateChangeListener
       )
     }
   }
@@ -177,7 +179,7 @@ abstract class Bucket constructor(
   open fun removeContainer(container: ViewGroup) {
     if (containers.remove(container)) {
       container.removeOnAttachStateChangeListener(
-          containerAttachStateChangeListener
+        containerAttachStateChangeListener
       )
       container.removeOnLayoutChangeListener(this)
     }
@@ -240,8 +242,8 @@ abstract class Bucket constructor(
     "Bucket is removed: $this".logInfo()
     root.removeOnAttachStateChangeListener(rootAttachStateChangeListener)
     mutableListOf(containers)
-        .onEach(manager::onRemoveContainer)
-        .clear()
+      .onEach(manager::onRemoveContainer)
+      .clear()
   }
 
   internal fun effectiveVolumeInfo(origin: VolumeInfo): VolumeInfo {

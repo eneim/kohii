@@ -52,7 +52,7 @@ class PlayerViewPlayable(
     super.onRendererAttached(playback, renderer)
     if (renderer is PlayerView && renderer.useController && controller == null) {
       throw IllegalStateException(
-          "To enable `useController`, Playback $playback must have a non-null Playback.Controller."
+        "To enable `useController`, Playback $playback must have a non-null Playback.Controller."
       )
     }
   }

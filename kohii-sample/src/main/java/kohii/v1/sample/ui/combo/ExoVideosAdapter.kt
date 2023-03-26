@@ -40,8 +40,8 @@ class ExoVideosAdapter(
   ): ExoVideoHolder {
     val holder = ExoVideoHolder(parent)
     holder.container.setOnClickListener {
-      if (holder.adapterPosition >= 0) {
-        onClick?.invoke(holder, holder.adapterPosition)
+      if (holder.absoluteAdapterPosition >= 0) {
+        onClick?.invoke(holder, holder.absoluteAdapterPosition)
       }
     }
     return holder
@@ -59,7 +59,7 @@ class ExoVideosAdapter(
     val drmItem = item.drmScheme?.let { DrmItem(item) }
     val mediaItem =
       MediaItem(Uri.parse(item.uri), item.extension, drmItem)
-    val itemTag = "${javaClass.canonicalName}::${item.uri}::${holder.adapterPosition}"
+    val itemTag = "${javaClass.canonicalName}::${item.uri}::${holder.absoluteAdapterPosition}"
 
     holder.rebinder = kohii.setUp(mediaItem) {
       tag = itemTag
@@ -72,9 +72,9 @@ class ExoVideosAdapter(
       }
       artworkHintListener = holder
     }
-        .bind(holder.container) {
-          onLoad?.invoke(holder, position)
-          it.addStateListener(holder)
-        }
+      .bind(holder.container) {
+        onLoad?.invoke(holder, position)
+        it.addStateListener(holder)
+      }
   }
 }

@@ -62,24 +62,24 @@ class PictureInPictureFragment : BaseFragment(), Playback.StateListener {
     binding.playerContainer.setAspectRatio(16 / 9F)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.playerContainer)
+      .addBucket(binding.playerContainer)
 
     kohii.setUp(assetVideoUri) {
       tag = "${javaClass.name}::$videoUrl"
       repeatMode = Player.REPEAT_MODE_ONE
     }
-        .bind(binding.playerView) {
-          it.addStateListener(this@PictureInPictureFragment)
-          playback = it
-        }
+      .bind(binding.playerView) {
+        it.addStateListener(this@PictureInPictureFragment)
+        playback = it
+      }
   }
 
   @Suppress("MemberVisibilityCanBePrivate")
   internal fun minimize() {
     playback?.let {
       mPictureInPictureParamsBuilder
-          .setAspectRatio(Rational(binding.playerContainer.width, binding.playerContainer.height))
-          .setSourceRectHint(it.containerRect)
+        .setAspectRatio(Rational(binding.playerContainer.width, binding.playerContainer.height))
+        .setSourceRectHint(it.containerRect)
 
       requireActivity().enterPictureInPictureMode(mPictureInPictureParamsBuilder.build())
     }

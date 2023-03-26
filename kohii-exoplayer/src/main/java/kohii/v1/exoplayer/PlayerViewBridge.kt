@@ -143,8 +143,11 @@ open class PlayerViewBridge(
 
   override fun reset(resetPlayer: Boolean) {
     "Bridge#reset resetPlayer=$resetPlayer, $this".logInfo()
-    if (resetPlayer) _playbackInfo = PlaybackInfo()
-    else updatePlaybackInfo()
+    if (resetPlayer) {
+      _playbackInfo = PlaybackInfo()
+    } else {
+      updatePlaybackInfo()
+    }
     player?.also {
       it.setVolumeInfo(VolumeInfo.DEFAULT_ACTIVE)
       it.stop()
@@ -183,8 +186,8 @@ open class PlayerViewBridge(
   override fun isPlaying(): Boolean {
     return player?.run {
       playWhenReady &&
-          playbackState in Player.STATE_BUFFERING..Player.STATE_READY &&
-          playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_NONE
+        playbackState in Player.STATE_BUFFERING..Player.STATE_READY &&
+        playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_NONE
     } ?: false
   }
 
@@ -222,10 +225,10 @@ open class PlayerViewBridge(
     val player = this.player
     if (player is DefaultTrackSelectorHolder) {
       player.trackSelector.parameters = player.trackSelector.parameters.buildUpon()
-          .setMaxVideoSize(parameters.maxVideoWidth, parameters.maxVideoHeight)
-          .setMaxVideoBitrate(parameters.maxVideoBitrate)
-          .setMaxAudioBitrate(parameters.maxAudioBitrate)
-          .build()
+        .setMaxVideoSize(parameters.maxVideoWidth, parameters.maxVideoHeight)
+        .setMaxVideoBitrate(parameters.maxVideoBitrate)
+        .setMaxAudioBitrate(parameters.maxAudioBitrate)
+        .build()
     }
   }
 
@@ -249,8 +252,8 @@ open class PlayerViewBridge(
     player?.also {
       if (it.playbackState == Player.STATE_IDLE) return
       _playbackInfo = PlaybackInfo(
-          it.currentWindowIndex,
-          max(0, it.currentPosition)
+        it.currentWindowIndex,
+        max(0, it.currentPosition)
       )
     }
   }
@@ -316,7 +319,7 @@ open class PlayerViewBridge(
       this.errorListeners.onError(RuntimeException(message, cause))
     } else {
       Toast.makeText(context, message, Toast.LENGTH_SHORT)
-          .show()
+        .show()
     }
   }
 

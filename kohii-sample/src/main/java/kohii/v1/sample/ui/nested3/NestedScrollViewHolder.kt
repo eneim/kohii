@@ -38,38 +38,40 @@ internal class NestedScrollViewHolder(
 
   private val container =
     itemView.findViewById(
-        id.scrollViewContainer
+      id.scrollViewContainer
     ) as AspectRatioFrameLayout
   private val scrollView = itemView.findViewById(
-      id.scrollView
+    id.scrollView
   ) as NestedScrollView
   private val playerView = itemView.findViewById(
-      id.playerView
+    id.playerView
   ) as PlayerView
   private val libIntro = itemView.findViewById(
-      id.libIntro
+    id.libIntro
   ) as TextView
 
   init {
     container.setAspectRatio(4 / 5F)
-    (playerView.findViewById(
+    (
+      playerView.findViewById(
         com.google.android.exoplayer2.ui.R.id.exo_content_frame
-    ) as AspectRatioFrameLayout).setAspectRatio(16 / 9F)
+      ) as AspectRatioFrameLayout
+      ).setAspectRatio(16 / 9F)
   }
 
   override fun bind(item: Any?) {
     super.bind(item)
     libIntro.text = itemView.context.getString(string.lib_intro)
-        .parseAsHtml()
+      .parseAsHtml()
   }
 
   override fun onAttached() {
     super.onAttached()
     manager.addBucket(scrollView)
     kohii.setUp(assetVideoUri) {
-      tag = "NESTED::NSV::$adapterPosition"
+      tag = "NESTED::NSV::$absoluteAdapterPosition"
     }
-        .bind(playerView)
+      .bind(playerView)
   }
 
   override fun onDetached() {

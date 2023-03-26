@@ -46,16 +46,18 @@ class PlayerViewImaBridge(
   imaBridgeConfig: ImaBridgeConfig,
   private val mediaSourceFactory: DefaultMediaSourceFactory
 ) : PlayerViewBridge(
-    context,
-    media,
-    playerPool,
-    mediaSourceFactory
-), AdViewProvider, AdsLoaderProvider {
+  context,
+  media,
+  playerPool,
+  mediaSourceFactory
+),
+  AdViewProvider,
+  AdsLoaderProvider {
 
   override val mediaItem: MediaItem = MediaItem.Builder()
-      .setUri(media.uri)
-      .setAdTagUri(media.adTagUri)
-      .build()
+    .setUri(media.uri)
+    .setAdTagUri(media.adTagUri)
+    .build()
 
   // Using Application Context so this View instance can survive configuration changes.
   private val adViewGroup: ViewGroup = FrameLayout(context.applicationContext)
@@ -74,11 +76,11 @@ class PlayerViewImaBridge(
         val adDisplayContainer = adsLoader.adDisplayContainer ?: return
         for (adOverlayInfo in value.adOverlayInfos) {
           adDisplayContainer.registerFriendlyObstruction(
-              ImaSdkFactory.getInstance().createFriendlyObstruction(
-                  adOverlayInfo.view,
-                  getFriendlyObstructionPurpose(adOverlayInfo.purpose),
-                  adOverlayInfo.reasonDetail
-              )
+            ImaSdkFactory.getInstance().createFriendlyObstruction(
+              adOverlayInfo.view,
+              getFriendlyObstructionPurpose(adOverlayInfo.purpose),
+              adOverlayInfo.reasonDetail
+            )
           )
         }
       }

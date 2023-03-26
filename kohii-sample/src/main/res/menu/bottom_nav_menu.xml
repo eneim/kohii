@@ -15,26 +15,25 @@
   ~ limitations under the License.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item
       android:id="@+id/navigation_home"
       android:icon="@drawable/ic_home_black_24dp"
-      android:title="@string/title_home"/>
+      android:title="@string/title_home" />
 
   <item
       android:id="@+id/navigation_trending"
       android:icon="@drawable/ic_trending_black_24dp"
-      android:title="@string/title_trending"/>
+      android:title="@string/title_trending" />
 
   <item
       android:id="@+id/navigation_subscriptions"
       android:icon="@drawable/ic_subscriptions_black_24dp"
-      android:title="@string/title_subscriptions"/>
+      android:title="@string/title_subscriptions" />
 
   <item
       android:id="@+id/navigation_inbox"
       android:icon="@drawable/ic_inbox_black_24dp"
-      android:title="@string/title_inbox"/>
+      android:title="@string/title_inbox" />
 
 </menu>

@@ -52,10 +52,10 @@ class MotionFragment : BaseFragment(), Presenter, DemoContainer {
     savedInstanceState: Bundle?
   ): View {
     binding = DataBindingUtil.inflate(
-        inflater,
-        R.layout.fragment_motion,
-        container,
-        false
+      inflater,
+      R.layout.fragment_motion,
+      container,
+      false
     ) as FragmentMotionBinding
     return binding.root
   }
@@ -66,7 +66,7 @@ class MotionFragment : BaseFragment(), Presenter, DemoContainer {
   ) {
     super.onViewCreated(view, savedInstanceState)
     Kohii[this].register(this)
-        .addBucket(binding.scrollView)
+      .addBucket(binding.scrollView)
     binding.motion = Motion()
     binding.lifecycleOwner = viewLifecycleOwner
   }
@@ -89,14 +89,14 @@ class MotionFragment : BaseFragment(), Presenter, DemoContainer {
     val rebinder = playerView.getTag(R.id.motion_view_tag) as Rebinder?
     if (rebinder != null) {
       startActivity(
-          PlayerActivity.createIntent(
-              requireContext(),
-              InitData(
-                  tag = rebinder.tag.toString(),
-                  aspectRatio = video.width / video.height
-              ),
-              rebinder
-          )
+        PlayerActivity.createIntent(
+          requireContext(),
+          InitData(
+            tag = rebinder.tag.toString(),
+            aspectRatio = video.width / video.height
+          ),
+          rebinder
+        )
       )
     }
   }

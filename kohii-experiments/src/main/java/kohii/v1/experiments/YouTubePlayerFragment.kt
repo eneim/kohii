@@ -72,7 +72,9 @@ class YouTubePlayerFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View? {
     containerView = inflater.inflate(
-        R.layout.widget_youtube_player, container, false
+      R.layout.widget_youtube_player,
+      container,
+      false
     ) as YouTubePlayerContainerView
     return containerView
   }

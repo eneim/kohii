@@ -45,8 +45,8 @@ internal class VerticalItemsAdapter(
   ) {
     holder.container.setAspectRatio(16 / 9F)
     kohii.setUp(assetVideoUri) {
-      tag = "NESTED::RV::VER::${holder.adapterPosition}"
+      tag = "NESTED::RV::VER::${holder.absoluteAdapterPosition}"
     }
-        .bind(holder.container)
+      .bind(holder.container)
   }
 }

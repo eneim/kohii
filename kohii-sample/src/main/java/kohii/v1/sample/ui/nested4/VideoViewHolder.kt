@@ -28,7 +28,7 @@ internal class VideoViewHolder(
   parent: ViewGroup
 ) : BaseViewHolder(parent, layout.holder_player_view) {
   internal val container = itemView.findViewById(
-      id.playerContainer
+    id.playerContainer
   ) as AspectRatioFrameLayout
 
   init {
@@ -37,7 +37,7 @@ internal class VideoViewHolder(
 
   internal var videoUrl: String? = null
   internal val videoTag: String?
-    get() = videoUrl?.let { "HOLDER::〜$adapterPosition" }
+    get() = videoUrl?.let { "HOLDER::〜$absoluteAdapterPosition" }
 
   internal val rebinder: Rebinder?
     get() = videoTag?.let { Rebinder(it) }
@@ -45,6 +45,6 @@ internal class VideoViewHolder(
   internal val itemDetails: ItemDetails<Rebinder>
     get() = object : ItemDetails<Rebinder>() {
       override fun getSelectionKey() = rebinder
-      override fun getPosition() = adapterPosition
+      override fun getPosition() = absoluteAdapterPosition
     }
 }

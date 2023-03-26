@@ -35,10 +35,10 @@ class PlayerViewBridgeCreator(
     media: Media
   ): Bridge<PlayerView> {
     return PlayerViewBridge(
-        context,
-        media,
-        playerPool,
-        mediaSourceFactory
+      context,
+      media,
+      playerPool,
+      mediaSourceFactory
     )
   }
 

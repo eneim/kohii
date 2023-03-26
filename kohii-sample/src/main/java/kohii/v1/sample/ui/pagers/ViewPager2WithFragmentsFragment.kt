@@ -72,7 +72,7 @@ class ViewPager2WithFragmentsFragment : BaseFragment(), DemoContainer {
     super.onViewCreated(view, savedInstanceState)
     val binding: FragmentPager2HorizontalBinding = FragmentPager2HorizontalBinding.bind(view)
     Kohii[this].register(this)
-        .addBucket(binding.viewPager)
+      .addBucket(binding.viewPager)
 
     binding.viewPager.apply {
       adapter = VideoPagerAdapter(getApp().videos, this@ViewPager2WithFragmentsFragment)

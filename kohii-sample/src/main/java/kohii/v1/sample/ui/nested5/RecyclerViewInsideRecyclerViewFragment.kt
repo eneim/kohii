@@ -64,7 +64,7 @@ class RecyclerViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
 
     val kohii = Kohii[this]
     val manager = kohii.register(this)
-        .addBucket(binding.recyclerView)
+      .addBucket(binding.recyclerView)
 
     adapter = MainAdapter(kohii, manager, getApp().exoItems)
     if (savedInstanceState != null) adapter.onRestoreState(savedInstanceState)
@@ -91,7 +91,7 @@ class RecyclerViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer {
             childLeft -= it.marginStart
           }
           childLeft -= holder.container.paddingStart
-          positionCache.put(holder.adapterPosition, HolderStateEntry(childPos, childLeft))
+          positionCache.put(holder.absoluteAdapterPosition, HolderStateEntry(childPos, childLeft))
         }
       }
     }

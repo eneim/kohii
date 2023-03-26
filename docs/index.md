@@ -9,19 +9,23 @@ Video playback for Android made easy.
 ![Maven Central](https://img.shields.io/maven-central/v/im.ene.kohii/kohii-core)
 <iframe src="https://github.com/sponsors/eneim/button" title="Sponsor eneim" height="35" width="116" style="border: 0;"></iframe>
 
-**Kohii** is a powerful, extensible, yet easy to use and extensible Video playback library. **Kohii** provides useful features out of the box, including
+**Kohii** is a powerful, extensible, yet easy to use and extensible Video playback library. **
+Kohii** provides useful features out of the box, including
 
 - [x] Easy to start: just one line to start a Video playback.
 - [x] Automatic playback experience on RecyclerView, NestedScrollView, ViewPager2, etc.
-- [x] Configuration change handling works out of the box, including the switching from in-list player to fullscreen player and vice versa.
+- [x] Configuration change handling works out of the box, including the switching from in-list
+  player to fullscreen player and vice versa.
 - [x] Feature-rich sample app that covers either simple or advance use cases.
-- [x] Extensible, including default implementations that support ExoPlayer, AndroidX Media2, YouTube Player SDK.
+- [x] Extensible, including default implementations that support ExoPlayer, AndroidX Media2, YouTube
+  Player SDK.
 
 ## Demo
 
 | Automatic playback| Playback continuity (Seamless fullscreen)|
 | :- |:- |
-| <img src="./art/kohii_demo_2.gif" width="216"/> | <img src="./art/kohii_demo_3.gif" width="468"/> |
+| <img src="./art/kohii_demo_2.gif" width="216"/> | <img src="./art/kohii_demo_3.gif" width="468"/>
+|
 
 ## Setup
 
@@ -48,7 +52,9 @@ implementation "com.google.android.exoplayer:exoplayer:${exoPlayerVersion}"
 
 ## Start a playback
 
-Assuming that you have a `Fragment` which contains a `RecyclerView`, and you want to play a Video using a `PlayerView` placed inside a `ViewHolder` of the `RecyclerView`, below is what you need to do using `Kohii`:
+Assuming that you have a `Fragment` which contains a `RecyclerView`, and you want to play a Video
+using a `PlayerView` placed inside a `ViewHolder` of the `RecyclerView`, below is what you need to
+do using `Kohii`:
 
 === "Kotlin"
     ```Kotlin
@@ -76,6 +82,9 @@ Assuming that you have a `Fragment` which contains a `RecyclerView`, and you wan
 
 ## Requirements
 
-**Kohii** works on Android 4.4+ (API level 19+) and on Java 8+. It is recommended to use **Kohii** using the **Kotlin&trade;** language.
+**Kohii** works on Android 4.4+ (API level 19+) and on Java 8+. It is recommended to use **Kohii**
+using the **Kotlin&trade;** language.
 
-The core library doesn't come with any actual playback logic. Actual implementation comes with extension libraries. The extensions require corresponding 3rd libraries: `kohii-exoplayer` will require `exoplayer`, `kohii-androidx` will require `androidx.media2`.
+The core library doesn't come with any actual playback logic. Actual implementation comes with
+extension libraries. The extensions require corresponding 3rd libraries: `kohii-exoplayer` will
+require `exoplayer`, `kohii-androidx` will require `androidx.media2`.

@@ -47,9 +47,9 @@ open class KohiiExoPlayer(
   context: Context,
   clock: Clock = Clock.DEFAULT,
   renderersFactory: RenderersFactory = DefaultRenderersFactory(context.applicationContext),
-    // TrackSelector is initialized at the same time a new Player instance is created.
-    // This process will set the BandwidthMeter to the TrackSelector. Therefore we need to have
-    // unique TrackSelector per Player instance.
+  // TrackSelector is initialized at the same time a new Player instance is created.
+  // This process will set the BandwidthMeter to the TrackSelector. Therefore we need to have
+  // unique TrackSelector per Player instance.
   override val trackSelector: DefaultTrackSelector =
     DefaultTrackSelector(context.applicationContext),
   loadControl: LoadControl = DefaultLoadControl.Builder().build(),
@@ -59,19 +59,21 @@ open class KohiiExoPlayer(
   analyticsCollector: AnalyticsCollector = DefaultAnalyticsCollector(clock),
   looper: Looper = Util.getCurrentOrMainLooper()
 ) : SimpleExoPlayer(
-    Builder(
-        context.applicationContext,
-        renderersFactory,
-        trackSelector,
-        mediaSourceFactory,
-        loadControl,
-        bandwidthMeter,
-        analyticsCollector
-    )
-        .setUseLazyPreparation(true)
-        .setClock(clock)
-        .setLooper(looper)
-), VolumeInfoController, DefaultTrackSelectorHolder {
+  Builder(
+    context.applicationContext,
+    renderersFactory,
+    trackSelector,
+    mediaSourceFactory,
+    loadControl,
+    bandwidthMeter,
+    analyticsCollector
+  )
+    .setUseLazyPreparation(true)
+    .setClock(clock)
+    .setLooper(looper)
+),
+  VolumeInfoController,
+  DefaultTrackSelectorHolder {
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
   private var playerVolumeInfo = VolumeInfo.DEFAULT_ACTIVE // backing field.

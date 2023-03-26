@@ -16,6 +16,6 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-  <item android:drawable="@drawable/ic_volume_on_black_24dp" android:state_selected="true"/>
-  <item android:drawable="@drawable/ic_volume_off_black_24dp" android:state_selected="false"/>
+  <item android:drawable="@drawable/ic_volume_on_black_24dp" android:state_selected="true" />
+  <item android:drawable="@drawable/ic_volume_off_black_24dp" android:state_selected="false" />
 </selector>

@@ -64,7 +64,7 @@ class MasterDetailFragment : BaseFragment(), DemoContainer {
     val binding: FragmentMasterDetailBinding = FragmentMasterDetailBinding.bind(view)
     kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.container)
+      .addBucket(binding.container)
 
     if (savedInstanceState == null) {
       childFragmentManager.commit {
@@ -73,26 +73,29 @@ class MasterDetailFragment : BaseFragment(), DemoContainer {
       }
     }
 
-    childFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
-      override fun onFragmentViewCreated(
-        fm: FragmentManager,
-        f: Fragment,
-        v: View,
-        savedInstanceState: Bundle?
-      ) {
-        if (f.id == R.id.topContainer) {
-          kohii.stick(f.viewLifecycleOwner)
+    childFragmentManager.registerFragmentLifecycleCallbacks(
+      object : FragmentLifecycleCallbacks() {
+        override fun onFragmentViewCreated(
+          fm: FragmentManager,
+          f: Fragment,
+          v: View,
+          savedInstanceState: Bundle?
+        ) {
+          if (f.id == R.id.topContainer) {
+            kohii.stick(f.viewLifecycleOwner)
+          }
         }
-      }
 
-      override fun onFragmentViewDestroyed(
-        fm: FragmentManager,
-        f: Fragment
-      ) {
-        if (f.id == R.id.topContainer) {
-          kohii.unstick(f.viewLifecycleOwner)
+        override fun onFragmentViewDestroyed(
+          fm: FragmentManager,
+          f: Fragment
+        ) {
+          if (f.id == R.id.topContainer) {
+            kohii.unstick(f.viewLifecycleOwner)
+          }
         }
-      }
-    }, false)
+      },
+      false
+    )
   }
 }

@@ -52,8 +52,8 @@ class HorizontalRecyclerViewInsideNestedScrollViewFragment : BaseFragment(), Dem
       FragmentDebugRvInNestsvHorizontalBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.scrollView)
-        .addBucket(binding.recyclerView)
+      .addBucket(binding.scrollView)
+      .addBucket(binding.recyclerView)
 
     binding.libIntro.text = getString(R.string.lib_intro).parseAsHtml()
 

@@ -100,9 +100,9 @@ class YouTubeItemsAdapter(
         threshold = 0.999F
         artworkHintListener = holder
       }
-          .bind(holder.fragmentPlace) {
-            holder.playback = it
-          }
+        .bind(holder.fragmentPlace) {
+          holder.playback = it
+        }
     }
   }
 

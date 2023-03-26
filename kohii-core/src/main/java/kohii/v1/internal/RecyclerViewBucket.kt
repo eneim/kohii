@@ -45,11 +45,17 @@ internal class RecyclerViewBucket(
         is StaggeredGridLayoutManager -> layout.orientation
         else -> {
           return if (layout.canScrollVertically()) {
-            if (layout.canScrollHorizontally()) BOTH_AXIS
-            else VERTICAL
+            if (layout.canScrollHorizontally()) {
+              BOTH_AXIS
+            } else {
+              VERTICAL
+            }
           } else {
-            if (layout.canScrollHorizontally()) HORIZONTAL
-            else NONE_AXIS
+            if (layout.canScrollHorizontally()) {
+              HORIZONTAL
+            } else {
+              NONE_AXIS
+            }
           }
         }
       }
@@ -72,8 +78,8 @@ internal class RecyclerViewBucket(
     super.onAttached()
     root.doOnLayout { view ->
       if (view.isAttachedToWindow &&
-          view is RecyclerView &&
-          view.scrollState == RecyclerView.SCROLL_STATE_IDLE
+        view is RecyclerView &&
+        view.scrollState == RecyclerView.SCROLL_STATE_IDLE
       ) {
         manager.refresh()
       }
@@ -106,9 +112,9 @@ internal class RecyclerViewBucket(
     manager.master.requests.filter {
       RecyclerViewUtils.fetchViewHolder(it.key) === holder
     }
-        .forEach {
-          it.value.bucket = this
-        }
+      .forEach {
+        it.value.bucket = this
+      }
   }
 
   override fun onChildViewDetachedFromWindow(view: View) {

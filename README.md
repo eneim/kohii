@@ -10,13 +10,16 @@ Video playback for Android made easy.
 ![Maven Central](https://img.shields.io/maven-central/v/im.ene.kohii/kohii-core)
 [![](https://yourdonation.rocks/images/badge.svg)](https://github.com/sponsors/eneim)
 
-**Kohii** is a powerful, easy to use and extensible Video playback library. **Kohii** provides powerful features out of the box, including 
+**Kohii** is a powerful, easy to use and extensible Video playback library. **Kohii** provides
+powerful features out of the box, including
 
 1. Easy to start: just one line to start a Video playback.
 2. Automatic playback experience on RecyclerView, NestedScrollView, ViewPager2, etc.
-3. Configuration change handling works out of the box, including the transition from local playback to fullscreen playback and vice versa. 
+3. Configuration change handling works out of the box, including the transition from local playback
+   to fullscreen playback and vice versa.
 4. Feature-rich sample app that covers either simple or advance use cases.
-5. Extension-based structure, including default implementations that support ExoPlayer, AndroidX Media2, YouTube Player SDK. 
+5. Extension-based structure, including default implementations that support ExoPlayer, AndroidX
+   Media2, YouTube Player SDK.
 
 ## Demo
 
@@ -44,7 +47,8 @@ implementation "im.ene.kohii:kohii-exoplayer:1.4.0.2017001" // default support f
 implementation "com.google.android.exoplayer:exoplayer:2.17.1" // required ExoPlayer implementation.
 ```
 
-Kohii uses Kotlin language with some Java 8 features so you will need to include the following options to your module's build.gradle:
+Kohii uses Kotlin language with some Java 8 features so you will need to include the following
+options to your module's build.gradle:
 
 ```groovy
 android {
@@ -83,6 +87,9 @@ kohii.setUp(videoUrl).bind(playerView);
 
 ## Requirements
 
-**Kohii** works on Android 4.4+ (API level 19+) and on Java 8+. It is recommended to use Kohii using Kotlin.
+**Kohii** works on Android 4.4+ (API level 19+) and on Java 8+. It is recommended to use Kohii using
+Kotlin.
 
-The core library doesn't come with any actual playback logic. Actual implementation comes with extension libraries. The extensions require corresponding 3rd libraries: ``kohii-exoplayer`` will requires ``exoplayer``, ``kohii-androidx`` will requires ``androidx.media2``.
+The core library doesn't come with any actual playback logic. Actual implementation comes with
+extension libraries. The extensions require corresponding 3rd libraries: ``kohii-exoplayer`` will
+requires ``exoplayer``, ``kohii-androidx`` will requires ``androidx.media2``.

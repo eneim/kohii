@@ -25,7 +25,7 @@ import kohii.v1.sample.databinding.ManualVideoHolderBinding
 internal class ManualVideoViewHolder(
   parent: ViewGroup
 ) : ViewBindingHolder<ManualVideoHolderBinding>(parent, ManualVideoHolderBinding::inflate),
-    Playback.StateListener {
+  Playback.StateListener {
 
   init {
     binding.controller.exoPause.isVisible = false

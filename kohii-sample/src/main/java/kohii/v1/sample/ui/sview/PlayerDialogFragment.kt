@@ -45,7 +45,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
         it.putParcelable(KEY_INIT_DATA, initData)
       }
       return PlayerDialogFragment()
-          .also { it.arguments = bundle }
+        .also { it.arguments = bundle }
     }
   }
 
@@ -89,7 +89,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
 
     kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(binding.playerContainer)
+        .addBucket(binding.playerContainer)
     }
   }
 
@@ -99,7 +99,7 @@ class PlayerDialogFragment : AppCompatDialogFragment(), Playback.Callback {
     rebinder.with {
       callbacks += this@PlayerDialogFragment
     }
-        .bind(kohii, binding.playerView) { playback = it }
+      .bind(kohii, binding.playerView) { playback = it }
     this.rebinder = rebinder
   }
 

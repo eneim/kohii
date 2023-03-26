@@ -29,8 +29,8 @@ import kohii.v1.utils.Capsule
 class UnofficialYouTubePlayerEngine private constructor(
   master: Master
 ) : Engine<YouTubePlayerView>(
-    master,
-    UnofficialYouTubePlayerPlayableCreator(master)
+  master,
+  UnofficialYouTubePlayerPlayableCreator(master)
 ) {
 
   private constructor(context: Context) : this(Master[context])
@@ -49,8 +49,8 @@ class UnofficialYouTubePlayerEngine private constructor(
 
   override fun prepare(manager: Manager) {
     manager.registerRendererProvider(
-        YouTubePlayerView::class.java,
-        UnofficialYouTubePlayerRendererProvider()
+      YouTubePlayerView::class.java,
+      UnofficialYouTubePlayerRendererProvider()
     )
   }
 }

@@ -45,7 +45,7 @@ class HomeFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     val kohii = KohiiProvider[requireContext()]
     kohii.register(this, memoryMode = HIGH, activeLifecycleState = State.RESUMED)
-        .addBucket(binding.videos)
+      .addBucket(binding.videos)
     binding.videos.adapter = VideosAdapter(getApp().videos, kohii)
     binding.videos.offscreenPageLimit = 1
   }

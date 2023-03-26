@@ -23,7 +23,8 @@ import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.R.layout
 import kohii.v1.sample.common.inflateView
 
-internal class HorizontalItemsAdapter(private val kohii: Kohii) : Adapter<HorizontalItemViewHolder>() {
+internal class HorizontalItemsAdapter(private val kohii: Kohii) :
+  Adapter<HorizontalItemViewHolder>() {
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
@@ -42,8 +43,8 @@ internal class HorizontalItemsAdapter(private val kohii: Kohii) : Adapter<Horizo
   ) {
     holder.container.setAspectRatio(16 / 9F)
     kohii.setUp(assetVideoUri) {
-      tag = "NESTED::RV::HOZ::${holder.adapterPosition}"
+      tag = "NESTED::RV::HOZ::${holder.absoluteAdapterPosition}"
     }
-        .bind(holder.container)
+      .bind(holder.container)
   }
 }

@@ -55,7 +55,7 @@ class NestedScrollViewInsideRecyclerViewFragment : BaseFragment(), DemoContainer
     val binding: FragmentDebugNestsvInRvBinding = FragmentDebugNestsvInRvBinding.bind(view)
     val kohii = Kohii[this]
     val manager = kohii.register(this, MemoryMode.BALANCED)
-        .addBucket(binding.recyclerView)
+      .addBucket(binding.recyclerView)
 
     binding.recyclerView.adapter = NestedItemsAdapter(kohii, manager)
 

@@ -52,9 +52,13 @@ internal class FbookAdapter(
 
   override fun getItemViewType(position: Int): Int {
     val key = position % 5
-    return if (key == 0 || key == 1 || key == 4) TYPE_TEXT
-    else if (key == 2) TYPE_VIDEO
-    else TYPE_PHOTO
+    return if (key == 0 || key == 1 || key == 4) {
+      TYPE_TEXT
+    } else if (key == 2) {
+      TYPE_VIDEO
+    } else {
+      TYPE_PHOTO
+    }
   }
 
   override fun onCreateViewHolder(
@@ -71,6 +75,7 @@ internal class FbookAdapter(
           if (vh.playAgain.isVisible) vh.playback?.rewind()
         }
       }
+
       else -> throw IllegalArgumentException("Unknown type: $viewType")
     }
   }

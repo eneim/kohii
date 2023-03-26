@@ -47,13 +47,13 @@ class ViewPager2WithViewsFragment : BaseFragment(), DemoContainer {
   ) : ViewHolder(itemView) {
 
     fun bind(video: Sources) {
-      val itemTag = "$javaClass::$adapterPosition::${video.file}"
+      val itemTag = "$javaClass::$absoluteAdapterPosition::${video.file}"
       kohii.setUp(video.file) {
         tag = itemTag
         preload = true
         repeatMode = Player.REPEAT_MODE_ONE
       }
-          .bind(itemView.findViewById(R.id.videoFrame) as ViewGroup)
+        .bind(itemView.findViewById(R.id.videoFrame) as ViewGroup)
     }
   }
 
@@ -74,7 +74,7 @@ class ViewPager2WithViewsFragment : BaseFragment(), DemoContainer {
       position: Int
     ) {
       val video = videos[position % videos.size].playlist.first()
-          .sources.first()
+        .sources.first()
       holder.bind(video)
     }
 
@@ -99,8 +99,8 @@ class ViewPager2WithViewsFragment : BaseFragment(), DemoContainer {
     val binding: FragmentPager2VerticalBinding = FragmentPager2VerticalBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.viewPager)
-        .addBucket(binding.viewPager.getChildAt(0))
+      .addBucket(binding.viewPager)
+      .addBucket(binding.viewPager.getChildAt(0))
 
     binding.viewPager.adapter = VideoPagerAdapter(kohii, getApp().videos)
   }

@@ -40,19 +40,19 @@ import com.google.android.exoplayer2.util.Clock
  */
 data class ExoPlayerConfig(
   internal val clock: Clock = Clock.DEFAULT,
-    // DefaultTrackSelector parameters
+  // DefaultTrackSelector parameters
   internal val trackSelectorParameters: Parameters = Parameters.DEFAULT_WITHOUT_CONTEXT,
   internal val trackSelectionFactory: ExoTrackSelection.Factory = AdaptiveTrackSelection.Factory(),
-    // DefaultBandwidthMeter parameters
+  // DefaultBandwidthMeter parameters
   internal val overrideInitialBitrateEstimate: Long = -1,
   internal val resetOnNetworkTypeChange: Boolean = true,
   internal val slidingWindowMaxWeight: Int = DefaultBandwidthMeter.DEFAULT_SLIDING_WINDOW_MAX_WEIGHT,
-    // DefaultRenderersFactory parameters
+  // DefaultRenderersFactory parameters
   internal val enableDecoderFallback: Boolean = true,
   internal val allowedVideoJoiningTimeMs: Long = DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS,
   internal val extensionRendererMode: Int = DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF,
   internal val mediaCodecSelector: MediaCodecSelector = MediaCodecSelector.DEFAULT,
-    // DefaultLoadControl parameters
+  // DefaultLoadControl parameters
   internal val allocator: DefaultAllocator = DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
   internal val minBufferMs: Int = DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
   internal val maxBufferMs: Int = DefaultLoadControl.DEFAULT_MAX_BUFFER_MS,
@@ -62,7 +62,7 @@ data class ExoPlayerConfig(
   internal val targetBufferBytes: Int = DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES,
   internal val backBufferDurationMs: Int = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS,
   internal val retainBackBufferFromKeyframe: Boolean = DefaultLoadControl.DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME,
-    // Other configurations
+  // Other configurations
   internal val cache: Cache? = null
 ) : LoadControlFactory, BandwidthMeterFactory, TrackSelectorFactory {
 
@@ -78,52 +78,52 @@ data class ExoPlayerConfig(
      */
     @JvmStatic
     val FAST_START = ExoPlayerConfig(
-        minBufferMs = DefaultLoadControl.DEFAULT_MIN_BUFFER_MS / 10,
-        maxBufferMs = DefaultLoadControl.DEFAULT_MAX_BUFFER_MS / 10,
-        bufferForPlaybackMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS / 10,
-        bufferForPlaybackAfterRebufferMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS / 10
+      minBufferMs = DefaultLoadControl.DEFAULT_MIN_BUFFER_MS / 10,
+      maxBufferMs = DefaultLoadControl.DEFAULT_MAX_BUFFER_MS / 10,
+      bufferForPlaybackMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS / 10,
+      bufferForPlaybackAfterRebufferMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS / 10
     )
   }
 
   override fun createLoadControl(): LoadControl = DefaultLoadControl.Builder()
-      .setAllocator(allocator)
-      .setBackBuffer(
-          backBufferDurationMs,
-          retainBackBufferFromKeyframe
-      )
-      .setBufferDurationsMs(
-          minBufferMs,
-          maxBufferMs,
-          bufferForPlaybackMs,
-          bufferForPlaybackAfterRebufferMs
-      )
-      .setPrioritizeTimeOverSizeThresholds(prioritizeTimeOverSizeThresholds)
-      .setTargetBufferBytes(targetBufferBytes)
-      .build()
+    .setAllocator(allocator)
+    .setBackBuffer(
+      backBufferDurationMs,
+      retainBackBufferFromKeyframe
+    )
+    .setBufferDurationsMs(
+      minBufferMs,
+      maxBufferMs,
+      bufferForPlaybackMs,
+      bufferForPlaybackAfterRebufferMs
+    )
+    .setPrioritizeTimeOverSizeThresholds(prioritizeTimeOverSizeThresholds)
+    .setTargetBufferBytes(targetBufferBytes)
+    .build()
 
   override fun createBandwidthMeter(context: Context): BandwidthMeter =
     DefaultBandwidthMeter.Builder(context.applicationContext)
-        .setClock(clock)
-        .setResetOnNetworkTypeChange(resetOnNetworkTypeChange)
-        .setSlidingWindowMaxWeight(slidingWindowMaxWeight)
-        .apply {
-          if (overrideInitialBitrateEstimate > 0) {
-            setInitialBitrateEstimate(overrideInitialBitrateEstimate)
-          }
+      .setClock(clock)
+      .setResetOnNetworkTypeChange(resetOnNetworkTypeChange)
+      .setSlidingWindowMaxWeight(slidingWindowMaxWeight)
+      .apply {
+        if (overrideInitialBitrateEstimate > 0) {
+          setInitialBitrateEstimate(overrideInitialBitrateEstimate)
         }
-        .build()
+      }
+      .build()
 
   override fun createDefaultTrackSelector(context: Context): DefaultTrackSelector {
     val parameters: Parameters =
       if (trackSelectorParameters === Parameters.DEFAULT_WITHOUT_CONTEXT) {
         trackSelectorParameters.buildUpon()
-            .setViewportSizeToPhysicalDisplaySize(context, true)
-            .build()
+          .setViewportSizeToPhysicalDisplaySize(context, true)
+          .build()
       } else {
         trackSelectorParameters
       }
 
-    return DefaultTrackSelector(parameters, trackSelectionFactory)
+    return DefaultTrackSelector(context, parameters, trackSelectionFactory)
   }
 }
 
@@ -132,15 +132,15 @@ fun ExoPlayerConfig.createDefaultPlayerPool(
   context: Context,
   userAgent: String
 ) = ExoPlayerPool(
-    context = context.applicationContext,
-    userAgent = userAgent,
-    clock = clock,
-    bandwidthMeterFactory = this,
-    trackSelectorFactory = this,
-    loadControlFactory = this,
-    renderersFactory = DefaultRenderersFactory(context.applicationContext)
-        .setEnableDecoderFallback(enableDecoderFallback)
-        .setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs)
-        .setExtensionRendererMode(extensionRendererMode)
-        .setMediaCodecSelector(mediaCodecSelector)
+  context = context.applicationContext,
+  userAgent = userAgent,
+  clock = clock,
+  bandwidthMeterFactory = this,
+  trackSelectorFactory = this,
+  loadControlFactory = this,
+  renderersFactory = DefaultRenderersFactory(context.applicationContext)
+    .setEnableDecoderFallback(enableDecoderFallback)
+    .setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs)
+    .setExtensionRendererMode(extensionRendererMode)
+    .setMediaCodecSelector(mediaCodecSelector)
 )

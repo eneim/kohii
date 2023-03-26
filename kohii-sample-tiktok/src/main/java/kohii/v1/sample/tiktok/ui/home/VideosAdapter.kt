@@ -65,8 +65,11 @@ class VideosAdapter(
       controller = controller(kohiiCanStart = true, kohiiCanPause = true) { playback, _ ->
         val playable = playback.playable ?: return@controller
         holder.binding.container.setOnClickListener {
-          if (playable.isPlaying()) playback.manager.pause(playable)
-          else playback.manager.play(playable)
+          if (playable.isPlaying()) {
+            playback.manager.pause(playable)
+          } else {
+            playback.manager.play(playable)
+          }
         }
       }
     }.bind(holder.binding.playerView) {

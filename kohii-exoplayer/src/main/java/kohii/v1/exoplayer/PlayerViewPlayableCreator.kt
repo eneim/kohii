@@ -42,8 +42,8 @@ class PlayerViewPlayableCreator internal constructor(
     private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { context ->
       // ExoPlayerProvider
       val playerPool = ExoPlayerPool(
-          context = context,
-          userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
+        context = context,
+        userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
       )
       PlayerViewBridgeCreator(playerPool, playerPool.defaultMediaSourceFactory)
     }
@@ -58,10 +58,10 @@ class PlayerViewPlayableCreator internal constructor(
     media: Media
   ): Playable {
     return PlayerViewPlayable(
-        master,
-        media,
-        config,
-        bridgeCreator.value.createBridge(master.app, media)
+      master,
+      media,
+      config,
+      bridgeCreator.value.createBridge(master.app, media)
     )
   }
 
@@ -80,8 +80,8 @@ class PlayerViewPlayableCreator internal constructor(
     }
 
     fun build(): PlayableCreator<PlayerView> = PlayerViewPlayableCreator(
-        Master[app],
-        bridgeCreatorFactory
+      Master[app],
+      bridgeCreatorFactory
     )
   }
 }

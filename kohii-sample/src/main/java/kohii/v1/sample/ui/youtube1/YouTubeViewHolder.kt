@@ -50,13 +50,13 @@ class YouTubeViewHolder(
     (item as? Video)?.apply {
       val lowResThumb = this.snippet.thumbnails.medium.url
       val thumbRequest = Glide.with(itemView)
-          .load(lowResThumb)
+        .load(lowResThumb)
       val highResThumb = this.snippet.thumbnails.maxres.url
       GlideApp.with(itemView)
-          .load(highResThumb)
-          .thumbnail(thumbRequest)
-          .fitCenter()
-          .into(thumbnail)
+        .load(highResThumb)
+        .thumbnail(thumbRequest)
+        .fitCenter()
+        .into(thumbnail)
 
       videoTitle.text = "${this.snippet.title}, id: $id"
     }

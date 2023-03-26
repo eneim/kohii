@@ -37,7 +37,7 @@ import okio.buffer
 import okio.source
 
 class AdsContainerFragment :
-    ViewBindingFragment<FragmentAdsListBinding>(FragmentAdsListBinding::inflate) {
+  ViewBindingFragment<FragmentAdsListBinding>(FragmentAdsListBinding::inflate) {
 
   private companion object {
     const val STATE_AD_SAMPLE = "dev_ad_sample"
@@ -59,8 +59,8 @@ class AdsContainerFragment :
       } else {
         if (value != current) {
           val adMedia = AdMediaItem(
-              value.contentUri,
-              value.adTagUri
+            value.contentUri,
+            value.adTagUri
           )
 
           manilo.setUp(adMedia) {
@@ -82,10 +82,10 @@ class AdsContainerFragment :
     val app = (requireContext().applicationContext as DemoApp)
     manilo = app.manilo
     adSamples = app.moshi
-        .adapter(AdSamples::class.java)
-        .fromJson(
-            app.assets.open("ads.json").source().buffer()
-        ) ?: AdSamples("No Ads", emptyList())
+      .adapter(AdSamples::class.java)
+      .fromJson(
+        app.assets.open("ads.json").source().buffer()
+      ) ?: AdSamples("No Ads", emptyList())
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -98,15 +98,15 @@ class AdsContainerFragment :
     requireBinding().adsContainer.adapter = object : Adapter<ViewHolder>() {
       override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView = LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_list_item_activated_1, parent, false)
+          .inflate(android.R.layout.simple_list_item_activated_1, parent, false)
         val viewHolder = object : ViewHolder(itemView) {}
         itemView.setOnClickListener {
-          if (viewHolder.adapterPosition in 0 until itemCount) {
-            selectedAdSample = adSamples.samples[viewHolder.adapterPosition]
+          if (viewHolder.absoluteAdapterPosition in 0 until itemCount) {
+            selectedAdSample = adSamples.samples[viewHolder.absoluteAdapterPosition]
             // Update the UI state of all visible items. Not an optimized practice.
             notifyItemRangeChanged(
-                layoutManager.findFirstVisibleItemPosition(),
-                layoutManager.findLastVisibleItemPosition()
+              layoutManager.findFirstVisibleItemPosition(),
+              layoutManager.findLastVisibleItemPosition()
             )
           }
         }

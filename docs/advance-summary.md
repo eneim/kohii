@@ -1,10 +1,14 @@
 # Advance usages
 
-Advance usages session will focus on using **Kohii** with **ExoPlayer**. Using others _extensions_ will be discussed in more advance topics, because each extension is built with different ability.
+Advance usages session will focus on using **Kohii** with **ExoPlayer**. Using others _extensions_
+will be discussed in more advance topics, because each extension is built with different ability.
 
-Here, we assume that you are familiar with **ExoPlayer**, including its core components (Player, ExoPlayer, SimpleExoPlayer, MediaSource, etc) and UI system (PlayerView, PlayerControlView, ControlDispatcher, etc).
+Here, we assume that you are familiar with **ExoPlayer**, including its core components (Player,
+ExoPlayer, SimpleExoPlayer, MediaSource, etc) and UI system (PlayerView, PlayerControlView,
+ControlDispatcher, etc).
 
-This section may use some keywords about components in **Kohii** like **Container**, **Bucket**, etc. You can find their definitions here: [Glossary](glossary.md).
+This section may use some keywords about components in **Kohii** like **Container**, **Bucket**,
+etc. You can find their definitions here: [Glossary](glossary.md).
 
 Advance usages by **Kohii**:
 

@@ -38,8 +38,9 @@ import kohii.v1.media.VolumeInfo
 internal class OfficialYouTubePlayerBridge(
   private val media: Media
 ) : AbstractBridge<YouTubePlayerFragment>(),
-    PlaybackEventListener,
-    PlayerStateChangeListener, DefaultLifecycleObserver {
+  PlaybackEventListener,
+  PlayerStateChangeListener,
+  DefaultLifecycleObserver {
 
   private val initializedListener = object : OnInitializedListener {
     override fun onInitializationSuccess(
@@ -54,7 +55,7 @@ internal class OfficialYouTubePlayerBridge(
           requireNotNull(player).play()
         } else {
           requireNotNull(player)
-              .loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toInt())
+            .loadVideo(media.uri.toString(), _playbackInfo.resumePosition.toInt())
         }
       }
     }

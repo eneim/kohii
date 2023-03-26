@@ -57,10 +57,10 @@ class PageFragment : BaseFragment(), Prioritized {
 
   val video: Sources by lazy {
     val video = arguments?.getParcelable<Video>(
-        pageVideoKey
+      pageVideoKey
     )!!
     val item = video.playlist.first()
-        .sources.first()
+      .sources.first()
     item
   }
 
@@ -83,11 +83,11 @@ class PageFragment : BaseFragment(), Prioritized {
     val binding: FragmentPagerPageBinding = FragmentPagerPageBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.content)
+      .addBucket(binding.content)
 
     landscape = requireActivity().isLandscape()
     val pagePos = requireArguments().getInt(
-        pageTagKey
+      pageTagKey
     )
     val videoTag = "PAGE::$pagePos::${video.file}"
     val playerView: PlayerView = view.findViewById(R.id.playerView)
@@ -97,7 +97,7 @@ class PageFragment : BaseFragment(), Prioritized {
       repeatMode = Player.REPEAT_MODE_ONE
       preload = true
     }
-        .bind(playerView) { playback = it }
+      .bind(playerView) { playback = it }
 
     view.doOnLayout {
       val playerContainer: AspectRatioFrameLayout = it.findViewById(R.id.playerContainer)

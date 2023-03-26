@@ -71,24 +71,24 @@ data class Rebinder(val tag: @RawValue Any) : Parcelable {
     callback: ((Playback) -> Unit)? = null
   ) {
     val playable = master.playables.asSequence()
-        .firstOrNull { it.value == tag /* equals */ }
-        ?.key
+      .firstOrNull { it.value == tag /* equals */ }
+      ?.key
     master.bind(
-        requireNotNull(playable) { "Playable is null for tag $tag" },
-        tag,
-        container,
-        Binder.Options().also {
-          it.tag = tag
-          it.threshold = options.threshold
-          it.preload = options.preload
-          it.repeatMode = options.repeatMode
-          it.controller = options.controller
-          it.artworkHintListener = options.artworkHintListener
-          it.tokenUpdateListener = options.tokenUpdateListener
-          it.networkTypeChangeListener = options.networkTypeChangeListener
-          it.callbacks += options.callbacks
-        },
-        callback
+      requireNotNull(playable) { "Playable is null for tag $tag" },
+      tag,
+      container,
+      Binder.Options().also {
+        it.tag = tag
+        it.threshold = options.threshold
+        it.preload = options.preload
+        it.repeatMode = options.repeatMode
+        it.controller = options.controller
+        it.artworkHintListener = options.artworkHintListener
+        it.tokenUpdateListener = options.tokenUpdateListener
+        it.networkTypeChangeListener = options.networkTypeChangeListener
+        it.callbacks += options.callbacks
+      },
+      callback
     )
     options = Options() // reset.
   }

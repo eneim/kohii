@@ -44,22 +44,25 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
 
   @SuppressLint("InflateParams")
   internal val floatView: View = LayoutInflater.from(activity)
-      .inflate(R.layout.widget_float_player, null)
+    .inflate(R.layout.widget_float_player, null)
 
   internal val floatParams by lazy {
     val params = WindowManager.LayoutParams()
     @Suppress("DEPRECATION")
-    params.type = if (VERSION.SDK_INT >= VERSION_CODES.O)
+    params.type = if (VERSION.SDK_INT >= VERSION_CODES.O) {
       WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-    else
+    } else {
       WindowManager.LayoutParams.TYPE_PHONE
+    }
 
     params.format = PixelFormat.TRANSLUCENT
-    params.flags = params.flags or (WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+    params.flags = params.flags or (
+      WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
         or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-        or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
+        or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+      )
 
     params.gravity = Gravity.END or Gravity.BOTTOM
     params.width = WindowManager.LayoutParams.WRAP_CONTENT
@@ -89,16 +92,21 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
         floatViewFirstX = floatViewLastX
         floatViewFirstY = floatViewLastY
       }
+
       MotionEvent.ACTION_UP -> {
         // Snap to one side
         val display = floatView.display
         if (display != null) {
           display.getRectSize(displayRect)
           GravityCompat.applyDisplay(
-              params.gravity, displayRect, windowRect, floatView.layoutDirection
+            params.gravity,
+            displayRect,
+            windowRect,
+            floatView.layoutDirection
           )
         }
       }
+
       MotionEvent.ACTION_MOVE -> {
         val deltaX = event.rawX.toInt() - floatViewLastX
         val deltaY = event.rawY.toInt() - floatViewLastY
@@ -117,6 +125,7 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
           viewTouchConsumedByMove = false
         }
       }
+
       else -> {
       }
     }
@@ -135,7 +144,7 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
           floatView.setOnTouchListener(floatViewOnTouchListener)
           windowManager.addView(floatView, floatParams)
           kohii.register(activity)
-              .addBucket(container)
+            .addBucket(container)
           callback(playerView)
         }
       }
@@ -148,10 +157,10 @@ internal class FloatPlayerManager(val activity: FragmentActivity) {
         floatView.setOnTouchListener(null)
         callback()
         floatView.animate()
-            .alpha(0F)
-            .setDuration(150)
-            .withEndAction { windowManager.removeView(floatView) }
-            .start()
+          .alpha(0F)
+          .setDuration(150)
+          .withEndAction { windowManager.removeView(floatView) }
+          .start()
       }
     }
   }

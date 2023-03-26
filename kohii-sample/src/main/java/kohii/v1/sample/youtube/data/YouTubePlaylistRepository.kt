@@ -32,31 +32,29 @@ class YouTubePlaylistRepository(
     playlistId: String,
     pageSize: Long
   ): Listing<Video> {
-    val sourceFactory = YouTubeDataSourceFactory(
-        apiKey, youtube, playlistId, executor, pageSize
-    )
+    val sourceFactory = YouTubeDataSourceFactory(apiKey, youtube, playlistId, executor, pageSize)
     // We use toLiveData Kotlin extension function here, you could also use LivePagedListBuilder
     val livePagedList = sourceFactory.toLiveData(
-        pageSize = pageSize.toInt(),
-        // provide custom executor for network requests, otherwise it will default to
-        // Arch Components' IO keyToPool which is also used for disk access
-        fetchExecutor = executor
+      pageSize = pageSize.toInt(),
+      // provide custom executor for network requests, otherwise it will default to
+      // Arch Components' IO keyToPool which is also used for disk access
+      fetchExecutor = executor
     )
     val refreshState = sourceFactory.sourceLiveData.switchMap {
       it.initialLoad
     }
     return Listing(
-        pagedList = livePagedList,
-        networkState = sourceFactory.sourceLiveData.switchMap {
-          it.networkState
-        },
-        retry = {
-          sourceFactory.sourceLiveData.value?.retryAllFailed()
-        },
-        refresh = {
-          sourceFactory.sourceLiveData.value?.invalidate()
-        },
-        refreshState = refreshState
+      pagedList = livePagedList,
+      networkState = sourceFactory.sourceLiveData.switchMap {
+        it.networkState
+      },
+      retry = {
+        sourceFactory.sourceLiveData.value?.retryAllFailed()
+      },
+      refresh = {
+        sourceFactory.sourceLiveData.value?.invalidate()
+      },
+      refreshState = refreshState
     )
   }
 }

@@ -131,8 +131,8 @@ class Master private constructor(context: Context) : PlayableManager {
       val to = field
       if (from == to) return
       playables.asSequence()
-          .filter { (playable: Playable, _) -> playable.playback?.isActive == true }
-          .forEach { (playable: Playable, _) -> playable.onNetworkTypeChanged(from, to) }
+        .filter { (playable: Playable, _) -> playable.playback?.isActive == true }
+        .forEach { (playable: Playable, _) -> playable.onNetworkTypeChanged(from, to) }
     }
 
   private val networkTypeChangedListener = NetworkTypeObserver.Listener { networkType ->
@@ -186,11 +186,11 @@ class Master private constructor(context: Context) : PlayableManager {
     }
 
     return group.managers.find { it.lifecycleOwner === managerLifecycleOwner }
-        ?: Manager(this, group, host, managerLifecycleOwner, memoryMode, activeLifecycleState)
-            .also {
-              group.onManagerCreated(it)
-              managerLifecycleOwner.lifecycle.addObserver(it)
-            }
+      ?: Manager(this, group, host, managerLifecycleOwner, memoryMode, activeLifecycleState)
+        .also {
+          group.onManagerCreated(it)
+          managerLifecycleOwner.lifecycle.addObserver(it)
+        }
   }
 
   /**
@@ -218,14 +218,14 @@ class Master private constructor(context: Context) : PlayableManager {
     // So if a Playable is registered to be bound, but then another Playable is registered to the
     // same Container, we need to kick the previous Playable.
     val requestForSameTag = requests.asSequence()
-        .filter { it.value.tag !== NO_TAG }
-        .firstOrNull { it.value.tag == tag }
-        ?.key
+      .filter { it.value.tag !== NO_TAG }
+      .firstOrNull { it.value.tag == tag }
+      ?.key
     if (requestForSameTag != null) requests.remove(requestForSameTag)?.onRemoved()
     requests[container] = BindRequest(this, playable, container, tag, options, callback)
     // if (playable.manager == null) playable.manager = this
     dispatcher.obtainMessage(MSG_BIND_PLAYABLE, container)
-        .sendToTarget()
+      .sendToTarget()
   }
 
   internal fun tearDown(
@@ -234,7 +234,7 @@ class Master private constructor(context: Context) : PlayableManager {
   ) {
     dispatcher.removeMessages(MSG_DESTROY_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_DESTROY_PLAYABLE, clearState.compareTo(true), -1, playable)
-        .sendToTarget()
+      .sendToTarget()
   }
 
   internal fun onTearDown(
@@ -317,21 +317,21 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal fun cleanupPendingPlayables() {
     playables.filter { it.key.manager === this }
-        .keys.toMutableList()
-        .apply {
-          val manuallyStartedPlayable = manuallyStartedPlayable.get()
-          if (manuallyStartedPlayable != null && manuallyStartedPlayable.isPlaying()) {
-            minusAssign(manuallyStartedPlayable)
-          }
+      .keys.toMutableList()
+      .apply {
+        val manuallyStartedPlayable = manuallyStartedPlayable.get()
+        if (manuallyStartedPlayable != null && manuallyStartedPlayable.isPlaying()) {
+          minusAssign(manuallyStartedPlayable)
         }
-        .onEach { playable ->
-          require(playable.playback == null) {
-            "$playable has manager: $this but found Playback: ${playable.playback}"
-          }
-          playable.manager = null
-          tearDown(playable, true)
+      }
+      .onEach { playable ->
+        require(playable.playback == null) {
+          "$playable has manager: $this but found Playback: ${playable.playback}"
         }
-        .clear()
+        playable.manager = null
+        tearDown(playable, true)
+      }
+      .clear()
   }
 
   internal val dispatcher = MasterDispatcher(this)
@@ -347,11 +347,11 @@ class Master private constructor(context: Context) : PlayableManager {
   internal fun onGroupDestroyed(group: Group) {
     if (groups.remove(group)) {
       requests.filter { (container, _) -> container.context.findActivity() === group.activity }
-          .forEach { (container, request) ->
-            dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
-            request.playable.playback = null
-            requests.remove(container)?.onRemoved()
-          }
+        .forEach { (container, request) ->
+          dispatcher.removeMessages(MSG_BIND_PLAYABLE, container)
+          request.playable.playback = null
+          requests.remove(container)?.onRemoved()
+        }
     }
     if (groups.isEmpty()) {
       dispatcher.removeMessages(MSG_CLEANUP)
@@ -367,12 +367,12 @@ class Master private constructor(context: Context) : PlayableManager {
     requests.values.filter {
       val bucket = it.bucket
       return@filter bucket != null && bucket.manager.group === group &&
-          bucket.manager.lifecycleOwner.lifecycle.currentState < CREATED
+        bucket.manager.lifecycleOwner.lifecycle.currentState < CREATED
     }
-        .forEach {
-          it.playable.playback = null
-          requests.remove(it.container)?.onRemoved()
-        }
+      .forEach {
+        it.playable.playback = null
+        requests.remove(it.container)?.onRemoved()
+      }
 
     // If no Manager is online, cleanup stuffs
     if (groups.flatMap(Group::managers).isEmpty() && playables.isEmpty()) {
@@ -400,8 +400,8 @@ class Master private constructor(context: Context) : PlayableManager {
 
   internal fun findBucketForContainer(container: ViewGroup): Bucket? {
     return groups.asSequence()
-        .mapNotNull { it.findBucketForContainer(container) }
-        .firstOrNull()
+      .mapNotNull { it.findBucketForContainer(container) }
+      .firstOrNull()
   }
 
   internal fun preparePlayable(
@@ -417,21 +417,21 @@ class Master private constructor(context: Context) : PlayableManager {
     "Master#releasePlayable playable=$playable".logInfo()
     dispatcher.removeMessages(MSG_RELEASE_PLAYABLE, playable)
     dispatcher.obtainMessage(MSG_RELEASE_PLAYABLE, playable)
-        .sendToTarget()
+      .sendToTarget()
   }
 
   internal fun removeBinding(container: Any) {
     requests.remove(container)
-        ?.also { it.playable.playback = null }
-        ?.onRemoved()
+      ?.also { it.playable.playback = null }
+      ?.onRemoved()
 
     groups.asSequence()
-        .flatMap { it.managers.asSequence() }
-        .map { it.playbacks[container] }
-        .firstOrNull()
-        ?.also { playback ->
-          playback.manager.removePlayback(playback)
-        }
+      .flatMap { it.managers.asSequence() }
+      .map { it.playbacks[container] }
+      .firstOrNull()
+      ?.also { playback ->
+        playback.manager.removePlayback(playback)
+      }
   }
 
   // Must be a request to play from Client. This method will set necessary flags and refresh all.
@@ -493,11 +493,13 @@ class Master private constructor(context: Context) : PlayableManager {
             val group = groups.firstOrNull { it.activity === target }
             if (group != null) lock(group, GROUP)
           }
+
           else -> throw IllegalArgumentException(
-              "Receiver for scope $scope must be a Manager or a Group"
+            "Receiver for scope $scope must be a Manager or a Group"
           )
         }
       }
+
       MANAGER -> {
         when (target) {
           is Manager -> target.lock = true
@@ -506,22 +508,27 @@ class Master private constructor(context: Context) : PlayableManager {
           else -> throw IllegalArgumentException("Target for scope $scope must be a Manager")
         }
       }
+
       BUCKET -> {
         when (target) {
           is Bucket -> target.lock = true
           is Playback -> lock(target.bucket, BUCKET)
           else -> {
             val bucket = groups.asSequence()
-                .flatMap { it.managers.asSequence() }
-                .flatMap { it.buckets.asSequence() }
-                .firstOrNull { it.root === target }
+              .flatMap { it.managers.asSequence() }
+              .flatMap { it.buckets.asSequence() }
+              .firstOrNull { it.root === target }
             if (bucket != null) lock(bucket, BUCKET)
           }
         }
       }
+
       PLAYBACK -> {
-        if (target is Playback) target.lock = true
-        else throw IllegalArgumentException("Target for scope $scope must be a Playback")
+        if (target is Playback) {
+          target.lock = true
+        } else {
+          throw IllegalArgumentException("Target for scope $scope must be a Playback")
+        }
       }
     }
   }
@@ -547,11 +554,13 @@ class Master private constructor(context: Context) : PlayableManager {
             val group = groups.firstOrNull { it.activity === target }
             if (group != null) unlock(group, GROUP)
           }
+
           else -> throw IllegalArgumentException(
-              "Receiver for scope $scope must be a Manager or a Group"
+            "Receiver for scope $scope must be a Manager or a Group"
           )
         }
       }
+
       MANAGER -> {
         when (target) {
           is Manager -> if (!target.group.lock) target.lock = false
@@ -560,6 +569,7 @@ class Master private constructor(context: Context) : PlayableManager {
           else -> throw IllegalArgumentException("Target for scope $scope must be a Manager")
         }
       }
+
       BUCKET -> {
         when (target) {
           is Bucket -> if (!target.manager.lock) target.lock = false
@@ -567,14 +577,15 @@ class Master private constructor(context: Context) : PlayableManager {
           else -> {
             // Find the Bucket whose root is this receiver
             val bucket = groups.asSequence()
-                .flatMap { it.managers.asSequence() }
-                .flatMap { it.buckets.asSequence() }
-                .firstOrNull { it.root === target }
+              .flatMap { it.managers.asSequence() }
+              .flatMap { it.buckets.asSequence() }
+              .firstOrNull { it.root === target }
 
             if (bucket != null) unlock(bucket, BUCKET)
           }
         }
       }
+
       PLAYBACK -> {
         if (target is Playback) {
           if (!target.bucket.lock) target.lock = false
@@ -587,7 +598,7 @@ class Master private constructor(context: Context) : PlayableManager {
 
   fun registerEngine(engine: Engine<*>) {
     engines.put(engine.playableCreator.rendererType, engine)
-        ?.cleanUp()
+      ?.cleanUp()
     groups.forEach(engine::inject)
   }
 
@@ -681,17 +692,17 @@ class Master private constructor(context: Context) : PlayableManager {
 
       master.onBind(playable, tag, bucket.manager, container, callback) createNewPlayback@{
         val config = Config(
-            tag = options.tag,
-            delay = options.delay,
-            threshold = options.threshold,
-            preload = options.preload,
-            repeatMode = options.repeatMode,
-            controller = options.controller,
-            initialPlaybackInfo = options.initialPlaybackInfo,
-            artworkHintListener = options.artworkHintListener,
-            tokenUpdateListener = options.tokenUpdateListener,
-            networkTypeChangeListener = options.networkTypeChangeListener,
-            callbacks = options.callbacks
+          tag = options.tag,
+          delay = options.delay,
+          threshold = options.threshold,
+          preload = options.preload,
+          repeatMode = options.repeatMode,
+          controller = options.controller,
+          initialPlaybackInfo = options.initialPlaybackInfo,
+          artworkHintListener = options.artworkHintListener,
+          tokenUpdateListener = options.tokenUpdateListener,
+          networkTypeChangeListener = options.networkTypeChangeListener,
+          callbacks = options.callbacks
         )
 
         return@createNewPlayback when {
@@ -700,15 +711,18 @@ class Master private constructor(context: Context) : PlayableManager {
           playable.config.rendererType.isAssignableFrom(container.javaClass) -> {
             StaticViewRendererPlayback(bucket.manager, bucket, container, config)
           }
+
           View::class.java.isAssignableFrom(playable.config.rendererType) -> {
             DynamicViewRendererPlayback(bucket.manager, bucket, container, config)
           }
+
           Fragment::class.java.isAssignableFrom(playable.config.rendererType) -> {
             DynamicFragmentRendererPlayback(bucket.manager, bucket, container, config)
           }
+
           else -> {
             throw IllegalArgumentException(
-                "Unsupported Renderer type: ${playable.config.rendererType}"
+              "Unsupported Renderer type: ${playable.config.rendererType}"
             )
           }
         }

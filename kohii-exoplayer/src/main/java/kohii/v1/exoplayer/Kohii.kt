@@ -88,9 +88,9 @@ open class Kohii constructor(
     }
 
     fun build(): Kohii = Kohii(
-        master = master,
-        playableCreator = playableCreator,
-        rendererProviderFactory = rendererProviderFactory
+      master = master,
+      playableCreator = playableCreator,
+      rendererProviderFactory = rendererProviderFactory
     ).also {
       master.registerEngine(it)
     }
@@ -108,18 +108,18 @@ fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
   val bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { appContext ->
     val userAgent = Common.getUserAgent(appContext, BuildConfig.LIB_NAME)
     val playerPool = config.createDefaultPlayerPool(
-        context = context,
-        userAgent = userAgent
+      context = context,
+      userAgent = userAgent
     )
     PlayerViewBridgeCreator(
-        playerPool = playerPool,
-        mediaSourceFactory = playerPool.defaultMediaSourceFactory
+      playerPool = playerPool,
+      mediaSourceFactory = playerPool.defaultMediaSourceFactory
     )
   }
 
   val playableCreator = PlayerViewPlayableCreator.Builder(context.applicationContext)
-      .setBridgeCreatorFactory(bridgeCreatorFactory)
-      .build()
+    .setBridgeCreatorFactory(bridgeCreatorFactory)
+    .build()
 
   return Builder(context).setPlayableCreator(playableCreator).build()
 }
@@ -140,8 +140,8 @@ fun createKohii(
 ): Kohii {
   val playerPool = if (playerCreator == null) {
     ExoPlayerPool(
-        context = context.applicationContext,
-        userAgent = Common.getUserAgent(context.applicationContext, BuildConfig.LIB_NAME)
+      context = context.applicationContext,
+      userAgent = Common.getUserAgent(context.applicationContext, BuildConfig.LIB_NAME)
     )
   } else {
     object : PlayerPool<Player>() {
@@ -152,16 +152,16 @@ fun createKohii(
   }
 
   val mediaSourceFactory = (playerPool as? ExoPlayerPool)?.defaultMediaSourceFactory
-      ?: DefaultMediaSourceFactory(context.applicationContext)
+    ?: DefaultMediaSourceFactory(context.applicationContext)
 
   return Builder(context)
-      .setPlayableCreator(
-          PlayerViewPlayableCreator.Builder(context)
-              .setBridgeCreatorFactory {
-                PlayerViewBridgeCreator(playerPool, mediaSourceFactory)
-              }
-              .build()
-      )
-      .setRendererProviderFactory(rendererProviderFactory)
-      .build()
+    .setPlayableCreator(
+      PlayerViewPlayableCreator.Builder(context)
+        .setBridgeCreatorFactory {
+          PlayerViewBridgeCreator(playerPool, mediaSourceFactory)
+        }
+        .build()
+    )
+    .setRendererProviderFactory(rendererProviderFactory)
+    .build()
 }

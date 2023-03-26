@@ -43,20 +43,24 @@ internal class YouTubePlayerContainerView @JvmOverloads constructor(
     lifecycleOwner: LifecycleOwner,
     playerState: Bundle?
   ) {
-    val playerView = YouTubePlayerView(activity, null, 0,
-        object : YouTubePlayerView.b {
-          override fun a(
-            view: YouTubePlayerView,
-            apiKey: String,
-            onInitializedListener: YouTubePlayer.OnInitializedListener
-          ) {
-            view.a(activity, view, apiKey, onInitializedListener, playerState)
-          }
+    val playerView = YouTubePlayerView(
+      activity,
+      null,
+      0,
+      object : YouTubePlayerView.b {
+        override fun a(
+          view: YouTubePlayerView,
+          apiKey: String,
+          onInitializedListener: YouTubePlayer.OnInitializedListener
+        ) {
+          view.a(activity, view, apiKey, onInitializedListener, playerState)
+        }
 
-          override fun a(view: YouTubePlayerView) {
-            view.a()
-          }
-        })
+        override fun a(view: YouTubePlayerView) {
+          view.a()
+        }
+      }
+    )
     val params = LayoutParams(MATCH_PARENT, MATCH_PARENT)
     params.gravity = Gravity.CENTER
     this.playerView = playerView

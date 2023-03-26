@@ -46,7 +46,7 @@ class VideoViewHolder(
       val (parentPosition, videoItem) = item
       if (videoItem is Item) {
         // val mediaItem = MediaItem(Uri.parse(item.uri), item.extension, drmItem)
-        itemTag = "NEST::$parentPosition::${videoItem.uri}::$adapterPosition"
+        itemTag = "NEST::$parentPosition::${videoItem.uri}::$absoluteAdapterPosition"
         mediaName.text = videoItem.name
 
         kohii.setUp(assetVideoUri) {
@@ -55,7 +55,7 @@ class VideoViewHolder(
           repeatMode = Player.REPEAT_MODE_ONE
           callbacks += this@VideoViewHolder
         }
-            .bind(playerContainer)
+          .bind(playerContainer)
       }
     }
   }

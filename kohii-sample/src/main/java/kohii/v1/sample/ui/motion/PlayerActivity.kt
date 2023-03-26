@@ -73,8 +73,10 @@ class PlayerActivity : BaseActivity() {
 
       val kohii = Kohii[this]
       kohii.register(this)
-          .addBucket(binding.playerContainer)
+        .addBucket(binding.playerContainer)
       rebinder.bind(kohii, binding.playerView)
-    } else finish()
+    } else {
+      finish()
+    }
   }
 }

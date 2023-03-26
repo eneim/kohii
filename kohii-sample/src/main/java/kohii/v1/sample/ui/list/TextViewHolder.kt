@@ -58,11 +58,11 @@ class TextViewHolder(
 
       if (item.icon != null) {
         GlideApp.with(itemView)
-            .`as`(PictureDrawable::class.java)
-            .listener(SvgSoftwareLayerSetter())
-            .load(item.icon.url)
-            .override(dp2Px(item.icon.width), dp2Px(item.icon.height))
-            .into(iconView)
+          .`as`(PictureDrawable::class.java)
+          .listener(SvgSoftwareLayerSetter())
+          .load(item.icon.url)
+          .override(dp2Px(item.icon.width), dp2Px(item.icon.height))
+          .into(iconView)
       }
     }
   }

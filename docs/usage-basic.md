@@ -2,13 +2,19 @@
 
 ## The scenario
 
-This **basic usage** session will guide you step-by-step to complete this scenario: you have a `Fragment` with many Videos in a vertical `RecyclerView`. You want each Video to start playing automatically if that Video is *visible more than 65% of its full area, and stay on top of all the visible Videos (fully, or partly)*. If you scroll the list, the Video that is not visible enough will be paused automatically, and the other Video which sastisfy the condition above will start playing automatically.
+This **basic usage** session will guide you step-by-step to complete this scenario: you have
+a `Fragment` with many Videos in a vertical `RecyclerView`. You want each Video to start playing
+automatically if that Video is *visible more than 65% of its full area, and stay on top of all the
+visible Videos (fully, or partly)*. If you scroll the list, the Video that is not visible enough
+will be paused automatically, and the other Video which sastisfy the condition above will start
+playing automatically.
 
 <img src="../art/kohii_demo_2.gif" width="216" style="display: block; margin: 0 auto;"/>
 
 ## TL,DR
 
-We will explains a lot of details, so it may be a lot of texts. Here is the short version if you want to start right away:
+We will explains a lot of details, so it may be a lot of texts. Here is the short version if you
+want to start right away:
 
 First, add this to your `Fragment#onViewCreated` or `Activity#onCreate`
 
@@ -28,7 +34,8 @@ First, add this to your `Fragment#onViewCreated` or `Activity#onCreate`
           .addBucket(anotherRecyclerView); // yeah, 2 RVs in one place, why not.
     ```
 
-Second, add this in your `RecyclerView.Adapter#onBindViewHolder`, or corresponding place in `ViewHolder`
+Second, add this in your `RecyclerView.Adapter#onBindViewHolder`, or corresponding place
+in `ViewHolder`
 
 === "Kotlin"
     ```Kotlin
@@ -42,11 +49,13 @@ Second, add this in your `RecyclerView.Adapter#onBindViewHolder`, or correspondi
     kohii.setUp(videoUrl).bind(playerView);
     ```
 
-Done, you have what you want. But before leaving, let's discover the details below with your curiousity.
+Done, you have what you want. But before leaving, let's discover the details below with your
+curiousity.
 
 ## Before you start: thinking in Kohii
 
-It is important that you get the concept of **Kohii** before we go further. Because the way you think about Video playback until now would be different to what **Kohii** thinks.
+It is important that you get the concept of **Kohii** before we go further. Because the way you
+think about Video playback until now would be different to what **Kohii** thinks.
 
 Until now, you may see and/or use the following pattern:
 
@@ -66,17 +75,28 @@ kohii.setUp(videoUrl).bind(videoView)
 
 This line reads:
 
-> I have a Video and I will play it in a VideoView. Let's setup the Video and bind it to the VideoView.
+> I have a Video and I will play it in a VideoView. Let's setup the Video and bind it to the
+> VideoView.
 
-The difference here is: who is the **main actor**? In traditional way, the `VideoView` *owns* the Video and therefore, when it dies, we also lose the Video playback. In **Kohii**, we let the Video be the active part. It *acknowledges* the `VideoView` it will *be played* on. So when the `VideoView` dies, your Video can be smoothly switched to other `VideoView`.
+The difference here is: who is the **main actor**? In traditional way, the `VideoView` *owns* the
+Video and therefore, when it dies, we also lose the Video playback. In **Kohii**, we let the Video
+be the active part. It *acknowledges* the `VideoView` it will *be played* on. So when
+the `VideoView` dies, your Video can be smoothly switched to other `VideoView`.
 
-To give you an imagine about why it is good this way, consider this scenario: you have a list of Videos, and you want to open one Video in fullscreen, ***smoothly***.
+To give you an imagine about why it is good this way, consider this scenario: you have a list of
+Videos, and you want to open one Video in fullscreen, ***smoothly***.
 
-Thinking in _traditional way_: How I can open this `VideoView` (which is now in the list) in fullscreen? If I use other `VideoView` I will need to call that `setVideoPath` again and it will create new resource and stuff and the playback will be reloaded, and so on... We see some challenges here already.
+Thinking in _traditional way_: How I can open this `VideoView` (which is now in the list) in
+fullscreen? If I use other `VideoView` I will need to call that `setVideoPath` again and it will
+create new resource and stuff and the playback will be reloaded, and so on... We see some challenges
+here already.
 
-While thinking in _**Kohii** way_, it sounds easier: How can I open this Video (which is now in the list) in fullscreen? Can I just ***switch*** it from current `VideoView` to the fullscreen `VideoView`?
+While thinking in _**Kohii** way_, it sounds easier: How can I open this Video (which is now in the
+list) in fullscreen? Can I just ***switch*** it from current `VideoView` to the
+fullscreen `VideoView`?
 
-This way of thinking is the base for all the abstractions in **Kohii**. How this idea comes to life will be discussed later.
+This way of thinking is the base for all the abstractions in **Kohii**. How this idea comes to life
+will be discussed later.
 
 Now that you have the concept about **Kohii**, let's get our hands dirty.
 
@@ -86,7 +106,8 @@ This section will use some assumptions below:
 
 - You will use **Kohii** in `Fragment` (the usage will be the same in `Activity`).
 - You use **ExoPlayer** for the playback (implementation provided via `kohii-exoplayer` extension).
-- You own the content or have enough rights to use them. **Kohii** has no responsibility about how you use it in your app.
+- You own the content or have enough rights to use them. **Kohii** has no responsibility about how
+  you use it in your app.
 
 First, you need to initialize a few things so that **Kohii** makes sense of your application.
 
@@ -106,7 +127,9 @@ First, you need to initialize a few things so that **Kohii** makes sense of your
     // or using Context: Kohii kohii = Kohii.get(requireContext());
     ```
 
-As a *singleton*, **Kohii** instance can be passed around or re-obtained in other `Fragment`. You can also use *dependency injection library* like **Dagger** to prepare a global instance, and inject it to required places.
+As a *singleton*, **Kohii** instance can be passed around or re-obtained in other `Fragment`. You
+can also use *dependency injection library* like **Dagger** to prepare a global instance, and inject
+it to required places.
 
 ■ Register necessary objects to **Kohii**
 
@@ -126,11 +149,14 @@ As a *singleton*, **Kohii** instance can be passed around or re-obtained in othe
     kohii.register(this);
     ```
 
-The line above also return a [`Manager`](glossary.md#bucket-manager-and-group) object. It is useful in some advance usages, but we don't need it for now.
+The line above also return a [`Manager`](glossary.md#bucket-manager-and-group) object. It is useful
+in some advance usages, but we don't need it for now.
 
 - Which ViewGroup contains Videos?
 
-We call that ViewGroup a [*Bucket*](glossary.md#bucket-manager-and-group). Because you may have more than one *bucket* in your `Fragment`, and not all of them need to be tracked by **Kohii**, you should only register ones you care about. Code for it is as below:
+We call that ViewGroup a [*Bucket*](glossary.md#bucket-manager-and-group). Because you may have more
+than one *bucket* in your `Fragment`, and not all of them need to be tracked by **Kohii**, you
+should only register ones you care about. Code for it is as below:
 
 === "Kotlin"
     ```Kotlin
@@ -168,6 +194,13 @@ To make it works, you need only one line:
 
 But let's understand the concept behind:
 
-In the one line above: `kohii.setUp(videoUrl)` turns the url to a [`Binder`](../api/kohii-core/kohii.v1.core/-binder/) object which can be used to bind to a [`container`](glossary.md#renderer-and-container). Once you finish the setup, you have the Video to be automatically played/paused once user scrolls the list such that the `container` is visible more (will play) or less (will pause) than 65% of its area.
+In the one line above: `kohii.setUp(videoUrl)` turns the url to
+a [`Binder`](../api/kohii-core/kohii.v1.core/-binder/) object which can be used to bind to
+a [`container`](glossary.md#renderer-and-container). Once you finish the setup, you have the Video
+to be automatically played/paused once user scrolls the list such that the `container` is visible
+more (will play) or less (will pause) than 65% of its area.
 
-Also, to ensure the playback is automatic, if the [`renderer`](glossary.md#renderer-and-container) is a `PlayerView` **Kohii** will forcefully disable the `PlayerView`'s `PlayerControlView` even if you set it before. To have manual playback control enabled, you need some additional configuration which will be discussed in other session.
+Also, to ensure the playback is automatic, if the [`renderer`](glossary.md#renderer-and-container)
+is a `PlayerView` **Kohii** will forcefully disable the `PlayerView`'s `PlayerControlView` even if
+you set it before. To have manual playback control enabled, you need some additional configuration
+which will be discussed in other session.
