@@ -1,5 +1,17 @@
 # Change Log
 
+## [Unreleased]
+
+### Changed
+
+- (kohii-core): ExoPlayer 2.18.5, Kotlin 1.8.10, Target Android SDK 33.
+- (kohii-exoplayer): ExoPlayer 2.18.5.
+
+### Removed
+
+- (kohii-experiments): YouTube experiment that uses the (deprecated) Official YouTube Player API.
+- (kohii-sample): Demo using the Official YouTube Player API. 
+
 ## [1.4.0.2017001]
 
 ### Changed

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.youtube2
+package kohii.v1.sample.ui.youtube
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -27,10 +27,10 @@ import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 import kohii.v1.sample.ui.main.DemoItem
 
-class YouTube2Fragment : BaseFragment(), DemoContainer {
+class YouTubeFragment : BaseFragment(), DemoContainer {
 
   companion object {
-    fun newInstance() = YouTube2Fragment()
+    fun newInstance() = YouTubeFragment()
   }
 
   private val viewModel: YouTubeViewModel by viewModels()

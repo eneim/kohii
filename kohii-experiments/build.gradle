@@ -50,7 +50,6 @@ android {
 }
 
 dependencies {
-  api fileTree(dir: 'libs', include: ['YouTubeAndroidPlayerApi.jar'])
   implementation project(':kohii-core')
   implementation(libs.android.exoplayer.core)
 

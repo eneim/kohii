@@ -28,9 +28,9 @@ import java.util.concurrent.Executor
 class PageKeyedPlaylistDataSource(
   private val apiKey: String,
   val youtube: YouTube,
-  @Suppress("CanBeParameter") val playlistId: String,
-  @Suppress("MemberVisibilityCanBePrivate") val executor: Executor,
-  @Suppress("CanBeParameter") val pageSize: Long
+  playlistId: String,
+  private val executor: Executor,
+  pageSize: Long
 ) : PageKeyedDataSource<String, Video>() {
 
   // keep a function reference for the retry event

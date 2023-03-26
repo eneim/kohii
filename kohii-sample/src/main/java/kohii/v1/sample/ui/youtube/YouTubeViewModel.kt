@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.youtube1
+package kohii.v1.sample.ui.youtube
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

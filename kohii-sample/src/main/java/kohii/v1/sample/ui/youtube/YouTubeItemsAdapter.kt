@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.youtube1
+package kohii.v1.sample.ui.youtube
 
 import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.Engine
-import kohii.v1.experiments.YouTubePlayerFragment
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.youtube.data.NetworkState
 
 class YouTubeItemsAdapter(
-  private val engine: Engine<YouTubePlayerFragment>
+  private val engine: Engine<YouTubePlayerView>
 ) : PagedListAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
   override fun areItemsTheSame(
     oldItem: Video,
@@ -81,7 +81,7 @@ class YouTubeItemsAdapter(
     viewType: Int
   ): BaseViewHolder {
     return when (viewType) {
-      R.layout.holder_youtube_container -> YouTubeViewHolder(parent)
+      R.layout.holder_youtube_container -> YouTubeViewHolder(parent, viewType)
       R.layout.holder_loading -> BaseViewHolder(parent, viewType)
       else -> throw IllegalArgumentException("unknown view type $viewType")
     }
@@ -100,7 +100,7 @@ class YouTubeItemsAdapter(
         threshold = 0.999F
         artworkHintListener = holder
       }
-        .bind(holder.fragmentPlace) {
+        .bind(holder.container) {
           holder.playback = it
         }
     }
