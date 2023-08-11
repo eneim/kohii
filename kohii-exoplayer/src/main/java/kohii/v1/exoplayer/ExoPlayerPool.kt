@@ -66,9 +66,9 @@ class ExoPlayerPool(
 
     DefaultMediaSourceFactory(
       /* dataSourceFactory */ CacheDataSource.Factory()
-        .setCache(mediaCache)
-        .setUpstreamDataSourceFactory(upstreamFactory)
-        .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+      .setCache(mediaCache)
+      .setUpstreamDataSourceFactory(upstreamFactory)
+      .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
     )
       .setDrmSessionManagerProvider(drmSessionManagerProvider)
       .setLoadErrorHandlingPolicy(DefaultLoadErrorHandlingPolicy())
