@@ -295,7 +295,7 @@ class Manager internal constructor(
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
       .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
-      .map { /* Bucket --> Collection<Playback> */
+      .map { /* Bucket --> Set<Playback> */
         val candidates = bucketToPlaybacks
           .getValue(it)
           .filter { playback ->
@@ -305,7 +305,7 @@ class Manager internal constructor(
                 !requireNotNull(playback.config.controller).kohiiCanPause() */
             return@filter /* cannotPause || */ it.allowToPlay(playback)
           }
-        return@map it.strategy(it.selectToPlay(candidates))
+        return@map it.strategy(it.selectToPlay(candidates)).toSet()
       }
       .find { it.isNotEmpty() }
       ?.also {

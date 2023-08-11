@@ -78,9 +78,6 @@
     <fields>;
 }
 
--keep class kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoaderImpl
--keep class kotlin.reflect.jvm.internal.impl.serialization.deserialization.builtins.BuiltInsLoaderImpl
-
 # Pretty bad config, but it works ... Investigate later.
 -keep class kotlin.reflect.jvm.internal.** { *; }
 
