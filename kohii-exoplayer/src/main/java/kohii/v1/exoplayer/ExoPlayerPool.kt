@@ -51,6 +51,7 @@ class ExoPlayerPool(
   private val loadControlFactory: LoadControlFactory = ExoPlayerConfig.DEFAULT,
   private val renderersFactory: RenderersFactory =
     DefaultRenderersFactory(context.applicationContext),
+  private val cache: Cache? = null,
   // DefaultMediaSourceFactory
   // @RestrictTo(LIBRARY_GROUP)
   // Note: Only used within the library group. Client must not access this field.
@@ -58,7 +59,7 @@ class ExoPlayerPool(
     val httpDataSource = DefaultHttpDataSource.Factory().setUserAgent(userAgent)
 
     // DefaultMediaSourceFactory
-    val mediaCache: Cache = ExoPlayerCache.lruCacheSingleton.get(context)
+    val mediaCache: Cache = cache ?: ExoPlayerCache.lruCacheSingleton.get(context)
     val upstreamFactory = DefaultDataSource.Factory(context, httpDataSource)
     val drmSessionManagerProvider = DefaultDrmSessionManagerProvider()
     drmSessionManagerProvider.setDrmHttpDataSourceFactory(httpDataSource)
