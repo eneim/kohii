@@ -58,16 +58,17 @@ class EchoFragment : BaseFragment(), DemoContainer {
     val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
     kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.recyclerView)
+      .addBucket(binding.recyclerView)
 
     val adapter = VideoItemsAdapter(getApp().videos, kohii, viewModel) {
       val playback = it.playback
       return@VideoItemsAdapter if (playback != null) {
-        val currentVolumeInfo = viewModel.get(it.adapterPosition)
+        val currentVolumeInfo = viewModel.get(it.absoluteAdapterPosition)
         val nextVolumeInfo = VolumeInfo(
-            !currentVolumeInfo.mute, currentVolumeInfo.volume
+          !currentVolumeInfo.mute,
+          currentVolumeInfo.volume
         )
-        viewModel.set(it.adapterPosition, nextVolumeInfo)
+        viewModel.set(it.absoluteAdapterPosition, nextVolumeInfo)
         nextVolumeInfo
       } else {
         null

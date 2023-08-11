@@ -16,27 +16,22 @@
 
 package kohii.v1.core
 
-import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.PositionInfo
 import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.metadata.Metadata
-import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.text.Cue
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.video.VideoSize
 import kohii.v1.media.VolumeInfo
 import java.util.concurrent.CopyOnWriteArraySet
 
 interface Prioritized : Comparable<Prioritized> {
 
-  @JvmDefault
-  override fun compareTo(other: Prioritized): Int {
-    return 0
-  }
+  override fun compareTo(other: Prioritized): Int = 0
 }
 
 @Deprecated("Use Player.Listener instead.")
@@ -57,12 +52,9 @@ class PlayerEventListeners : CopyOnWriteArraySet<Player.Listener>(), Player.List
   override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters): Unit =
     forEach { it.onPlaybackParametersChanged(playbackParameters) }
 
-  override fun onTracksChanged(
-    trackGroups: TrackGroupArray,
-    trackSelections: TrackSelectionArray
-  ): Unit = forEach { it.onTracksChanged(trackGroups, trackSelections) }
+  override fun onTracksChanged(tracks: Tracks): Unit = forEach { it.onTracksChanged(tracks) }
 
-  override fun onPlayerError(error: ExoPlaybackException): Unit =
+  override fun onPlayerError(error: PlaybackException): Unit =
     forEach { it.onPlayerError(error) }
 
   override fun onIsLoadingChanged(isLoading: Boolean): Unit =
@@ -90,6 +82,8 @@ class PlayerEventListeners : CopyOnWriteArraySet<Player.Listener>(), Player.List
     forEach { it.onPlayWhenReadyChanged(playWhenReady, reason) }
 
   // Keep this to deliver the events to Playback.
+  @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
+  @Deprecated("Deprecated in Java")
   override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
     forEach { it.onPlayerStateChanged(playWhenReady, playbackState) }
   }
@@ -130,12 +124,6 @@ interface VolumeInfoController {
   fun addVolumeChangedListener(listener: VolumeChangedListener)
 
   fun removeVolumeChangedListener(listener: VolumeChangedListener?)
-}
-
-// TODO(eneim): document about the usage of this interface.
-interface DefaultTrackSelectorHolder {
-
-  val trackSelector: DefaultTrackSelector
 }
 
 interface PlayableManager

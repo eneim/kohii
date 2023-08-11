@@ -45,7 +45,7 @@
     <item name="android:windowBackground">@android:color/black</item>
   </style>
 
-  <style name="ExoMediaButton.FullScreen"/>
+  <style name="ExoMediaButton.FullScreen" />
 
   <style name="ExoMediaButton.FullScreen.Enter">
     <item name="android:src">@drawable/exo_controls_fullscreen_enter</item>

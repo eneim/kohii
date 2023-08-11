@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import kohii.BuildConfig
-import kohii.Libs
-
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-parcelize'
 
 android {
-  compileSdkVersion BuildConfig.compileSdkVersion
+  compileSdkVersion libs.versions.android.target.sdk.get().toInteger()
 
   defaultConfig {
+    minSdkVersion libs.versions.android.min.sdk.get()
+    targetSdkVersion libs.versions.android.target.sdk.get()
+    versionCode libs.versions.release.code.get().toInteger()
+    versionName libs.versions.release.name.get()
     applicationId "kohii.v1.sample.tiktok"
-    minSdkVersion 21 /* BuildConfig.minSdkVersion */
-    targetSdkVersion BuildConfig.targetSdkVersion
-    versionCode BuildConfig.releaseVersionCode
-    versionName BuildConfig.releaseVersionName
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     testApplicationId 'kohii.v1.sample.tiktok.test'
@@ -69,39 +65,40 @@ dependencies {
   implementation project(':kohii-core')
   implementation project(':kohii-exoplayer')
 
-  implementation Libs.ExoPlayer.all
-  implementation Libs.AndroidX.Media.widget
+  implementation(libs.android.exoplayer)
+  implementation(libs.androidx.media2.widget)
 
-  implementation Libs.Kotlin.stdlibJdk8
+  implementation(libs.androidx.core)
+  implementation(libs.androidx.fragment)
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.recyclerview)
+  implementation(libs.androidx.recyclerview.selection)
+  implementation(libs.androidx.constraintlayout)
+  implementation(libs.androidx.material)
 
-  implementation Libs.AndroidX.coreKtx
-  implementation Libs.AndroidX.Fragment.fragmentKtx
-  implementation Libs.AndroidX.appcompat
-  implementation Libs.AndroidX.recyclerView
-  implementation Libs.AndroidX.recyclerViewSelection
-  implementation Libs.AndroidX.constraintLayout
-  implementation Libs.Google.material
+  implementation(libs.androidx.navigation.common)
+  implementation(libs.androidx.navigation.runtime)
+  implementation(libs.androidx.navigation.fragment)
+  implementation(libs.androidx.navigation.ui)
 
-  implementation(Libs.AndroidX.Navigation.uiKtx)
-  implementation(Libs.AndroidX.Navigation.commonKtx)
-  implementation(Libs.AndroidX.Navigation.runtimeKtx)
-  implementation(Libs.AndroidX.Navigation.fragmentKtx)
+  implementation(libs.androidx.lifecycle.runtime)
+  implementation(libs.androidx.lifecycle.viewmodel)
+  implementation(libs.androidx.lifecycle.livedata)
+  implementation(libs.androidx.lifecycle.java8)
+  implementation(libs.androidx.lifecycle.process)
 
-  implementation Libs.AndroidX.Lifecycle.extensions
-  implementation Libs.AndroidX.Lifecycle.runtime
-  implementation Libs.AndroidX.Lifecycle.viewModel
-  implementation Libs.AndroidX.Lifecycle.liveData
-  implementation Libs.AndroidX.Lifecycle.java8
+  implementation("com.squareup.moshi:moshi:1.14.0")
+  kapt("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
+  implementation("com.squareup.okio:okio:2.10.0")
 
-  implementation Libs.Square.moshi
-  kapt Libs.Square.moshiCodegen
-  implementation Libs.Square.okio
+  implementation("io.coil-kt:coil:2.2.2")
 
-  implementation(Libs.Coil.coilBase)
+  implementation("androidx.vectordrawable:vectordrawable:1.1.0")
 
-  implementation(Libs.AndroidX.vector)
+  testImplementation("androidx.test:core-ktx:1.5.0")
+  testImplementation("androidx.test:rules:1.5.0")
+  testImplementation("androidx.test:runner:1.5.2")
 
-  testImplementation(Libs.Common.junit)
-  androidTestImplementation(Libs.Common.junitExt)
-  androidTestImplementation(Libs.AndroidX.Test.espressoCore)
+  androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")
+  androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

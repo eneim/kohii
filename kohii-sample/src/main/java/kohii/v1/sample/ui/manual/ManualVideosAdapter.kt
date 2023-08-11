@@ -39,10 +39,10 @@ internal class ManualVideosAdapter(
     val holder = ManualVideoViewHolder(parent)
     holder.binding.controller.exoFullscreenEnter.setOnClickListener {
       enterFullscreenListener(
-          this,
-          holder,
-          holder.binding.playerView,
-          "player::${holder.adapterPosition}"
+        this,
+        holder,
+        holder.binding.playerView,
+        "player::${holder.absoluteAdapterPosition}"
       )
     }
     return holder
@@ -56,7 +56,7 @@ internal class ManualVideosAdapter(
 
   fun bindVideo(holder: ManualVideoViewHolder) {
     kohii.setUp(DemoApp.assetVideoUri) {
-      tag = "player::${holder.adapterPosition}"
+      tag = "player::${holder.absoluteAdapterPosition}"
       repeatMode = Player.REPEAT_MODE_ONE
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = false
@@ -78,11 +78,11 @@ internal class ManualVideosAdapter(
         }
       }
     }
-        .bind(holder.binding.playerView) {
-          it.addStateListener(holder)
-          val playing = it.playable?.isPlaying() == true
-          holder.binding.controller.exoPause.isVisible = playing
-          holder.binding.controller.exoPlay.isVisible = !playing
-        }
+      .bind(holder.binding.playerView) {
+        it.addStateListener(holder)
+        val playing = it.playable?.isPlaying() == true
+        holder.binding.controller.exoPause.isVisible = playing
+        holder.binding.controller.exoPlay.isVisible = !playing
+      }
   }
 }

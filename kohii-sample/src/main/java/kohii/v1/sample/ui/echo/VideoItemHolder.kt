@@ -57,10 +57,10 @@ class VideoItemHolder(
     if (newVal != null) {
       val playlist = newVal.playlist.first()
       this.videoItem = VideoItem(
-          newVal.title,
-          newVal.description,
-          playlist.image,
-          playlist.sources.first().file
+        newVal.title,
+        newVal.description,
+        playlist.image,
+        playlist.sources.first().file
       )
     } else {
       this.videoItem = null
@@ -73,17 +73,17 @@ class VideoItemHolder(
       videoTitle.text = newVal.title
       videoInfo.text = newVal.description
       GlideApp.with(itemView)
-          .load(newVal.imageUrl)
-          .into(videoImage)
+        .load(newVal.imageUrl)
+        .into(videoImage)
 
       kohii.setUp(newVal.file) {
         tag = requireNotNull(videoTag)
         artworkHintListener = this@VideoItemHolder
       }
-          .bind(playerViewContainer) { playback ->
-            this@VideoItemHolder.playback = playback
-            volumeInfo?.let { kohii.applyVolumeInfo(it, playback, Scope.PLAYBACK) }
-          }
+        .bind(playerViewContainer) { playback ->
+          this@VideoItemHolder.playback = playback
+          volumeInfo?.let { kohii.applyVolumeInfo(it, playback, Scope.PLAYBACK) }
+        }
     } else {
       this.playback = null
     }
@@ -99,7 +99,7 @@ class VideoItemHolder(
   }
 
   private val videoTag: String?
-    get() = this.videoItem?.let { "${it.file}::$adapterPosition" }
+    get() = this.videoItem?.let { "${it.file}::$absoluteAdapterPosition" }
 
   internal fun applyVideoData(video: Video?) {
     this.videoData = video

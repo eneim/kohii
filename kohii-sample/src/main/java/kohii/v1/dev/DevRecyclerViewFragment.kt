@@ -25,7 +25,7 @@ import kohii.v1.sample.common.ViewBindingFragment
 import kohii.v1.sample.databinding.ActivityDevRecyclerviewBinding
 
 class DevRecyclerViewFragment :
-    ViewBindingFragment<ActivityDevRecyclerviewBinding>(ActivityDevRecyclerviewBinding::inflate) {
+  ViewBindingFragment<ActivityDevRecyclerviewBinding>(ActivityDevRecyclerviewBinding::inflate) {
 
   override fun onViewCreated(
     view: View,
@@ -34,22 +34,25 @@ class DevRecyclerViewFragment :
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     val manager = kohii.register(this)
-        .addBucket(requireBinding().recyclerView)
+      .addBucket(requireBinding().recyclerView)
 
     requireBinding().recyclerView.adapter = DummyAdapter(
-        kohii,
-        manager,
-        enterFullscreenListener = { adapter, holder, _, tag ->
-          manager.observe(tag) { _, from, to ->
-            if (from?.bucket?.root !== requireBinding().recyclerView && to == null) {
-              adapter.bindVideo(holder)
-            }
+      kohii,
+      manager,
+      enterFullscreenListener = { adapter, holder, _, tag ->
+        manager.observe(tag) { _, from, to ->
+          if (from?.bucket?.root !== requireBinding().recyclerView && to == null) {
+            adapter.bindVideo(holder)
           }
+        }
 
-          val intent = PlayerActivity.createIntent(
-              requireContext(), InitData(tag.toString(), 16 / 9F), Rebinder(tag)
-          )
-          startActivity(intent)
-        })
+        val intent = PlayerActivity.createIntent(
+          requireContext(),
+          InitData(tag.toString(), 16 / 9F),
+          Rebinder(tag)
+        )
+        startActivity(intent)
+      }
+    )
   }
 }

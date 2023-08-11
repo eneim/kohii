@@ -37,7 +37,7 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, DemoCo
 
   companion object {
     const val videoUrl =
-    // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
+      // http://www.caminandes.com/download/03_caminandes_llamigos_1080p.mp4
       // "https://content.jwplatform.com/manifests/146UwF4L.m3u8" // Big Buck Bunny
       assetVideoUri
 
@@ -70,18 +70,18 @@ class ScrollViewFragment : BaseFragment(), PlayerDialogFragment.Callback, DemoCo
     super.onViewCreated(view, savedInstanceState)
     kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.scrollView)
+      .addBucket(binding.scrollView)
 
     val rebinder = kohii.setUp(videoUrl) {
       tag = videoTag
       repeatMode = Player.REPEAT_MODE_ONE
     }
-        .bind(binding.playerView) { playback = it }
+      .bind(binding.playerView) { playback = it }
 
     binding.playerContainer.setOnClickListener {
       rebinder?.also {
         PlayerDialogFragment.newInstance(rebinder, InitData(tag = videoTag, aspectRatio = 16 / 9f))
-            .show(childFragmentManager, videoTag)
+          .show(childFragmentManager, videoTag)
       }
     }
   }

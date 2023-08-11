@@ -38,7 +38,12 @@ internal class DummyAdapter(
   ): DummyViewHolder {
     val holder = DummyViewHolder(parent)
     holder.enterFullscreen.setOnClickListener {
-      enterFullscreenListener(this, holder, holder.playerView, "player::${holder.adapterPosition}")
+      enterFullscreenListener(
+        this,
+        holder,
+        holder.playerView,
+        "player::${holder.absoluteAdapterPosition}"
+      )
     }
     return holder
   }
@@ -54,7 +59,7 @@ internal class DummyAdapter(
 
   fun bindVideo(holder: DummyViewHolder) {
     kohii.setUp(DemoApp.assetVideoUri) {
-      tag = "player::${holder.adapterPosition}"
+      tag = "player::${holder.absoluteAdapterPosition}"
       repeatMode = Player.REPEAT_MODE_ONE
       controller = object : Controller {
         override fun kohiiCanStart(): Boolean = true
@@ -63,12 +68,13 @@ internal class DummyAdapter(
 
         override fun setupRenderer(playback: Playback, renderer: Any?) {
           if (renderer is PlayerView) {
-            renderer.useController = true
-            renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
+            // TODO: replace with custom ForwardingPlayer.
+            // renderer.useController = true
+            // renderer.setControlDispatcher(kohii.createControlDispatcher(playback))
           }
         }
       }
     }
-        .bind(holder.playerView)
+      .bind(holder.playerView)
   }
 }

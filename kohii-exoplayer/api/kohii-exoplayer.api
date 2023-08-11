@@ -68,7 +68,7 @@ public final class kohii/v1/exoplayer/HybridMediaItem : com/google/android/exopl
 	public fun getType ()Ljava/lang/String;
 	public fun getUri ()Landroid/net/Uri;
 	public fun maybeThrowSourceInfoRefreshError ()V
-	public fun prepareSource (Lcom/google/android/exoplayer2/source/MediaSource$MediaSourceCaller;Lcom/google/android/exoplayer2/upstream/TransferListener;)V
+	public fun prepareSource (Lcom/google/android/exoplayer2/source/MediaSource$MediaSourceCaller;Lcom/google/android/exoplayer2/upstream/TransferListener;Lcom/google/android/exoplayer2/analytics/PlayerId;)V
 	public fun releasePeriod (Lcom/google/android/exoplayer2/source/MediaPeriod;)V
 	public fun releaseSource (Lcom/google/android/exoplayer2/source/MediaSource$MediaSourceCaller;)V
 	public fun removeDrmEventListener (Lcom/google/android/exoplayer2/drm/DrmSessionEventListener;)V
@@ -80,7 +80,6 @@ public class kohii/v1/exoplayer/Kohii : kohii/v1/core/Engine {
 	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;)V
 	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun createControlDispatcher (Lkohii/v1/core/Playback;)Lcom/google/android/exoplayer2/ControlDispatcher;
 	public static final fun get (Landroid/content/Context;)Lkohii/v1/exoplayer/Kohii;
 	public static final fun get (Landroidx/fragment/app/Fragment;)Lkohii/v1/exoplayer/Kohii;
 	public fun prepare (Lkohii/v1/core/Manager;)V
@@ -98,16 +97,202 @@ public final class kohii/v1/exoplayer/Kohii$Companion {
 	public final fun get (Landroidx/fragment/app/Fragment;)Lkohii/v1/exoplayer/Kohii;
 }
 
-public class kohii/v1/exoplayer/KohiiExoPlayer : com/google/android/exoplayer2/SimpleExoPlayer, kohii/v1/core/DefaultTrackSelectorHolder, kohii/v1/core/VolumeInfoController {
-	public fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/analytics/AnalyticsCollector;Landroid/os/Looper;)V
-	public synthetic fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Lcom/google/android/exoplayer2/source/MediaSourceFactory;Lcom/google/android/exoplayer2/analytics/AnalyticsCollector;Landroid/os/Looper;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public class kohii/v1/exoplayer/KohiiExoPlayer : com/google/android/exoplayer2/ExoPlayer, kohii/v1/core/VolumeInfoController {
+	public fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Lcom/google/android/exoplayer2/source/MediaSource$Factory;Lcom/google/android/exoplayer2/analytics/AnalyticsCollector;Landroid/os/Looper;)V
+	public synthetic fun <init> (Landroid/content/Context;Lcom/google/android/exoplayer2/util/Clock;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;Lcom/google/android/exoplayer2/LoadControl;Lcom/google/android/exoplayer2/upstream/BandwidthMeter;Lcom/google/android/exoplayer2/source/MediaSource$Factory;Lcom/google/android/exoplayer2/analytics/AnalyticsCollector;Landroid/os/Looper;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/google/android/exoplayer2/ExoPlayer$Builder;)V
+	public fun <init> (Lcom/google/android/exoplayer2/ExoPlayer;)V
+	public fun addAnalyticsListener (Lcom/google/android/exoplayer2/analytics/AnalyticsListener;)V
+	public fun addAudioOffloadListener (Lcom/google/android/exoplayer2/ExoPlayer$AudioOffloadListener;)V
+	public fun addListener (Lcom/google/android/exoplayer2/Player$Listener;)V
+	public fun addMediaItem (ILcom/google/android/exoplayer2/MediaItem;)V
+	public fun addMediaItem (Lcom/google/android/exoplayer2/MediaItem;)V
+	public fun addMediaItems (ILjava/util/List;)V
+	public fun addMediaItems (Ljava/util/List;)V
+	public fun addMediaSource (ILcom/google/android/exoplayer2/source/MediaSource;)V
+	public fun addMediaSource (Lcom/google/android/exoplayer2/source/MediaSource;)V
+	public fun addMediaSources (ILjava/util/List;)V
+	public fun addMediaSources (Ljava/util/List;)V
 	public fun addVolumeChangedListener (Lkohii/v1/core/VolumeChangedListener;)V
-	public fun getTrackSelector ()Lcom/google/android/exoplayer2/trackselection/DefaultTrackSelector;
+	public fun canAdvertiseSession ()Z
+	public fun clearAuxEffectInfo ()V
+	public fun clearCameraMotionListener (Lcom/google/android/exoplayer2/video/spherical/CameraMotionListener;)V
+	public fun clearMediaItems ()V
+	public fun clearVideoFrameMetadataListener (Lcom/google/android/exoplayer2/video/VideoFrameMetadataListener;)V
+	public fun clearVideoSurface ()V
+	public fun clearVideoSurface (Landroid/view/Surface;)V
+	public fun clearVideoSurfaceHolder (Landroid/view/SurfaceHolder;)V
+	public fun clearVideoSurfaceView (Landroid/view/SurfaceView;)V
+	public fun clearVideoTextureView (Landroid/view/TextureView;)V
+	public fun createMessage (Lcom/google/android/exoplayer2/PlayerMessage$Target;)Lcom/google/android/exoplayer2/PlayerMessage;
+	public fun decreaseDeviceVolume ()V
+	public fun experimentalIsSleepingForOffload ()Z
+	public fun experimentalSetOffloadSchedulingEnabled (Z)V
+	public fun getAnalyticsCollector ()Lcom/google/android/exoplayer2/analytics/AnalyticsCollector;
+	public fun getApplicationLooper ()Landroid/os/Looper;
+	public fun getAudioAttributes ()Lcom/google/android/exoplayer2/audio/AudioAttributes;
+	public fun getAudioComponent ()Lcom/google/android/exoplayer2/ExoPlayer$AudioComponent;
+	public fun getAudioDecoderCounters ()Lcom/google/android/exoplayer2/decoder/DecoderCounters;
+	public fun getAudioFormat ()Lcom/google/android/exoplayer2/Format;
+	public fun getAudioSessionId ()I
+	public fun getAvailableCommands ()Lcom/google/android/exoplayer2/Player$Commands;
+	public fun getBufferedPercentage ()I
+	public fun getBufferedPosition ()J
+	public fun getClock ()Lcom/google/android/exoplayer2/util/Clock;
+	public fun getContentBufferedPosition ()J
+	public fun getContentDuration ()J
+	public fun getContentPosition ()J
+	public fun getCurrentAdGroupIndex ()I
+	public fun getCurrentAdIndexInAdGroup ()I
+	public fun getCurrentCues ()Lcom/google/android/exoplayer2/text/CueGroup;
+	public fun getCurrentLiveOffset ()J
+	public fun getCurrentManifest ()Ljava/lang/Object;
+	public fun getCurrentMediaItem ()Lcom/google/android/exoplayer2/MediaItem;
+	public fun getCurrentMediaItemIndex ()I
+	public fun getCurrentPeriodIndex ()I
+	public fun getCurrentPosition ()J
+	public fun getCurrentTimeline ()Lcom/google/android/exoplayer2/Timeline;
+	public fun getCurrentTrackGroups ()Lcom/google/android/exoplayer2/source/TrackGroupArray;
+	public fun getCurrentTrackSelections ()Lcom/google/android/exoplayer2/trackselection/TrackSelectionArray;
+	public fun getCurrentTracks ()Lcom/google/android/exoplayer2/Tracks;
+	public fun getCurrentWindowIndex ()I
+	public fun getDeviceComponent ()Lcom/google/android/exoplayer2/ExoPlayer$DeviceComponent;
+	public fun getDeviceInfo ()Lcom/google/android/exoplayer2/DeviceInfo;
+	public fun getDeviceVolume ()I
+	public fun getDuration ()J
+	public fun getMaxSeekToPreviousPosition ()J
+	public fun getMediaItemAt (I)Lcom/google/android/exoplayer2/MediaItem;
+	public fun getMediaItemCount ()I
+	public fun getMediaMetadata ()Lcom/google/android/exoplayer2/MediaMetadata;
+	public fun getNextMediaItemIndex ()I
+	public fun getNextWindowIndex ()I
+	public fun getPauseAtEndOfMediaItems ()Z
+	public fun getPlayWhenReady ()Z
+	public fun getPlaybackLooper ()Landroid/os/Looper;
+	public fun getPlaybackParameters ()Lcom/google/android/exoplayer2/PlaybackParameters;
+	public fun getPlaybackState ()I
+	public fun getPlaybackSuppressionReason ()I
+	public fun getPlayerError ()Lcom/google/android/exoplayer2/ExoPlaybackException;
+	public synthetic fun getPlayerError ()Lcom/google/android/exoplayer2/PlaybackException;
+	public fun getPlaylistMetadata ()Lcom/google/android/exoplayer2/MediaMetadata;
+	public fun getPreviousMediaItemIndex ()I
+	public fun getPreviousWindowIndex ()I
+	public fun getRenderer (I)Lcom/google/android/exoplayer2/Renderer;
+	public fun getRendererCount ()I
+	public fun getRendererType (I)I
+	public fun getRepeatMode ()I
+	public fun getSeekBackIncrement ()J
+	public fun getSeekForwardIncrement ()J
+	public fun getSeekParameters ()Lcom/google/android/exoplayer2/SeekParameters;
+	public fun getShuffleModeEnabled ()Z
+	public fun getSkipSilenceEnabled ()Z
+	public fun getSurfaceSize ()Lcom/google/android/exoplayer2/util/Size;
+	public fun getTextComponent ()Lcom/google/android/exoplayer2/ExoPlayer$TextComponent;
+	public fun getTotalBufferedDuration ()J
+	public fun getTrackSelectionParameters ()Lcom/google/android/exoplayer2/trackselection/TrackSelectionParameters;
+	public fun getTrackSelector ()Lcom/google/android/exoplayer2/trackselection/TrackSelector;
+	public fun getVideoChangeFrameRateStrategy ()I
+	public fun getVideoComponent ()Lcom/google/android/exoplayer2/ExoPlayer$VideoComponent;
+	public fun getVideoDecoderCounters ()Lcom/google/android/exoplayer2/decoder/DecoderCounters;
+	public fun getVideoFormat ()Lcom/google/android/exoplayer2/Format;
+	public fun getVideoScalingMode ()I
+	public fun getVideoSize ()Lcom/google/android/exoplayer2/video/VideoSize;
 	public final fun getVolume ()F
 	public fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
+	public fun hasNext ()Z
+	public fun hasNextMediaItem ()Z
+	public fun hasNextWindow ()Z
+	public fun hasPrevious ()Z
+	public fun hasPreviousMediaItem ()Z
+	public fun hasPreviousWindow ()Z
+	public fun increaseDeviceVolume ()V
+	public fun isCommandAvailable (I)Z
+	public fun isCurrentMediaItemDynamic ()Z
+	public fun isCurrentMediaItemLive ()Z
+	public fun isCurrentMediaItemSeekable ()Z
+	public fun isCurrentWindowDynamic ()Z
+	public fun isCurrentWindowLive ()Z
+	public fun isCurrentWindowSeekable ()Z
+	public fun isDeviceMuted ()Z
+	public fun isLoading ()Z
+	public fun isPlaying ()Z
+	public fun isPlayingAd ()Z
+	public fun isTunnelingEnabled ()Z
+	public fun moveMediaItem (II)V
+	public fun moveMediaItems (III)V
+	public fun next ()V
+	public fun pause ()V
+	public fun play ()V
+	public fun prepare ()V
+	public fun prepare (Lcom/google/android/exoplayer2/source/MediaSource;)V
+	public fun prepare (Lcom/google/android/exoplayer2/source/MediaSource;ZZ)V
+	public fun previous ()V
+	public fun release ()V
+	public fun removeAnalyticsListener (Lcom/google/android/exoplayer2/analytics/AnalyticsListener;)V
+	public fun removeAudioOffloadListener (Lcom/google/android/exoplayer2/ExoPlayer$AudioOffloadListener;)V
+	public fun removeListener (Lcom/google/android/exoplayer2/Player$Listener;)V
+	public fun removeMediaItem (I)V
+	public fun removeMediaItems (II)V
 	public fun removeVolumeChangedListener (Lkohii/v1/core/VolumeChangedListener;)V
+	public fun retry ()V
+	public fun seekBack ()V
+	public fun seekForward ()V
+	public fun seekTo (IJ)V
+	public fun seekTo (J)V
+	public fun seekToDefaultPosition ()V
+	public fun seekToDefaultPosition (I)V
+	public fun seekToNext ()V
+	public fun seekToNextMediaItem ()V
+	public fun seekToNextWindow ()V
+	public fun seekToPrevious ()V
+	public fun seekToPreviousMediaItem ()V
+	public fun seekToPreviousWindow ()V
+	public fun setAudioAttributes (Lcom/google/android/exoplayer2/audio/AudioAttributes;Z)V
+	public fun setAudioSessionId (I)V
+	public fun setAuxEffectInfo (Lcom/google/android/exoplayer2/audio/AuxEffectInfo;)V
+	public fun setCameraMotionListener (Lcom/google/android/exoplayer2/video/spherical/CameraMotionListener;)V
+	public fun setDeviceMuted (Z)V
+	public fun setDeviceVolume (I)V
+	public fun setForegroundMode (Z)V
+	public fun setHandleAudioBecomingNoisy (Z)V
+	public fun setHandleWakeLock (Z)V
+	public fun setMediaItem (Lcom/google/android/exoplayer2/MediaItem;)V
+	public fun setMediaItem (Lcom/google/android/exoplayer2/MediaItem;J)V
+	public fun setMediaItem (Lcom/google/android/exoplayer2/MediaItem;Z)V
+	public fun setMediaItems (Ljava/util/List;)V
+	public fun setMediaItems (Ljava/util/List;IJ)V
+	public fun setMediaItems (Ljava/util/List;Z)V
+	public fun setMediaSource (Lcom/google/android/exoplayer2/source/MediaSource;)V
+	public fun setMediaSource (Lcom/google/android/exoplayer2/source/MediaSource;J)V
+	public fun setMediaSource (Lcom/google/android/exoplayer2/source/MediaSource;Z)V
+	public fun setMediaSources (Ljava/util/List;)V
+	public fun setMediaSources (Ljava/util/List;IJ)V
+	public fun setMediaSources (Ljava/util/List;Z)V
+	public fun setPauseAtEndOfMediaItems (Z)V
+	public fun setPlayWhenReady (Z)V
+	public fun setPlaybackParameters (Lcom/google/android/exoplayer2/PlaybackParameters;)V
+	public fun setPlaybackSpeed (F)V
+	public fun setPlaylistMetadata (Lcom/google/android/exoplayer2/MediaMetadata;)V
+	public fun setPreferredAudioDevice (Landroid/media/AudioDeviceInfo;)V
+	public fun setPriorityTaskManager (Lcom/google/android/exoplayer2/util/PriorityTaskManager;)V
+	public fun setRepeatMode (I)V
+	public fun setSeekParameters (Lcom/google/android/exoplayer2/SeekParameters;)V
+	public fun setShuffleModeEnabled (Z)V
+	public fun setShuffleOrder (Lcom/google/android/exoplayer2/source/ShuffleOrder;)V
+	public fun setSkipSilenceEnabled (Z)V
+	public fun setTrackSelectionParameters (Lcom/google/android/exoplayer2/trackselection/TrackSelectionParameters;)V
+	public fun setVideoChangeFrameRateStrategy (I)V
+	public fun setVideoFrameMetadataListener (Lcom/google/android/exoplayer2/video/VideoFrameMetadataListener;)V
+	public fun setVideoScalingMode (I)V
+	public fun setVideoSurface (Landroid/view/Surface;)V
+	public fun setVideoSurfaceHolder (Landroid/view/SurfaceHolder;)V
+	public fun setVideoSurfaceView (Landroid/view/SurfaceView;)V
+	public fun setVideoTextureView (Landroid/view/TextureView;)V
 	public final fun setVolume (F)V
 	public fun setVolumeInfo (Lkohii/v1/media/VolumeInfo;)Z
+	public fun setWakeMode (I)V
+	public fun stop ()V
+	public fun stop (Z)V
 }
 
 public final class kohii/v1/exoplayer/KohiiKt {
@@ -127,8 +312,7 @@ public abstract interface class kohii/v1/exoplayer/MediaSourceFactoryProvider {
 }
 
 public class kohii/v1/exoplayer/PlayerViewBridge : kohii/v1/core/AbstractBridge, com/google/android/exoplayer2/Player$Listener {
-	public static final field Companion Lkohii/v1/exoplayer/PlayerViewBridge$Companion;
-	public fun <init> (Landroid/content/Context;Lkohii/v1/media/Media;Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)V
+	public fun <init> (Landroid/content/Context;Lkohii/v1/media/Media;Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSource$Factory;)V
 	protected final fun getMedia ()Lkohii/v1/media/Media;
 	protected fun getMediaItem ()Lcom/google/android/exoplayer2/MediaItem;
 	public fun getPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
@@ -141,9 +325,9 @@ public class kohii/v1/exoplayer/PlayerViewBridge : kohii/v1/core/AbstractBridge,
 	public fun getRepeatMode ()I
 	public fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
 	public fun isPlaying ()Z
-	public fun onPlayerError (Lcom/google/android/exoplayer2/ExoPlaybackException;)V
+	public fun onPlayerError (Lcom/google/android/exoplayer2/PlaybackException;)V
 	public fun onPositionDiscontinuity (I)V
-	public fun onTracksChanged (Lcom/google/android/exoplayer2/source/TrackGroupArray;Lcom/google/android/exoplayer2/trackselection/TrackSelectionArray;)V
+	public fun onTracksChanged (Lcom/google/android/exoplayer2/Tracks;)V
 	public fun pause ()V
 	public fun play ()V
 	public fun prepare (Z)V
@@ -160,11 +344,8 @@ public class kohii/v1/exoplayer/PlayerViewBridge : kohii/v1/core/AbstractBridge,
 	public fun setVolumeInfo (Lkohii/v1/media/VolumeInfo;)V
 }
 
-public final class kohii/v1/exoplayer/PlayerViewBridge$Companion {
-}
-
 public final class kohii/v1/exoplayer/PlayerViewBridgeCreator : kohii/v1/core/BridgeCreator {
-	public fun <init> (Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSourceFactory;)V
+	public fun <init> (Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSource$Factory;)V
 	public fun cleanUp ()V
 	public fun createBridge (Landroid/content/Context;Lkohii/v1/media/Media;)Lkohii/v1/core/Bridge;
 }
@@ -192,6 +373,102 @@ public final class kohii/v1/exoplayer/PlayerViewPlayableCreator$Companion {
 }
 
 public final class kohii/v1/exoplayer/PlayerViewProvider : kohii/v1/core/ViewRendererProvider {
+	public fun <init> ()V
+	public synthetic fun createRenderer (Lkohii/v1/core/Playback;I)Ljava/lang/Object;
+}
+
+public class kohii/v1/exoplayer/StyledPlayerViewBridge : kohii/v1/core/AbstractBridge, com/google/android/exoplayer2/Player$Listener {
+	public fun <init> (Landroid/content/Context;Lkohii/v1/media/Media;Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSource$Factory;)V
+	protected final fun getMedia ()Lkohii/v1/media/Media;
+	protected fun getMediaItem ()Lcom/google/android/exoplayer2/MediaItem;
+	public fun getPlaybackInfo ()Lkohii/v1/media/PlaybackInfo;
+	protected final fun getPlayer ()Lcom/google/android/exoplayer2/Player;
+	public fun getPlayerParameters ()Lkohii/v1/core/PlayerParameters;
+	protected final fun getPlayerPool ()Lkohii/v1/core/PlayerPool;
+	public fun getPlayerState ()I
+	public fun getRenderer ()Lcom/google/android/exoplayer2/ui/StyledPlayerView;
+	public synthetic fun getRenderer ()Ljava/lang/Object;
+	public fun getRepeatMode ()I
+	public fun getVolumeInfo ()Lkohii/v1/media/VolumeInfo;
+	public fun isPlaying ()Z
+	public fun onPlayerError (Lcom/google/android/exoplayer2/PlaybackException;)V
+	public fun onPositionDiscontinuity (I)V
+	public fun onTracksChanged (Lcom/google/android/exoplayer2/Tracks;)V
+	public fun pause ()V
+	public fun play ()V
+	public fun prepare (Z)V
+	public fun ready ()V
+	public fun release ()V
+	public fun reset (Z)V
+	public fun seekTo (J)V
+	public fun setPlaybackInfo (Lkohii/v1/media/PlaybackInfo;)V
+	protected final fun setPlayer (Lcom/google/android/exoplayer2/Player;)V
+	public fun setPlayerParameters (Lkohii/v1/core/PlayerParameters;)V
+	public fun setRenderer (Lcom/google/android/exoplayer2/ui/StyledPlayerView;)V
+	public synthetic fun setRenderer (Ljava/lang/Object;)V
+	public fun setRepeatMode (I)V
+	public fun setVolumeInfo (Lkohii/v1/media/VolumeInfo;)V
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewBridgeCreator : kohii/v1/core/BridgeCreator {
+	public fun <init> (Lkohii/v1/core/PlayerPool;Lcom/google/android/exoplayer2/source/MediaSource$Factory;)V
+	public fun cleanUp ()V
+	public fun createBridge (Landroid/content/Context;Lkohii/v1/media/Media;)Lkohii/v1/core/Bridge;
+}
+
+public class kohii/v1/exoplayer/StyledPlayerViewEngine : kohii/v1/core/Engine {
+	public static final field Companion Lkohii/v1/exoplayer/StyledPlayerViewEngine$Companion;
+	public synthetic fun <init> (Landroid/content/Context;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lkohii/v1/core/Master;Lkohii/v1/core/PlayableCreator;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun get (Landroid/content/Context;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public static final fun get (Landroidx/fragment/app/Fragment;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public fun prepare (Lkohii/v1/core/Manager;)V
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewEngine$Builder {
+	public fun <init> (Landroid/content/Context;)V
+	public final fun build ()Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public final fun setPlayableCreator (Lkohii/v1/core/PlayableCreator;)Lkohii/v1/exoplayer/StyledPlayerViewEngine$Builder;
+	public final fun setRendererProviderFactory (Lkotlin/jvm/functions/Function0;)Lkohii/v1/exoplayer/StyledPlayerViewEngine$Builder;
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewEngine$Companion {
+	public final fun get (Landroid/content/Context;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public final fun get (Landroidx/fragment/app/Fragment;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewEngineKt {
+	public static final fun createStyledPlayerViewEngine (Landroid/content/Context;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public static final fun createStyledPlayerViewEngine (Landroid/content/Context;Lkohii/v1/exoplayer/ExoPlayerConfig;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public static final fun createStyledPlayerViewEngine (Landroid/content/Context;Lkotlin/jvm/functions/Function1;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public static final fun createStyledPlayerViewEngine (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+	public static synthetic fun createStyledPlayerViewEngine$default (Landroid/content/Context;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lkohii/v1/exoplayer/StyledPlayerViewEngine;
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewPlayable : kohii/v1/core/AbstractPlayable {
+	public fun <init> (Lkohii/v1/core/Master;Lkohii/v1/media/Media;Lkohii/v1/core/Playable$Config;Lkohii/v1/core/Bridge;)V
+	public fun getRenderer ()Ljava/lang/Object;
+	public synthetic fun setRenderer$kohii_core_release (Ljava/lang/Object;)V
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewPlayableCreator : kohii/v1/core/PlayableCreator {
+	public static final field Companion Lkohii/v1/exoplayer/StyledPlayerViewPlayableCreator$Companion;
+	public fun <init> (Landroid/content/Context;)V
+	public fun cleanUp ()V
+	public fun createPlayable (Lkohii/v1/core/Playable$Config;Lkohii/v1/media/Media;)Lkohii/v1/core/Playable;
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewPlayableCreator$Builder {
+	public fun <init> (Landroid/content/Context;)V
+	public final fun build ()Lkohii/v1/core/PlayableCreator;
+	public final fun setBridgeCreatorFactory (Lkotlin/jvm/functions/Function1;)Lkohii/v1/exoplayer/StyledPlayerViewPlayableCreator$Builder;
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewPlayableCreator$Companion {
+}
+
+public final class kohii/v1/exoplayer/StyledPlayerViewProvider : kohii/v1/core/ViewRendererProvider {
 	public fun <init> ()V
 	public synthetic fun createRenderer (Lkohii/v1/core/Playback;I)Ljava/lang/Object;
 }

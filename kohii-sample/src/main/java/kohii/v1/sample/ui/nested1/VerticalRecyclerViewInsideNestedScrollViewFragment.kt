@@ -49,8 +49,8 @@ class VerticalRecyclerViewInsideNestedScrollViewFragment : BaseFragment(), DemoC
       FragmentDebugRvInNestsvVerticalBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.scrollView)
-        .addBucket(binding.recyclerView)
+      .addBucket(binding.scrollView)
+      .addBucket(binding.recyclerView)
 
     binding.libIntro.text = getString(R.string.lib_intro).parseAsHtml()
     binding.recyclerView.adapter = VerticalItemsAdapter(kohii)

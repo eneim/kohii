@@ -77,12 +77,14 @@ class PlayerActivity : BaseActivity() {
       }
 
       kohii.register(this)
-          .addBucket(binding.playerContainer)
+        .addBucket(binding.playerContainer)
 
       rebinder.bind(kohii, binding.playerView) {
         this.playback = it
       }
-    } else finish()
+    } else {
+      finish()
+    }
   }
 
   override fun finish() {

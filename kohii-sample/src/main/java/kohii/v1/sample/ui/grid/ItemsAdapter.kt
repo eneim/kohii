@@ -18,13 +18,14 @@ package kohii.v1.sample.ui.grid
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import kohii.v1.exoplayer.Kohii
+import com.google.android.exoplayer2.ui.StyledPlayerView
+import kohii.v1.core.Engine
 import kohii.v1.sample.DemoApp.Companion.assetVideoUri
 import kohii.v1.sample.common.BaseViewHolder
 import timber.log.Timber
 
 internal class ItemsAdapter(
-  private val kohii: Kohii,
+  private val kohii: Engine<StyledPlayerView>,
   val shouldBindVideo: (SelectionKey?) -> Boolean,
   val onVideoClick: (SelectionKey) -> Unit
 ) : Adapter<BaseViewHolder>() {
@@ -72,9 +73,11 @@ internal class ItemsAdapter(
           tag = requireNotNull(videoTag)
           artworkHintListener = holder
         }
-            .bind(holder.container)
+          .bind(holder.container)
       }
-    } else holder.bind(position)
+    } else {
+      holder.bind(position)
+    }
   }
 
   override fun onViewAttachedToWindow(holder: BaseViewHolder) {
@@ -82,7 +85,7 @@ internal class ItemsAdapter(
     if (holder is VideoViewHolder) {
       holder.itemView.setOnClickListener {
         holder.rebinder?.let { rebinder ->
-          onVideoClick(SelectionKey(holder.adapterPosition, rebinder))
+          onVideoClick(SelectionKey(holder.absoluteAdapterPosition, rebinder))
         }
       }
     }

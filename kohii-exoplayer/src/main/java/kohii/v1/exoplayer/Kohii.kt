@@ -18,7 +18,6 @@ package kohii.v1.exoplayer
 
 import android.content.Context
 import androidx.fragment.app.Fragment
-import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
@@ -34,6 +33,9 @@ import kohii.v1.exoplayer.Kohii.Builder
 import kohii.v1.media.Media
 import kohii.v1.utils.Capsule
 
+@Deprecated(
+  message = "PlayerView is deprecated. Use the StyledPlayerViewEngine instead."
+)
 open class Kohii constructor(
   master: Master,
   playableCreator: PlayableCreator<PlayerView> = PlayerViewPlayableCreator(master),
@@ -62,13 +64,14 @@ open class Kohii constructor(
    * This method must be used for the [Playback] that supports manual playback control (the
    * [Playback.Config.controller] is not null).
    */
-  fun createControlDispatcher(playback: Playback): ControlDispatcher {
+  // TODO: replace with custom ForwardingPlayer.
+  /* fun createControlDispatcher(playback: Playback): ControlDispatcher {
     requireNotNull(playback.config.controller) {
       "Playback needs to be setup with a Controller to use this method."
     }
 
     return DefaultControlDispatcher(playback)
-  }
+  } */
 
   class Builder(context: Context) {
 
@@ -88,9 +91,9 @@ open class Kohii constructor(
     }
 
     fun build(): Kohii = Kohii(
-        master = master,
-        playableCreator = playableCreator,
-        rendererProviderFactory = rendererProviderFactory
+      master = master,
+      playableCreator = playableCreator,
+      rendererProviderFactory = rendererProviderFactory
     ).also {
       master.registerEngine(it)
     }
@@ -103,23 +106,28 @@ open class Kohii constructor(
  *
  * @param context the [Context].
  * @param config the [ExoPlayerConfig].
+ *
+ * @deprecated Use [createStyledPlayerViewEngine] instead.
  */
+@Deprecated(
+  message = "PlayerView is deprecated. Use createStyledPlayerViewEngine instead."
+)
 fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
   val bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { appContext ->
     val userAgent = Common.getUserAgent(appContext, BuildConfig.LIB_NAME)
     val playerPool = config.createDefaultPlayerPool(
-        context = context,
-        userAgent = userAgent
+      context = context,
+      userAgent = userAgent
     )
     PlayerViewBridgeCreator(
-        playerPool = playerPool,
-        mediaSourceFactory = playerPool.defaultMediaSourceFactory
+      playerPool = playerPool,
+      mediaSourceFactory = playerPool.defaultMediaSourceFactory
     )
   }
 
   val playableCreator = PlayerViewPlayableCreator.Builder(context.applicationContext)
-      .setBridgeCreatorFactory(bridgeCreatorFactory)
-      .build()
+    .setBridgeCreatorFactory(bridgeCreatorFactory)
+    .build()
 
   return Builder(context).setPlayableCreator(playableCreator).build()
 }
@@ -131,7 +139,12 @@ fun createKohii(context: Context, config: ExoPlayerConfig): Kohii {
  * @param context the [Context].
  * @param playerCreator the custom creator for the [Player]. If `null`, it will use the default one.
  * @param rendererProviderFactory the custom [RendererProviderFactory].
+ *
+ * @deprecated Use [createStyledPlayerViewEngine] instead.
  */
+@Deprecated(
+  message = "PlayerView is deprecated. Use createStyledPlayerViewEngine instead."
+)
 @JvmOverloads
 fun createKohii(
   context: Context,
@@ -140,8 +153,8 @@ fun createKohii(
 ): Kohii {
   val playerPool = if (playerCreator == null) {
     ExoPlayerPool(
-        context = context.applicationContext,
-        userAgent = Common.getUserAgent(context.applicationContext, BuildConfig.LIB_NAME)
+      context = context.applicationContext,
+      userAgent = Common.getUserAgent(context.applicationContext, BuildConfig.LIB_NAME)
     )
   } else {
     object : PlayerPool<Player>() {
@@ -152,16 +165,16 @@ fun createKohii(
   }
 
   val mediaSourceFactory = (playerPool as? ExoPlayerPool)?.defaultMediaSourceFactory
-      ?: DefaultMediaSourceFactory(context.applicationContext)
+    ?: DefaultMediaSourceFactory(context.applicationContext)
 
   return Builder(context)
-      .setPlayableCreator(
-          PlayerViewPlayableCreator.Builder(context)
-              .setBridgeCreatorFactory {
-                PlayerViewBridgeCreator(playerPool, mediaSourceFactory)
-              }
-              .build()
-      )
-      .setRendererProviderFactory(rendererProviderFactory)
-      .build()
+    .setPlayableCreator(
+      PlayerViewPlayableCreator.Builder(context)
+        .setBridgeCreatorFactory {
+          PlayerViewBridgeCreator(playerPool, mediaSourceFactory)
+        }
+        .build()
+    )
+    .setRendererProviderFactory(rendererProviderFactory)
+    .build()
 }

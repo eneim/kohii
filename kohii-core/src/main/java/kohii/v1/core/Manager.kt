@@ -141,7 +141,9 @@ class Manager internal constructor(
     } else {
       if (this.host is Prioritized) {
         compareAndCheck(this.host, other.host)
-      } else -1
+      } else {
+        -1
+      }
     }
   }
 
@@ -155,23 +157,23 @@ class Manager internal constructor(
 
   override fun onDestroy(owner: LifecycleOwner) {
     playbacks.values
-        .toMutableList()
-        .also { group.selection -= it }
-        .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
-        .clear()
+      .toMutableList()
+      .also { group.selection -= it }
+      .onEach { removePlayback(it) /* also modify 'playbacks' content */ }
+      .clear()
     stickyBucket = null // will pop current sticky Bucket from the Stack
 
     buckets
-        .toMutableList()
-        .onEach { onRemoveBucket(it.root) }
-        .clear()
+      .toMutableList()
+      .onEach { onRemoveBucket(it.root) }
+      .clear()
 
     rendererProviders
-        .onEach {
-          owner.lifecycle.removeObserver(it.value)
-          it.value.clear()
-        }
-        .clear()
+      .onEach {
+        owner.lifecycle.removeObserver(it.value)
+        it.value.clear()
+      }
+      .clear()
 
     playableObservers.clear()
     owner.lifecycle.removeObserver(this)
@@ -188,10 +190,10 @@ class Manager internal constructor(
 
   internal fun findRendererProvider(playable: Playable): RendererProvider {
     val cache = rendererProviders[playable.config.rendererType]
-        ?: rendererProviders.entries.firstOrNull {
-          // If there is a RendererProvider of subclass, we can use it.
-          playable.config.rendererType.isAssignableFrom(it.key)
-        }?.value
+      ?: rendererProviders.entries.firstOrNull {
+        // If there is a RendererProvider of subclass, we can use it.
+        playable.config.rendererType.isAssignableFrom(it.key)
+      }?.value
     return requireNotNull(cache)
   }
 
@@ -260,25 +262,25 @@ class Manager internal constructor(
 
   private fun onRemoveBucket(view: View) {
     buckets.firstOrNull { it.root === view && buckets.remove(it) }
-        ?.onRemoved()
+      ?.onRemoved()
   }
 
   internal fun refresh(): Unit = group.onRefresh()
 
   private fun refreshPlaybackStates(): Pair<MutableSet<Playback> /* Active */, MutableSet<Playback> /* InActive */> {
     val toActive = playbacks.filterValues { !it.isActive && it.token.shouldPrepare() }
-        .values
+      .values
     val toInActive = playbacks.filterValues { it.isActive && !it.token.shouldPrepare() }
-        .values
+      .values
 
     toActive.forEach { onPlaybackActive(it) }
     toInActive.forEach { onPlaybackInActive(it) }
 
     return playbacks.entries.filter { it.value.isAttached }
-        .partitionToMutableSets(
-            predicate = { it.value.isActive },
-            transform = { it.value }
-        )
+      .partitionToMutableSets(
+        predicate = { it.value.isActive },
+        transform = { it.value }
+      )
   }
 
   /**
@@ -292,24 +294,24 @@ class Manager internal constructor(
 
     val bucketToPlaybacks = playbacks.values.groupBy { it.bucket } // -> Map<Bucket, List<Playback>
     buckets.asSequence()
-        .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
-        .map { /* Bucket --> Collection<Playback> */
-          val candidates = bucketToPlaybacks
-              .getValue(it)
-              .filter { playback ->
-                // TODO(eneim): rethink this to support off-screen manual playback/kohiiCanPause().
-                /* val cannotPause = master.manuallyStartedPlayable.get() === playback.playable &&
-                    master.plannedManualPlayables.contains(playback.tag) &&
-                    !requireNotNull(playback.config.controller).kohiiCanPause() */
-                return@filter /* cannotPause || */ it.allowToPlay(playback)
-              }
-          return@map it.strategy(it.selectToPlay(candidates))
-        }
-        .find { it.isNotEmpty() }
-        ?.also {
-          toPlay.addAll(it)
-          activePlaybacks.removeAll(it)
-        }
+      .filter { !bucketToPlaybacks[it].isNullOrEmpty() }
+      .map { /* Bucket --> Set<Playback> */
+        val candidates = bucketToPlaybacks
+          .getValue(it)
+          .filter { playback ->
+            // TODO(eneim): rethink this to support off-screen manual playback/kohiiCanPause().
+            /* val cannotPause = master.manuallyStartedPlayable.get() === playback.playable &&
+                master.plannedManualPlayables.contains(playback.tag) &&
+                !requireNotNull(playback.config.controller).kohiiCanPause() */
+            return@filter /* cannotPause || */ it.allowToPlay(playback)
+          }
+        return@map it.strategy(it.selectToPlay(candidates)).toSet()
+      }
+      .find { it.isNotEmpty() }
+      ?.also {
+        toPlay.addAll(it)
+        activePlaybacks.removeAll(it)
+      }
 
     val toPause = activePlaybacks.apply { addAll(inactivePlaybacks) }
     return if (lock || lifecycleOwner.lifecycle.currentState < activeLifecycleState) {
@@ -431,6 +433,7 @@ class Manager internal constructor(
         require(target is Playback) { "Expected Playback, found ${target.javaClass.canonicalName}" }
         target.playbackVolumeInfo = target.bucket.effectiveVolumeInfo(volumeInfo)
       }
+
       BUCKET -> {
         when (target) {
           is Bucket -> target.bucketVolumeInfo = volumeInfo
@@ -440,16 +443,19 @@ class Manager internal constructor(
             requireNotNull(buckets.find { it.root === target }) {
               "$target is not a root of any Bucket."
             }
-                .bucketVolumeInfo = volumeInfo
+              .bucketVolumeInfo = volumeInfo
           }
         }
       }
+
       MANAGER -> {
         this.managerVolumeInfo = volumeInfo
       }
+
       GROUP -> {
         this.group.groupVolumeInfo = volumeInfo
       }
+
       GLOBAL -> {
         this.master.groups.forEach { it.groupVolumeInfo = volumeInfo }
       }

@@ -87,3 +87,6 @@
 /.idea/compiler.xml
 /kohii-samples/build/
 /.idea/kotlinScripting.xml
+/.idea/git_toolbox_prj.xml
+/.idea/checkstyle-idea.xml
+/.idea/deploymentTargetDropDown.xml

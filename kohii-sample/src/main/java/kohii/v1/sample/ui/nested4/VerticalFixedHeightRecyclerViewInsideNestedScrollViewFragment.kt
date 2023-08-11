@@ -32,8 +32,9 @@ import kohii.v1.sample.common.DemoContainer
 import kohii.v1.sample.databinding.FragmentDebugRvInNestsvVerticalBinding
 import kohii.v1.sample.ui.main.DemoItem
 
-class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragment(),
-    DemoContainer {
+class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment :
+  BaseFragment(),
+  DemoContainer {
 
   companion object {
     fun newInstance() = VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment()
@@ -59,8 +60,8 @@ class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragme
       FragmentDebugRvInNestsvVerticalBinding.bind(view)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.scrollView)
-        .addBucket(binding.recyclerView)
+      .addBucket(binding.scrollView)
+      .addBucket(binding.recyclerView)
 
     binding.libIntro.text = getString(R.string.lib_intro).parseAsHtml()
 
@@ -85,9 +86,9 @@ class VerticalFixedHeightRecyclerViewInsideNestedScrollViewFragment : BaseFragme
     binding.recyclerView.adapter = ItemsAdapter(kohii, 13)
 
     kohii.setUp(assetVideoUri)
-        .bind(binding.dummyPlayer1)
+      .bind(binding.dummyPlayer1)
 
     kohii.setUp(assetVideoUri)
-        .bind(binding.dummyPlayer2)
+      .bind(binding.dummyPlayer2)
   }
 }

@@ -37,7 +37,7 @@ class SvgModule : AppGlideModule() {
     registry: Registry
   ) {
     registry.register(SVG::class.java, PictureDrawable::class.java, SvgDrawableTranscoder())
-        .append(InputStream::class.java, SVG::class.java, SvgDecoder())
+      .append(InputStream::class.java, SVG::class.java, SvgDecoder())
   }
 
   // Disable manifest parsing to avoid adding similar modules twice.

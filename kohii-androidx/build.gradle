@@ -1,15 +1,12 @@
-import kohii.BuildConfig
-import kohii.Libs
-
 /*
  * Copyright (c) 2019 Nam Nguyen, nam@ene.im
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *        
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,15 +18,13 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-  compileSdkVersion BuildConfig.compileSdkVersion
+  compileSdkVersion libs.versions.android.target.sdk.get().toInteger()
 
   defaultConfig {
-    minSdkVersion BuildConfig.minSdkVersion
-    targetSdkVersion BuildConfig.targetSdkVersion
-    versionCode BuildConfig.releaseVersionCode
-    versionName BuildConfig.releaseVersionName
+    minSdkVersion libs.versions.android.min.sdk.get()
+    targetSdkVersion libs.versions.android.target.sdk.get()
 
-    buildConfigField("String", "LIB_NAME", "\"" + "Kohii for AndroidX, v" + versionName + "\"")
+    buildConfigField("String", "LIB_NAME", "\"" + "Kohii for AndroidX, v" + libs.versions.release.name.get() + "\"")
 
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles 'consumer-rules.pro'
@@ -57,21 +52,24 @@ android {
 dependencies {
   implementation project(':kohii-core')
 
-  implementation Libs.AndroidX.Media.common
-  implementation Libs.AndroidX.Media.player
-  implementation Libs.AndroidX.Media.session
-  implementation Libs.AndroidX.Media.widget
+  implementation(libs.androidx.media2.common)
+  implementation(libs.androidx.media2.player)
+  implementation(libs.androidx.media2.widget)
+  implementation(libs.androidx.media2.session)
+  implementation(libs.androidx.media2.exoplayer)
 
-  implementation Libs.ExoPlayer.core
+  implementation(libs.android.exoplayer.core)
 
-  implementation Libs.Kotlin.stdlibJdk8
-  implementation Libs.AndroidX.appcompat
-  implementation Libs.AndroidX.coreKtx
-  implementation Libs.AndroidX.collectionKtx
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.core)
+  implementation(libs.androidx.collection)
 
-  testImplementation Libs.Common.junit
-  androidTestImplementation Libs.Common.junitExt
-  androidTestImplementation Libs.AndroidX.Test.espressoCore
+  testImplementation("androidx.test:core-ktx:1.5.0")
+  testImplementation("androidx.test:rules:1.5.0")
+  testImplementation("androidx.test:runner:1.5.2")
+
+  androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")
+  androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
 
 project.archivesBaseName = "kohii-androidx"

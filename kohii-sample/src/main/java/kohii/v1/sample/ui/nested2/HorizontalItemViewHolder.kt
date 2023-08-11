@@ -24,6 +24,6 @@ import kohii.v1.sample.R.id
 internal class HorizontalItemViewHolder(itemView: View) : ViewHolder(itemView) {
 
   internal val container = itemView.findViewById(
-      id.playerContainer
+    id.playerContainer
   ) as AspectRatioFrameLayout
 }

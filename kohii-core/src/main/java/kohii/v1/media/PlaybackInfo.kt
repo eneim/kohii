@@ -29,8 +29,8 @@ data class PlaybackInfo(
 ) : Parcelable {
 
   constructor() : this(
-      INDEX_UNSET,
-      TIME_UNSET
+    INDEX_UNSET,
+    TIME_UNSET
   )
 
   companion object {

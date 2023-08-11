@@ -28,6 +28,6 @@ internal class VideoViewProvider : ViewRendererProvider() {
   ): Any {
     val container = playback.container
     return LayoutInflater.from(container.context)
-        .inflate(R.layout.kohii_video_view, container, false)
+      .inflate(R.layout.kohii_video_view, container, false)
   }
 }

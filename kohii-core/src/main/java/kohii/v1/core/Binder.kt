@@ -64,8 +64,9 @@ class Binder(
   ): Rebinder? {
     val tag = options.tag
     val playable = providePlayable(
-        media, tag,
-        Config(tag = tag, rendererType = engine.playableCreator.rendererType)
+      media,
+      tag,
+      Config(tag = tag, rendererType = engine.playableCreator.rendererType)
     )
     engine.master.bind(playable, tag, container, options, callback)
     return if (tag != NO_TAG) Rebinder(tag) else null
@@ -77,10 +78,10 @@ class Binder(
     config: Config
   ): Playable {
     var cache = engine.master.playables.asSequence()
-        .filterNot { it.value == NO_TAG } // only care about tagged Playables
-        .filter { it.value == tag /* equals */ }
-        .firstOrNull()
-        ?.key
+      .filterNot { it.value == NO_TAG } // only care about tagged Playables
+      .filter { it.value == tag /* equals */ }
+      .firstOrNull()
+      ?.key
 
     if (cache != null) {
       require(cache.media == media) // Playable of same tag must have the same Media data.

@@ -32,8 +32,12 @@ class DemoItemViewHolder(
 
   override fun bind(item: Any?) {
     (item as? DemoItem)?.also {
-      if (it.title != 0) demoTitle.setText(it.title) else demoTitle.text =
-        it.fragmentClass.simpleName.splitCases()
+      if (it.title != 0) {
+        demoTitle.setText(it.title)
+      } else {
+        demoTitle.text =
+          it.fragmentClass.simpleName.splitCases()
+      }
       if (it.subTitle != 0) {
         demoSubtitle.isVisible = true
         demoSubtitle.setText(it.subTitle)

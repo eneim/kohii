@@ -33,15 +33,13 @@ internal class UnofficialYouTubePlayerRendererProvider(
     rendererType: Int
   ): Any {
     val iFramePlayerOptions = IFramePlayerOptions.Builder()
-        .controls(0)
-        .build()
+      .controls(0)
+      .build()
 
     val container = playback.container
     return YouTubePlayerView(container.context).also {
       it.enableAutomaticInitialization = false
       it.enableBackgroundPlayback(false)
-      it.getPlayerUiController()
-          .showUi(false)
       it.initialize(object : AbstractYouTubePlayerListener() {}, true, iFramePlayerOptions)
     }
   }

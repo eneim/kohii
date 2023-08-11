@@ -271,11 +271,11 @@
   </string>
 
   <string name="demo_title_youtube_2">
-    Kohii + YouTube (2)
+    Kohii + YouTube
   </string>
 
   <string name="demo_desc_youtube_2">
-    Kohii with YouTube videos using https://github.com/PierfrancescoSoffritti/android-youtube-player library.
+    Kohii with YouTube videos. https://github.com/PierfrancescoSoffritti/android-youtube-player library is used for playing back the videos.
   </string>
 
   <string name="demo_title_debug">

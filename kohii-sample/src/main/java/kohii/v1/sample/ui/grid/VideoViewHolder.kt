@@ -42,7 +42,7 @@ internal class VideoViewHolder(
   internal var videoUrl: String? = null
 
   internal val videoTag: String?
-    get() = videoUrl?.let { "HOLDER::〜$adapterPosition" }
+    get() = videoUrl?.let { "HOLDER::〜$absoluteAdapterPosition" }
 
   internal val rebinder: Rebinder?
     get() = videoTag?.let { Rebinder(it) }
@@ -52,13 +52,13 @@ internal class VideoViewHolder(
       override fun getSelectionKey(): SelectionKey? {
         val rebinder = this@VideoViewHolder.rebinder
         return if (rebinder != null) {
-          SelectionKey(adapterPosition, rebinder)
+          SelectionKey(absoluteAdapterPosition, rebinder)
         } else {
           null
         }
       }
 
-      override fun getPosition() = adapterPosition
+      override fun getPosition() = absoluteAdapterPosition
     }
 
   override fun onArtworkHint(
@@ -69,11 +69,11 @@ internal class VideoViewHolder(
   ) {
     // Using animation to ease user's eyes when the thumbnail is shown/hidden
     thumbnail.animate()
-        .alpha(if (shouldShow) 1F else 0F)
-        .setDuration(200)
-        .withEndAction {
-          thumbnail.isVisible = shouldShow
-        }
-        .start()
+      .alpha(if (shouldShow) 1F else 0F)
+      .setDuration(200)
+      .withEndAction {
+        thumbnail.isVisible = shouldShow
+      }
+      .start()
   }
 }

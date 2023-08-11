@@ -51,9 +51,9 @@ internal class VideoItemsAdapter(
     parent: ViewGroup,
     viewType: Int
   ): BaseViewHolder = VideoItemHolder(
-      from(parent.context),
-      parent,
-      this
+    from(parent.context),
+    parent,
+    this
   )
 
   override fun getItemId(position: Int): Long {
@@ -75,8 +75,8 @@ internal class VideoItemsAdapter(
       holder.videoInfo.text = item.description
 
       GlideApp.with(holder.itemView)
-          .load(requireNotNull(holder.videoImage))
-          .into(holder.thumbnail)
+        .load(requireNotNull(holder.videoImage))
+        .into(holder.thumbnail)
 
       if (shouldBindVideo(holder.rebinder)) {
         kohii.setUp(requireNotNull(holder.videoFile)) {
@@ -84,7 +84,7 @@ internal class VideoItemsAdapter(
           repeatMode = Player.REPEAT_MODE_ONE
           artworkHintListener = holder
         }
-            .bind(holder.playerViewContainer)
+          .bind(holder.playerViewContainer)
       }
     }
   }

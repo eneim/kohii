@@ -19,22 +19,17 @@ package kohii.v1.exoplayer
 import android.content.Context
 import android.widget.Toast
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
-import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.MediaSourceFactory
-import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.AbstractBridge
-import kohii.v1.core.DefaultTrackSelectorHolder
 import kohii.v1.core.PlayerParameters
 import kohii.v1.core.PlayerPool
 import kohii.v1.core.VolumeInfoController
@@ -51,11 +46,12 @@ import kotlin.math.max
 /**
  * @author eneim (2018/06/24).
  */
+@Deprecated(message = "PlayerView is deprecated. Use the Bridge for StyledPlayerView instead.")
 open class PlayerViewBridge(
   context: Context,
   protected val media: Media,
   protected val playerPool: PlayerPool<Player>,
-  private val mediaSourceFactory: MediaSourceFactory
+  private val mediaSourceFactory: MediaSource.Factory
 ) : AbstractBridge<PlayerView>(), Player.Listener {
 
   protected open val mediaItem: MediaItem = MediaItem.fromUri(media.uri)
@@ -70,16 +66,14 @@ open class PlayerViewBridge(
   private var _playbackParams = PlaybackParameters.DEFAULT // Backing field
   private var mediaSource: MediaSource? = null
 
-  private var lastSeenTrackGroupArray: TrackGroupArray? = null
+  private var lastSeenTracks: Tracks = Tracks.EMPTY
   private var inErrorState = false
 
   protected var player: Player? = null
 
-  @Player.State
   override val playerState: Int
     get() = player?.playbackState ?: Player.STATE_IDLE
 
-  @Player.RepeatMode
   override var repeatMode: Int
     get() = _repeatMode
     set(value) {
@@ -101,7 +95,7 @@ open class PlayerViewBridge(
       ensurePlayerView()
     }
 
-    this.lastSeenTrackGroupArray = null
+    this.lastSeenTracks = Tracks.EMPTY
     this.inErrorState = false
   }
 
@@ -109,7 +103,7 @@ open class PlayerViewBridge(
     set(value) {
       if (field === value) return // same reference
       "Bridge#renderer $field -> $value, $this".logInfo()
-      this.lastSeenTrackGroupArray = null
+      this.lastSeenTracks = Tracks.EMPTY
       this.inErrorState = false
       if (value == null) {
         requireNotNull(field).also {
@@ -147,8 +141,11 @@ open class PlayerViewBridge(
 
   override fun reset(resetPlayer: Boolean) {
     "Bridge#reset resetPlayer=$resetPlayer, $this".logInfo()
-    if (resetPlayer) _playbackInfo = PlaybackInfo()
-    else updatePlaybackInfo()
+    if (resetPlayer) {
+      _playbackInfo = PlaybackInfo()
+    } else {
+      updatePlaybackInfo()
+    }
     player?.also {
       it.setVolumeInfo(VolumeInfo.DEFAULT_ACTIVE)
       it.stop()
@@ -156,7 +153,7 @@ open class PlayerViewBridge(
     }
     this.mediaSource = null // So it will be re-prepared later.
     this.sourcePrepared = false
-    this.lastSeenTrackGroupArray = null
+    this.lastSeenTracks = Tracks.EMPTY
     this.inErrorState = false
   }
 
@@ -180,15 +177,15 @@ open class PlayerViewBridge(
     this.player = null
     this.mediaSource = null
     this.sourcePrepared = false
-    this.lastSeenTrackGroupArray = null
+    this.lastSeenTracks = Tracks.EMPTY
     this.inErrorState = false
   }
 
   override fun isPlaying(): Boolean {
     return player?.run {
       playWhenReady &&
-          playbackState in Player.STATE_BUFFERING..Player.STATE_READY &&
-          playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_NONE
+        playbackState in Player.STATE_BUFFERING..Player.STATE_READY &&
+        playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_NONE
     } ?: false
   }
 
@@ -223,14 +220,12 @@ open class PlayerViewBridge(
     }
 
   private fun applyPlayerParameters(parameters: PlayerParameters) {
-    val player = this.player
-    if (player is DefaultTrackSelectorHolder) {
-      player.trackSelector.parameters = player.trackSelector.parameters.buildUpon()
-          .setMaxVideoSize(parameters.maxVideoWidth, parameters.maxVideoHeight)
-          .setMaxVideoBitrate(parameters.maxVideoBitrate)
-          .setMaxAudioBitrate(parameters.maxAudioBitrate)
-          .build()
-    }
+    val player = this.player ?: return // TODO: cache this and apply when player is ready.
+    player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+      .setMaxVideoSize(parameters.maxVideoWidth, parameters.maxVideoHeight)
+      .setMaxVideoBitrate(parameters.maxVideoBitrate)
+      .setMaxAudioBitrate(parameters.maxAudioBitrate)
+      .build()
   }
 
   private fun setPlaybackInfo(
@@ -253,8 +248,8 @@ open class PlayerViewBridge(
     player?.also {
       if (it.playbackState == Player.STATE_IDLE) return
       _playbackInfo = PlaybackInfo(
-          it.currentWindowIndex,
-          max(0, it.currentPosition)
+        it.currentWindowIndex,
+        max(0, it.currentPosition)
       )
     }
   }
@@ -320,30 +315,30 @@ open class PlayerViewBridge(
       this.errorListeners.onError(RuntimeException(message, cause))
     } else {
       Toast.makeText(context, message, Toast.LENGTH_SHORT)
-          .show()
+        .show()
     }
   }
 
   //region Player.Listener implementation
-  override fun onPlayerError(error: ExoPlaybackException) {
+  override fun onPlayerError(error: PlaybackException) {
     "Bridge#onPlayerError error=${error.cause}, message=${error.cause?.message}, $this".logError()
     if (renderer == null) {
       var errorString: String? = null
-      if (error.type == ExoPlaybackException.TYPE_RENDERER) {
-        val exception = error.rendererException
-        if (exception is DecoderInitializationException) {
-          // Special case for decoder initialization failures.
-          errorString = if (exception.codecInfo == null) {
-            when {
-              exception.cause is MediaCodecUtil.DecoderQueryException ->
-                context.getString(R.string.error_querying_decoders)
-              exception.secureDecoderRequired ->
-                context.getString(R.string.error_no_secure_decoder, exception.mimeType)
-              else -> context.getString(R.string.error_no_decoder, exception.mimeType)
-            }
-          } else {
-            context.getString(R.string.error_instantiating_decoder, exception.codecInfo?.name ?: "")
+      val exception = error.cause
+      if (exception is DecoderInitializationException) {
+        // Special case for decoder initialization failures.
+        errorString = if (exception.codecInfo == null) {
+          when {
+            exception.cause is MediaCodecUtil.DecoderQueryException ->
+              context.getString(R.string.error_querying_decoders)
+
+            exception.secureDecoderRequired ->
+              context.getString(R.string.error_no_secure_decoder, exception.mimeType)
+
+            else -> context.getString(R.string.error_no_decoder, exception.mimeType)
           }
+        } else {
+          context.getString(R.string.error_instantiating_decoder, exception.codecInfo?.name ?: "")
         }
       }
 
@@ -351,7 +346,7 @@ open class PlayerViewBridge(
     }
 
     inErrorState = true
-    if (isBehindLiveWindow(error)) {
+    if (error.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) {
       reset()
     } else {
       updatePlaybackInfo()
@@ -359,6 +354,7 @@ open class PlayerViewBridge(
     this.errorListeners.onError(error)
   }
 
+  @Deprecated("Deprecated in Java")
   override fun onPositionDiscontinuity(reason: Int) {
     if (inErrorState) {
       // Adapt from ExoPlayer demo.
@@ -369,35 +365,22 @@ open class PlayerViewBridge(
     }
   }
 
-  override fun onTracksChanged(
-    trackGroups: TrackGroupArray,
-    trackSelections: TrackSelectionArray
-  ) {
-    if (trackGroups == lastSeenTrackGroupArray) return
-    lastSeenTrackGroupArray = trackGroups
-    val player = this.player as? KohiiExoPlayer ?: return
-    val trackInfo = player.trackSelector.currentMappedTrackInfo
-    if (trackInfo != null) {
-      if (trackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_video), player.playerError)
+  override fun onTracksChanged(tracks: Tracks) {
+    if (tracks != lastSeenTracks) {
+      val context = renderer?.context ?: context
+      if (tracks.containsType(C.TRACK_TYPE_VIDEO) &&
+        !tracks.isTypeSupported(C.TRACK_TYPE_VIDEO, /* allowExceedsCapabilities = */ true)
+      ) {
+        Toast.makeText(context, R.string.error_unsupported_video, Toast.LENGTH_LONG).show()
       }
-
-      if (trackInfo.getTypeSupport(C.TRACK_TYPE_AUDIO) == RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-        onErrorMessage(context.getString(R.string.error_unsupported_audio), player.playerError)
+      if (tracks.containsType(C.TRACK_TYPE_AUDIO) &&
+        !tracks.isTypeSupported(C.TRACK_TYPE_AUDIO, /* allowExceedsCapabilities = */ true)
+      ) {
+        Toast.makeText(context, R.string.error_unsupported_audio, Toast.LENGTH_LONG).show()
       }
+      lastSeenTracks = tracks
     }
   }
+
   //endregion
-
-  companion object {
-    internal fun isBehindLiveWindow(error: ExoPlaybackException): Boolean {
-      if (error.type != ExoPlaybackException.TYPE_SOURCE) return false
-      var cause: Throwable? = error.sourceException
-      while (cause != null) {
-        if (cause is BehindLiveWindowException) return true
-        cause = cause.cause
-      }
-      return false
-    }
-  }
 }

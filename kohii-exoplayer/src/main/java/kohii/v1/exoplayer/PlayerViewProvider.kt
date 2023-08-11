@@ -23,6 +23,7 @@ import kohii.v1.core.Playback
 import kohii.v1.core.ViewRendererProvider
 import kohii.v1.media.Media
 
+@Deprecated(message = "PlayerView is deprecated. Use the StyledPlayerViewBridge instead.")
 class PlayerViewProvider : ViewRendererProvider() {
 
   override fun getRendererType(
@@ -34,7 +35,7 @@ class PlayerViewProvider : ViewRendererProvider() {
     return if (media.mediaDrm != null /* || Build.VERSION.SDK_INT >= 24 */) {
       R.layout.kohii_player_surface_view
     } else {
-      R.layout.kohii_player_textureview
+      R.layout.kohii_player_texture_view
     }
   }
 
@@ -43,6 +44,6 @@ class PlayerViewProvider : ViewRendererProvider() {
     rendererType: Int
   ): PlayerView {
     return LayoutInflater.from(playback.container.context)
-        .inflate(rendererType, playback.container, false) as PlayerView
+      .inflate(rendererType, playback.container, false) as PlayerView
   }
 }

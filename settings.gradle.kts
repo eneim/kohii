@@ -15,21 +15,21 @@
  */
 
 pluginManagement {
-  repositories {
-    mavenCentral()
-    gradlePluginPortal()
-  }
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
 
 fun includeModules(modulesDirName: String = "kohii-samples") {
-  val basePath = "$rootDir/$modulesDirName"
-  file(basePath).list()?.forEach { dir ->
-    if (file("$basePath/$dir/build.gradle").exists() ||
-        file("$basePath/$dir/build.gradle.kts").exists()
-    ) {
-      include(":$modulesDirName:$dir")
+    val basePath = "$rootDir/$modulesDirName"
+    file(basePath).list()?.forEach { dir ->
+        if (file("$basePath/$dir/build.gradle").exists() ||
+            file("$basePath/$dir/build.gradle.kts").exists()
+        ) {
+            include(":$modulesDirName:$dir")
+        }
     }
-  }
 }
 
 include(":kohii-core")

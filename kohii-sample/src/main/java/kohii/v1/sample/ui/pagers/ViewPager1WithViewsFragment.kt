@@ -65,7 +65,7 @@ class ViewPager1WithViewsFragment : BaseFragment(), DemoContainer {
       container.addView(view)
       // Now bind the content
       val video = videos[position % videos.size].playlist.first()
-          .sources.first()
+        .sources.first()
       val itemTag = "$javaClass::$position::${video.file}"
       kohii.setUp(video.file) {
         tag = itemTag
@@ -73,7 +73,7 @@ class ViewPager1WithViewsFragment : BaseFragment(), DemoContainer {
         preload = true
         repeatMode = Player.REPEAT_MODE_ONE
       }
-          .bind(view.findViewById(R.id.videoFrame) as ViewGroup)
+        .bind(view.findViewById(R.id.videoFrame) as ViewGroup)
       return view
     }
 
@@ -108,7 +108,7 @@ class ViewPager1WithViewsFragment : BaseFragment(), DemoContainer {
     super.onViewCreated(view, savedInstanceState)
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.viewPager)
+      .addBucket(binding.viewPager)
 
     binding.viewPager.apply {
       adapter = PagerPagesAdapter(kohii, getApp().videos)

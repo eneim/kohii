@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.youtube2
+package kohii.v1.sample.ui.youtube
 
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.google.api.services.youtube.model.Video
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kohii.v1.core.Engine
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
-import kohii.v1.sample.youtube.data.NetworkState
 
-class YouTubeItemsAdapter(
+class YouTubePlaylistPagingAdapter(
   private val engine: Engine<YouTubePlayerView>
-) : PagedListAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
+) : PagingDataAdapter<Video, BaseViewHolder>(object : DiffUtil.ItemCallback<Video>() {
   override fun areItemsTheSame(
     oldItem: Video,
     newItem: Video
@@ -44,35 +43,12 @@ class YouTubeItemsAdapter(
   }
 }) {
 
-  private var networkState: NetworkState? = null
-
-  private fun hasExtraRow() = networkState != null && networkState != NetworkState.LOADED
-
   override fun getItemViewType(position: Int): Int {
-    return if (hasExtraRow() && position == itemCount - 1) {
-      R.layout.holder_loading // to loading type
+    val item = peek(position)
+    return if (item == null) {
+      R.layout.holder_loading
     } else {
       R.layout.holder_youtube_container
-    }
-  }
-
-  override fun getItemCount(): Int {
-    return super.getItemCount() + if (hasExtraRow()) 1 else 0
-  }
-
-  fun setNetworkState(newNetworkState: NetworkState?) {
-    val previousState = this.networkState
-    val hadExtraRow = hasExtraRow()
-    this.networkState = newNetworkState
-    val hasExtraRow = hasExtraRow()
-    if (hadExtraRow != hasExtraRow) {
-      if (hadExtraRow) {
-        notifyItemRemoved(super.getItemCount())
-      } else {
-        notifyItemInserted(super.getItemCount())
-      }
-    } else if (hasExtraRow && previousState != newNetworkState) {
-      notifyItemChanged(itemCount - 1)
     }
   }
 
@@ -100,9 +76,9 @@ class YouTubeItemsAdapter(
         threshold = 0.999F
         artworkHintListener = holder
       }
-          .bind(holder.container) {
-            holder.playback = it
-          }
+        .bind(holder.container) {
+          holder.playback = it
+        }
     }
   }
 

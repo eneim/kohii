@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package kohii.v1.sample.ui.youtube1
+package kohii.v1.sample.ui.youtube
 
-import android.util.Log
+import android.annotation.SuppressLint
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.google.api.services.youtube.model.Video
@@ -29,36 +28,38 @@ import kohii.v1.core.Playback
 import kohii.v1.sample.R
 import kohii.v1.sample.common.BaseViewHolder
 import kohii.v1.sample.svg.GlideApp
+import timber.log.Timber
 
 class YouTubeViewHolder(
-  parent: ViewGroup
-) : BaseViewHolder(parent, R.layout.holder_youtube_container), Playback.ArtworkHintListener {
+  parent: ViewGroup,
+  layoutId: Int
+) : BaseViewHolder(parent, layoutId), Playback.ArtworkHintListener {
 
-  val content = itemView as ConstraintLayout
-  val fragmentPlace: ViewGroup = itemView.findViewById(R.id.fragment)
+  val container = itemView.findViewById(R.id.container) as FrameLayout
+  val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
   val videoTitle = itemView.findViewById(R.id.videoTitle) as TextView
-  private val thumbnail = itemView.findViewById(R.id.thumbnail) as ImageView
-
-  init {
-    fragmentPlace.id = ViewCompat.generateViewId()
-  }
 
   var playback: Playback? = null
 
+  init {
+    // thumbnail.isVisible = false
+  }
+
+  @SuppressLint("SetTextI18n")
   override fun bind(item: Any?) {
     super.bind(item)
     (item as? Video)?.apply {
       val lowResThumb = this.snippet.thumbnails.medium.url
       val thumbRequest = Glide.with(itemView)
-          .load(lowResThumb)
+        .load(lowResThumb)
       val highResThumb = this.snippet.thumbnails.maxres.url
       GlideApp.with(itemView)
-          .load(highResThumb)
-          .thumbnail(thumbRequest)
-          .fitCenter()
-          .into(thumbnail)
+        .load(highResThumb)
+        .thumbnail(thumbRequest)
+        .fitCenter()
+        .into(thumbnail)
 
-      videoTitle.text = "${this.snippet.title}, id: $id"
+      videoTitle.text = "${this.snippet.title} - id: $id"
     }
   }
 
@@ -68,8 +69,8 @@ class YouTubeViewHolder(
     position: Long,
     state: Int
   ) {
-    Log.i("Kohii::Art", "${videoTitle.text}, art: $shouldShow, $position, $state")
     thumbnail.isVisible = shouldShow
+    Timber.d("${playback.tag} art: $shouldShow, $position, $state")
   }
 
   override fun onRecycled(success: Boolean) {

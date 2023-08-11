@@ -17,8 +17,10 @@
 package kohii.v1.sample
 
 import android.content.res.Configuration
+import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -50,36 +52,37 @@ class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragme
     setSupportActionBar(binding.toolbar)
 
     supportFragmentManager.registerFragmentLifecycleCallbacks(
-        object : FragmentLifecycleCallbacks() {
-          override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
-            if (f !is BaseFragment) return
-            if (f !is DemoContainer) {
-              this@MainActivity.updateTitle(getString(R.string.app_name))
-              return
-            }
-            val titleId = f.demoItem?.title ?: 0
-            val title = if (titleId == 0) {
-              f.javaClass.simpleName.splitCases()
-            } else {
-              getString(titleId)
-            }
-            this@MainActivity.updateTitle(title)
+      object : FragmentLifecycleCallbacks() {
+        override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
+          if (f !is BaseFragment) return
+          if (f !is DemoContainer) {
+            this@MainActivity.updateTitle(getString(R.string.app_name))
+            return
           }
+          val titleId = f.demoItem?.title ?: 0
+          val title = if (titleId == 0) {
+            f.javaClass.simpleName.splitCases()
+          } else {
+            getString(titleId)
+          }
+          this@MainActivity.updateTitle(title)
+        }
 
-          override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
-            if (f is DemoContainer) this@MainActivity.updateTitle(getString(R.string.app_name))
-          }
-        }, false
+        override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+          if (f is DemoContainer) this@MainActivity.updateTitle(getString(R.string.app_name))
+        }
+      },
+      false
     )
 
     if (savedInstanceState == null) {
       supportFragmentManager.beginTransaction()
-          .replace(
-              R.id.fragmentContainer,
-              MainListFragment.newInstance(),
-              MainListFragment::class.java.simpleName
-          )
-          .commit()
+        .replace(
+          R.id.fragmentContainer,
+          MainListFragment.newInstance(),
+          MainListFragment::class.java.simpleName
+        )
+        .commit()
     }
   }
 
@@ -90,16 +93,17 @@ class MainActivity : BaseActivity(), PlayerInfoHolder, LandscapeFullscreenFragme
     }
   }
 
+  @RequiresApi(VERSION_CODES.O)
   override fun onPictureInPictureModeChanged(
     isInPictureInPictureMode: Boolean,
-    newConfig: Configuration?
+    newConfig: Configuration
   ) {
     super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
     val decorView = window.decorView
     if (isInPictureInPictureMode) {
       decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-          View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-          View.SYSTEM_UI_FLAG_FULLSCREEN
+        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+        View.SYSTEM_UI_FLAG_FULLSCREEN
     } else {
       decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }

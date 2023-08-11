@@ -39,13 +39,15 @@ internal class MasterDispatcher(val master: Master) : Handler(Looper.getMainLoop
         }
         container.doOnAttach {
           master.requests.remove(it)
-              ?.onBind()
+            ?.onBind()
         }
       }
+
       Master.MSG_RELEASE_PLAYABLE -> {
         val playable = (msg.obj as Playable)
         playable.onRelease()
       }
+
       Master.MSG_DESTROY_PLAYABLE -> {
         val playable = msg.obj as Playable
         val clearState = msg.arg1 == 0

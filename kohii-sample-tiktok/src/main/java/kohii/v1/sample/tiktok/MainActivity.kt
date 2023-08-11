@@ -37,17 +37,16 @@ class MainActivity : AppCompatActivity() {
     // This is not a good practice, since it consume more memory.
     // Take a look here for a better way: [NavigationAdvancedSample](https://github.com/android/architecture-components-samples/blob/master/NavigationAdvancedSample/app/src/main/java/com/example/android/navigationadvancedsample/NavigationExtensions.kt)
     val fragments = hashMapOf(
-        DashboardFragment::class.java.name to DashboardFragment(),
-        HomeFragment::class.java.name to HomeFragment(),
-        NotificationsFragment::class.java.name to NotificationsFragment()
+      DashboardFragment::class.java.name to DashboardFragment(),
+      HomeFragment::class.java.name to HomeFragment(),
+      NotificationsFragment::class.java.name to NotificationsFragment()
     )
 
     // Must call before setContentView.
     val defaultFactory = supportFragmentManager.fragmentFactory
     supportFragmentManager.fragmentFactory = object : FragmentFactory() {
       override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-        return fragments.getOrElse(
-            className, { defaultFactory.instantiate(classLoader, className) })
+        return fragments.getOrElse(className) { defaultFactory.instantiate(classLoader, className) }
       }
     }
 
@@ -58,11 +57,11 @@ class MainActivity : AppCompatActivity() {
     // Passing each menu ID as a set of Ids because each
     // menu should be considered as top level destinations.
     val appBarConfiguration = AppBarConfiguration(
-        setOf(
-            R.id.navigation_home,
-            R.id.navigation_dashboard,
-            R.id.navigation_notifications
-        )
+      setOf(
+        R.id.navigation_home,
+        R.id.navigation_dashboard,
+        R.id.navigation_notifications
+      )
     )
 
     setupActionBarWithNavController(navController, appBarConfiguration)

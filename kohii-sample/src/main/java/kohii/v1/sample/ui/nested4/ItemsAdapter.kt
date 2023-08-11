@@ -65,8 +65,10 @@ internal class ItemsAdapter(
       kohii.setUp(DemoApp.assetVideoUri) {
         tag = requireNotNull(videoTag)
       }
-          .bind(holder.container)
-    } else holder.bind(position)
+        .bind(holder.container)
+    } else {
+      holder.bind(position)
+    }
   }
 
   override fun onViewRecycled(holder: BaseViewHolder) {

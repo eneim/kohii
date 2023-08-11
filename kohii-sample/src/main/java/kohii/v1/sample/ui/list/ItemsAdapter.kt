@@ -51,8 +51,11 @@ class ItemsAdapter(
     return when (viewType) {
       R.layout.holder_text_view -> TextViewHolder(parent, this.dp2Px)
       R.layout.holder_player_view -> VideoViewHolder(
-          parent, kohii, VideoClickImpl(fragment)
+        parent,
+        kohii,
+        VideoClickImpl(fragment)
       )
+
       else -> throw RuntimeException("Unknown type: $viewType")
     }
   }
@@ -62,7 +65,7 @@ class ItemsAdapter(
   override fun getItemId(position: Int): Long {
     val item = items[position]
     return item.hashCode()
-        .toLong()
+      .toLong()
   }
 
   override fun getItemViewType(position: Int): Int {
@@ -102,6 +105,7 @@ class ItemsAdapter(
     ) {
       if (transView == null) return
       val transName = ViewCompat.getTransitionName(transView) ?: return
+
       @Suppress("UNCHECKED_CAST")
       val data = payload as? Pair<Rebinder, InitData> ?: return
       val initData = data.second
@@ -111,13 +115,15 @@ class ItemsAdapter(
       // instead of fading out with the rest to prevent an overlapping animation of fade and move).
       (fragment.exitTransition as TransitionSet).excludeTarget(itemView, true)
       fragment.parentFragmentManager.beginTransaction()
-          .setReorderingAllowed(true) // Optimize for shared element transition
-          .addSharedElement(transView, transName)
-          .replace(
-              R.id.fragmentContainer, PlayerFragment.newInstance(data.first, initData), initData.tag
-          )
-          .addToBackStack(null)
-          .commit()
+        .setReorderingAllowed(true) // Optimize for shared element transition
+        .addSharedElement(transView, transName)
+        .replace(
+          R.id.fragmentContainer,
+          PlayerFragment.newInstance(data.first, initData),
+          initData.tag
+        )
+        .addToBackStack(null)
+        .commit()
     }
 
     override fun onItemLoaded(

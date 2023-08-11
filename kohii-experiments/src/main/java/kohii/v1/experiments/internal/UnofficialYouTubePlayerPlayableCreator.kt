@@ -32,8 +32,10 @@ internal class UnofficialYouTubePlayerPlayableCreator(
     media: Media
   ): Playable {
     return UnofficialYouTubePlayerPlayable(
-        master, media, config,
-        UnofficialYouTubePlayerBridge(media)
+      master,
+      media,
+      config,
+      UnofficialYouTubePlayerBridge(media)
     )
   }
 

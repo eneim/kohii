@@ -17,7 +17,7 @@
 package kohii.v1.exoplayer
 
 import android.content.Context
-import com.google.android.exoplayer2.database.ExoDatabaseProvider
+import com.google.android.exoplayer2.database.StandaloneDatabaseProvider
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.NoOpCacheEvictor
@@ -41,23 +41,23 @@ object ExoPlayerCache {
 
   private val lruCacheCreator: (Context) -> Cache = { context ->
     SimpleCache(
-        File(
-            context.getExternalFilesDir(null) ?: context.filesDir,
-            CACHE_CONTENT_DIRECTORY
-        ),
-        LeastRecentlyUsedCacheEvictor(CACHE_SIZE),
-        ExoDatabaseProvider(context)
+      File(
+        context.getExternalFilesDir(null) ?: context.filesDir,
+        CACHE_CONTENT_DIRECTORY
+      ),
+      LeastRecentlyUsedCacheEvictor(CACHE_SIZE),
+      StandaloneDatabaseProvider(context)
     )
   }
 
   private val downloadCacheCreator: (Context) -> Cache = { context ->
     SimpleCache(
-        File(
-            context.getExternalFilesDir(null) ?: context.filesDir,
-            DOWNLOAD_CONTENT_DIRECTORY
-        ),
-        NoOpCacheEvictor(),
-        ExoDatabaseProvider(context)
+      File(
+        context.getExternalFilesDir(null) ?: context.filesDir,
+        DOWNLOAD_CONTENT_DIRECTORY
+      ),
+      NoOpCacheEvictor(),
+      StandaloneDatabaseProvider(context)
     )
   }
 

@@ -20,17 +20,17 @@ import android.content.Context
 import android.os.Looper
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.RenderersFactory
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.analytics.AnalyticsCollector
-import com.google.android.exoplayer2.source.MediaSourceFactory
+import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Clock
 import com.google.android.exoplayer2.util.Util
-import kohii.v1.core.DefaultTrackSelectorHolder
 import kohii.v1.core.VolumeChangedListener
 import kohii.v1.core.VolumeChangedListeners
 import kohii.v1.core.VolumeInfoController
@@ -38,39 +38,45 @@ import kohii.v1.media.VolumeInfo
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
- * Extend the [SimpleExoPlayer] to have custom configuration.
+ * Extend the [ExoPlayer] to have custom configuration.
  *
  * @author eneim (2018/06/25).
  */
 open class KohiiExoPlayer(
-  context: Context,
-  clock: Clock = Clock.DEFAULT,
-  renderersFactory: RenderersFactory = DefaultRenderersFactory(context.applicationContext),
+  private val player: ExoPlayer
+) : ExoPlayer by player,
+  VolumeInfoController {
+
+  constructor(builder: ExoPlayer.Builder) : this(builder.build())
+
+  constructor(
+    context: Context,
+    clock: Clock = Clock.DEFAULT,
+    renderersFactory: RenderersFactory = DefaultRenderersFactory(context.applicationContext),
     // TrackSelector is initialized at the same time a new Player instance is created.
     // This process will set the BandwidthMeter to the TrackSelector. Therefore we need to have
     // unique TrackSelector per Player instance.
-  override val trackSelector: DefaultTrackSelector =
-    DefaultTrackSelector(context.applicationContext),
-  loadControl: LoadControl = DefaultLoadControl.Builder().build(),
-  bandwidthMeter: BandwidthMeter =
-    DefaultBandwidthMeter.Builder(context.applicationContext).build(),
-  mediaSourceFactory: MediaSourceFactory,
-  analyticsCollector: AnalyticsCollector = AnalyticsCollector(clock),
-  looper: Looper = Util.getCurrentOrMainLooper()
-) : SimpleExoPlayer(
-    Builder(
-        context.applicationContext,
-        renderersFactory,
-        trackSelector,
-        mediaSourceFactory,
-        loadControl,
-        bandwidthMeter,
-        analyticsCollector
+    trackSelector: DefaultTrackSelector = DefaultTrackSelector(context.applicationContext),
+    loadControl: LoadControl = DefaultLoadControl.Builder().build(),
+    bandwidthMeter: BandwidthMeter =
+      DefaultBandwidthMeter.Builder(context.applicationContext).build(),
+    mediaSourceFactory: MediaSource.Factory,
+    analyticsCollector: AnalyticsCollector = DefaultAnalyticsCollector(clock),
+    looper: Looper = Util.getCurrentOrMainLooper()
+  ) : this(
+    ExoPlayer.Builder(
+      context.applicationContext,
+      renderersFactory,
+      mediaSourceFactory,
+      trackSelector,
+      loadControl,
+      bandwidthMeter,
+      analyticsCollector
     )
-        .setUseLazyPreparation(true)
-        .setClock(clock)
-        .setLooper(looper)
-), VolumeInfoController, DefaultTrackSelectorHolder {
+      .setUseLazyPreparation(true)
+      .setClock(clock)
+      .setLooper(looper)
+  )
 
   private val volumeChangedListeners by lazy(NONE) { VolumeChangedListeners() }
   private var playerVolumeInfo = VolumeInfo.DEFAULT_ACTIVE // backing field.
@@ -82,17 +88,15 @@ open class KohiiExoPlayer(
     this.setVolumeInfo(VolumeInfo(audioVolume == 0f, audioVolume))
   }
 
-  final override fun getVolume(): Float {
-    return super.getVolume()
-  }
+  final override fun getVolume(): Float = player.volume
 
   override fun setVolumeInfo(volumeInfo: VolumeInfo): Boolean {
     val muted = volumeInfo.mute || volumeInfo.volume == 0F
-    super.setAudioAttributes(super.getAudioAttributes(), !muted)
+    player.setAudioAttributes(player.audioAttributes, !muted)
     val changed = this.playerVolumeInfo != volumeInfo // Compare equality, not reference.
     if (changed) {
       this.playerVolumeInfo = volumeInfo
-      super.setVolume(if (volumeInfo.mute) 0F else volumeInfo.volume)
+      player.volume = if (volumeInfo.mute) 0F else volumeInfo.volume
       this.volumeChangedListeners.onVolumeChanged(volumeInfo)
     }
     return changed

@@ -36,6 +36,6 @@ internal class TextViewHolder(
   override fun bind(item: Any?) {
     super.bind(item)
     textContent.text = itemView.context.getString(string.lib_intro)
-        .parseAsHtml()
+      .parseAsHtml()
   }
 }

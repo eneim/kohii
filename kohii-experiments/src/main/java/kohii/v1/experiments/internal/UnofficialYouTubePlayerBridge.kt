@@ -77,8 +77,8 @@ internal class UnofficialYouTubePlayerBridge(
       tracker.state = state
       val kohiiState = mapState(state)
       Log.i(
-          "Kohii::Art",
-          "${tracker.videoId}, state: $state ($kohiiState), tracker state: ${tracker.state}"
+        "Kohii::Art",
+        "${tracker.videoId}, state: $state ($kohiiState), tracker state: ${tracker.state}"
       )
       eventListeners.onPlayerStateChanged(state == PLAYING, kohiiState)
     }
@@ -164,16 +164,16 @@ internal class UnofficialYouTubePlayerBridge(
       } else {
         val startPos = _playbackInfo.resumePosition.toFloat()
         player?.loadVideo(videoId, startPos)
-            ?: run {
-              val playerView = requireNotNull(renderer)
-              val callback = object : DelayedYouTubePlayerCallback(videoId, startPos) {
-                override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
-                  this@UnofficialYouTubePlayerBridge.player = youTubePlayer
-                  super.onYouTubePlayer(youTubePlayer)
-                }
+          ?: run {
+            val playerView = requireNotNull(renderer)
+            val callback = object : DelayedYouTubePlayerCallback(videoId, startPos) {
+              override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                this@UnofficialYouTubePlayerBridge.player = youTubePlayer
+                super.onYouTubePlayer(youTubePlayer)
               }
-              playerView.getYouTubePlayerWhenReady(callback)
             }
+            playerView.getYouTubePlayerWhenReady(callback)
+          }
       }
     }
   }

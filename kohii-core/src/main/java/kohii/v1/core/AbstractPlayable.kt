@@ -105,8 +105,8 @@ abstract class AbstractPlayable<RENDERER : Any>(
       if (newManager == null) {
         master.trySavePlaybackInfo(this)
         master.tearDown(
-            playable = this,
-            clearState = if (oldManager is Manager) !oldManager.isChangingConfigurations() else true
+          playable = this,
+          clearState = if (oldManager is Manager) !oldManager.isChangingConfigurations() else true
         )
       } else if (oldManager === null) {
         master.tryRestorePlaybackInfo(this)

@@ -18,16 +18,17 @@ package kohii.v1.exoplayer
 
 import android.content.Context
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.MediaSourceFactory
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.ui.PlayerView
 import kohii.v1.core.Bridge
 import kohii.v1.core.BridgeCreator
 import kohii.v1.core.PlayerPool
 import kohii.v1.media.Media
 
+@Deprecated(message = "PlayerView is deprecated. Use the StyledPlayerViewBridgeCreator instead.")
 class PlayerViewBridgeCreator(
   private val playerPool: PlayerPool<Player>,
-  private val mediaSourceFactory: MediaSourceFactory
+  private val mediaSourceFactory: MediaSource.Factory
 ) : BridgeCreator<PlayerView> {
 
   override fun createBridge(
@@ -35,10 +36,10 @@ class PlayerViewBridgeCreator(
     media: Media
   ): Bridge<PlayerView> {
     return PlayerViewBridge(
-        context,
-        media,
-        playerPool,
-        mediaSourceFactory
+      context,
+      media,
+      playerPool,
+      mediaSourceFactory
     )
   }
 

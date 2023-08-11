@@ -62,23 +62,25 @@ class ExoPlayerVideosFragment : BaseFragment(), DemoContainer {
 
     val kohii = Kohii[this]
     kohii.register(this)
-        .addBucket(binding.recyclerView)
+      .addBucket(binding.recyclerView)
 
-    binding.recyclerView.adapter = ExoVideosAdapter(kohii, getApp().exoItems,
-        onClick = { holder, _ ->
-          holder.rebinder?.let {
-            val player = LandscapeFullscreenFragment.newInstance(
-                it,
-                InitData(it.tag.toString(), holder.aspectRatio)
-            )
+    binding.recyclerView.adapter = ExoVideosAdapter(
+      kohii,
+      getApp().exoItems,
+      onClick = { holder, _ ->
+        holder.rebinder?.let {
+          val player = LandscapeFullscreenFragment.newInstance(
+            it,
+            InitData(it.tag.toString(), holder.aspectRatio)
+          )
 
-            parentFragmentManager.commit {
-              setReorderingAllowed(true) // required for Activity-like lifecycle changing.
-              replace(R.id.fragmentContainer, player, it.tag.toString())
-              addToBackStack(null)
-            }
+          parentFragmentManager.commit {
+            setReorderingAllowed(true) // required for Activity-like lifecycle changing.
+            replace(R.id.fragmentContainer, player, it.tag.toString())
+            addToBackStack(null)
           }
         }
+      }
     )
   }
 }

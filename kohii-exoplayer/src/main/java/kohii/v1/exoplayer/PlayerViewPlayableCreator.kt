@@ -27,8 +27,12 @@ import kohii.v1.core.PlayableCreator
 import kohii.v1.media.Media
 import kotlin.LazyThreadSafetyMode.NONE
 
+@Deprecated(
+  message = "PlayerView is deprecated. Use the StyledPlayerViewBridgeCreatorFactory instead."
+)
 typealias PlayerViewBridgeCreatorFactory = (Context) -> BridgeCreator<PlayerView>
 
+@Deprecated(message = "PlayerView is deprecated. Use the StyledPlayerViewPlayableCreator instead.")
 class PlayerViewPlayableCreator internal constructor(
   private val master: Master,
   private val bridgeCreatorFactory: PlayerViewBridgeCreatorFactory = defaultBridgeCreatorFactory
@@ -42,8 +46,8 @@ class PlayerViewPlayableCreator internal constructor(
     private val defaultBridgeCreatorFactory: PlayerViewBridgeCreatorFactory = { context ->
       // ExoPlayerProvider
       val playerPool = ExoPlayerPool(
-          context = context,
-          userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
+        context = context,
+        userAgent = Common.getUserAgent(context, BuildConfig.LIB_NAME)
       )
       PlayerViewBridgeCreator(playerPool, playerPool.defaultMediaSourceFactory)
     }
@@ -58,10 +62,10 @@ class PlayerViewPlayableCreator internal constructor(
     media: Media
   ): Playable {
     return PlayerViewPlayable(
-        master,
-        media,
-        config,
-        bridgeCreator.value.createBridge(master.app, media)
+      master,
+      media,
+      config,
+      bridgeCreator.value.createBridge(master.app, media)
     )
   }
 
@@ -80,8 +84,8 @@ class PlayerViewPlayableCreator internal constructor(
     }
 
     fun build(): PlayableCreator<PlayerView> = PlayerViewPlayableCreator(
-        Master[app],
-        bridgeCreatorFactory
+      Master[app],
+      bridgeCreatorFactory
     )
   }
 }

@@ -19,6 +19,6 @@
     android:interpolator="@android:interpolator/fast_out_slow_in"
     android:startDelay="25">
   <fade>
-    <targets android:targetId="@id/scrollView"/>
+    <targets android:targetId="@id/scrollView" />
   </fade>
 </transitionSet>

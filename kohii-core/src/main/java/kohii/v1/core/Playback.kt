@@ -22,6 +22,7 @@ import androidx.annotation.CallSuper
 import androidx.annotation.FloatRange
 import androidx.lifecycle.Lifecycle.State
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.video.VideoSize
 import kohii.v1.BuildConfig
 import kohii.v1.core.Bucket.Companion.BOTH_AXIS
 import kohii.v1.core.Bucket.Companion.HORIZONTAL
@@ -246,8 +247,11 @@ abstract class Playback(
     }
 
     val offset: Float =
-      if (drawArea > 0) (tmpRect.width() * tmpRect.height()) / drawArea.toFloat()
-      else 0F
+      if (drawArea > 0) {
+        (tmpRect.width() * tmpRect.height()) / drawArea.toFloat()
+      } else {
+        0F
+      }
     return Token(config.threshold, offset, tmpRect, container.width, container.height)
   }
 
@@ -325,7 +329,7 @@ abstract class Playback(
     tokenUpdateListener = config.tokenUpdateListener
     networkTypeChangeListener = config.networkTypeChangeListener
     playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(manager.master.networkType)
-        ?: playerParameters
+      ?: playerParameters
   }
 
   internal fun onRemoved() {
@@ -336,7 +340,7 @@ abstract class Playback(
     artworkHintListener = null
     networkTypeChangeListener = null
     callbacks.onEach { it.onRemoved(this) }
-        .clear()
+      .clear()
     listeners.clear()
   }
 
@@ -358,10 +362,10 @@ abstract class Playback(
     playbackState = STATE_ACTIVE
     callbacks.forEach { it.onActive(this) }
     artworkHintListener?.onArtworkHint(
-        this,
-        playable?.isPlaying() == false,
-        playbackInfo.resumePosition,
-        playerState
+      this,
+      playable?.isPlaying() == false,
+      playbackInfo.resumePosition,
+      playerState
     )
   }
 
@@ -379,7 +383,10 @@ abstract class Playback(
     "Playback#onPlay $this".logDebug()
     container.keepScreenOn = true
     artworkHintListener?.onArtworkHint(
-        this, playerState == Player.STATE_ENDED, playbackInfo.resumePosition, playerState
+      this,
+      playerState == Player.STATE_ENDED,
+      playbackInfo.resumePosition,
+      playerState
     )
   }
 
@@ -409,11 +416,15 @@ abstract class Playback(
       VERTICAL -> CENTER_Y.compare(thisToken, thatToken)
       HORIZONTAL -> CENTER_X.compare(thisToken, thatToken)
       BOTH_AXIS -> max(
-          CENTER_Y.compare(thisToken, thatToken), CENTER_X.compare(thisToken, thatToken)
+        CENTER_Y.compare(thisToken, thatToken),
+        CENTER_X.compare(thisToken, thatToken)
       )
+
       NONE_AXIS -> max(
-          CENTER_Y.compare(thisToken, thatToken), CENTER_X.compare(thisToken, thatToken)
+        CENTER_Y.compare(thisToken, thatToken),
+        CENTER_X.compare(thisToken, thatToken)
       )
+
       else -> 0
     }
 
@@ -423,7 +434,7 @@ abstract class Playback(
 
   internal fun onNetworkTypeChanged(networkType: NetworkType) {
     this.playerParameters = networkTypeChangeListener?.onNetworkTypeChanged(networkType)
-        ?: this.playerParameters
+      ?: this.playerParameters
   }
 
   internal fun addCallback(callback: Callback) {
@@ -466,6 +477,7 @@ abstract class Playback(
 
   // PlayerEventListener
 
+  @Deprecated("Deprecated in Java")
   override fun onPlayerStateChanged(
     playWhenReady: Boolean,
     playbackState: Int
@@ -476,33 +488,36 @@ abstract class Playback(
       Player.STATE_BUFFERING -> {
         listeners.forEach { it.onBuffering(this@Playback, playWhenReady) }
       }
+
       Player.STATE_READY -> {
         listeners.forEach {
           if (playWhenReady) it.onPlaying(this@Playback) else it.onPaused(this@Playback)
         }
       }
+
       Player.STATE_ENDED -> {
         listeners.forEach { it.onEnded(this@Playback) }
       }
     }
     val playable = this.playable
     artworkHintListener?.onArtworkHint(
-        playback = this,
-        shouldShow = if (playable != null) !playable.isPlaying() else true,
-        position = playbackInfo.resumePosition,
-        state = playerState
+      playback = this,
+      shouldShow = if (playable != null) !playable.isPlaying() else true,
+      position = playbackInfo.resumePosition,
+      state = playerState
     )
   }
 
-  override fun onVideoSizeChanged(
-    width: Int,
-    height: Int,
-    unappliedRotationDegrees: Int,
-    pixelWidthHeightRatio: Float
-  ) {
-    "Playback#onVideoSizeChanged $width × $height, $this".logDebug()
+  override fun onVideoSizeChanged(videoSize: VideoSize) {
+    "Playback#onVideoSizeChanged ${videoSize.width} × ${videoSize.height}, $this".logDebug()
     listeners.forEach {
-      it.onVideoSizeChanged(this, width, height, unappliedRotationDegrees, pixelWidthHeightRatio)
+      it.onVideoSizeChanged(
+        playback = this,
+        width = videoSize.width,
+        height = videoSize.height,
+        unAppliedRotationDegrees = videoSize.unappliedRotationDegrees,
+        pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
+      )
     }
   }
 
@@ -525,7 +540,6 @@ abstract class Playback(
   interface StateListener {
 
     /** Called when a Video is rendered on the Surface for the first time */
-    @JvmDefault
     fun onRendered(playback: Playback) = Unit
 
     /**
@@ -533,25 +547,20 @@ abstract class Playback(
      *
      * @param playWhenReady true if the Video will start playing once buffered enough, false otherwise.
      */
-    @JvmDefault
     fun onBuffering(
       playback: Playback,
       playWhenReady: Boolean
     ) = Unit // ExoPlayer state: 2
 
     /** Called when the Video starts playing */
-    @JvmDefault
     fun onPlaying(playback: Playback) = Unit // ExoPlayer state: 3, play flag: true
 
     /** Called when the Video is paused */
-    @JvmDefault
     fun onPaused(playback: Playback) = Unit // ExoPlayer state: 3, play flag: false
 
     /** Called when the Video finishes its playback */
-    @JvmDefault
     fun onEnded(playback: Playback) = Unit // ExoPlayer state: 4
 
-    @JvmDefault
     fun onVideoSizeChanged(
       playback: Playback,
       width: Int,
@@ -560,7 +569,6 @@ abstract class Playback(
       pixelWidthHeightRatio: Float
     ) = Unit
 
-    @JvmDefault
     fun onError(
       playback: Playback,
       exception: Exception
@@ -572,22 +580,16 @@ abstract class Playback(
    */
   interface Callback {
 
-    @JvmDefault
     fun onActive(playback: Playback) = Unit
 
-    @JvmDefault
     fun onInActive(playback: Playback) = Unit
 
-    @JvmDefault
     fun onAdded(playback: Playback) = Unit
 
-    @JvmDefault
     fun onRemoved(playback: Playback) = Unit
 
-    @JvmDefault
     fun onAttached(playback: Playback) = Unit
 
-    @JvmDefault
     fun onDetached(playback: Playback) = Unit
   }
 
@@ -614,7 +616,6 @@ abstract class Playback(
      *
      * Note: this value is ignored in 1.2.0 due to an in-completed behavior.
      */
-    @JvmDefault
     fun kohiiCanPause(): Boolean = true
 
     /**
@@ -627,7 +628,6 @@ abstract class Playback(
      *
      * Default result is `false`.
      */
-    @JvmDefault
     fun kohiiCanStart(): Boolean = false
 
     /**
@@ -637,7 +637,6 @@ abstract class Playback(
      *
      * @see [Playback.onRendererAttached]
      */
-    @JvmDefault
     fun setupRenderer(playback: Playback, renderer: Any?) = Unit
 
     /**
@@ -647,7 +646,6 @@ abstract class Playback(
      *
      * @see [Playback.onRendererDetached]
      */
-    @JvmDefault
     fun teardownRenderer(playback: Playback, renderer: Any?) = Unit
   }
 

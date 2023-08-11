@@ -39,7 +39,7 @@ class VideoViewBridge(
 ) : AbstractBridge<VideoView>() {
 
   private val mediaItem: MediaItem = UriMediaItem.Builder(media.uri)
-      .build()
+    .build()
 
   private var player: MediaPlayer? = null
 
@@ -81,12 +81,12 @@ class VideoViewBridge(
   override fun ready() {
     if (player == null) {
       player = playerPool.getPlayer(media)
-          .also {
-            it.setMediaItem(mediaItem)
-            it.repeatMode = repeatMode
-            renderer?.setPlayer(it)
-            it.prepare()
-          }
+        .also {
+          it.setMediaItem(mediaItem)
+          it.repeatMode = repeatMode
+          renderer?.setPlayer(it)
+          it.prepare()
+        }
     }
   }
 

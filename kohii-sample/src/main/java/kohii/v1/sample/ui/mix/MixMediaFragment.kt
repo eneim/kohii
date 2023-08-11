@@ -17,9 +17,7 @@
 package kohii.v1.sample.ui.mix
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.Keep
 import kohii.v1.exoplayer.Kohii
 import kohii.v1.sample.R
@@ -30,20 +28,11 @@ import kohii.v1.sample.databinding.FragmentRecyclerViewBinding
 /**
  * @author eneim (2018/10/30).
  */
-@Suppress("unused")
 @Keep
-class MixMediaFragment : BaseFragment() {
+class MixMediaFragment : BaseFragment(R.layout.fragment_recycler_view) {
 
   companion object {
     fun newInstance() = MixMediaFragment()
-  }
-
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    parent: ViewGroup?,
-    state: Bundle?
-  ): View? {
-    return inflater.inflate(R.layout.fragment_recycler_view, parent, false)
   }
 
   override fun onViewCreated(
@@ -54,7 +43,7 @@ class MixMediaFragment : BaseFragment() {
     val binding: FragmentRecyclerViewBinding = FragmentRecyclerViewBinding.bind(view)
     val kohii = Kohii[this].also {
       it.register(this)
-          .addBucket(binding.recyclerView)
+        .addBucket(binding.recyclerView)
     }
 
     binding.recyclerView.also {

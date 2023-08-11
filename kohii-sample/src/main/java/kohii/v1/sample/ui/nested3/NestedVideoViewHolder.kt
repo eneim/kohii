@@ -29,14 +29,15 @@ internal class NestedVideoViewHolder(
   private val kohii: Kohii,
   parent: ViewGroup
 ) : BaseViewHolder(
-    parent, layout.holder_player_view
+  parent,
+  layout.holder_player_view
 ) {
 
   val container = itemView.findViewById(
-      id.playerContainer
+    id.playerContainer
   ) as AspectRatioFrameLayout
   val playerView = itemView.findViewById(
-      id.playerView
+    id.playerView
   ) as PlayerView
 
   override fun bind(item: Any?) {
@@ -45,6 +46,6 @@ internal class NestedVideoViewHolder(
     kohii.setUp(assetVideoUri) {
       tag = "NESTED::VID::$adapterPosition"
     }
-        .bind(playerView)
+      .bind(playerView)
   }
 }
