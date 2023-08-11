@@ -202,7 +202,7 @@ class Group(
 
   private fun updatePlaybackPriorities(
     playbacks: Collection<Playback>,
-    selection: Collection<Playback>
+    selection: Set<Playback>
   ) {
     // The smallest Rect that covers all selected Playbacks
     val cover = selection.fold(Rect()) { acc, playback ->

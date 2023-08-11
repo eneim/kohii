@@ -17,8 +17,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-  compileSdkVersion libs.versions.android.target.sdk.get().toInteger()
-
   defaultConfig {
     minSdkVersion libs.versions.android.min.sdk.get()
     targetSdkVersion libs.versions.android.target.sdk.get()

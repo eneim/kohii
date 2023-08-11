@@ -24,8 +24,9 @@ import com.google.android.exoplayer2.RenderersFactory
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManagerProvider
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.util.Clock
@@ -58,7 +59,7 @@ class ExoPlayerPool(
 
     // DefaultMediaSourceFactory
     val mediaCache: Cache = ExoPlayerCache.lruCacheSingleton.get(context)
-    val upstreamFactory = DefaultDataSourceFactory(context, httpDataSource)
+    val upstreamFactory = DefaultDataSource.Factory(context, httpDataSource)
     val drmSessionManagerProvider = DefaultDrmSessionManagerProvider()
     drmSessionManagerProvider.setDrmHttpDataSourceFactory(httpDataSource)
 
@@ -69,7 +70,7 @@ class ExoPlayerPool(
         .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
     )
       .setDrmSessionManagerProvider(drmSessionManagerProvider)
-    // .setLoadErrorHandlingPolicy() // TODO(eneim): left out, needs more investigations.
+      .setLoadErrorHandlingPolicy(DefaultLoadErrorHandlingPolicy())
   }
 ) : PlayerPool<Player>(poolSize) {
 
