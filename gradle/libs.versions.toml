@@ -38,6 +38,7 @@ kotlinBinaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compat
 
 [libraries]
 android-exoplayer = { module = "com.google.android.exoplayer:exoplayer", version.ref = "exoplayer" }
+android-exoplayer-all = { module = "com.google.android.exoplayer:exoplayer", version.ref = "exoplayer" }
 android-exoplayer-core = { module = "com.google.android.exoplayer:exoplayer-core", version.ref = "exoplayer" }
 android-exoplayer-ui = { module = "com.google.android.exoplayer:exoplayer-ui", version.ref = "exoplayer" }
 android-exoplayer-ima = { module = "com.google.android.exoplayer:extension-ima", version.ref = "exoplayer" }

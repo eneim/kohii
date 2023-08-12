@@ -43,8 +43,8 @@ public final class kohii/v1/exoplayer/ExoPlayerConfigKt {
 }
 
 public final class kohii/v1/exoplayer/ExoPlayerPool : kohii/v1/core/PlayerPool {
-	public fun <init> (ILandroid/content/Context;Ljava/lang/String;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;)V
-	public synthetic fun <init> (ILandroid/content/Context;Ljava/lang/String;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ILandroid/content/Context;Ljava/lang/String;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/upstream/cache/Cache;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;)V
+	public synthetic fun <init> (ILandroid/content/Context;Ljava/lang/String;Lcom/google/android/exoplayer2/util/Clock;Lkohii/v1/exoplayer/BandwidthMeterFactory;Lkohii/v1/exoplayer/TrackSelectorFactory;Lkohii/v1/exoplayer/LoadControlFactory;Lcom/google/android/exoplayer2/RenderersFactory;Lcom/google/android/exoplayer2/upstream/cache/Cache;Lcom/google/android/exoplayer2/source/DefaultMediaSourceFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun createPlayer (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/Player;
 	public synthetic fun createPlayer (Lkohii/v1/media/Media;)Ljava/lang/Object;
 	public fun destroyPlayer (Lcom/google/android/exoplayer2/Player;)V
@@ -305,10 +305,6 @@ public final class kohii/v1/exoplayer/KohiiKt {
 
 public abstract interface class kohii/v1/exoplayer/LoadControlFactory {
 	public abstract fun createLoadControl ()Lcom/google/android/exoplayer2/LoadControl;
-}
-
-public abstract interface class kohii/v1/exoplayer/MediaSourceFactoryProvider {
-	public abstract fun provideMediaSourceFactory (Lkohii/v1/media/Media;)Lcom/google/android/exoplayer2/source/MediaSourceFactory;
 }
 
 public class kohii/v1/exoplayer/PlayerViewBridge : kohii/v1/core/AbstractBridge, com/google/android/exoplayer2/Player$Listener {
